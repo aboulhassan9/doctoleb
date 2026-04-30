@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans bg-background text-slate-900 transition-colors duration-300;
+  }
+}
+
+html.dark {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #111;
+}
+
+html.dark img, html.dark video {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Fix any modals that might stack strangely under invert */
+html.dark .fixed.inset-0 {
+  background-color: rgba(255, 255, 255, 0.4); 
+}
+
+@media print {
+  aside, header.sticky {
+    display: none !important;
+  }
+  main, .flex-1, .overflow-y-auto {
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .print-hidden {
+    display: none !important;
+  }
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+}
