@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getHomeRouteForRole } from '../lib/routes';
 
 export default function ProtectedRoute({ children, requiredRole = null }) {
   const { user, loading } = useAuth();
@@ -20,11 +21,7 @@ export default function ProtectedRoute({ children, requiredRole = null }) {
   }
 
   if (requiredRole && user.role !== requiredRole) {
-    if (user.role === 'patient') return <Navigate to="/dashboard" replace />;
-    if (user.role === 'doctor') return <Navigate to="/doctor-dashboard" replace />;
-    if (user.role === 'predoctor') return <Navigate to="/predoctor-dashboard" replace />;
-    if (user.role === 'secretary') return <Navigate to="/dashboard" replace />;
-    return <Navigate to="/login" replace />;
+    return <Navigate to={getHomeRouteForRole(user.role)} replace />;
   }
 
   return children;

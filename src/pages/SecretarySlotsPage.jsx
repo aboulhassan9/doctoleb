@@ -5,6 +5,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { slotService } from '../services/slots';
 import { clinicService } from '../services/clinics';
+import { doctorService } from '../services/doctors';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -103,9 +104,7 @@ export default function SecretarySlotsPage() {
     }
     setSaving(true);
     // Get doctor_id for the single doctor in the system
-    const { data: doctorRow } = await import('../lib/supabase').then(m =>
-      m.supabase.from('doctors').select('id').single()
-    );
+    const { data: doctorRow } = await doctorService.getFirst();
     const { error } = await slotService.createManualSlot({
       ...manualForm,
       doctor_id: doctorRow?.id,
@@ -132,9 +131,7 @@ export default function SecretarySlotsPage() {
       return;
     }
     setSaving(true);
-    const { data: doctorRow } = await import('../lib/supabase').then(m =>
-      m.supabase.from('doctors').select('id').single()
-    );
+    const { data: doctorRow } = await doctorService.getFirst();
     const { error } = await slotService.createRecurringSlots({
       doctor_id: doctorRow?.id,
       clinic_id,

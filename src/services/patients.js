@@ -1,12 +1,19 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { buildInitials } from '../lib/authIdentity';
+import { PATIENT_SELECT_FIELDS, USER_PUBLIC_FIELDS } from '../lib/selects';
+import { parseWithSchema, patientProfileUpdateSchema } from '../schemas';
+
+function isMissingFunctionError(error, functionName) {
+  return error?.code === 'PGRST202' || error?.message?.includes(functionName);
+}
 
 export const patientService = {
   async getAll() {
     return apiCall(
       supabase
         .from('patients')
-        .select('id, user_id, date_of_birth, sex, blood_type, allergies, medical_history, insurance_id, users(id, email, first_name, last_name, phone, initials)')
+        .select(PATIENT_SELECT_FIELDS)
         .order('created_at', { ascending: false })
     );
   },
@@ -15,7 +22,7 @@ export const patientService = {
     return apiCall(
       supabase
         .from('patients')
-        .select('*, users(*)')
+        .select(PATIENT_SELECT_FIELDS)
         .eq('id', id)
         .single()
     );
@@ -25,7 +32,7 @@ export const patientService = {
     return apiCall(
       supabase
         .from('patients')
-        .select('*')
+        .select(PATIENT_SELECT_FIELDS)
         .eq('user_id', userId)
         .single()
     );
@@ -36,7 +43,7 @@ export const patientService = {
       supabase
         .from('patients')
         .insert([data])
-        .select('*, users(*)')
+        .select(PATIENT_SELECT_FIELDS)
     );
   },
 
@@ -46,18 +53,98 @@ export const patientService = {
         .from('patients')
         .update(data)
         .eq('id', id)
-        .select('*, users(*)')
+        .select(PATIENT_SELECT_FIELDS)
     );
   },
 
   async updateUserInfo(userId, { firstName, lastName, phone }) {
-    const initials = ((firstName?.[0] || '') + (lastName?.[0] || '')).toUpperCase();
+    const initials = buildInitials(firstName, lastName);
     return apiCall(
       supabase
         .from('users')
         .update({ first_name: firstName, last_name: lastName, phone: phone || null, initials })
         .eq('id', userId)
     );
+  },
+
+  async updateOwnProfile({ userId, patientId, profile }) {
+    const { data, error: validationError } = parseWithSchema(patientProfileUpdateSchema, profile);
+    if (validationError) {
+      return { data: null, error: validationError };
+    }
+
+    const rpcPayload = {
+      p_user_id: userId,
+      p_patient_id: patientId,
+      p_first_name: data.first_name,
+      p_last_name: data.last_name,
+      p_phone: data.phone,
+      p_date_of_birth: data.date_of_birth,
+      p_sex: data.sex,
+      p_blood_type: data.blood_type,
+      p_allergies: data.allergies,
+      p_insurance_id: data.insurance_id,
+      p_emergency_contact: data.emergency_contact,
+      p_emergency_phone: data.emergency_phone,
+      p_medical_history: data.medical_history,
+    };
+
+    const { data: rpcData, error: rpcError } = await supabase.rpc('update_patient_profile', rpcPayload);
+    if (!rpcError) {
+      return { data: rpcData, error: null };
+    }
+
+    if (!isMissingFunctionError(rpcError, 'update_patient_profile')) {
+      return { data: null, error: rpcError.message || 'Failed to update profile' };
+    }
+
+    try {
+      const initials = buildInitials(data.first_name, data.last_name);
+      const [
+        { error: userError },
+        { error: patientError },
+      ] = await Promise.all([
+        supabase
+          .from('users')
+          .update({
+            first_name: data.first_name,
+            last_name: data.last_name,
+            phone: data.phone,
+            initials,
+          })
+          .eq('id', userId),
+        supabase
+          .from('patients')
+          .update({
+            date_of_birth: data.date_of_birth,
+            sex: data.sex,
+            blood_type: data.blood_type,
+            allergies: data.allergies,
+            insurance_id: data.insurance_id,
+            emergency_contact: data.emergency_contact,
+            emergency_phone: data.emergency_phone,
+            medical_history: data.medical_history,
+          })
+          .eq('id', patientId),
+      ]);
+
+      if (userError || patientError) {
+        return { data: null, error: userError?.message || patientError?.message || 'Failed to update profile' };
+      }
+
+      const profileResult = await supabase
+        .from('patients')
+        .select(PATIENT_SELECT_FIELDS)
+        .eq('id', patientId)
+        .single();
+
+      return {
+        data: profileResult.data,
+        error: profileResult.error?.message || null,
+      };
+    } catch (error) {
+      return { data: null, error: error.message || 'Failed to update profile' };
+    }
   },
 
   async search(query) {
@@ -77,7 +164,7 @@ export const patientService = {
     return apiCall(
       supabase
         .from('patients')
-        .select('id, user_id, date_of_birth, sex, blood_type, allergies, medical_history, insurance_id, users(id, email, first_name, last_name, phone, initials)')
+        .select(PATIENT_SELECT_FIELDS)
         .in('user_id', userIds)
     );
   },
@@ -87,27 +174,26 @@ export const patientService = {
    * Creates a user record first with a generated email if none provided,
    * then creates the linked patient profile.
    */
-  async createWalkIn({ full_name, phone, email, date_of_birth, created_by }) {
+  async createWalkIn({ full_name, phone, email, date_of_birth }) {
     try {
       const names = (full_name || '').trim().split(' ');
       const firstName = names[0] || 'Unknown';
       const lastName = names.length > 1 ? names.slice(1).join(' ') : '';
-      const dummyEmail = email || `walkin_${Date.now()}@clinic.local`;
+      const dummyEmail = email || `walkin_${Date.now()}_${crypto.randomUUID()}@clinic.local`;
 
       // 1. Create user record
       const { data: newUser, error: userError } = await supabase
         .from('users')
         .insert([{
           email: dummyEmail,
-          password_hash: `walkin_${crypto.randomUUID()}`,
           first_name: firstName,
           last_name: lastName,
           phone: phone || null,
           role: 'patient',
-          initials: (firstName.charAt(0) + (lastName.charAt(0) || '')).toUpperCase(),
+          initials: buildInitials(firstName, lastName),
           is_active: true
         }])
-        .select('id, email, first_name, last_name, phone, initials')
+        .select(USER_PUBLIC_FIELDS)
         .single();
 
       if (userError) throw userError;
@@ -119,7 +205,7 @@ export const patientService = {
           user_id: newUser.id,
           date_of_birth: date_of_birth || null,
         }])
-        .select('id, user_id, date_of_birth, sex, blood_type, allergies, medical_history, insurance_id')
+        .select(PATIENT_SELECT_FIELDS)
         .single();
 
       if (patientError) throw patientError;
@@ -136,22 +222,25 @@ export const patientService = {
     return apiCall(
       supabase
         .from('patients')
-        .select('id, user_id, date_of_birth, sex, blood_type, medical_history, users(id, first_name, last_name, phone, initials, email)')
+        .select(PATIENT_SELECT_FIELDS)
         .in('id',
           supabase
             .from('appointments')
+            .select('patient_id')
             .select('patient_id')
             .eq('doctor_id', doctorId)
         )
     );
   },
 
-  async delete(id) {
+  // RULE 1: Medical data is sacred — use soft-delete
+  async archive(id, archivedBy) {
     return apiCall(
       supabase
         .from('patients')
-        .delete()
+        .update({ is_archived: true, archived_at: new Date().toISOString(), archived_by: archivedBy })
         .eq('id', id)
+        .select(PATIENT_SELECT_FIELDS)
     );
   },
 };

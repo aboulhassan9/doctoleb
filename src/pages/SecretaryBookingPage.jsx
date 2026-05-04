@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/Sidebar';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
-import { slotService, bookSlot } from '../services/slots';
+import { slotService } from '../services/slots';
 import { patientService } from '../services/patients';
 import { clinicService } from '../services/clinics';
+import { appointmentService } from '../services/appointments';
 
 function formatTime(t) {
   if (!t) return '';
@@ -23,7 +24,6 @@ export default function SecretaryBookingPage() {
   const { user } = useAuth();
 
   const [step, setStep] = useState(1); // 1=patient search, 2=slot selection, 3=confirm
-  const [clinics, setClinics] = useState([]);
 
   // Patient search
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,13 +38,10 @@ export default function SecretaryBookingPage() {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [bookingReason, setBookingReason] = useState('');
 
   const [booking, setBooking] = useState(false);
   const [confirmedAppointment, setConfirmedAppointment] = useState(null);
-
-  useEffect(() => {
-    clinicService.getAll().then(({ data }) => setClinics(data || []));
-  }, []);
 
   // Search patients
   const handleSearch = async () => {
@@ -62,11 +59,9 @@ export default function SecretaryBookingPage() {
     setSelectedSlot(null);
     if (!date) return;
     setSlotsLoading(true);
-    // Get the single doctor
-    const { supabase } = await import('../lib/supabase');
-    const { data: doc } = await supabase.from('doctors').select('id').single();
-    if (!doc) { showToast('No doctor found in system', 'error'); setSlotsLoading(false); return; }
-    const { data, error } = await slotService.getAvailableSlots(doc.id, date);
+    const { data: doctor, error: doctorError } = await clinicService.getMainDoctor();
+    if (doctorError || !doctor?.id) { showToast('No doctor found in system', 'error'); setSlotsLoading(false); return; }
+    const { data, error } = await slotService.getAvailableSlots(doctor.id, date);
     setSlotsLoading(false);
     if (error) { showToast('Failed to load slots', 'error'); return; }
     setAvailableSlots(data || []);
@@ -88,26 +83,30 @@ export default function SecretaryBookingPage() {
 
   // Confirm booking
   const handleBook = async () => {
-    if (!selectedSlot || !selectedPatient) return;
+    if (!selectedSlot || !selectedPatient || !bookingReason.trim()) {
+      showToast('Please add a booking reason before confirming.', 'error');
+      return;
+    }
     setBooking(true);
-    const { error } = await bookSlot({
+    const { data, error } = await appointmentService.bookFromSlot({
       slotId: selectedSlot.id,
       patientId: selectedPatient.id,
       bookedBy: user.id,
-      status: 'confirmed',
+      reason: bookingReason.trim(),
+      status: 'scheduled',
     });
     setBooking(false);
     if (error) {
-      if (error.message?.includes('no longer available')) {
+      if (error?.includes?.('no longer available')) {
         showToast('This slot was just taken. Please choose another.', 'error');
         loadSlots(selectedDate);
         setSelectedSlot(null);
       } else {
-        showToast('Booking failed: ' + error.message, 'error');
+        showToast('Booking failed: ' + error, 'error');
       }
       return;
     }
-    setConfirmedAppointment({ patient: selectedPatient, slot: selectedSlot });
+    setConfirmedAppointment({ patient: selectedPatient, slot: selectedSlot, appointment: data });
     setStep(3);
     showToast('Appointment booked successfully!', 'success');
   };
@@ -120,6 +119,7 @@ export default function SecretaryBookingPage() {
     setSelectedDate('');
     setSearchQuery('');
     setPatients([]);
+    setBookingReason('');
     setConfirmedAppointment(null);
     setShowNewPatientForm(false);
   };
@@ -326,6 +326,13 @@ export default function SecretaryBookingPage() {
                     className="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-xl"
                   >
                     <p className="text-sm font-semibold text-slate-700 mb-3">Selected: {formatTime(selectedSlot.start_time)} – {formatTime(selectedSlot.end_time)}</p>
+                    <textarea
+                      value={bookingReason}
+                      onChange={(event) => setBookingReason(event.target.value)}
+                      placeholder="Reason for visit..."
+                      className="w-full mb-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                      rows={3}
+                    />
                     <button
                       onClick={handleBook}
                       disabled={booking}

@@ -71,7 +71,7 @@ function PreDoctorSidebarInner({ isMobile = false }) {
             <div className="p-4 border-t border-slate-200">
                 <div className={`flex items-center ${expanded ? 'gap-3 px-4' : 'justify-center'} py-3 mb-3 bg-slate-50 rounded-xl`}>
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                        {user?.initials || 'PD'}
+                        {user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : 'PD'}
                     </div>
                     {expanded && (
                         <div className="overflow-hidden">

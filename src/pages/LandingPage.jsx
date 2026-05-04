@@ -7,6 +7,9 @@ import BorderGlow from '../components/BorderGlow';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const scrollToSection = (id) => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    };
     const fadeUp = {
         hidden: { opacity: 0, y: 40 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
@@ -93,7 +96,7 @@ const LandingPage = () => {
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/signup')} className="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/30">Get Started Now</motion.button>
-                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/demo')} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg border border-slate-200 dark:border-slate-700">Book a Demo</motion.button>
+                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection('features')} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg border border-slate-200 dark:border-slate-700">Explore Features</motion.button>
                                 </div>
                             </motion.div>
                             <motion.div 
@@ -297,9 +300,9 @@ const LandingPage = () => {
                             className="flex flex-col items-center"
                         >
                             <motion.div whileHover={{ scale: 1.1 }} className="w-20 h-20 rounded-full border-4 border-primary/20 p-1 mb-4 overflow-hidden shadow-lg shadow-primary/20">
-                                <img alt="Dr. Sarah Jenkins" className="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8iusuFH8fk3uegFC2xAi8521TKk37NZPGFmuVdAr8TcoYUb9eaTo4A6bUhNNYue9rt_i-TpTnPCoXpEHjRt_SInXav30H7Y37UQ2HFUjqfyaO52G8htWgFOtPTBBFZ70PJN8z80EIqcgvyjrkPbUBLe9Mkvo_3igCggE2jAxXdu0OMRAZ9VPlEACB-PKeffYsmF_Shpodc74vE5KzTFU-RlhnraA_kk54_wI8Ldze-PSaLUwbU0n2u8ajnx9KI_WyUFo9ivSFNKo" />
+                                <img alt="Clinician portrait" className="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8iusuFH8fk3uegFC2xAi8521TKk37NZPGFmuVdAr8TcoYUb9eaTo4A6bUhNNYue9rt_i-TpTnPCoXpEHjRt_SInXav30H7Y37UQ2HFUjqfyaO52G8htWgFOtPTBBFZ70PJN8z80EIqcgvyjrkPbUBLe9Mkvo_3igCggE2jAxXdu0OMRAZ9VPlEACB-PKeffYsmF_Shpodc74vE5KzTFU-RlhnraA_kk54_wI8Ldze-PSaLUwbU0n2u8ajnx9KI_WyUFo9ivSFNKo" />
                             </motion.div>
-                            <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100">Dr. Sarah Jenkins</h4>
+                            <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100">A Trusted Clinician</h4>
                             <p className="text-slate-500 dark:text-slate-500 text-sm">Chief of Staff, Metropolitan Health</p>
                         </motion.div>
                     </div>

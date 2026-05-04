@@ -4,8 +4,8 @@ import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignUpPage from './pages/SignUpPage';
 import MarketingPage from './pages/MarketingPage.jsx';
-import DemoPage from './pages/DemoPage.jsx';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import DashboardPage from './pages/DashboardPage';
 import PreDoctorDashboardPage from './pages/PreDoctorDashboardPage';
 import PreDoctorPatientsPage from './pages/PreDoctorPatientsPage';
@@ -55,9 +55,9 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/signup" element={<SignUpPage />} />
                   <Route path="/marketing" element={<MarketingPage />} />
-                  <Route path="/demo" element={<DemoPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  <Route path="/dashboard" element={<ProtectedRoute requiredRole="secretary"><DashboardPage /></ProtectedRoute>} />
                   <Route path="/predoctor-dashboard" element={<ProtectedRoute requiredRole="predoctor"><PreDoctorDashboardPage /></ProtectedRoute>} />
                   <Route path="/predoctor-patients" element={<ProtectedRoute requiredRole="predoctor"><PreDoctorPatientsPage /></ProtectedRoute>} />
                   <Route path="/predoctor-appointments" element={<ProtectedRoute requiredRole="predoctor"><PreDoctorAppointmentsPage /></ProtectedRoute>} />

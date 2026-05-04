@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import DoctorSidebar from '../components/DoctorSidebar';
 import { patientService } from '../services/patients';
-import { supabase } from '../lib/supabase';
+import { precheckService } from '../services/prechecks';
 import { consultationService } from '../services/consultations';
 
 function calcAge(dob) {
@@ -57,7 +57,7 @@ export default function DoctorPatientProfilePage() {
             try {
                 const [pRes, vRes, cRes] = await Promise.all([
                     patientService.getById(id),
-                    supabase.from('precheck_forms').select('*').eq('patient_id', id).order('created_at', { ascending: false }).limit(1),
+                    precheckService.getByPatientId(id),
                     consultationService.getByPatientId(id)
                 ]);
 
@@ -119,7 +119,7 @@ export default function DoctorPatientProfilePage() {
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <header className="bg-white border-b border-slate-100 shadow-sm h-16 px-6 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-4">
-                        <span className="text-xl font-black text-slate-900 tracking-tighter">Clinical Precision</span>
+                        <span className="text-xl font-black text-slate-900 tracking-tighter">DoctoLeb</span>
                         <div className="hidden md:flex items-center ml-8 space-x-6 h-full">
                             <button className="text-primary border-b-2 border-blue-600 h-16 flex items-center text-sm font-medium">Profile</button>
                             <button className="text-slate-500 hover:bg-primary/5 h-16 flex items-center text-sm font-medium">Records</button>
@@ -140,7 +140,7 @@ export default function DoctorPatientProfilePage() {
                         <button className="text-slate-500 hover:bg-primary/5 p-2 rounded-full">
                             <span className="material-symbols-outlined">notifications</span>
                         </button>
-                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-black text-xs">JS</div>
+                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-black text-xs">—</div>
                     </div>
                 </header>
 
@@ -152,7 +152,7 @@ export default function DoctorPatientProfilePage() {
                                     {patient.initials}
                                 </div>
                                 <span className="absolute -bottom-2 -right-2 bg-green-500 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-2 ring-white">Active</span>
-                                <button onClick={() => navigate(`/doctor-patient-history/${id || 'CP-1001'}`)} className="ml-4 flex items-center gap-2 bg-primary hover:text-primary text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm transition-all">
+                                <button onClick={() => navigate(`/doctor-patient-history/${id}`)} className="ml-4 flex items-center gap-2 bg-primary hover:text-primary text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm transition-all">
                                     <span className="material-symbols-outlined text-sm">history</span>
                                     View Medical History
                                 </button>
@@ -217,7 +217,7 @@ export default function DoctorPatientProfilePage() {
                                         <span className="material-symbols-outlined text-primary">monitoring</span>
                                         Recent Vitals
                                     </h3>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Updated 2h ago</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">From latest pre-check</span>
                                 </div>
                                 <div className="space-y-4">
                                     {vitals.map((vital, i) => (
@@ -331,7 +331,7 @@ export default function DoctorPatientProfilePage() {
                 </div>
 
                 <footer className="mt-auto py-8 px-8 border-t border-slate-100 flex justify-between items-center text-slate-400">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em]">© 2024 Clinical Precision • HIPAA Compliant Environment</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em]">© 2025 DoctoLeb • Secure Clinical Environment</p>
                     <div className="flex gap-4">
                         <span className="text-[10px] font-bold uppercase">Privacy Policy</span>
                         <span className="text-[10px] font-bold uppercase">System Status</span>

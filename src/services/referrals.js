@@ -1,12 +1,13 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { REFERRAL_SELECT_FIELDS, USER_CONTACT_FIELDS } from '../lib/selects';
 
 export const referralService = {
   async getAll() {
     return apiCall(
       supabase
         .from('referrals')
-        .select('*')
+        .select(REFERRAL_SELECT_FIELDS)
         .order('created_at', { ascending: false })
     );
   },
@@ -15,7 +16,7 @@ export const referralService = {
     return apiCall(
       supabase
         .from('referrals')
-        .select('*')
+        .select(REFERRAL_SELECT_FIELDS)
         .eq('id', id)
         .single()
     );
@@ -25,7 +26,7 @@ export const referralService = {
     return apiCall(
       supabase
         .from('referrals')
-        .select('*, to_doctor:to_doctor_id(id, user_id, users(first_name, last_name)), patient:patient_id(id, user_id, users(first_name, last_name))')
+        .select(`${REFERRAL_SELECT_FIELDS}, to_doctor:to_doctor_id(id, user_id, users(${USER_CONTACT_FIELDS})), patient:patient_id(id, user_id, users(${USER_CONTACT_FIELDS}))`)
         .eq('from_doctor_id', doctorId)
         .order('created_at', { ascending: false })
     );
@@ -35,7 +36,7 @@ export const referralService = {
     return apiCall(
       supabase
         .from('referrals')
-        .select('*, from_doctor:from_doctor_id(id, user_id, users(first_name, last_name)), patient:patient_id(id, user_id, users(first_name, last_name))')
+        .select(`${REFERRAL_SELECT_FIELDS}, from_doctor:from_doctor_id(id, user_id, users(${USER_CONTACT_FIELDS})), patient:patient_id(id, user_id, users(${USER_CONTACT_FIELDS}))`)
         .eq('to_doctor_id', doctorId)
         .order('created_at', { ascending: false })
     );
@@ -45,7 +46,7 @@ export const referralService = {
     return apiCall(
       supabase
         .from('referrals')
-        .select('*')
+        .select(REFERRAL_SELECT_FIELDS)
         .eq('status', status)
         .order('created_at', { ascending: false })
     );
@@ -56,7 +57,7 @@ export const referralService = {
       supabase
         .from('referrals')
         .insert([{ ...data, status: 'pending' }])
-        .select()
+        .select(REFERRAL_SELECT_FIELDS)
     );
   },
 
@@ -66,7 +67,7 @@ export const referralService = {
         .from('referrals')
         .update(data)
         .eq('id', id)
-        .select()
+        .select(REFERRAL_SELECT_FIELDS)
     );
   },
 
@@ -76,7 +77,7 @@ export const referralService = {
         .from('referrals')
         .update({ status: 'accepted' })
         .eq('id', id)
-        .select()
+        .select(REFERRAL_SELECT_FIELDS)
     );
   },
 
@@ -86,7 +87,7 @@ export const referralService = {
         .from('referrals')
         .update({ status: 'rejected' })
         .eq('id', id)
-        .select()
+        .select(REFERRAL_SELECT_FIELDS)
     );
   },
 
@@ -96,7 +97,7 @@ export const referralService = {
         .from('referrals')
         .update({ status: 'completed' })
         .eq('id', id)
-        .select()
+        .select(REFERRAL_SELECT_FIELDS)
     );
   },
 };

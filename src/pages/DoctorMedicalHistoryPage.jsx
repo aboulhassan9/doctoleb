@@ -1,11 +1,15 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { patientService } from '../services/patients';
 import { consultationService } from '../services/consultations';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function DoctorMedicalHistoryPage() {
     const navigate = useNavigate();
     const { id } = useParams();
     const { showToast } = useToast();
+    const { user } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
     const [timeFilter, setTimeFilter] = useState('all');
     const [patient, setPatient] = useState(null);
@@ -122,10 +126,10 @@ export default function DoctorMedicalHistoryPage() {
                         <div className="h-8 w-px bg-slate-200 mx-2"></div>
                         <div className="flex items-center gap-3">
                             <div className="text-right hidden sm:block">
-                                <p className="text-xs font-bold">Dr. Sarah Chen</p>
-                                <p className="text-[10px] text-primary uppercase font-bold">Cardiology</p>
+                                <p className="text-xs font-bold">{user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor'}</p>
+                                <p className="text-[10px] text-primary uppercase font-bold">{user?.role || 'Physician'}</p>
                             </div>
-                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">SC</div>
+                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">{user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}</div>
                         </div>
                     </div>
                 </header>
@@ -208,7 +212,7 @@ export default function DoctorMedicalHistoryPage() {
                                             <div class="logo">
                                                 <div class="logo-icon">⚕</div>
                                                 <div class="logo-text">
-                                                    <h1>SmartClinic</h1>
+                                                    <h1>DoctoLeb</h1>
                                                     <p>Medical Records</p>
                                                 </div>
                                             </div>
@@ -246,7 +250,7 @@ export default function DoctorMedicalHistoryPage() {
                                             `).join('')}
                                         </div>
                                         <div class="footer">
-                                            <p>This is a computer-generated medical record. SmartClinic • Generated on ${new Date().toLocaleString()}</p>
+                                            <p>This is a computer-generated medical record. DoctoLeb • Generated on ${new Date().toLocaleString()}</p>
                                         </div>
                                     </body>
                                     </html>
@@ -303,7 +307,7 @@ export default function DoctorMedicalHistoryPage() {
                                             <div class="logo">
                                                 <div class="logo-icon">⚕</div>
                                                 <div class="logo-text">
-                                                    <h1>SmartClinic</h1>
+                                                    <h1>DoctoLeb</h1>
                                                     <p>Medical Records</p>
                                                 </div>
                                             </div>
@@ -341,7 +345,7 @@ export default function DoctorMedicalHistoryPage() {
                                             `).join('')}
                                         </div>
                                         <div class="footer">
-                                            <p>This is a computer-generated medical record. SmartClinic • Generated on ${new Date().toLocaleString()}</p>
+                                            <p>This is a computer-generated medical record. DoctoLeb • Generated on ${new Date().toLocaleString()}</p>
                                         </div>
                                     </body>
                                     </html>

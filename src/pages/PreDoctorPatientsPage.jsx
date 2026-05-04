@@ -3,17 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../services/patients';
 import { useToast } from '../contexts/ToastContext';
-
-const sidebarMenu = [
-    { icon: 'dashboard', label: 'Dashboard', path: '/predoctor-dashboard', active: false },
-    { icon: 'group', label: 'Patients', path: '/predoctor-patients', active: true },
-    { icon: 'fact_check', label: 'Pre-Check', path: '/predoctor-new-check', active: false },
-    { icon: 'calendar_today', label: 'Appointments', path: '/predoctor-appointments', active: false },
-    { icon: 'notifications', label: 'Notifications', path: '/predoctor-notifications', active: false },
-];
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
-const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
+import PreDoctorSidebar from '../components/PreDoctorSidebar';
+import { stagger, fadeUp } from '../lib/animations';
 
 export default function PreDoctorPatientsPage() {
     const navigate = useNavigate();
@@ -21,10 +12,6 @@ export default function PreDoctorPatientsPage() {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-
-    useEffect(() => {
-        fetchPatients();
-    }, []);
 
     const fetchPatients = async () => {
         try {
@@ -41,57 +28,16 @@ export default function PreDoctorPatientsPage() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchPatients();
+    }, []);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
 
     return (
         <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <aside className="w-72 bg-white border-r border-slate-200 flex flex-col shrink-0 h-screen">
-                <div className="p-6 flex items-center gap-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                        <span className="material-symbols-outlined text-primary text-3xl">medical_services</span>
-                    </div>
-                    <div>
-                        <h1 className="font-bold text-slate-900 leading-tight">SmartClinic</h1>
-                        <p className="text-xs text-slate-500">Pre-Doctor Module</p>
-                    </div>
-                </div>
-
-                <nav className="flex-1 px-4 py-4 space-y-1">
-                    {sidebarMenu.map((item, i) => (
-                        <motion.button
-                            key={i}
-                            onClick={() => item.path && navigate(item.path)}
-                            whileHover={{ x: 4 }}
-                            whileTap={{ scale: 0.98 }}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
-                                item.active
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                    : 'text-slate-600 hover:bg-slate-100'
-                            }`}
-                        >
-                            <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
-                            <span>{item.label}</span>
-                        </motion.button>
-                    ))}
-                </nav>
-
-                <div className="p-4 border-t border-slate-200">
-                    <div className="flex items-center gap-3 px-4 py-3 mb-3 bg-slate-50 rounded-xl">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-sm shrink-0">
-                            AT
-                        </div>
-                        <div className="overflow-hidden">
-                            <p className="text-sm font-semibold text-slate-900 truncate">Dr. Aris Thorne</p>
-                            <p className="text-xs text-slate-500 truncate">Pre-Doctor</p>
-                        </div>
-                    </div>
-                    <button onClick={() => navigate('/login')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-critical hover:bg-red-50 transition-colors font-medium text-sm">
-                        <span className="material-symbols-outlined text-[22px]">logout</span>
-                        <span>Logout</span>
-                    </button>
-                </div>
-            </aside>
+            <PreDoctorSidebar />
 
             <main className="flex-1 flex flex-col overflow-y-auto">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">

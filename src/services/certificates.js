@@ -1,12 +1,13 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { CERTIFICATE_SELECT_FIELDS, DOCTOR_SELECT_FIELDS, PATIENT_SELECT_FIELDS, USER_CONTACT_FIELDS } from '../lib/selects';
 
 export const certificateService = {
   async getAll() {
     return apiCall(
       supabase
         .from('certificates')
-        .select('*, doctors(*), patients(*)')
+        .select(`${CERTIFICATE_SELECT_FIELDS}, doctors(${DOCTOR_SELECT_FIELDS}), patients(${PATIENT_SELECT_FIELDS})`)
         .order('created_at', { ascending: false })
     );
   },
@@ -15,7 +16,7 @@ export const certificateService = {
     return apiCall(
       supabase
         .from('certificates')
-        .select('*, doctors(*), patients(*)')
+        .select(`${CERTIFICATE_SELECT_FIELDS}, doctors(${DOCTOR_SELECT_FIELDS}), patients(${PATIENT_SELECT_FIELDS})`)
         .eq('id', id)
         .single()
     );
@@ -25,7 +26,7 @@ export const certificateService = {
     return apiCall(
       supabase
         .from('certificates')
-        .select('*, doctors(id, user_id, users(first_name, last_name))')
+        .select(`${CERTIFICATE_SELECT_FIELDS}, doctors(id, user_id, users(${USER_CONTACT_FIELDS}))`)
         .eq('patient_id', patientId)
         .order('created_at', { ascending: false })
     );
@@ -35,7 +36,7 @@ export const certificateService = {
     return apiCall(
       supabase
         .from('certificates')
-        .select('*, patients(id, user_id, users(first_name, last_name))')
+        .select(`${CERTIFICATE_SELECT_FIELDS}, patients(id, user_id, users(${USER_CONTACT_FIELDS}))`)
         .eq('doctor_id', doctorId)
         .order('created_at', { ascending: false })
     );
@@ -46,7 +47,7 @@ export const certificateService = {
       supabase
         .from('certificates')
         .insert([data])
-        .select()
+        .select(CERTIFICATE_SELECT_FIELDS)
     );
   },
 
@@ -56,16 +57,18 @@ export const certificateService = {
         .from('certificates')
         .update(data)
         .eq('id', id)
-        .select()
+        .select(CERTIFICATE_SELECT_FIELDS)
     );
   },
 
-  async delete(id) {
+  // RULE 1: Medical data is sacred — use soft-delete
+  async archive(id, archivedBy) {
     return apiCall(
       supabase
         .from('certificates')
-        .delete()
+        .update({ is_archived: true, archived_at: new Date().toISOString(), archived_by: archivedBy })
         .eq('id', id)
+        .select(CERTIFICATE_SELECT_FIELDS)
     );
   },
 };

@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import CountUp from '../components/CountUp';
 import { useToast } from '../contexts/ToastContext';
+import { stagger } from '../lib/animations';
 
 import { patientService } from '../services/patients';
 const ACTION_BTNS = [
@@ -12,7 +13,6 @@ const ACTION_BTNS = [
     { icon: 'delete',     hover: 'hover:text-critical'   },
 ];
 
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } };
 const rowAnim = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
 
 /* ── Blank form state ───────────────────────────────────────────────────── */
@@ -577,7 +577,7 @@ export default function PatientsPage() {
                     id: p.id,
                     dbId: p.id,
                     name: fullName,
-                    initials: p.users?.initials || (firstName[0] || '') + (lastName[0] || ''),
+                    initials: ((firstName[0] || '') + (lastName[0] || '')).toUpperCase(),
                     color: colors[index % colors.length],
                     phone: p.users?.phone || '—',
                     visit: new Date(p.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),

@@ -5,6 +5,8 @@ import DoctorSidebar from '../components/DoctorSidebar';
 
 import { appointmentService } from '../services/appointments';
 import { useAuth } from '../contexts/AuthContext';
+import { normalizeAppointments } from '../lib/appointments';
+import { formatClinicTime, isSameClinicDay, parseClinicDateTime } from '../lib/time';
 
 const HOURS = ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -25,32 +27,29 @@ export default function DoctorAppointmentsPage() {
         role: user.role === 'doctor' ? 'Chief Resident' : 'Doctor',
         initials: `${user.first_name?.[0]||''}${user.last_name?.[0]||''}`.toUpperCase(),
         department: 'General Practice'
-    } : { name: 'Dr. Alexander Smith', role: 'Neurologist', initials: 'AS', department: 'Neurology' };
+    } : { name: 'Doctor', role: 'Doctor', initials: '??', department: '—' };
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             const { data } = await appointmentService.getAll();
             if (data) {
+                const normalizedData = normalizeAppointments(data);
                 // Generate Daily View
-                const todayStr = currentDate.toLocaleDateString('en-US');
-                const dailyData = data.filter(a => a.appointment_time && new Date(a.appointment_time).toLocaleDateString('en-US') === todayStr);
+                const dailyData = normalizedData.filter(a => a.scheduled_at && isSameClinicDay(a.scheduled_at, currentDate));
                 const mappedDaily = dailyData.map(a => {
-                    const d = new Date(a.appointment_time);
-                    const fname = a.patients?.users?.first_name || 'Unknown';
-                    const lname = a.patients?.users?.last_name || '';
-                    const time = `${d.getHours() % 12 || 12}:${d.getMinutes().toString().padStart(2, '0')}`;
-                    const timePeriod = d.getHours() >= 12 ? 'PM' : 'AM';
+                    const timeDisplay = formatClinicTime(a.scheduled_at, { hour: 'numeric', minute: '2-digit' });
+                    const [time = '', timePeriod = ''] = timeDisplay.split(' ');
                     return {
                         id: a.id,
-                        name: `${fname} ${lname}`,
-                        initials: `${fname[0]||''}${lname[0]||''}`.toUpperCase(),
+                        name: a.patientName,
+                        initials: a.patientInitials,
                         time, timePeriod,
-                        type: a.reason_for_visit || 'Consultation',
-                        reason: a.reason_for_visit || '',
-                        status: a.status || 'Confirmed',
+                        type: a.reason || 'Consultation',
+                        reason: a.reason || '',
+                        status: a.statusLabel || 'Scheduled',
                         room: 'Room 101',
-                        cancelled: a.status?.toLowerCase() === 'cancelled'
+                        cancelled: a.isCancelled
                     };
                 });
                 setAppointments(mappedDaily);
@@ -63,21 +62,20 @@ export default function DoctorAppointmentsPage() {
                 end.setDate(end.getDate() + 6);
                 end.setHours(23,59,59,999);
                 
-                const weeklyData = data.filter(a => {
-                    if(!a.appointment_time) return false;
-                    const d = new Date(a.appointment_time);
+                const weeklyData = normalizedData.filter(a => {
+                    if(!a.scheduled_at) return false;
+                    const d = parseClinicDateTime(a.scheduled_at);
                     return d >= start && d <= end;
                 });
                 const mappedWeekly = weeklyData.map(a => {
-                    const d = new Date(a.appointment_time);
-                    const fname = a.patients?.users?.first_name || 'Unknown';
+                    const d = parseClinicDateTime(a.scheduled_at);
                     return {
                         day: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()],
                         date: d.getDate(),
                         time: `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`,
                         duration: 60,
-                        name: fname,
-                        type: a.reason_for_visit || 'Consult',
+                        name: a.patientName,
+                        type: a.reason || 'Consult',
                         color: 'bg-primary-hover',
                         colorClass: 'border-blue-400'
                     };
@@ -97,16 +95,16 @@ export default function DoctorAppointmentsPage() {
                 }
                 for (let i = 1; i <= total; i++) {
                     const d = new Date(y, m, i);
-                    const apptsForDay = data.filter(a => a.appointment_time && new Date(a.appointment_time).toLocaleDateString('en-US') === d.toLocaleDateString('en-US'));
+                    const apptsForDay = normalizedData.filter(a => a.scheduled_at && isSameClinicDay(a.scheduled_at, d));
                     mDays.push({
                         day: i,
                         inMonth: true,
                         isToday: d.toLocaleDateString('en-US') === new Date().toLocaleDateString('en-US'),
                         appointments: apptsForDay.map(a => {
-                            const ad = new Date(a.appointment_time);
+                            const ad = parseClinicDateTime(a.scheduled_at);
                             return {
                                 time: `${ad.getHours() % 12 || 12}:${ad.getMinutes().toString().padStart(2, '0')}`,
-                                name: a.patients?.users?.first_name || 'Patient',
+                                name: a.patientName || 'Patient',
                                 type: 'blue'
                             };
                         }).slice(0, 3)

@@ -1,0 +1,1 @@
+{"imports": {"jsr:@supabase/supabase-js@2": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm", "jsr:@supabase/functions-js/edge-runtime.d.ts": "https://cdn.jsdelivr.net/npm/@supabase/functions-js/+esm"}}

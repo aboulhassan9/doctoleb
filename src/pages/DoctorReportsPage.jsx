@@ -133,10 +133,10 @@ export default function DoctorReportsPage() {
                         <div className="h-8 w-px bg-slate-200 mx-2"></div>
                         <div className="flex items-center gap-3">
                             <div className="text-right hidden sm:block">
-                                <p className="text-xs font-bold text-slate-900">Dr. Jameson</p>
-                                <p className="text-[10px] text-slate-500">Senior Clinician</p>
+                                <p className="text-xs font-bold text-slate-900">{user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor'}</p>
+                                <p className="text-[10px] text-slate-500">{user?.role || 'Physician'}</p>
                             </div>
-                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">J</div>
+                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">{user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}</div>
                         </div>
                     </div>
                 </header>
@@ -337,7 +337,7 @@ export default function DoctorReportsPage() {
                             <div className="text-right space-y-1">
                                 <label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">Report Generation Date</label>
                                 <p className="text-xl font-bold text-slate-900">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                                <p className="text-xs text-slate-500">Generated via Clinical Precision v2.4</p>
+                                <p className="text-xs text-slate-500">Generated via DoctoLeb</p>
                             </div>
                         </footer>
                     </div>

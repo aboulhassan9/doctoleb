@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import DoctorSidebar from '../components/DoctorSidebar';
 import { patientService } from '../services/patients';
 import { useToast } from '../contexts/ToastContext';
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
-const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
+import { useAuth } from '../contexts/AuthContext';
+import { stagger, fadeUp } from '../lib/animations';
 
 export default function DoctorPatientsPage() {
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { user } = useAuth();
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -79,10 +79,10 @@ export default function DoctorPatientsPage() {
                         <div className="h-8 w-px bg-slate-200 mx-2"></div>
                         <div className="flex items-center gap-3">
                             <div className="text-right hidden sm:block">
-                                <p className="text-xs font-bold text-slate-900">Dr. Julian Thorne</p>
-                                <p className="text-[10px] text-slate-500">Chief Resident</p>
+                                <p className="text-xs font-bold text-slate-900">{user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor'}</p>
+                                <p className="text-[10px] text-slate-500">{user?.role || 'Physician'}</p>
                             </div>
-                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">JT</div>
+                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">{user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}</div>
                         </div>
                     </div>
                 </header>

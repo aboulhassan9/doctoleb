@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import PreDoctorSidebar from '../components/PreDoctorSidebar';
 import { appointmentService } from '../services/appointments';
+import { stagger, fadeUp } from '../lib/animations';
 
 const AVATAR_COLORS = [
     'bg-primary/10 text-primary', 'bg-success/10 text-success',
@@ -16,9 +17,6 @@ const STATUS_STYLE = {
     completed:   'bg-success/10 text-success',
     cancelled:   'bg-red-100 text-red-600',
 };
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
-const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
 
 export default function PreDoctorAppointmentsPage() {
     const navigate = useNavigate();
@@ -126,7 +124,7 @@ export default function PreDoctorAppointmentsPage() {
                                     const firstName = appt.patients?.users?.first_name || '';
                                     const lastName  = appt.patients?.users?.last_name  || '';
                                     const name     = `${firstName} ${lastName}`.trim() || 'Unknown';
-                                    const initials = appt.patients?.users?.initials || ((firstName[0] || '') + (lastName[0] || '')).toUpperCase() || '?';
+                                    const initials = ((firstName[0] || '') + (lastName[0] || '')).toUpperCase() || '?';
                                     const color    = AVATAR_COLORS[i % AVATAR_COLORS.length];
                                     const statusStyle = STATUS_STYLE[appt.status] || 'bg-slate-100 text-slate-600';
                                     const time = new Date(appt.scheduled_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });

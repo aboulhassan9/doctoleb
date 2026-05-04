@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { APPOINTMENT_SELECT_FIELDS, DOCTOR_SELECT_FIELDS } from '../lib/selects';
 
 // Unified clinic service — handles both CRUD (multi-clinic) and single-clinic operations
 export const clinicService = {
@@ -42,7 +43,7 @@ export const clinicService = {
     return apiCall(
       supabase
         .from('doctors')
-        .select('*, users(*)')
+        .select(DOCTOR_SELECT_FIELDS)
         .order('created_at', { ascending: true })
         .limit(1)
         .single()
@@ -58,8 +59,24 @@ export const clinicService = {
 
   // Update clinic settings
   async updateClinicSettings(data) {
+    const { data: existing, error } = await supabase
+      .from('clinic_settings')
+      .select('id')
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      return { data: null, error: error.message || 'Failed to load clinic settings' };
+    }
+
+    if (!existing?.id) {
+      return apiCall(
+        supabase.from('clinic_settings').insert([data]).select().single()
+      );
+    }
+
     return apiCall(
-      supabase.from('clinic_settings').update(data).select().single()
+      supabase.from('clinic_settings').update(data).eq('id', existing.id).select().single()
     );
   },
 
@@ -78,10 +95,10 @@ export const clinicService = {
     return apiCall(
       supabase
         .from('appointments')
-        .select('*, patients(id, user_id, users(first_name, last_name, phone, initials)), doctors(id, user_id)')
+        .select(APPOINTMENT_SELECT_FIELDS)
         .gte('scheduled_at', startOfDay)
         .lt('scheduled_at', endOfDay)
-        .eq('status', 'scheduled')
+        .in('status', ['scheduled', 'confirmed', 'pre_check', 'in_consultation'])
         .order('scheduled_at', { ascending: true })
     );
   },

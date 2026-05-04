@@ -3,29 +3,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
 import { patientService } from '../services/patients';
 import { paymentService } from '../services/payments';
 
 /* ─────────────────────────────────────────────────────────
-   Mock Service Data
+   Create Bill Page
 ───────────────────────────────────────────────────────── */
-const AVAILABLE_SERVICES = [
-    { name: 'Doctor Consultation', code: 'CPT-99213', price: 120, desc: 'Regular primary care check-up' },
-    { name: 'Vital Signs Check',   code: 'CPT-94760', price: 25,  desc: 'BP, Heart Rate, SpO2' },
-    { name: 'Blood Glucose Test',  code: 'CPT-82947', price: 15,  desc: 'Point-of-care testing' },
-    { name: 'ECG / EKG',           code: 'CPT-93000', price: 75,  desc: '12-lead electrocardiogram' }
-];
 
 export default function CreateBillPage() {
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { user } = useAuth();
     
     // ─── STATE ──────────────────────────────────────────────────
     const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' | 'whish' | 'visa' | 'insurance'
-    const [services, setServices] = useState([
-        { ...AVAILABLE_SERVICES[0], quantity: 1 },
-        { ...AVAILABLE_SERVICES[1], quantity: 1 }
-    ]);
+    const [availableServices, setAvailableServices] = useState([]);
+    const [services, setServices] = useState([]);
+    const [isLoadingServices, setIsLoadingServices] = useState(true);
     
     const [patientsList, setPatientsList] = useState([]);
     const [selectedPatientId, setSelectedPatientId] = useState('');
@@ -38,7 +33,15 @@ export default function CreateBillPage() {
                 if (data.length > 0) setSelectedPatientId(data[0].id);
             }
         };
+        const fetchServices = async () => {
+            const { data } = await paymentService.getBillableServices();
+            if (data) {
+                setAvailableServices(data);
+            }
+            setIsLoadingServices(false);
+        };
         fetchPatients();
+        fetchServices();
     }, []);
 
     const selectedPatient = useMemo(() => {
@@ -140,8 +143,16 @@ export default function CreateBillPage() {
     };
 
     const handleConfirmService = () => {
-        const svc = AVAILABLE_SERVICES[modalServiceIdx];
-        setServices(prev => [...prev, { ...svc, quantity: modalQty }]);
+        const svc = availableServices[modalServiceIdx];
+        if (svc) {
+            setServices(prev => [...prev, { 
+                name: svc.name, 
+                code: svc.code, 
+                price: parseFloat(svc.price), 
+                desc: svc.description,
+                quantity: modalQty 
+            }]);
+        }
         setShowAddService(false);
     };
 
@@ -157,7 +168,7 @@ export default function CreateBillPage() {
                 {/* Header (Matching existing design tokens) */}
                 <header className="sticky top-0 z-40 flex items-center justify-between px-8 h-20 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
                     <div className="flex items-center gap-8 flex-1">
-                        <span className="text-[22px] font-black tracking-tighter text-slate-900">Clinical Precision</span>
+                        <span className="text-[22px] font-black tracking-tighter text-slate-900">DoctoLeb</span>
                         <div className="relative w-full max-w-md">
                             <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
                             <input 
@@ -191,8 +202,8 @@ export default function CreateBillPage() {
                                 <span className="material-symbols-outlined font-light">account_circle</span>
                             </div>
                             <div className="text-left">
-                                <p className="text-xs font-black text-slate-900 group-hover:text-primary transition-colors">Dr. Sarah Miller</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Attending Physician</p>
+                                <p className="text-xs font-black text-slate-900 group-hover:text-primary transition-colors">Billing Officer</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Secretary</p>
                             </div>
                         </button>
                     </div>
@@ -272,8 +283,8 @@ export default function CreateBillPage() {
                                 <div className="p-5 rounded-2xl border border-slate-100 flex items-center justify-between group/item transition-all hover:bg-white hover:shadow-lg hover:border-primary/20">
                                     <div>
                                         <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-2 block">Attending Provider</label>
-                                        <p className="text-lg font-black text-slate-900 tracking-tight">Dr. Sarah Miller</p>
-                                        <p className="text-[12px] text-slate-500 font-medium italic">Internal Medicine Specialist</p>
+                                        <p className="text-lg font-black text-slate-900 tracking-tight">{user?.first_name ? `Dr. ${user.first_name} ${user.last_name || ''}`.trim() : 'Attending Provider'}</p>
+                                        <p className="text-[12px] text-slate-500 font-medium italic">{user?.role || 'Physician'}</p>
                                     </div>
                                     <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-primary hover:bg-primary/5 transition-all">
                                         <span className="material-symbols-outlined">edit</span>
@@ -654,8 +665,8 @@ export default function CreateBillPage() {
             {/* ── Add Service Modal ──────────────────────────── */}
             <AnimatePresence>
                 {showAddService && (() => {
-                    const svc        = AVAILABLE_SERVICES[modalServiceIdx];
-                    const lineTotal  = svc.price * modalQty;
+                    const svc        = availableServices[modalServiceIdx];
+                    const lineTotal  = svc ? parseFloat(svc.price) * modalQty : 0;
 
                     return (
                         <motion.div
@@ -702,8 +713,9 @@ export default function CreateBillPage() {
                                                 onChange={e => setModalServiceIdx(Number(e.target.value))}
                                                 className="w-full pl-10 pr-10 py-3 bg-slate-100 border-none rounded-xl text-sm font-semibold text-slate-900 appearance-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                                             >
-                                                {AVAILABLE_SERVICES.map((s, i) => (
-                                                    <option key={s.code} value={i}>{s.name}</option>
+                                                {availableServices.length === 0 && <option value={0}>Loading services...</option>}
+                                                {availableServices.map((s, i) => (
+                                                    <option key={s.code} value={i}>{s.name} - ${parseFloat(s.price).toFixed(2)}</option>
                                                 ))}
                                             </select>
                                             <span className="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] pointer-events-none">expand_more</span>
@@ -716,13 +728,13 @@ export default function CreateBillPage() {
                                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Unit Price</p>
                                             <motion.div
-                                                key={svc.price}
+                                                key={svc?.price || 0}
                                                 initial={{ opacity: 0, y: -6 }}
                                                 animate={{ opacity: 1, y: 0  }}
                                                 className="flex items-baseline gap-1"
                                             >
                                                 <span className="text-slate-400 font-bold text-sm">$</span>
-                                                <span className="text-xl font-black text-slate-900">{svc.price.toFixed(2)}</span>
+                                                <span className="text-xl font-black text-slate-900">{svc ? parseFloat(svc.price).toFixed(2) : '0.00'}</span>
                                             </motion.div>
                                         </div>
 

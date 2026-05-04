@@ -336,8 +336,8 @@ export default function BillingPage() {
                         <div className="flex justify-between items-start mb-16">
                             <div>
                                 <h1 className="text-5xl font-black tracking-tighter text-slate-900">INVOICE</h1>
-                                <p className="text-slate-500 font-bold mt-2 text-lg">Clinical Precision Inc.</p>
-                                <p className="text-slate-400 mt-1 text-sm">123 Health Ave, Medical District<br/>New York, NY 10001</p>
+                                <p className="text-slate-500 font-bold mt-2 text-lg">DoctoLeb</p>
+                                <p className="text-slate-400 mt-1 text-sm">Clinic Management Platform</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Invoice Reference</p>
@@ -394,8 +394,8 @@ export default function BillingPage() {
                         </div>
 
                         <div className="text-center mt-auto pt-8 border-t border-slate-100 text-slate-400 text-sm font-medium">
-                            <p className="mb-2 font-bold text-slate-500">Thank you for your trust in Clinical Precision.</p>
-                            <p>For questions concerning this invoice, please contact billing@clinicalprecision.com or call (555) 0198-442</p>
+                            <p className="mb-2 font-bold text-slate-500">Thank you for your trust in DoctoLeb.</p>
+                            <p>For billing inquiries, please contact your clinic administration.</p>
                         </div>
                     </div>
                 </div>
@@ -458,7 +458,7 @@ export default function BillingPage() {
                             onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); }}
                             className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-colors"
                         >
-                            <div className="w-8 h-8 rounded-full bg-primary-hover flex items-center justify-center text-white font-bold text-xs">SJ</div>
+                            <div className="w-8 h-8 rounded-full bg-primary-hover flex items-center justify-center text-white font-bold text-xs">—</div>
                             <span className="material-symbols-outlined text-slate-400 text-[18px]" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
                         </button>
 

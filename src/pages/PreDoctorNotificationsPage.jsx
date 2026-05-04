@@ -1,27 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import PreDoctorSidebar from '../components/PreDoctorSidebar';
-
-const NOTIFICATIONS = {
-    today: [
-        { id: 1, type: 'critical', icon: 'warning', title: 'Critical Vitals Alert', message: 'Patient John Doe (Room 402) blood pressure has spiked to 190/110.', time: '14:22 PM', unread: true },
-        { id: 2, type: 'info', icon: 'person_add', title: 'New Patient Assigned', message: 'You have been assigned as the primary physician for Elena Rodriguez.', time: '09:15 AM', unread: true },
-    ],
-    yesterday: [
-        { id: 3, type: 'lab', icon: 'description', title: 'Lab Results Available', message: 'Comprehensive Metabolic Panel results for Arthur Miller are now available.', time: 'Yesterday, 16:45 PM', unread: false },
-        { id: 4, type: 'system', icon: 'settings', title: 'System Update', message: 'Clinical Precision v2.4.1 has been successfully deployed.', time: 'Yesterday, 02:00 AM', unread: false },
-    ],
-    lastWeek: [
-        { id: 5, type: 'info', icon: 'assignment_turned_in', title: 'Discharge Recommendation', message: 'Automated pre-doctor module suggests Sarah Williams is ready for discharge.', time: 'May 12, 11:20 AM', unread: false },
-    ],
-};
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
+import { stagger, fadeUp } from '../lib/animations';
+import { useAuth } from '../contexts/AuthContext';
+import { notificationService } from '../services/notifications';
 
 export default function PreDoctorNotificationsPage() {
-    const navigate = useNavigate();
+    const { user } = useAuth();
+    const [notifications, setNotifications] = useState({ today: [], yesterday: [], lastWeek: [] });
     const [searchQuery, setSearchQuery] = useState('');
     const [showSettings, setShowSettings] = useState(false);
     const [settings, setSettings] = useState({
@@ -40,6 +26,73 @@ export default function PreDoctorNotificationsPage() {
         warningSound: 'Standard Ping',
         infoSound: 'Muted',
     });
+
+    const getIconForType = (type) => {
+        switch (type) {
+            case 'appointment': return 'event';
+            case 'consultation': return 'medical_information';
+            case 'referral': return 'assignment_ind';
+            case 'critical': return 'warning';
+            case 'lab': return 'description';
+            default: return 'notifications';
+        }
+    };
+
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const fetchNotifications = async () => {
+            const { data, error } = await notificationService.getAll(user.id);
+            if (!error && data) {
+                const now = new Date();
+                const today = [];
+                const yesterday = [];
+                const lastWeek = [];
+
+                data.forEach(n => {
+                    const d = new Date(n.created_at);
+                    const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+
+                    const formattedTime = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    const notif = {
+                        id: n.id,
+                        type: n.type || 'info',
+                        icon: getIconForType(n.type),
+                        title: n.title,
+                        message: n.message,
+                        time: diffDays === 0 ? formattedTime : diffDays === 1 ? `Yesterday, ${formattedTime}` : d.toLocaleDateString(),
+                        unread: !n.is_read
+                    };
+
+                    if (diffDays === 0) today.push(notif);
+                    else if (diffDays === 1) yesterday.push(notif);
+                    else lastWeek.push(notif);
+                });
+
+                setNotifications({ today, yesterday, lastWeek });
+            }
+        };
+
+        fetchNotifications();
+
+        const sub = notificationService.subscribeToUserNotifications(user.id, () => {
+            fetchNotifications();
+        });
+
+        return () => {
+            if (sub) sub.unsubscribe();
+        };
+    }, [user?.id]);
+
+    const handleMarkAllRead = async () => {
+        if (!user?.id) return;
+        await notificationService.markAllAsRead(user.id);
+    };
+
+    const handleMarkRead = async (id) => {
+        await notificationService.markAsRead(id);
+    };
 
     const getColor = (type) => {
         switch (type) {
@@ -75,7 +128,7 @@ export default function PreDoctorNotificationsPage() {
                             <p className="text-slate-500 mt-2 text-base">Manage your clinical alerts and system updates</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <motion.button whileHover={{ scale: 1.02 }} className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl">
+                            <motion.button onClick={handleMarkAllRead} whileHover={{ scale: 1.02 }} className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl">
                                 <span className="material-symbols-outlined text-lg">done_all</span>Mark all read
                             </motion.button>
                             <motion.button whileHover={{ scale: 1.02 }} onClick={() => setShowSettings(true)} className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-primary text-white rounded-xl shadow-lg hover:opacity-90">
@@ -92,10 +145,13 @@ export default function PreDoctorNotificationsPage() {
                                     <div className="h-px flex-1 bg-slate-100"></div>
                                 </div>
                                 <div className="space-y-3">
-                                    {NOTIFICATIONS[period].map((notif, i) => {
+                                    {notifications[period].length === 0 && (
+                                        <p className="text-sm text-slate-400 py-4 text-center">No notifications for this period.</p>
+                                    )}
+                                    {notifications[period].map((notif, i) => {
                                         const colors = getColor(notif.type);
                                         return (
-                                            <motion.div key={notif.id} variants={fadeUp} whileHover={{ scale: 1.01 }} className={`group flex items-start gap-4 p-5 bg-white rounded-xl border-l-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${colors.border} ${notif.unread ? '' : 'opacity-70'}`}>
+                                            <motion.div onClick={() => notif.unread && handleMarkRead(notif.id)} key={notif.id} variants={fadeUp} whileHover={{ scale: 1.01 }} className={`group flex items-start gap-4 p-5 bg-white rounded-xl border-l-4 shadow-sm hover:shadow-md transition-all cursor-pointer ${colors.border} ${notif.unread ? '' : 'opacity-70'}`}>
                                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colors.iconBg}`}><span className="material-symbols-outlined text-2xl">{notif.icon}</span></div>
                                                 <div className="flex-1">
                                                     <div className="flex items-center justify-between mb-1">

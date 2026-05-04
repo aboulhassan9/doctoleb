@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getHomeRouteForRole } from '../lib/routes';
 
 const SignUpPage = () => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const SignUpPage = () => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [agreed, setAgreed] = useState(false);
     const [error, setError] = useState('');
+    const [notice, setNotice] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const set = (k) => (e) => setForm(prev => ({ ...prev, [k]: e.target.value }));
@@ -29,11 +31,12 @@ const SignUpPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setNotice('');
         const validationError = validate();
         if (validationError) { setError(validationError); return; }
 
         setSubmitting(true);
-        const { success, error: signUpError } = await signUp(
+        const { success, error: signUpError, user, pendingConfirmation, email } = await signUp(
             form.email.trim(),
             form.password,
             form.firstName.trim(),
@@ -46,7 +49,13 @@ const SignUpPage = () => {
             return;
         }
 
-        navigate('/dashboard');
+        if (pendingConfirmation) {
+            setNotice(`Account created. Please check ${email || form.email.trim()} to confirm your email, then sign in.`);
+            setForm(prev => ({ ...prev, password: '', confirm: '' }));
+            return;
+        }
+
+        navigate(getHomeRouteForRole(user?.role || 'patient'));
     };
 
     const benefits = [
@@ -138,6 +147,12 @@ const SignUpPage = () => {
                     {error && (
                         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-5 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
                             {error}
+                        </motion.div>
+                    )}
+
+                    {notice && (
+                        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">
+                            {notice}
                         </motion.div>
                     )}
 

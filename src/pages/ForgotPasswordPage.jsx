@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { authService } from '../services/auth';
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
@@ -21,12 +21,10 @@ const ForgotPasswordPage = () => {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Please enter a valid email address.'); return; }
 
         setSubmitting(true);
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-            redirectTo: `${window.location.origin}/reset-password`,
-        });
+        const { error: resetError } = await authService.requestPasswordReset(email.trim());
         setSubmitting(false);
 
-        if (resetError) { setError(resetError.message); return; }
+        if (resetError) { setError(resetError); return; }
         setStep(2);
     };
 

@@ -57,16 +57,10 @@ const ACTION_CARDS = [
 import { appointmentService } from '../services/appointments';
 import { patientService } from '../services/patients';
 import { notificationService } from '../services/notifications';
+import { stagger, fadeUp } from '../lib/animations';
+import { getUserDisplayName } from '../lib/userDisplay';
+import { timeAgo } from '../lib/dateUtils';
 
-function timeAgo(dateStr) {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
-}
 
 const NOTIF_ICONS = {
     appointment: { icon: 'calendar_month', cls: 'bg-primary/10 text-primary' },
@@ -77,8 +71,8 @@ const NOTIF_ICONS = {
     default:     { icon: 'notifications',  cls: 'bg-slate-100 text-slate-500' },
 };
 
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.09 } } };
-const fadeUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45 } } };
+const staggerSec = stagger;
+const fadeUpSec = fadeUp;
 
 export default function DashboardPage() {
     const navigate = useNavigate();
@@ -338,7 +332,7 @@ export default function DashboardPage() {
                     >
                         <div>
                             <p className="text-slate-500 font-medium mb-1 flex items-center gap-2">
-                                <span>👋</span> Good morning, {(user?.name || 'Secretary').split(' ')[0]}
+                                <span>👋</span> Good morning, {getUserDisplayName(user, 'Secretary').split(' ')[0]}
                             </p>
                             <h2 className="text-4xl font-black text-slate-900 tracking-tight">Secretary Dashboard</h2>
                             <p className="text-slate-500 mt-2 text-base">Manage patients, appointments, and billing from one place.</p>
@@ -351,11 +345,11 @@ export default function DashboardPage() {
 
                     {/* Action Cards */}
                     <motion.div
-                        variants={stagger} initial="hidden" animate="visible"
+                        variants={staggerSec} initial="hidden" animate="visible"
                         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-12"
                     >
                         {ACTION_CARDS.map((card, i) => (
-                            <motion.div key={i} variants={fadeUp} className="h-full">
+                            <motion.div key={i} variants={fadeUpSec} className="h-full">
                                 <BorderGlow
                                     glowColor={card.glowColor}
                                     backgroundColor="#ffffff"
@@ -411,12 +405,12 @@ export default function DashboardPage() {
                             ))
                         ) : (
                         <motion.div
-                            variants={stagger} initial="hidden" animate="visible"
+                            variants={staggerSec} initial="hidden" animate="visible"
                             className="contents"
                         >
                             {stats.map((s, i) => (
                                 <motion.div
-                                    key={i} variants={fadeUp}
+                                    key={i} variants={fadeUpSec}
                                     whileHover={{ y: -4, boxShadow: '0 12px 40px rgba(0,0,0,0.08)' }}
                                     className="p-6 bg-white border border-slate-200 rounded-2xl relative overflow-hidden transition-all shadow-sm"
                                 >
@@ -509,7 +503,7 @@ export default function DashboardPage() {
                             <div className="space-y-4">
                                 <div>
                                     <label className="text-[10px] font-semibold uppercase text-slate-400">Name</label>
-                                    <input type="text" defaultValue={user?.name || ''} className="w-full px-4 py-2 border border-slate-200 rounded-xl" />
+                                    <input type="text" defaultValue={getUserDisplayName(user, '')} className="w-full px-4 py-2 border border-slate-200 rounded-xl" />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-semibold uppercase text-slate-400">Role</label>

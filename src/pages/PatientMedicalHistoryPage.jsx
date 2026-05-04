@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { reportService } from '../services/reports';
+import { getHomeRouteForRole } from '../lib/routes';
 
 export default function PatientMedicalHistoryPage() {
     const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function PatientMedicalHistoryPage() {
         fetchMedicalHistory();
     }, [user?.patient_id]);
 
-    const fetchMedicalHistory = async () => {
+    async function fetchMedicalHistory() {
         try {
             setLoading(true);
             const { data, error } = await reportService.getByPatientId(user?.patient_id);
@@ -30,7 +31,7 @@ export default function PatientMedicalHistoryPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     const prescriptions = reports.filter(r => r.report_type === 'Prescription');
     const labResults = reports.filter(r => r.report_type === 'Lab Request' || r.report_type === 'Lab Result');
@@ -67,7 +68,7 @@ export default function PatientMedicalHistoryPage() {
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-black">
-                            {user?.initials}
+                            {user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}
                         </div>
                         <div>
                             <h1 className="text-lg font-bold text-slate-900">Medical History</h1>
@@ -76,7 +77,7 @@ export default function PatientMedicalHistoryPage() {
                     </div>
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => navigate(getHomeRouteForRole(user?.role))}
                             className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
                         >
                             Back to Dashboard

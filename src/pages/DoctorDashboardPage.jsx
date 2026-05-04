@@ -11,10 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { appointmentService } from '../services/appointments';
 import { patientService } from '../services/patients';
 import { doctorService } from '../services/doctors';
-import { supabase } from '../lib/supabase';
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
+import { stagger, fadeUp } from '../lib/animations';
 
 export default function DoctorDashboardPage() {
     const navigate = useNavigate();
@@ -29,7 +26,7 @@ export default function DoctorDashboardPage() {
         role: user.role === 'doctor' ? 'Chief Resident' : 'Doctor',
         initials: `${user.first_name?.[0]||''}${user.last_name?.[0]||''}`.toUpperCase(),
         department: 'General Practice'
-    } : { name: 'Dr. Thorne', role: 'Doctor', initials: 'DT', department: 'General Practice' };
+    } : { name: 'Doctor', role: 'Doctor', initials: '??', department: '—' };
 
     const [doctorStats, setDoctorStats] = useState([
         { label: 'Total Patients', value: '...', icon: 'groups', color: 'bg-primary/10 text-primary', change: '', changeColor: 'text-success' },
@@ -131,12 +128,11 @@ export default function DoctorDashboardPage() {
         setProfileSaving(true);
         const initials = ((profileForm.firstName?.[0] || '') + (profileForm.lastName?.[0] || '')).toUpperCase();
         const [{ error: uErr }, { error: dErr }] = await Promise.all([
-            supabase.from('users').update({
-                first_name: profileForm.firstName,
-                last_name: profileForm.lastName,
-                phone: profileForm.phone || null,
-                initials,
-            }).eq('id', user.id),
+            patientService.updateUserInfo(user.id, {
+                firstName: profileForm.firstName,
+                lastName: profileForm.lastName,
+                phone: profileForm.phone,
+            }),
             doctorRecord ? doctorService.update(doctorRecord.id, {
                 specialization: profileForm.specialization || null,
                 department: profileForm.department || null,

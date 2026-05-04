@@ -1,12 +1,17 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { APPOINTMENT_SELECT_FIELDS } from '../lib/selects';
+import { normalizeAppointment } from '../lib/appointments';
+import { appointmentBookingSchema, parseWithSchema } from '../schemas';
+import { bookSlot } from './slots';
+import { notificationService } from './notifications';
 
 export const appointmentService = {
   async getAll() {
     return apiCall(
       supabase
         .from('appointments')
-        .select('*, doctors(id, user_id), patients(id, user_id, users(first_name, last_name, initials))')
+        .select(APPOINTMENT_SELECT_FIELDS)
         .order('scheduled_at', { ascending: true })
     );
   },
@@ -15,7 +20,7 @@ export const appointmentService = {
     return apiCall(
       supabase
         .from('appointments')
-        .select('*, doctors(id, user_id), patients(id, user_id, date_of_birth, sex, blood_type, allergies, medical_history, users(first_name, last_name, initials))')
+        .select(APPOINTMENT_SELECT_FIELDS)
         .eq('id', id)
         .single()
     );
@@ -25,7 +30,7 @@ export const appointmentService = {
     return apiCall(
       supabase
         .from('appointments')
-        .select('*, doctors(id, user_id), patients(id, user_id, users(first_name, last_name, phone, initials))')
+        .select(APPOINTMENT_SELECT_FIELDS)
         .eq('doctor_id', doctorId)
         .order('scheduled_at', { ascending: true })
     );
@@ -35,7 +40,7 @@ export const appointmentService = {
     return apiCall(
       supabase
         .from('appointments')
-        .select('*, doctors(id, user_id, users(first_name, last_name, department)), patients(id, user_id)')
+        .select(APPOINTMENT_SELECT_FIELDS)
         .eq('patient_id', patientId)
         .order('scheduled_at', { ascending: true })
     );
@@ -45,7 +50,7 @@ export const appointmentService = {
     return apiCall(
       supabase
         .from('appointments')
-        .select('*, doctors(*), patients(*)')
+        .select(APPOINTMENT_SELECT_FIELDS)
         .eq('status', status)
         .order('scheduled_at', { ascending: true })
     );
@@ -55,8 +60,8 @@ export const appointmentService = {
     return apiCall(
       supabase
         .from('appointments')
-        .select('*, doctors(id, user_id, users(first_name, last_name, department)), patients(id, user_id, users(first_name, last_name))')
-        .eq('status', 'scheduled')
+        .select(APPOINTMENT_SELECT_FIELDS)
+        .in('status', ['scheduled', 'confirmed', 'pre_check', 'in_consultation'])
         .gt('scheduled_at', new Date().toISOString())
         .order('scheduled_at', { ascending: true })
     );
@@ -66,9 +71,79 @@ export const appointmentService = {
     return apiCall(
       supabase
         .from('appointments')
-        .insert([{ ...data, status: 'scheduled' }])
-        .select()
+        .insert([{ ...data, status: data.status || 'scheduled' }])
+        .select(APPOINTMENT_SELECT_FIELDS)
     );
+  },
+
+  async getBySlotId(slotId) {
+    return apiCall(
+      supabase
+        .from('appointments')
+        .select(APPOINTMENT_SELECT_FIELDS)
+        .eq('slot_id', slotId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+    );
+  },
+
+  async bookFromSlot(payload) {
+    const { data, error: validationError } = parseWithSchema(appointmentBookingSchema, payload);
+    if (validationError) {
+      return { data: null, error: validationError };
+    }
+
+    // book_slot RPC is now fully atomic: creates the appointment with all fields
+    // and returns the new appointment UUID
+    const { data: appointmentId, error: bookingError } = await bookSlot({
+      slotId: data.slotId,
+      patientId: data.patientId,
+      bookedBy: data.bookedBy,
+      status: data.status,
+      reason: data.reason,
+      durationMinutes: data.durationMinutes,
+    });
+
+    if (bookingError) {
+      return { data: null, error: bookingError.message || 'Failed to book appointment' };
+    }
+
+    // Fetch the full appointment record using the returned UUID
+    const { data: bookedAppointment, error: fetchError } = await this.getById(appointmentId);
+
+    if (fetchError || !bookedAppointment) {
+      // Booking succeeded (slot consumed, appointment created) but fetch failed.
+      // Return partial success — never tell the user "booking failed" when it didn't.
+      return {
+        data: { id: appointmentId },
+        error: null,
+      };
+    }
+
+    const normalizedAppointment = normalizeAppointment(bookedAppointment);
+    const patientName = normalizedAppointment.patientName || 'A patient';
+    const scheduledAt = normalizedAppointment.scheduled_at || 'the selected time';
+
+    // Fire-and-forget notifications — never block the booking response
+    Promise.allSettled([
+      notificationService.notifyRole('doctor', {
+        title: 'Appointment Booked',
+        message: `${patientName} booked an appointment for ${scheduledAt}.`,
+        type: 'appointment',
+        related_id: normalizedAppointment.id,
+      }),
+      notificationService.notifyRole('predoctor', {
+        title: 'Patient Added to Queue',
+        message: `${patientName} booked an appointment for ${scheduledAt}.`,
+        type: 'appointment',
+        related_id: normalizedAppointment.id,
+      }),
+    ]).catch(() => {}); // swallow — notifications are non-critical
+
+    return {
+      data: normalizedAppointment,
+      error: null,
+    };
   },
 
   async delete(id) {
@@ -90,7 +165,7 @@ export const appointmentService = {
 
     const { data, error } = await supabase
       .from('appointments')
-      .select('scheduled_at')
+      .select('id, scheduled_at, duration_minutes, status')
       .eq('doctor_id', doctorId)
       .not('status', 'eq', 'cancelled')
       .gte('scheduled_at', startOfDay.toISOString())
@@ -115,12 +190,15 @@ export const appointmentService = {
   },
 
   async cancel(id, reason = null) {
+    const { data: existingAppointment } = await this.getById(id);
+    const nextNotes = [existingAppointment?.notes, reason].filter(Boolean).join('\n\n');
+
     return apiCall(
       supabase
         .from('appointments')
-        .update({ status: 'cancelled', notes: reason })
+        .update({ status: 'cancelled', notes: nextNotes || existingAppointment?.notes || null })
         .eq('id', id)
-        .select()
+        .select(APPOINTMENT_SELECT_FIELDS)
     );
   },
 
@@ -130,7 +208,7 @@ export const appointmentService = {
         .from('appointments')
         .update({ status: 'completed' })
         .eq('id', id)
-        .select()
+        .select(APPOINTMENT_SELECT_FIELDS)
     );
   },
 

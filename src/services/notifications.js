@@ -37,7 +37,7 @@ export const notificationService = {
     return apiCall(
       supabase
         .from('notifications')
-        .insert([{ ...data, is_read: false, created_at: new Date().toISOString() }])
+        .insert([{ ...data, is_read: false }])
         .select()
     );
   },
@@ -60,6 +60,10 @@ export const notificationService = {
         .eq('user_id', userId)
         .eq('is_read', false)
     );
+  },
+
+  async markAllRead(userId) {
+    return this.markAllAsRead(userId);
   },
 
   async delete(id) {
@@ -107,19 +111,32 @@ export const notificationService = {
     });
   },
 
-  async notifyRole(role, { title, message, type, related_id = null, related_type = null }) {
+  async notifyRole(role, { title, message, type, related_id = null }) {
     try {
-      const { data: users } = await supabase.from('users').select('id').eq('role', role).eq('is_active', true);
-      if (!users?.length) return;
+      const { data: users, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('role', role)
+        .eq('is_active', true);
+      if (userError) {
+        return { data: null, error: userError.message };
+      }
+      if (!users?.length) return { data: [], error: null };
+
       const rows = users.map(u => ({
-        user_id: u.id, title, message, type,
-        related_id, related_type,
+        user_id: u.id,
+        title,
+        message,
+        type,
+        related_id,
         is_read: false,
-        created_at: new Date().toISOString(),
       }));
-      await supabase.from('notifications').insert(rows);
+
+      const { data, error } = await supabase.from('notifications').insert(rows).select();
+      return { data, error: error?.message || null };
     } catch (err) {
       console.error('notifyRole error:', err);
+      return { data: null, error: err.message || 'Failed to notify role' };
     }
   },
 

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { patientService } from '../services/patients';
-import { supabase } from '../lib/supabase';
+import { getHomeRouteForRole } from '../lib/routes';
 
 export default function PatientOwnProfilePage() {
     const navigate = useNavigate();
@@ -23,8 +23,8 @@ export default function PatientOwnProfilePage() {
         blood_type: '',
         allergies: '',
         insurance_id: '',
-        emergency_contact_name: '',
-        emergency_contact_phone: '',
+        emergency_contact: '',
+        emergency_phone: '',
         medical_history: '',
     });
 
@@ -32,7 +32,7 @@ export default function PatientOwnProfilePage() {
         fetchPatientProfile();
     }, [user?.id]);
 
-    const fetchPatientProfile = async () => {
+    async function fetchPatientProfile() {
         try {
             setLoading(true);
             const { data, error } = await patientService.getByUserId(user?.id);
@@ -47,8 +47,8 @@ export default function PatientOwnProfilePage() {
                     blood_type: data.blood_type || '',
                     allergies: data.allergies || '',
                     insurance_id: data.insurance_id || '',
-                    emergency_contact_name: data.emergency_contact_name || '',
-                    emergency_contact_phone: data.emergency_contact_phone || '',
+                    emergency_contact: data.emergency_contact || '',
+                    emergency_phone: data.emergency_phone || '',
                     medical_history: data.medical_history || '',
                 });
             }
@@ -58,7 +58,7 @@ export default function PatientOwnProfilePage() {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -82,39 +82,38 @@ export default function PatientOwnProfilePage() {
             return;
         }
 
-        if (formData.emergency_contact_phone && !/^\+?[\d\s-]{8,20}$/.test(formData.emergency_contact_phone)) {
+        if (formData.emergency_phone && !/^\+?[\d\s-]{8,20}$/.test(formData.emergency_phone)) {
             showToast('Please enter a valid emergency contact phone', 'error');
             return;
         }
 
         try {
             setSubmitting(true);
-            const [{ error: userError }, { error: patientError }] = await Promise.all([
-                supabase.from('users').update({
+            const { error } = await patientService.updateOwnProfile({
+                userId: user?.id,
+                patientId: patient?.id,
+                profile: {
                     first_name: sanitizedFirst,
                     last_name: sanitizedLast,
-                    phone: sanitizedPhone,
-                    initials: ((sanitizedFirst?.[0] || '') + (sanitizedLast?.[0] || '')).toUpperCase(),
-                }).eq('id', user?.id),
-                patientService.update(patient?.id, {
+                    phone: sanitizedPhone || null,
                     date_of_birth: formData.date_of_birth || null,
                     sex: formData.sex || null,
                     blood_type: formData.blood_type || null,
                     allergies: formData.allergies || null,
                     insurance_id: formData.insurance_id || null,
-                    emergency_contact_name: formData.emergency_contact_name || null,
-                    emergency_contact_phone: formData.emergency_contact_phone || null,
+                    emergency_contact: formData.emergency_contact || null,
+                    emergency_phone: formData.emergency_phone || null,
                     medical_history: formData.medical_history || null,
-                }),
-            ]);
+                },
+            });
 
-            if (!patientError && !userError) {
+            if (!error) {
                 showToast('Profile updated successfully', 'success');
                 setIsEditing(false);
                 fetchPatientProfile();
             } else {
-                console.error(patientError, userError);
-                showToast('Failed to update profile', 'error');
+                console.error(error);
+                showToast(error || 'Failed to update profile', 'error');
             }
         } catch (err) {
             console.error('Error updating profile:', err);
@@ -139,7 +138,7 @@ export default function PatientOwnProfilePage() {
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-black">
-                            {user?.initials}
+                            {user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}
                         </div>
                         <div>
                             <h1 className="text-lg font-bold text-slate-900">My Profile</h1>
@@ -148,7 +147,7 @@ export default function PatientOwnProfilePage() {
                     </div>
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => navigate(getHomeRouteForRole(user?.role))}
                             className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
                         >
                             Back to Dashboard
@@ -175,7 +174,7 @@ export default function PatientOwnProfilePage() {
                 >
                     <div className="flex items-end gap-6 mb-6">
                         <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-4xl font-black">
-                            {user?.initials}
+                            {user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}
                         </div>
                         <div className="flex-1">
                             <h2 className="text-3xl font-black text-slate-900 mb-1">
@@ -374,8 +373,8 @@ export default function PatientOwnProfilePage() {
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Contact Name</label>
                             <input
                                 type="text"
-                                name="emergency_contact_name"
-                                value={formData.emergency_contact_name}
+                                name="emergency_contact"
+                                value={formData.emergency_contact}
                                 onChange={handleInputChange}
                                 disabled={!isEditing}
                                 placeholder="Full name"
@@ -386,8 +385,8 @@ export default function PatientOwnProfilePage() {
                             <label className="block text-sm font-semibold text-slate-700 mb-2">Contact Phone</label>
                             <input
                                 type="tel"
-                                name="emergency_contact_phone"
-                                value={formData.emergency_contact_phone}
+                                name="emergency_phone"
+                                value={formData.emergency_phone}
                                 onChange={handleInputChange}
                                 disabled={!isEditing}
                                 placeholder="Phone number"

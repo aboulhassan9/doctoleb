@@ -23,6 +23,20 @@ export const paymentService = {
             return { data: null, error };
         }
     },
+    async getBillableServices() {
+        try {
+            const { data, error } = await supabase
+                .from('billable_services')
+                .select('*')
+                .eq('is_active', true)
+                .order('name');
+            if (error) throw error;
+            return { data, error: null };
+        } catch (error) {
+            console.error('Error fetching billable services:', error.message);
+            return { data: null, error };
+        }
+    },
 
     async create(paymentData) {
         try {

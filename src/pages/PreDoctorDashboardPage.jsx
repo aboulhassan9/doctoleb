@@ -10,19 +10,9 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { notificationService } from '../services/notifications';
 import { appointmentService } from '../services/appointments';
-
-function timeAgo(dateStr) {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
-}
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
+import { normalizeAppointments } from '../lib/appointments';
+import { stagger, fadeUp } from '../lib/animations';
+import { timeAgo } from '../lib/dateUtils';
 
 export default function PreDoctorDashboardPage() {
     const navigate = useNavigate();
@@ -62,7 +52,7 @@ export default function PreDoctorDashboardPage() {
     }, [user?.id]);
 
     const handleMarkAllRead = async () => {
-        if (user?.id) await notificationService.markAllAsRead(user.id);
+        if (user?.id) await notificationService.markAllRead(user.id);
         setNotifications([]);
         setShowNotifications(false);
         showToast('All notifications marked as read', 'success');
@@ -99,10 +89,11 @@ export default function PreDoctorDashboardPage() {
                 setApptLoading(true);
                 const { data: appts } = await appointmentService.getUpcoming();
                 if (appts) {
-                    setAppointments(appts.slice(0, 5));
+                    const normalizedAppts = normalizeAppointments(appts);
+                    setAppointments(normalizedAppts.slice(0, 5));
                     
-                    const queueCount = appts.length;
-                    const pendingCount = appts.filter(a => a.status === 'scheduled').length;
+                    const queueCount = normalizedAppts.length;
+                    const pendingCount = normalizedAppts.filter(a => a.status === 'scheduled').length;
                     const unreadCount = notifications.length;
 
                     setStats([
@@ -272,7 +263,7 @@ export default function PreDoctorDashboardPage() {
                     </motion.div>
 
                     <motion.div variants={stagger} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
-                        {PREDOCTOR_STATS.map((stat, i) => (
+                        {stats.map((stat, i) => (
                             <motion.div key={i} variants={fadeUp} className="h-full">
                                 <BorderGlow
                                     backgroundColor="#ffffff"
@@ -346,7 +337,7 @@ export default function PreDoctorDashboardPage() {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-sm font-bold text-slate-900">{name}</p>
-                                            <p className="text-xs text-slate-400">{appt.reason_for_visit || 'General Assessment'}</p>
+                                            <p className="text-xs text-slate-400">{appt.reason || 'General Assessment'}</p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-sm font-bold text-slate-900">{time}</p>

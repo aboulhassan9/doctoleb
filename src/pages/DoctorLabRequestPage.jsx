@@ -175,10 +175,10 @@ export default function DoctorLabRequestPage() {
                         <div className="h-8 w-[1px] bg-slate-200 mx-2"></div>
                         <div className="flex items-center gap-3">
                             <div className="text-right hidden sm:block">
-                                <p className="text-xs font-bold text-slate-900 leading-none">Dr. Sarah Jenkins</p>
-                                <p className="text-[10px] text-slate-500 font-medium">Senior Pathologist</p>
+                                <p className="text-xs font-bold text-slate-900 leading-none">{user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor'}</p>
+                                <p className="text-[10px] text-slate-500 font-medium">{user?.role || 'Physician'}</p>
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-[#0d6cf2]/20 flex items-center justify-center text-[#0d6cf2] font-black text-xs">SJ</div>
+                            <div className="w-10 h-10 rounded-full bg-[#0d6cf2]/20 flex items-center justify-center text-[#0d6cf2] font-black text-xs">{user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}</div>
                         </div>
                     </div>
                 </header>
@@ -189,7 +189,7 @@ export default function DoctorLabRequestPage() {
                             <nav className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                                 <span onClick={() => navigate('/doctor-patients')} className="hover:text-[#0d6cf2] transition-colors cursor-pointer">Patients</span>
                                 <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-                                <span onClick={() => navigate('/doctor-consultation')} className="hover:text-[#0d6cf2] transition-colors cursor-pointer text-slate-500">{PATIENT.name}</span>
+                                <span onClick={() => navigate('/doctor-consultation')} className="hover:text-[#0d6cf2] transition-colors cursor-pointer text-slate-500">{selectedPatient ? `${selectedPatient.users?.first_name || ''} ${selectedPatient.users?.last_name || ''}`.trim() : 'Patient'}</span>
                                 <span className="material-symbols-outlined text-[10px]">chevron_right</span>
                                 <span className="text-[#0d6cf2]">New Lab Request</span>
                             </nav>
@@ -408,7 +408,7 @@ export default function DoctorLabRequestPage() {
                                     <div className="pt-3 border-t border-slate-700 mt-3">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-slate-400">Requesting MD</span>
-                                            <span className="font-bold">Dr. Jenkins</span>
+                                            <span className="font-bold">{user?.first_name ? `Dr. ${user.last_name || user.first_name}` : 'Doctor'}</span>
                                         </div>
                                     </div>
                                 </div>

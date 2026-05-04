@@ -1,12 +1,13 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { REPORT_SELECT_FIELDS, DOCTOR_SELECT_FIELDS, PATIENT_SELECT_FIELDS, USER_CONTACT_FIELDS } from '../lib/selects';
 
 export const reportService = {
   async getAll() {
     return apiCall(
       supabase
         .from('medical_reports')
-        .select('*, doctors(*), patients(*)')
+        .select(`${REPORT_SELECT_FIELDS}, doctors(${DOCTOR_SELECT_FIELDS}), patients(${PATIENT_SELECT_FIELDS})`)
         .order('created_at', { ascending: false })
     );
   },
@@ -15,7 +16,7 @@ export const reportService = {
     return apiCall(
       supabase
         .from('medical_reports')
-        .select('*, doctors(*), patients(*)')
+        .select(`${REPORT_SELECT_FIELDS}, doctors(${DOCTOR_SELECT_FIELDS}), patients(${PATIENT_SELECT_FIELDS})`)
         .eq('id', id)
         .single()
     );
@@ -25,7 +26,7 @@ export const reportService = {
     return apiCall(
       supabase
         .from('medical_reports')
-        .select('*, doctors(id, user_id, users(first_name, last_name))')
+        .select(`${REPORT_SELECT_FIELDS}, doctors(id, user_id, users(${USER_CONTACT_FIELDS}))`)
         .eq('patient_id', patientId)
         .order('created_at', { ascending: false })
     );
@@ -35,7 +36,7 @@ export const reportService = {
     return apiCall(
       supabase
         .from('medical_reports')
-        .select('*, patients(id, user_id, users(first_name, last_name))')
+        .select(`${REPORT_SELECT_FIELDS}, patients(id, user_id, users(${USER_CONTACT_FIELDS}))`)
         .eq('doctor_id', doctorId)
         .order('created_at', { ascending: false })
     );
@@ -45,7 +46,7 @@ export const reportService = {
     return apiCall(
       supabase
         .from('medical_reports')
-        .select('*')
+        .select(REPORT_SELECT_FIELDS)
         .eq('report_type', reportType)
         .order('created_at', { ascending: false })
     );
@@ -56,7 +57,7 @@ export const reportService = {
       supabase
         .from('medical_reports')
         .insert([data])
-        .select()
+        .select(REPORT_SELECT_FIELDS)
     );
   },
 
@@ -66,16 +67,18 @@ export const reportService = {
         .from('medical_reports')
         .update(data)
         .eq('id', id)
-        .select()
+        .select(REPORT_SELECT_FIELDS)
     );
   },
 
-  async delete(id) {
+  // RULE 1: Medical data is sacred — use soft-delete
+  async archive(id, archivedBy) {
     return apiCall(
       supabase
         .from('medical_reports')
-        .delete()
+        .update({ is_archived: true, archived_at: new Date().toISOString(), archived_by: archivedBy })
         .eq('id', id)
+        .select(REPORT_SELECT_FIELDS)
     );
   },
 

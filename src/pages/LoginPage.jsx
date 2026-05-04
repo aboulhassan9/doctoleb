@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { getHomeRouteForRole } from '../lib/routes';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -140,25 +141,19 @@ const LoginPage = () => {
                         onSubmit={async (e) => {
                             e.preventDefault();
                             setError('');
+                            setLoading(true);
 
                             const { success, error: authError, user } = await signIn(email, password);
+                            setLoading(false);
 
                             if (!success || authError) {
-                                setError('Invalid email or password');
+                                setError(authError || 'Invalid email or password');
                                 return;
                             }
 
                             if (user) {
                                 showToast(`Welcome, ${user.first_name}!`, 'success');
-
-                                const dashboardRoutes = {
-                                    doctor: '/doctor-dashboard',
-                                    secretary: '/dashboard',
-                                    predoctor: '/predoctor-dashboard',
-                                    patient: '/dashboard'
-                                };
-
-                                navigate(dashboardRoutes[user.role] || '/dashboard');
+                                navigate(getHomeRouteForRole(user.role));
                             }
                         }}
                     >

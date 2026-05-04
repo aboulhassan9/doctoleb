@@ -120,13 +120,15 @@ export const slotService = {
   },
 };
 
-/** Book a slot via the server-side RPC (race-condition safe) */
-export async function bookSlot({ slotId, patientId, bookedBy, status = 'pending' }) {
+/** Book a slot via the server-side RPC (race-condition safe, fully atomic) */
+export async function bookSlot({ slotId, patientId, bookedBy, status = 'pending', reason = null, durationMinutes = null }) {
   const { data, error } = await supabase.rpc('book_slot', {
     p_slot: slotId,
     p_patient: patientId,
     p_booked_by: bookedBy,
     p_status: status,
+    p_reason: reason,
+    p_duration_minutes: durationMinutes,
   });
   return { data, error };
 }

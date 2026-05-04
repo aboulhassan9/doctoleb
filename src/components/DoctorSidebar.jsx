@@ -41,7 +41,7 @@ function DoctorSidebarInner({ onLogout, isMobile = false }) {
             )}
 
             <div className={`p-6 flex items-center ${expanded ? 'gap-3' : 'justify-center'} h-[84px]`}>
-                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20 shrink-0">{user?.initials || 'DR'}</div>
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20 shrink-0">{user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : 'DR'}</div>
                 {expanded && (
                     <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex-1 flex flex-col overflow-hidden">
                         <span className="text-sm font-bold text-slate-900 leading-none truncate">

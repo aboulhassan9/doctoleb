@@ -6,6 +6,8 @@ import { certificateService } from '../services/certificates';
 import { patientService } from '../services/patients';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { getUserDisplayName, getUserInitials } from '../lib/userDisplay';
+import { useSignaturePad } from '../hooks/useSignaturePad';
 
 export default function DoctorCertificatesPage() {
     const navigate = useNavigate();
@@ -24,49 +26,7 @@ export default function DoctorCertificatesPage() {
     const [isSaving, setIsSaving] = useState(false);
     const { user } = useAuth();
     const { showToast } = useToast();
-
-    // ── Signature pad ──────────────────────────────────────────
-    const canvasRef = useRef(null);
-    const isDrawing = useRef(false);
-
-    const getPos = (e, canvas) => {
-        const rect = canvas.getBoundingClientRect();
-        const src = e.touches ? e.touches[0] : e;
-        return { x: src.clientX - rect.left, y: src.clientY - rect.top };
-    };
-
-    const startDraw = useCallback((e) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        e.preventDefault();
-        isDrawing.current = true;
-        const ctx = canvas.getContext('2d');
-        const { x, y } = getPos(e, canvas);
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    }, []);
-
-    const draw = useCallback((e) => {
-        if (!isDrawing.current) return;
-        e.preventDefault();
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        const { x, y } = getPos(e, canvas);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-    }, []);
-
-    const stopDraw = useCallback(() => { isDrawing.current = false; }, []);
-
-    const clearSignature = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-    };
+    const { canvasRef, startDraw, draw, stopDraw, clearSignature } = useSignaturePad();
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -151,7 +111,7 @@ export default function DoctorCertificatesPage() {
                         <p style="font-size: 10px; color: #666;">Scan to verify</p>
                     </div>
                 </div>
-                <div class="watermark">PRECISION</div>
+                <div class="watermark">DOCTOLEB</div>
             </body>
             </html>
         `;
@@ -254,7 +214,7 @@ export default function DoctorCertificatesPage() {
                                 <p className="text-xs font-bold text-slate-900">{user?.first_name} {user?.last_name}</p>
                                 <p className="text-[10px] text-slate-500 capitalize">{user?.role || 'Doctor'}</p>
                             </div>
-                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">{user?.initials || '?'}</div>
+                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">{getUserInitials(user)}</div>
                         </div>
                     </div>
                 </header>
@@ -513,7 +473,7 @@ export default function DoctorCertificatesPage() {
                                     </div>
 
                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] rotate-[-35deg]">
-                                        <span className="text-8xl font-black select-none">PRECISION</span>
+                                        <span className="text-8xl font-black select-none">DOCTOLEB</span>
                                     </div>
                                 </div>
 

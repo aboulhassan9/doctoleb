@@ -67,7 +67,7 @@ const TIME_SLOTS = [
 
 import { appointmentService } from '../services/appointments';
 import { patientService } from '../services/patients';
-import { supabase } from '../lib/supabase';
+import { doctorService } from '../services/doctors';
 import { notificationService } from '../services/notifications';
 
 /* ═══════════════════════════════════════════════════════════
@@ -361,7 +361,7 @@ function ScheduleModal({ onClose }) {
 
     useEffect(() => {
         patientService.getAll().then(res => setPatientsList(res.data || []));
-        supabase.from('doctors').select('id, users(first_name, last_name, department)').then(res => setDoctorsList(res.data || []));
+        doctorService.getAll().then(res => setDoctorsList(res.data || []));
     }, []);
 
     useEffect(() => {

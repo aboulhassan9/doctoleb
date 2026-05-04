@@ -1,12 +1,13 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { DOCTOR_SELECT_FIELDS } from '../lib/selects';
 
 export const doctorService = {
   async getAll() {
     return apiCall(
       supabase
         .from('doctors')
-        .select('id, user_id, department, specialization, license_number, bio, consultation_fee, users(id, email, first_name, last_name, phone, initials)')
+        .select(DOCTOR_SELECT_FIELDS)
         .order('created_at', { ascending: false })
     );
   },
@@ -15,7 +16,7 @@ export const doctorService = {
     return apiCall(
       supabase
         .from('doctors')
-        .select('*, users(*)')
+        .select(DOCTOR_SELECT_FIELDS)
         .eq('id', id)
         .single()
     );
@@ -25,8 +26,20 @@ export const doctorService = {
     return apiCall(
       supabase
         .from('doctors')
-        .select('*, users(*)')
+        .select(DOCTOR_SELECT_FIELDS)
         .eq('user_id', userId)
+        .single()
+    );
+  },
+
+  /** Get the first doctor in the system (v1: single-doctor clinic) */
+  async getFirst() {
+    return apiCall(
+      supabase
+        .from('doctors')
+        .select('id')
+        .order('created_at', { ascending: true })
+        .limit(1)
         .single()
     );
   },
@@ -35,7 +48,7 @@ export const doctorService = {
     return apiCall(
       supabase
         .from('doctors')
-        .select('id, user_id, department, specialization, license_number, bio, consultation_fee, users(id, email, first_name, last_name, phone, initials)')
+        .select(DOCTOR_SELECT_FIELDS)
         .eq('department', department)
     );
   },
@@ -45,7 +58,7 @@ export const doctorService = {
       supabase
         .from('doctors')
         .insert([data])
-        .select('*, users(*)')
+        .select(DOCTOR_SELECT_FIELDS)
     );
   },
 
@@ -55,7 +68,7 @@ export const doctorService = {
         .from('doctors')
         .update(data)
         .eq('id', id)
-        .select('*, users(*)')
+        .select(DOCTOR_SELECT_FIELDS)
     );
   },
 
@@ -86,7 +99,7 @@ export const doctorService = {
     return apiCall(
       supabase
         .from('certificates')
-        .select('*')
+        .select('id, doctor_id, patient_id, certificate_type, title, content, issue_date, created_at')
         .eq('doctor_id', doctorId)
         .order('issue_date', { ascending: false })
     );

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { consultationService } from '../services/consultations';
 import { appointmentService } from '../services/appointments';
-import { supabase } from '../lib/supabase';
+import { precheckService } from '../services/prechecks';
 import { useToast } from '../contexts/ToastContext';
 import { notificationService } from '../services/notifications';
 import { useAuth } from '../contexts/AuthContext';
@@ -75,12 +75,7 @@ export default function DoctorConsultationPage() {
                     });
 
                     // Fetch precheck forms
-                    const { data: prechecks } = await supabase
-                        .from('precheck_forms')
-                        .select('*')
-                        .eq('patient_id', pt.id)
-                        .order('created_at', { ascending: false })
-                        .limit(1);
+                    const { data: prechecks } = await precheckService.getByPatientId(pt.id);
 
                     if (prechecks && prechecks.length > 0) {
                         const pc = prechecks[0];
@@ -161,7 +156,7 @@ export default function DoctorConsultationPage() {
         <div className="flex h-screen w-full bg-[#f5f7f8] text-[#0f172a] overflow-hidden font-['Inter']">
             <aside className="hidden md:flex flex-col h-full p-4 gap-2 bg-slate-50 border-r border-slate-200 w-64 shrink-0">
                 <div className="flex items-center gap-3 px-2 mb-8 mt-2">
-                    <div className="w-10 h-10 rounded-xl bg-[#0d6cf2] flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20">{user?.initials || 'DR'}</div>
+                    <div className="w-10 h-10 rounded-xl bg-[#0d6cf2] flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20">{user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : 'DR'}</div>
                     <div className="flex flex-col">
                         <span className="text-sm font-bold text-[#0f172a] leading-none">
                             {user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor'}
@@ -206,7 +201,7 @@ export default function DoctorConsultationPage() {
             <div className="flex flex-col flex-1 overflow-hidden">
                 <header className="flex justify-between items-center w-full px-6 h-16 sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <span className="text-xl font-black tracking-tighter text-primary">Clinical Precision</span>
+                        <span className="text-xl font-black tracking-tighter text-primary">DoctoLeb</span>
                         <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">search</span>
@@ -222,7 +217,7 @@ export default function DoctorConsultationPage() {
                             <span className="material-symbols-outlined">settings</span>
                         </button>
                         <div className="flex items-center gap-3 ml-2 pl-4 border-l border-slate-200">
-                            <div className="w-8 h-8 rounded-full bg-[#0d6cf2]/20 flex items-center justify-center text-[#0d6cf2] font-bold text-xs">{user?.initials || 'DR'}</div>
+                            <div className="w-8 h-8 rounded-full bg-[#0d6cf2]/20 flex items-center justify-center text-[#0d6cf2] font-bold text-xs">{user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : 'DR'}</div>
                         </div>
                     </div>
                 </header>

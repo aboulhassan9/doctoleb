@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DoctorSidebar from '../components/DoctorSidebar';
@@ -7,6 +7,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { patientService } from '../services/patients';
 import { doctorService } from '../services/doctors';
+import { getUserDisplayName, getUserInitials } from '../lib/userDisplay';
+import { useSignaturePad } from '../hooks/useSignaturePad';
 
 export default function DoctorReferralsPage() {
     const navigate = useNavigate();
@@ -23,49 +25,7 @@ export default function DoctorReferralsPage() {
     const { showToast } = useToast();
     const [doctorId, setDoctorId] = useState(null);
     const [doctorRecord, setDoctorRecord] = useState(null);
-
-    // ── Signature pad ──────────────────────────────────────────
-    const canvasRef = useRef(null);
-    const isDrawing = useRef(false);
-
-    const getPos = (e, canvas) => {
-        const rect = canvas.getBoundingClientRect();
-        const src = e.touches ? e.touches[0] : e;
-        return { x: src.clientX - rect.left, y: src.clientY - rect.top };
-    };
-
-    const startDraw = useCallback((e) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        e.preventDefault();
-        isDrawing.current = true;
-        const ctx = canvas.getContext('2d');
-        const { x, y } = getPos(e, canvas);
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    }, []);
-
-    const draw = useCallback((e) => {
-        if (!isDrawing.current) return;
-        e.preventDefault();
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        const { x, y } = getPos(e, canvas);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-    }, []);
-
-    const stopDraw = useCallback(() => { isDrawing.current = false; }, []);
-
-    const clearSignature = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-    };
+    const { canvasRef, startDraw, draw, stopDraw, clearSignature } = useSignaturePad();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -157,7 +117,7 @@ export default function DoctorReferralsPage() {
                                 <p className="text-xs font-bold text-slate-900">{user?.first_name} {user?.last_name}</p>
                                 <p className="text-[10px] text-slate-500 capitalize">{user?.role || 'Doctor'}</p>
                             </div>
-                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">{user?.initials || '?'}</div>
+                            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">{getUserInitials(user)}</div>
                         </div>
                     </div>
                 </header>
@@ -348,7 +308,7 @@ export default function DoctorReferralsPage() {
                             </div>
 
                             <div className="absolute -top-4 -right-4 bg-primary text-white text-[10px] font-black uppercase px-4 py-2 rotate-1 shadow-lg">
-                                Draft v1.2
+                                Draft
                             </div>
                         </div>
                     </div>

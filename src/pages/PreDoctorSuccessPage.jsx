@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
+import PreDoctorSidebar from '../components/PreDoctorSidebar';
 
 export default function PreDoctorSuccessPage() {
     const navigate = useNavigate();
@@ -9,69 +10,12 @@ export default function PreDoctorSuccessPage() {
 
     return (
         <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <aside className="hidden lg:flex flex-col h-screen sticky top-0 bg-white border-r border-slate-200 w-64 z-40">
-                <div className="p-6">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>medical_services</span>
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold text-slate-900 leading-tight">Medical Management</h1>
-                            <p className="text-xs text-slate-500 font-medium">Clinical Unit A</p>
-                        </div>
-                    </div>
-<nav className="space-y-1">
-                        <button onClick={() => navigate('/predoctor-dashboard')} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors duration-200 font-medium text-sm">
-                            <span className="material-symbols-outlined">dashboard</span>
-                Dashboard
-            </button>
-                        <button onClick={() => navigate('/predoctor-patients')} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors duration-200 font-medium text-sm">
-                            <span className="material-symbols-outlined">group</span>
-                Patients
-            </button>
-                        <button onClick={() => navigate('/predoctor-new-check')} className="w-full flex items-center gap-3 px-4 py-3 bg-primary/5 text-primary rounded-lg transition-colors duration-200 font-medium text-sm">
-                            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>fact_check</span>
-                Pre-Check
-            </button>
-                        <button onClick={() => navigate('/predoctor-appointments')} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors duration-200 font-medium text-sm">
-                            <span className="material-symbols-outlined">calendar_today</span>
-                Appointments
-            </button>
-                        <button onClick={() => navigate('/predoctor-notifications')} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors duration-200 font-medium text-sm">
-                            <span className="material-symbols-outlined">notifications</span>
-                Notifications
-            </button>
-                    </nav>
-                    <div className="mt-8">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => navigate('/predoctor-new-check')}
-                            className="w-full py-3 px-4 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                        >
-                            <span className="material-symbols-outlined text-sm">add</span>
-                            New Pre-Check
-                        </motion.button>
-                    </div>
-                </div>
-                <div className="mt-auto p-6 border-t border-slate-100">
-                    <nav className="space-y-1">
-                        <button className="w-full flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors duration-200 font-medium text-sm">
-                            <span className="material-symbols-outlined text-xl">settings</span>
-                            Settings
-                        </button>
-                        <button onClick={() => navigate('/login')} className="w-full flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors duration-200 font-medium text-sm">
-                            <span className="material-symbols-outlined text-xl">logout</span>
-                            Logout
-                        </button>
-                    </nav>
-                </div>
-            </aside>
+            <PreDoctorSidebar />
 
             <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
                 <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30 flex items-center justify-between w-full px-6 h-16">
                     <div className="flex items-center gap-8">
-                        <div className="uppercase text-xl font-black tracking-tighter text-slate-900">Clinical Precision</div>
+                        <div className="uppercase text-xl font-black tracking-tighter text-slate-900">DoctoLeb</div>
                         <div className="relative hidden md:block">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
                             <input className="bg-slate-50 border-none rounded-xl pl-10 pr-4 py-2 text-sm w-64 focus:ring-2 focus:ring-primary focus:bg-white transition-all" placeholder="Search patient or ID..." type="text"/>
@@ -87,11 +31,11 @@ export default function PreDoctorSuccessPage() {
                         <div className="h-8 w-[1px] bg-slate-200 mx-2"></div>
                         <div className="flex items-center gap-3 cursor-pointer group">
                             <div className="text-right hidden sm:block">
-                                <p className="text-xs font-bold text-slate-900 leading-none">Dr. Sarah Chen</p>
-                                <p className="text-[10px] text-slate-500 font-medium">Senior Resident</p>
+                                <p className="text-xs font-bold text-slate-900 leading-none">Pre-Doctor Staff</p>
+                                <p className="text-[10px] text-slate-500 font-medium">Assessment Complete</p>
                             </div>
                             <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                SC
+                                ✔
                             </div>
                         </div>
                     </div>
