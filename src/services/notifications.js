@@ -1,25 +1,33 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { NOTIFICATION_SELECT_FIELDS } from '../lib/selects';
+import { paginateQuery } from '../lib/pagination';
 
 export const notificationService = {
-  async getAll(userId) {
+  async getAll(userId, options = {}) {
     return apiCall(
-      supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+      paginateQuery(
+        supabase
+          .from('notifications')
+          .select(NOTIFICATION_SELECT_FIELDS, { count: 'exact' })
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false }),
+        options
+      )
     );
   },
 
-  async getUnread(userId) {
+  async getUnread(userId, options = {}) {
     return apiCall(
-      supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('is_read', false)
-        .order('created_at', { ascending: false })
+      paginateQuery(
+        supabase
+          .from('notifications')
+          .select(NOTIFICATION_SELECT_FIELDS, { count: 'exact' })
+          .eq('user_id', userId)
+          .eq('is_read', false)
+          .order('created_at', { ascending: false }),
+        options
+      )
     );
   },
 
@@ -27,7 +35,7 @@ export const notificationService = {
     return apiCall(
       supabase
         .from('notifications')
-        .select('*')
+        .select(NOTIFICATION_SELECT_FIELDS)
         .eq('id', id)
         .single()
     );
@@ -38,7 +46,7 @@ export const notificationService = {
       supabase
         .from('notifications')
         .insert([{ ...data, is_read: false }])
-        .select()
+        .select(NOTIFICATION_SELECT_FIELDS)
     );
   },
 
@@ -48,7 +56,7 @@ export const notificationService = {
         .from('notifications')
         .update({ is_read: true })
         .eq('id', id)
-        .select()
+        .select(NOTIFICATION_SELECT_FIELDS)
     );
   },
 
@@ -62,10 +70,7 @@ export const notificationService = {
     );
   },
 
-  async markAllRead(userId) {
-    return this.markAllAsRead(userId);
-  },
-
+  // Notifications are transient UI messages, so dismissal can hard-delete them.
   async delete(id) {
     return apiCall(
       supabase
@@ -112,32 +117,32 @@ export const notificationService = {
   },
 
   async notifyRole(role, { title, message, type, related_id = null }) {
-    try {
-      const { data: users, error: userError } = await supabase
+    const { data: users, error: userError } = await apiCall(
+      supabase
         .from('users')
         .select('id')
         .eq('role', role)
-        .eq('is_active', true);
-      if (userError) {
-        return { data: null, error: userError.message };
-      }
-      if (!users?.length) return { data: [], error: null };
+        .eq('is_active', true)
+    );
 
-      const rows = users.map(u => ({
-        user_id: u.id,
-        title,
-        message,
-        type,
-        related_id,
-        is_read: false,
-      }));
-
-      const { data, error } = await supabase.from('notifications').insert(rows).select();
-      return { data, error: error?.message || null };
-    } catch (err) {
-      console.error('notifyRole error:', err);
-      return { data: null, error: err.message || 'Failed to notify role' };
+    if (userError) {
+      return { data: null, count: null, error: userError };
     }
+
+    if (!users?.length) return { data: [], count: 0, error: null };
+
+    const rows = users.map(u => ({
+      user_id: u.id,
+      title,
+      message,
+      type,
+      related_id,
+      is_read: false,
+    }));
+
+    return apiCall(
+      supabase.from('notifications').insert(rows).select(NOTIFICATION_SELECT_FIELDS)
+    );
   },
 
   async sendReferralNotification(userId, referralData) {

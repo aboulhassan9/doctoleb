@@ -32,8 +32,11 @@ export default function BillingPage() {
                 const formatted = data.map(p => {
                     const fname = p.patients?.users?.first_name || 'Unknown';
                     const lname = p.patients?.users?.last_name || 'Patient';
-                    const s = p.status || 'Pending';
-                    const sCls = s.toLowerCase() === 'paid' ? 'bg-success/10 text-success' : s.toLowerCase() === 'pending' ? 'bg-warning/10 text-warning' : 'bg-error-container text-on-error-container';
+                    const canonicalStatus = (p.status || 'pending').toLowerCase();
+                    const displayStatus = canonicalStatus === 'completed'
+                        ? 'Paid'
+                        : canonicalStatus.charAt(0).toUpperCase() + canonicalStatus.slice(1);
+                    const sCls = canonicalStatus === 'completed' ? 'bg-success/10 text-success' : canonicalStatus === 'pending' ? 'bg-warning/10 text-warning' : 'bg-error-container text-on-error-container';
                     return {
                         id: `#INV-${p.id.split('-')[0].toUpperCase()}`,
                         dbId: p.id,
@@ -41,7 +44,7 @@ export default function BillingPage() {
                         initials: `${fname[0]||''}${lname[0]||''}`.toUpperCase(),
                         date: new Date(p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                         amount: parseFloat(p.amount) || 0,
-                        status: s.charAt(0).toUpperCase() + s.slice(1),
+                        status: displayStatus,
                         statusCls: sCls
                     };
                 });
@@ -74,7 +77,7 @@ export default function BillingPage() {
                 const revenueByDay = new Array(7).fill(0);
                 
                 data.forEach(p => {
-                    if (p.status === 'paid') {
+                    if (p.status === 'completed') {
                         const d = new Date(p.created_at).getDay();
                         revenueByDay[d] += parseFloat(p.amount) || 0;
                     }

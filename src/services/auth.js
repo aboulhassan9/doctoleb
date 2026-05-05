@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { getProfileForSessionUser, buildSessionUser, createFallbackPatientProfile } from '../lib/authIdentity';
-import { authSignInSchema, authSignUpSchema, forgotPasswordSchema, parseWithSchema } from '../schemas';
+import { authSignInSchema, authSignUpSchema, forgotPasswordSchema, parseWithSchema, resetPasswordSchema } from '../schemas';
 
 export const authService = {
   async signIn(email, password) {
@@ -94,8 +94,11 @@ export const authService = {
     return { data: error ? null : true, error: error?.message || null };
   },
 
-  async resetPassword(password) {
-    const { error } = await supabase.auth.updateUser({ password });
+  async resetPassword(password, confirmPassword = password) {
+    const { data, error: validationError } = parseWithSchema(resetPasswordSchema, { password, confirmPassword });
+    if (validationError) return { data: null, error: validationError };
+
+    const { error } = await supabase.auth.updateUser({ password: data.password });
     if (error) {
       return { data: null, error: error.message };
     }

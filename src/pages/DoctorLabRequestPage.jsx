@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { reportService } from '../services/reports';
 import { patientService } from '../services/patients';
+import { doctorService } from '../services/doctors';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import DoctorSidebar from '../components/DoctorSidebar';
@@ -23,6 +24,7 @@ export default function DoctorLabRequestPage() {
     const [successMessage, setSuccessMessage] = useState('');
     const [patients, setPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [doctorId, setDoctorId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const { user } = useAuth();
     const { showToast } = useToast();
@@ -37,6 +39,16 @@ export default function DoctorLabRequestPage() {
         };
         fetchPatients();
     }, []);
+
+    useEffect(() => {
+        const fetchDoctorProfile = async () => {
+            if (!user?.id) return;
+            const { data } = await doctorService.getByUserId(user.id);
+            setDoctorId(data?.id || null);
+        };
+
+        fetchDoctorProfile();
+    }, [user?.id]);
 
     const removeTest = (index) => {
         setTests(tests.filter((_, i) => i !== index));
@@ -119,22 +131,29 @@ export default function DoctorLabRequestPage() {
             showToast('Please select a patient.', 'error');
             return;
         }
+        if (!doctorId) {
+            showToast('Doctor profile not found. Please try again after your profile loads.', 'error');
+            return;
+        }
 
         setIsSaving(true);
         try {
+            const testNames = tests.map(t => t.name);
+            const content = [
+                `Tests: ${testNames.join(', ')}`,
+                `Justification: ${justification || 'Not provided.'}`,
+                `Urgency: ${urgency}`,
+                `Specimen type: ${specimenType}`,
+                `Volume: ${volume} mL`,
+                `Collection date: ${collectionDate}`,
+            ].join('\n');
+
             const { error } = await reportService.create({
                 patient_id: selectedPatient.id,
-                doctor_id: user?.id,
+                doctor_id: doctorId,
                 report_type: 'Lab Request',
-                content: {
-                    tests: tests.map(t => t.name),
-                    justification,
-                    urgency,
-                    specimen_type: specimenType,
-                    volume,
-                    collection_date: collectionDate
-                },
-                status: 'pending'
+                title: `Lab Request - ${testNames.join(', ').slice(0, 160)}`,
+                content,
             });
 
             if (error) throw error;

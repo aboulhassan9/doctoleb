@@ -15,14 +15,17 @@ const PATIENT_SELECT = `
   created_at,
   updated_at,
   is_archived,
-  users (
+  users!patients_user_id_fkey (
     id,
     email,
     role,
     first_name,
     last_name,
     phone,
-    initials
+    initials,
+    avatar_url,
+    created_at,
+    updated_at
   )
 `;
 
@@ -34,16 +37,20 @@ const DOCTOR_SELECT = `
   license_number,
   bio,
   consultation_fee,
+  availability,
   created_at,
   updated_at,
-  users (
+  users!doctors_user_id_fkey (
     id,
     email,
     role,
     first_name,
     last_name,
     phone,
-    initials
+    initials,
+    avatar_url,
+    created_at,
+    updated_at
   )
 `;
 

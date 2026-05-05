@@ -1,6 +1,13 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
-import { APPOINTMENT_SELECT_FIELDS, DOCTOR_SELECT_FIELDS } from '../lib/selects';
+import {
+  APPOINTMENT_SELECT_FIELDS,
+  CLINIC_SELECT_FIELDS,
+  CLINIC_SETTINGS_SELECT_FIELDS,
+  DOCTOR_DASHBOARD_SUMMARY_FIELDS,
+  DOCTOR_SELECT_FIELDS,
+  REPORT_SELECT_FIELDS,
+} from '../lib/selects';
 
 // Unified clinic service — handles both CRUD (multi-clinic) and single-clinic operations
 export const clinicService = {
@@ -8,25 +15,25 @@ export const clinicService = {
 
   async getAll() {
     return apiCall(
-      supabase.from('clinics').select('*').order('name', { ascending: true })
+      supabase.from('clinics').select(CLINIC_SELECT_FIELDS).order('name', { ascending: true })
     );
   },
 
   async getById(id) {
     return apiCall(
-      supabase.from('clinics').select('*').eq('id', id).single()
+      supabase.from('clinics').select(CLINIC_SELECT_FIELDS).eq('id', id).single()
     );
   },
 
   async create(data) {
     return apiCall(
-      supabase.from('clinics').insert([data]).select().single()
+      supabase.from('clinics').insert([data]).select(CLINIC_SELECT_FIELDS).single()
     );
   },
 
   async update(id, data) {
     return apiCall(
-      supabase.from('clinics').update(data).eq('id', id).select().single()
+      supabase.from('clinics').update(data).eq('id', id).select(CLINIC_SELECT_FIELDS).single()
     );
   },
 
@@ -53,7 +60,7 @@ export const clinicService = {
   // Get clinic settings
   async getClinicSettings() {
     return apiCall(
-      supabase.from('clinic_settings').select('*').single()
+      supabase.from('clinic_settings').select(CLINIC_SETTINGS_SELECT_FIELDS).single()
     );
   },
 
@@ -71,19 +78,19 @@ export const clinicService = {
 
     if (!existing?.id) {
       return apiCall(
-        supabase.from('clinic_settings').insert([data]).select().single()
+        supabase.from('clinic_settings').insert([data]).select(CLINIC_SETTINGS_SELECT_FIELDS).single()
       );
     }
 
     return apiCall(
-      supabase.from('clinic_settings').update(data).eq('id', existing.id).select().single()
+      supabase.from('clinic_settings').update(data).eq('id', existing.id).select(CLINIC_SETTINGS_SELECT_FIELDS).single()
     );
   },
 
   // Get dashboard overview (uses DB view)
   async getDashboardSummary() {
     return apiCall(
-      supabase.from('doctor_dashboard_summary').select('*').single()
+      supabase.from('doctor_dashboard_summary').select(DOCTOR_DASHBOARD_SUMMARY_FIELDS).single()
     );
   },
 
@@ -103,25 +110,6 @@ export const clinicService = {
     );
   },
 
-  // Get available time slots (hours 8–16) for a doctor on a given date
-  async getAvailableTimeSlots(date, doctorId) {
-    const { data: appointments } = await supabase
-      .from('appointments')
-      .select('scheduled_at, duration_minutes')
-      .eq('doctor_id', doctorId)
-      .gte('scheduled_at', new Date(date).toISOString())
-      .lt('scheduled_at', new Date(new Date(date).getTime() + 86_400_000).toISOString())
-      .eq('status', 'scheduled');
-
-    const allSlots   = Array.from({ length: 9 }, (_, i) => i + 8); // 8,9,...,16
-    const bookedHrs  = appointments?.map(a => new Date(a.scheduled_at).getHours()) ?? [];
-
-    return {
-      data:  allSlots.filter(h => !bookedHrs.includes(h)),
-      error: null,
-    };
-  },
-
   // Request a lab test (creates a medical_report record)
   async requestLabTest(patientId, testType, reason, doctorId) {
     return apiCall(
@@ -134,7 +122,7 @@ export const clinicService = {
           title:       testType,
           content:     reason,
         }])
-        .select()
+        .select(REPORT_SELECT_FIELDS)
     );
   },
 };

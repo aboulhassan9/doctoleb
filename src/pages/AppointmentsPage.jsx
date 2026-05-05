@@ -428,14 +428,12 @@ function ScheduleModal({ onClose }) {
                     message: `An appointment has been booked for ${timeLabel}.`,
                     type: 'appointment',
                     related_id: apptId,
-                    related_type: 'appointment',
                 }),
                 notificationService.notifyRole('predoctor', {
                     title: 'New Appointment — Pre-Check Required',
                     message: `Patient appointment scheduled for ${timeLabel}. Please prepare pre-check.`,
                     type: 'appointment',
                     related_id: apptId,
-                    related_type: 'appointment',
                 }),
             ]);
 

@@ -52,7 +52,7 @@ export default function PreDoctorDashboardPage() {
     }, [user?.id]);
 
     const handleMarkAllRead = async () => {
-        if (user?.id) await notificationService.markAllRead(user.id);
+        if (user?.id) await notificationService.markAllAsRead(user.id);
         setNotifications([]);
         setShowNotifications(false);
         showToast('All notifications marked as read', 'success');
@@ -67,7 +67,6 @@ export default function PreDoctorDashboardPage() {
             message: `${name} has completed pre-check and is ready for the doctor.`,
             type: 'precheck',
             related_id: appt.id,
-            related_type: 'appointment',
         });
         showToast(`${name} marked as ready — doctor notified`, 'success');
         setAppointments(prev => prev.filter(a => a.id !== appt.id));

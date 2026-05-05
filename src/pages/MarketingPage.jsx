@@ -8,10 +8,10 @@ const MarketingPage = () => {
       <section className="mb-8">
         <h2 className="text-2xl font-bold mb-4">Key Specifications</h2>
         <ul className="list-disc list-inside space-y-2">
-          <li>All-in-one SaaS solution - patient records, smart scheduling, tele-consultation, lab requests and automated billing.</li>
+          <li>All-in-one clinic operating system - patient records, smart scheduling, tele-consultation, lab requests and billing for one clinic team.</li>
           <li>Responsive React SPA built with Vite, Tailwind CSS and Framer Motion for smooth UI.</li>
-          <li>Role-based access (Pre-Doctor staff, Doctors, Administrators).</li>
-          <li>Future-ready API layer - ready to connect to Supabase, GraphQL or REST back-ends.</li>
+          <li>Role-based access for patients, doctors, pre-doctor staff, and secretaries.</li>
+          <li>Supabase-backed data layer designed for one clinic with multiple doctors.</li>
           <li>Dark-mode support, high-contrast accessibility, WCAG-AA compliance.</li>
         </ul>
       </section>
@@ -27,10 +27,10 @@ const MarketingPage = () => {
       </section>
       <section className="flex gap-4">
         <Link to="/signup" className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold shadow-lg">
-          Sign Up Now
+          Patient Registration
         </Link>
         <Link to="/login" className="bg-slate-100 hover:bg-slate-200 text-slate-900 px-6 py-3 rounded-xl font-bold shadow">
-          Request a Demo
+          Staff Login
         </Link>
       </section>
     </div>

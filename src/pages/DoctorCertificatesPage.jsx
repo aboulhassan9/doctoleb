@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DoctorSidebar from '../components/DoctorSidebar';
 import { certificateService } from '../services/certificates';
+import { doctorService } from '../services/doctors';
 import { patientService } from '../services/patients';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -22,6 +23,7 @@ export default function DoctorCertificatesPage() {
     const [certificates, setCertificates] = useState([]);
     const [patients, setPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [doctorId, setDoctorId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const { user } = useAuth();
@@ -45,11 +47,26 @@ export default function DoctorCertificatesPage() {
         fetchAll();
     }, []);
 
+    useEffect(() => {
+        const fetchDoctorProfile = async () => {
+            if (!user?.id) return;
+
+            const { data, error } = await doctorService.getByUserId(user.id);
+            if (error) {
+                showToast('Doctor profile not found. Certificates cannot be issued yet.', 'error');
+                return;
+            }
+            setDoctorId(data?.id || null);
+        };
+
+        fetchDoctorProfile();
+    }, [showToast, user?.id]);
+
     const filteredCertificates = certificates.filter(c => {
-        const patientNameStr = c.patients?.users ? `${c.patients.users.first_name} ${c.patients.users.last_name}` : '';
+        const patientNameStr = c.title || '';
         const matchesSearch = patientNameStr.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (c.id && c.id.toLowerCase().includes(searchQuery.toLowerCase()));
-        const matchesFilter = filter === 'all' || c.status === filter;
+        const matchesFilter = filter === 'all' || c.certificate_type === filter;
         return matchesSearch && matchesFilter;
     });
 
@@ -127,22 +144,21 @@ export default function DoctorCertificatesPage() {
     };
 
     const handleSaveCertificate = async () => {
-        if (!diagnosis || !selectedPatient) {
-            showToast('Please select a patient and provide a diagnosis', 'error');
+        if (!diagnosis || !selectedPatient || !doctorId) {
+            showToast('Please select a patient, provide a diagnosis, and make sure your doctor profile is loaded', 'error');
             return;
         }
 
         setIsSaving(true);
         try {
+            const titleDiagnosis = diagnosis.length > 120 ? `${diagnosis.slice(0, 117)}...` : diagnosis;
             const { error } = await certificateService.create({
-                doctor_id: user?.id,
-                patient_id: selectedPatient.id,
-                diagnosis,
-                treatment,
-                recommendations,
-                start_date: startDate || null,
-                end_date: endDate || null,
-                status: 'Issued'
+                doctor_id: doctorId,
+                certificate_type: 'Medical Certificate',
+                title: `Medical Certificate - ${patientName || selectedPatient.id.slice(0, 8)} - ${titleDiagnosis}`.slice(0, 240),
+                issuer: getUserDisplayName(user, 'Doctor'),
+                issue_date: startDate || new Date().toISOString().slice(0, 10),
+                expiry_date: endDate || null,
             });
 
             if (error) throw error;
@@ -161,17 +177,20 @@ export default function DoctorCertificatesPage() {
     };
 
     const handleSaveDraft = async () => {
+        if (!doctorId) {
+            showToast('Doctor profile not found. Please try again after your profile loads.', 'error');
+            return;
+        }
+
         setIsSaving(true);
         try {
             const { error } = await certificateService.create({
-                doctor_id: user?.id,
-                patient_id: selectedPatient?.id || null,
-                diagnosis,
-                treatment,
-                recommendations,
-                start_date: startDate || null,
-                end_date: endDate || null,
-                status: 'Pending'
+                doctor_id: doctorId,
+                certificate_type: 'Medical Certificate',
+                title: `Draft Medical Certificate${patientName ? ` - ${patientName}` : ''}`,
+                issuer: getUserDisplayName(user, 'Doctor'),
+                issue_date: startDate || null,
+                expiry_date: endDate || null,
             });
             if (error) throw error;
             showToast('Draft saved successfully', 'success');
@@ -228,8 +247,7 @@ export default function DoctorCertificatesPage() {
                         <div className="flex items-center gap-3 mt-4 md:mt-0">
                             <select value={filter} onChange={(e) => setFilter(e.target.value)} className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-medium">
                                 <option value="all">All Certificates</option>
-                                <option value="Issued">Issued</option>
-                                <option value="Pending">Pending</option>
+                                <option value="Medical Certificate">Medical Certificate</option>
                             </select>
                             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowNewCert(true)} className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-primary text-white rounded-xl shadow-lg">
                                 <span className="material-symbols-outlined text-lg">add</span>
@@ -261,11 +279,11 @@ export default function DoctorCertificatesPage() {
                                             <span className="text-sm font-bold font-mono text-primary">{cert.id}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-sm text-slate-900">{cert.type}</span>
+                                            <span className="text-sm text-slate-900">{cert.certificate_type}</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-sm font-bold text-slate-900">
-                                                {cert.patients?.users ? `${cert.patients.users.first_name} ${cert.patients.users.last_name}` : 'Unknown'}
+                                                {cert.title || 'Medical Certificate'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -275,9 +293,9 @@ export default function DoctorCertificatesPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                                cert.status === 'Issued' ? 'bg-green-100 text-green-700' : 'bg-warning/10 text-warning'
+                                                cert.is_archived ? 'bg-warning/10 text-warning' : 'bg-green-100 text-green-700'
                                             }`}>
-                                                {cert.status}
+                                                {cert.is_archived ? 'Archived' : 'Active'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">

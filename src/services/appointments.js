@@ -2,17 +2,22 @@ import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
 import { APPOINTMENT_SELECT_FIELDS } from '../lib/selects';
 import { normalizeAppointment } from '../lib/appointments';
+import { paginateQuery } from '../lib/pagination';
+import { assertTransition } from '../lib/stateMachines';
 import { appointmentBookingSchema, parseWithSchema } from '../schemas';
 import { bookSlot } from './slots';
 import { notificationService } from './notifications';
 
 export const appointmentService = {
-  async getAll() {
+  async getAll(options = {}) {
     return apiCall(
-      supabase
-        .from('appointments')
-        .select(APPOINTMENT_SELECT_FIELDS)
-        .order('scheduled_at', { ascending: true })
+      paginateQuery(
+        supabase
+          .from('appointments')
+          .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+          .order('scheduled_at', { ascending: true }),
+        options
+      )
     );
   },
 
@@ -26,23 +31,29 @@ export const appointmentService = {
     );
   },
 
-  async getByDoctorId(doctorId) {
+  async getByDoctorId(doctorId, options = {}) {
     return apiCall(
-      supabase
-        .from('appointments')
-        .select(APPOINTMENT_SELECT_FIELDS)
-        .eq('doctor_id', doctorId)
-        .order('scheduled_at', { ascending: true })
+      paginateQuery(
+        supabase
+          .from('appointments')
+          .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+          .eq('doctor_id', doctorId)
+          .order('scheduled_at', { ascending: true }),
+        options
+      )
     );
   },
 
-  async getByPatientId(patientId) {
+  async getByPatientId(patientId, options = {}) {
     return apiCall(
-      supabase
-        .from('appointments')
-        .select(APPOINTMENT_SELECT_FIELDS)
-        .eq('patient_id', patientId)
-        .order('scheduled_at', { ascending: true })
+      paginateQuery(
+        supabase
+          .from('appointments')
+          .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+          .eq('patient_id', patientId)
+          .order('scheduled_at', { ascending: true }),
+        options
+      )
     );
   },
 
@@ -56,14 +67,17 @@ export const appointmentService = {
     );
   },
 
-  async getUpcoming() {
+  async getUpcoming(options = {}) {
     return apiCall(
-      supabase
-        .from('appointments')
-        .select(APPOINTMENT_SELECT_FIELDS)
-        .in('status', ['scheduled', 'confirmed', 'pre_check', 'in_consultation'])
-        .gt('scheduled_at', new Date().toISOString())
-        .order('scheduled_at', { ascending: true })
+      paginateQuery(
+        supabase
+          .from('appointments')
+          .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+          .in('status', ['scheduled', 'confirmed', 'pre_check', 'in_consultation'])
+          .gt('scheduled_at', new Date().toISOString())
+          .order('scheduled_at', { ascending: true }),
+        options
+      )
     );
   },
 
@@ -146,15 +160,6 @@ export const appointmentService = {
     };
   },
 
-  async delete(id) {
-    return apiCall(
-      supabase
-        .from('appointments')
-        .delete()
-        .eq('id', id)
-    );
-  },
-
   async checkAvailability(doctorId, date) {
     // date should be an ISO string or a Date object representing the day
     const startOfDay = new Date(date);
@@ -163,34 +168,48 @@ export const appointmentService = {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('id, scheduled_at, duration_minutes, status')
-      .eq('doctor_id', doctorId)
-      .not('status', 'eq', 'cancelled')
-      .gte('scheduled_at', startOfDay.toISOString())
-      .lte('scheduled_at', endOfDay.toISOString());
-
-    if (error) {
-      console.error('Error checking availability:', error);
-      return { data: null, error };
-    }
-
-    return { data, error: null };
+    return apiCall(
+      supabase
+        .from('appointments')
+        .select('id, scheduled_at, duration_minutes, status')
+        .eq('doctor_id', doctorId)
+        .in('status', ['scheduled', 'confirmed', 'pre_check', 'in_consultation'])
+        .gte('scheduled_at', startOfDay.toISOString())
+        .lte('scheduled_at', endOfDay.toISOString())
+    );
   },
 
   async update(id, data) {
+    if (data?.status) {
+      const { data: current, error } = await this.getById(id);
+      if (error || !current) return { data: null, count: null, error: error || 'Appointment not found' };
+
+      try {
+        assertTransition('appointment', current.status, data.status);
+      } catch (transitionError) {
+        return { data: null, count: null, error: transitionError.message };
+      }
+    }
+
     return apiCall(
       supabase
         .from('appointments')
         .update(data)
         .eq('id', id)
-        .select()
+        .select(APPOINTMENT_SELECT_FIELDS)
     );
   },
 
   async cancel(id, reason = null) {
-    const { data: existingAppointment } = await this.getById(id);
+    const { data: existingAppointment, error } = await this.getById(id);
+    if (error || !existingAppointment) return { data: null, count: null, error: error || 'Appointment not found' };
+
+    try {
+      assertTransition('appointment', existingAppointment.status, 'cancelled');
+    } catch (transitionError) {
+      return { data: null, count: null, error: transitionError.message };
+    }
+
     const nextNotes = [existingAppointment?.notes, reason].filter(Boolean).join('\n\n');
 
     return apiCall(
@@ -203,6 +222,15 @@ export const appointmentService = {
   },
 
   async markCompleted(id) {
+    const { data: current, error } = await this.getById(id);
+    if (error || !current) return { data: null, count: null, error: error || 'Appointment not found' };
+
+    try {
+      assertTransition('appointment', current.status, 'completed');
+    } catch (transitionError) {
+      return { data: null, count: null, error: transitionError.message };
+    }
+
     return apiCall(
       supabase
         .from('appointments')
@@ -210,6 +238,10 @@ export const appointmentService = {
         .eq('id', id)
         .select(APPOINTMENT_SELECT_FIELDS)
     );
+  },
+
+  async archive(id, reason = 'Appointment archived') {
+    return this.cancel(id, reason);
   },
 
   subscribeToAppointments(doctorId, callback) {

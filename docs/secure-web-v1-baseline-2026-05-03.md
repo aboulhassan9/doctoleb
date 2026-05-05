@@ -2,7 +2,9 @@
 
 - Verified against live Supabase project `gezmfmskhmjgnquoyosq` on `2026-05-03`
 - Source of truth: live DB, not the older repo migration set
+- Product model: one specific clinic with multiple doctors, not SaaS
 - Scope: `patient`, `doctor`, `predoctor`, `secretary`
+- Staff accounts are internal clinic accounts; patients are the only public self-registration role
 
 ## Branching Blocker
 

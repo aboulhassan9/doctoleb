@@ -1,6 +1,6 @@
 # DoctoLeb — Secure Web V1 Plan
 
-> **Milestone**: Production-safe web dashboard for **1 clinic / 1 doctor**
+> **Milestone**: Production-safe web dashboard for **one specific clinic with multiple doctors**
 > **Status**: Phase 1-3 complete — **migrations APPLIED to live DB** ✅
 > **Last verified against live DB / functions**: 2026-05-04
 > **Supabase project**: `gezmfmskhmjgnquoyosq` (clinic-website)
@@ -49,6 +49,20 @@ All 9 migration batches applied successfully to live DB:
 - [x] `npm run build` clean
 - [ ] Role-based smoke test passes
 - [ ] Leaked password protection enabled in Supabase Auth
+
+---
+
+## Product Scope Decision
+
+DoctoLeb V1 is **not a SaaS marketplace** and is **not an open platform where any doctor can self-register**.
+
+It is the operating system for one real clinic:
+- Patients can register/login from the public site to manage their own profile and appointments.
+- Doctors, predoctors, and secretaries are clinic staff accounts created through an internal trusted workflow.
+- Multiple doctors can work inside the same clinic, but there is no tenant onboarding, subscription billing, public doctor marketplace, or multi-clinic switching in V1.
+- Any future `admin` role means "clinic owner/manager", not "SaaS platform administrator".
+
+This replaces the older "1 clinic / 1 doctor" assumption. Any service, RLS policy, route, or UI flow that assumes exactly one doctor must be treated as a V1 gap.
 
 ---
 
@@ -206,7 +220,7 @@ All 9 migration batches applied successfully to live DB:
 
 | Item | Reason |
 |---|---|
-| Admin role + UI | V1 is single-clinic/single-doctor |
+| Clinic admin/manager UI | Staff management is needed later, but V1 can use trusted internal account creation while core flows stabilize |
 | Mobile app (React Native) | Web must be stable first |
 | TypeScript migration | Stabilize JS first |
 | TanStack Query | Current fetching works |
@@ -216,7 +230,7 @@ All 9 migration batches applied successfully to live DB:
 | PDF generation | Defer to post-v1 |
 | Email/SMS notifications | In-app only for v1 |
 | Payment processing (Stripe) | CRUD billing only for v1 |
-| Multi-clinic architecture | Single-clinic for v1 |
+| Multi-clinic / SaaS tenant architecture | DoctoLeb V1 is for one specific clinic, not SaaS |
 | CI/CD pipeline | Manual deploy for v1 |
 | Error monitoring (Sentry) | Console-only for v1 |
 
@@ -225,8 +239,8 @@ All 9 migration batches applied successfully to live DB:
 ## Assumptions & Defaults
 
 1. **Live DB is source of truth** — when repo migrations and live schema disagree, live wins
-2. **Single-clinic / single-doctor** for v1
+2. **Single clinic / multiple doctors** for v1 — no SaaS tenants, no public doctor onboarding
 3. **Minimal disruption** — preserve route structure, service names, component names
 4. **Keep JS for v1** — no TypeScript conversion during stabilization
-5. **Roles for v1**: `doctor`, `predoctor`, `secretary`, `patient` (`admin` deferred)
+5. **Roles for v1**: `doctor`, `predoctor`, `secretary`, `patient` (`admin`/clinic manager deferred)
 6. **Edge functions already deployed** — audit and fix in-place

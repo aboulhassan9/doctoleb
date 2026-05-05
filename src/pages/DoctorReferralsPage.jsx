@@ -12,14 +12,15 @@ import { useSignaturePad } from '../hooks/useSignaturePad';
 
 export default function DoctorReferralsPage() {
     const navigate = useNavigate();
-    const [referTo, setReferTo] = useState('');
-    const [patientStatus, setPatientStatus] = useState('normal');
+    const [referToDoctorId, setReferToDoctorId] = useState('');
+    const [patientStatus, setPatientStatus] = useState('routine');
     const [reason, setReason] = useState('');
     const [clinicalFindings, setClinicalFindings] = useState('');
     const [treatmentPlan, setTreatmentPlan] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [patients, setPatients] = useState([]);
+    const [doctors, setDoctors] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const { user } = useAuth();
     const { showToast } = useToast();
@@ -29,15 +30,21 @@ export default function DoctorReferralsPage() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const [pRes, dRes] = await Promise.all([
+            const [pRes, dRes, doctorsRes] = await Promise.all([
                 patientService.getAll(),
                 doctorService.getByUserId(user?.id),
+                doctorService.getAll(),
             ]);
             if (pRes.data) {
                 setPatients(pRes.data);
                 if (pRes.data.length > 0) setSelectedPatient(pRes.data[0]);
             }
             if (dRes.data) { setDoctorId(dRes.data.id); setDoctorRecord(dRes.data); }
+            if (doctorsRes.data) {
+                setDoctors(doctorsRes.data);
+                const firstRecipient = doctorsRes.data.find(d => d.id !== dRes.data?.id) || doctorsRes.data[0];
+                if (firstRecipient) setReferToDoctorId(firstRecipient.id);
+            }
         };
         if (user?.id) fetchData();
     }, [user?.id]);
@@ -50,7 +57,7 @@ export default function DoctorReferralsPage() {
     };
 
     const handleSend = async () => {
-        if (!reason || !referTo) {
+        if (!reason || !referToDoctorId || !selectedPatient) {
             showToast('Please provide a reason and recipient for the referral', 'error');
             return;
         }
@@ -61,15 +68,19 @@ export default function DoctorReferralsPage() {
 
         setIsSaving(true);
         try {
+            const fullReason = [
+                `Priority: ${patientStatus}`,
+                `Reason: ${reason}`,
+                clinicalFindings ? `Clinical findings: ${clinicalFindings}` : null,
+                treatmentPlan ? `Treatment plan: ${treatmentPlan}` : null,
+                `Reference: ${refNumber}`,
+            ].filter(Boolean).join('\n\n');
+
             const { error } = await referralService.create({
                 from_doctor_id: doctorId,
-                patient_id: selectedPatient?.id || null,
-                to_doctor_name: referTo,
-                priority: patientStatus,
-                reason,
-                clinical_findings: clinicalFindings,
-                treatment_plan: treatmentPlan,
-                ref_number: refNumber,
+                patient_id: selectedPatient.id,
+                to_doctor_id: referToDoctorId,
+                reason: fullReason,
             });
 
             if (error) throw error;
@@ -179,12 +190,18 @@ export default function DoctorReferralsPage() {
                                     <div className="space-y-4">
                                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">Referring To Doctor / Specialist</label>
                                         <div className="relative group">
-                                            <input
-                                                value={referTo}
-                                                onChange={(e) => setReferTo(e.target.value)}
+                                            <select
+                                                value={referToDoctorId}
+                                                onChange={(e) => setReferToDoctorId(e.target.value)}
                                                 className="w-full border-b-2 border-slate-200 focus:border-primary bg-transparent py-2 font-bold text-slate-900 focus:ring-0 transition-colors px-0"
-                                                type="text"
-                                            />
+                                            >
+                                                <option value="">— Select doctor —</option>
+                                                {doctors.map(doctor => (
+                                                    <option key={doctor.id} value={doctor.id}>
+                                                        Dr. {doctor.users?.first_name} {doctor.users?.last_name}
+                                                    </option>
+                                                ))}
+                                            </select>
                                             <button className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                                                 <span className="material-symbols-outlined">person_search</span>
                                             </button>

@@ -115,6 +115,81 @@ export const precheckSubmitSchema = precheckDraftSchema.extend({
   temperature: z.number().min(20).max(50),
 });
 
+export const consultationCreateSchema = z.object({
+  appointment_id: z.string().uuid(),
+  doctor_id: z.string().uuid().optional().nullable(),
+  patient_id: z.string().uuid().optional().nullable(),
+  notes: nullableTrimmedString(8000),
+  diagnosis: nullableTrimmedString(4000),
+  treatment_plan: nullableTrimmedString(8000),
+  medications: z.array(z.record(z.string(), z.unknown())).optional().default([]),
+});
+
+export const consultationCompleteSchema = z.object({
+  notes: z.string().trim().min(1, 'Consultation notes are required.').max(8000),
+  diagnosis: z.string().trim().min(1, 'Diagnosis is required.').max(4000),
+  treatment_plan: nullableTrimmedString(8000),
+  medications: z.array(z.record(z.string(), z.unknown())).optional().default([]),
+});
+
+export const referralCreateSchema = z.object({
+  from_doctor_id: z.string().uuid(),
+  to_doctor_id: z.string().uuid(),
+  patient_id: z.string().uuid(),
+  reason: z.string().trim().min(1, 'Referral reason is required.').max(8000),
+  status: z.enum(['pending', 'accepted', 'in_progress', 'completed', 'rejected']).optional().default('pending'),
+});
+
+export const certificateCreateSchema = z.object({
+  doctor_id: z.string().uuid(),
+  certificate_type: z.string().trim().min(1).max(120).default('Medical Certificate'),
+  title: nullableTrimmedString(240),
+  issuer: nullableTrimmedString(240),
+  issue_date: z.preprocess(blankToNull, z.string().trim().nullable()),
+  expiry_date: z.preprocess(blankToNull, z.string().trim().nullable()),
+  file_url: nullableTrimmedString(2000),
+});
+
+export const reportCreateSchema = z.object({
+  patient_id: z.string().uuid(),
+  doctor_id: z.string().uuid(),
+  report_type: z.string().trim().min(1).max(120),
+  title: z.string().trim().min(1).max(240),
+  content: nullableTrimmedString(8000),
+  file_url: nullableTrimmedString(2000),
+});
+
+export const reportUpdateSchema = z.object({
+  patient_id: z.string().uuid().optional(),
+  doctor_id: z.string().uuid().optional(),
+  report_type: z.string().trim().min(1).max(120).optional(),
+  title: z.string().trim().min(1).max(240).optional(),
+  content: nullableTrimmedString(8000).optional(),
+  file_url: nullableTrimmedString(2000).optional(),
+});
+
+export const paymentCreateSchema = z.object({
+  patient_id: z.string().uuid(),
+  doctor_id: z.string().uuid(),
+  appointment_id: z.string().uuid().optional().nullable(),
+  amount: z.coerce.number().positive('Amount must be greater than zero.'),
+  currency: z.string().trim().min(1).max(10).optional().default('USD'),
+  status: z.enum(['pending', 'completed', 'failed', 'refunded']).optional().default('pending'),
+  payment_method: nullableTrimmedString(120),
+  transaction_id: nullableTrimmedString(240),
+});
+
+export const paymentUpdateSchema = z.object({
+  patient_id: z.string().uuid().optional(),
+  doctor_id: z.string().uuid().optional(),
+  appointment_id: z.string().uuid().optional().nullable(),
+  amount: z.coerce.number().positive('Amount must be greater than zero.').optional(),
+  currency: z.string().trim().min(1).max(10).optional(),
+  status: z.enum(['pending', 'completed', 'failed', 'refunded']).optional(),
+  payment_method: nullableTrimmedString(120).optional(),
+  transaction_id: nullableTrimmedString(240).optional(),
+});
+
 export function parseWithSchema(schema, payload) {
   const result = schema.safeParse(payload);
 

@@ -612,7 +612,7 @@ export default function PatientsPage() {
             try {
                 // Optimistic UI update
                 setPatientList(prev => prev.filter(p => p.id !== id));
-                showToast('Patient record deleted', 'success');
+                showToast('Patient record archived', 'success');
                 if (paginated.length === 1 && currentPage > 1) setCurrentPage(currentPage - 1);
                 
                 await patientService.delete(id);

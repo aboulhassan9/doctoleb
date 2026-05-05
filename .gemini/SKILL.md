@@ -23,12 +23,24 @@
 
 ## 2. Project Architecture
 
+### 2.0 Product Model
+
+DoctoLeb is the management system for **one specific clinic with multiple doctors**.
+
+It is not a SaaS marketplace:
+- no public doctor self-registration
+- no tenant onboarding or tenant switching
+- no subscription/customer account layer for clinics
+- no cross-clinic discovery or booking marketplace
+
+Patients may self-register from the public web flow. Staff accounts (`doctor`, `predoctor`, `secretary`, future `admin`) are created through a trusted internal clinic workflow.
+
 ### 2.1 Monorepo Structure (Target)
 
 ```
 doctoleb/
 ├── apps/
-│   ├── web/                    # Vite + React dashboard (admin, doctor, secretary, predoctor)
+│   ├── web/                    # Vite + React dashboard (clinic admin, doctor, secretary, predoctor)
 │   │   ├── src/
 │   │   │   ├── components/     # UI components (split into proper files)
 │   │   │   ├── contexts/       # React Context providers

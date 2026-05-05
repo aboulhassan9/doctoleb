@@ -6,6 +6,7 @@ import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { patientService } from '../services/patients';
 import { paymentService } from '../services/payments';
+import { doctorService } from '../services/doctors';
 
 /* ─────────────────────────────────────────────────────────
    Create Bill Page
@@ -24,6 +25,7 @@ export default function CreateBillPage() {
     
     const [patientsList, setPatientsList] = useState([]);
     const [selectedPatientId, setSelectedPatientId] = useState('');
+    const [billingDoctorId, setBillingDoctorId] = useState(null);
 
     React.useEffect(() => {
         const fetchPatients = async () => {
@@ -40,8 +42,13 @@ export default function CreateBillPage() {
             }
             setIsLoadingServices(false);
         };
+        const fetchBillingDoctor = async () => {
+            const { data } = await doctorService.getFirst();
+            setBillingDoctorId(data?.id || null);
+        };
         fetchPatients();
         fetchServices();
+        fetchBillingDoctor();
     }, []);
 
     const selectedPatient = useMemo(() => {
@@ -98,25 +105,27 @@ export default function CreateBillPage() {
             showToast('Total amount must be greater than zero', 'error');
             return;
         }
+
+        if (!billingDoctorId) {
+            showToast('Cannot create bill before a clinic doctor is configured', 'error');
+            return;
+        }
         
         setSubmitState('processing');
         
         const invoiceData = {
             patient_id: selectedPatientId,
+            doctor_id: billingDoctorId,
             amount: totalDue,
-            status: ['cash', 'whish', 'visa'].includes(paymentMethod) ? 'Paid' : 'Pending',
+            status: ['cash', 'whish', 'visa'].includes(paymentMethod) ? 'completed' : 'pending',
             payment_method: paymentMethod,
-            insurance_provider: paymentMethod === 'insurance' ? insurance.provider : null,
-            insurance_policy_id: paymentMethod === 'insurance' ? insurance.policyId : null,
-            insurance_copay: paymentMethod === 'insurance' ? insurance.copay : null,
-            line_items: services.map(s => ({ name: s.name, quantity: s.quantity, unit_price: s.price })),
         };
         
         const { error } = await paymentService.create(invoiceData);
         
         if (error) {
             setSubmitState('idle');
-            showToast('Failed to create bill: ' + error.message, 'error');
+            showToast(`Failed to create bill: ${error?.message || error}`, 'error');
             return;
         }
 

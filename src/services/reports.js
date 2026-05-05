@@ -1,14 +1,19 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
 import { REPORT_SELECT_FIELDS, DOCTOR_SELECT_FIELDS, PATIENT_SELECT_FIELDS, USER_CONTACT_FIELDS } from '../lib/selects';
+import { paginateQuery } from '../lib/pagination';
+import { parseWithSchema, reportCreateSchema, reportUpdateSchema } from '../schemas';
 
 export const reportService = {
-  async getAll() {
+  async getAll(options = {}) {
     return apiCall(
-      supabase
-        .from('medical_reports')
-        .select(`${REPORT_SELECT_FIELDS}, doctors(${DOCTOR_SELECT_FIELDS}), patients(${PATIENT_SELECT_FIELDS})`)
-        .order('created_at', { ascending: false })
+      paginateQuery(
+        supabase
+          .from('medical_reports')
+          .select(`${REPORT_SELECT_FIELDS}, doctors(${DOCTOR_SELECT_FIELDS}), patients(${PATIENT_SELECT_FIELDS})`, { count: 'exact' })
+          .order('created_at', { ascending: false }),
+        options
+      )
     );
   },
 
@@ -22,23 +27,29 @@ export const reportService = {
     );
   },
 
-  async getByPatientId(patientId) {
+  async getByPatientId(patientId, options = {}) {
     return apiCall(
-      supabase
-        .from('medical_reports')
-        .select(`${REPORT_SELECT_FIELDS}, doctors(id, user_id, users(${USER_CONTACT_FIELDS}))`)
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false })
+      paginateQuery(
+        supabase
+          .from('medical_reports')
+          .select(`${REPORT_SELECT_FIELDS}, doctors(id, user_id, users!doctors_user_id_fkey(${USER_CONTACT_FIELDS}))`, { count: 'exact' })
+          .eq('patient_id', patientId)
+          .order('created_at', { ascending: false }),
+        options
+      )
     );
   },
 
-  async getByDoctorId(doctorId) {
+  async getByDoctorId(doctorId, options = {}) {
     return apiCall(
-      supabase
-        .from('medical_reports')
-        .select(`${REPORT_SELECT_FIELDS}, patients(id, user_id, users(${USER_CONTACT_FIELDS}))`)
-        .eq('doctor_id', doctorId)
-        .order('created_at', { ascending: false })
+      paginateQuery(
+        supabase
+          .from('medical_reports')
+          .select(`${REPORT_SELECT_FIELDS}, patients(id, user_id, users!patients_user_id_fkey(${USER_CONTACT_FIELDS}))`, { count: 'exact' })
+          .eq('doctor_id', doctorId)
+          .order('created_at', { ascending: false }),
+        options
+      )
     );
   },
 
@@ -52,7 +63,10 @@ export const reportService = {
     );
   },
 
-  async create(data) {
+  async create(rawData) {
+    const { data, error: validationError } = parseWithSchema(reportCreateSchema, rawData);
+    if (validationError) return { data: null, count: null, error: validationError };
+
     return apiCall(
       supabase
         .from('medical_reports')
@@ -61,7 +75,10 @@ export const reportService = {
     );
   },
 
-  async update(id, data) {
+  async update(id, rawData) {
+    const { data, error: validationError } = parseWithSchema(reportUpdateSchema, rawData);
+    if (validationError) return { data: null, count: null, error: validationError };
+
     return apiCall(
       supabase
         .from('medical_reports')

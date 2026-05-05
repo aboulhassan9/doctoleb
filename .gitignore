@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+opencode.jsonc
+supabase/.temp/
+temp_contexts_diff.txt
+temp_protected_diff.txt
+temp_services_diff.txt
 
 # Editor directories and files
 .vscode/*

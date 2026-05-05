@@ -7,8 +7,9 @@ const REFERRAL_SELECT = `
   to_doctor_id,
   patient_id,
   reason,
-  notes,
   status,
+  referred_at,
+  is_archived,
   created_at,
   updated_at
 `;
@@ -20,10 +21,8 @@ const NOTIFICATION_SELECT = `
   message,
   type,
   related_id,
-  related_type,
   is_read,
-  created_at,
-  updated_at
+  created_at
 `;
 
 Deno.serve(async (req: Request) => {
@@ -68,7 +67,6 @@ Deno.serve(async (req: Request) => {
           to_doctor_id: toDoctorId,
           patient_id: patientId,
           reason,
-          notes: typeof body?.notes === "string" ? body.notes : null,
           status: typeof body?.status === "string" ? body.status : "pending",
         }])
         .select(REFERRAL_SELECT)
@@ -85,9 +83,6 @@ Deno.serve(async (req: Request) => {
 
       if (body?.status !== undefined) {
         updatePayload.status = body.status;
-      }
-      if (body?.notes !== undefined) {
-        updatePayload.notes = body.notes;
       }
       if (body?.reason !== undefined) {
         updatePayload.reason = body.reason;

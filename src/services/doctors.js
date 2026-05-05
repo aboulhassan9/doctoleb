@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
-import { DOCTOR_SELECT_FIELDS } from '../lib/selects';
+import { CERTIFICATE_SELECT_FIELDS, DOCTOR_SELECT_FIELDS } from '../lib/selects';
 
 export const doctorService = {
   async getAll() {
@@ -32,7 +32,7 @@ export const doctorService = {
     );
   },
 
-  /** Get the first doctor in the system (v1: single-doctor clinic) */
+  /** Temporary fallback for legacy screens; V1 supports multiple doctors in one clinic. */
   async getFirst() {
     return apiCall(
       supabase
@@ -99,7 +99,7 @@ export const doctorService = {
     return apiCall(
       supabase
         .from('certificates')
-        .select('id, doctor_id, patient_id, certificate_type, title, content, issue_date, created_at')
+        .select(CERTIFICATE_SELECT_FIELDS)
         .eq('doctor_id', doctorId)
         .order('issue_date', { ascending: false })
     );

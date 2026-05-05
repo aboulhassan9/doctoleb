@@ -21,6 +21,16 @@
 
 ---
 
+## 🔴 RULE 1A — Single-Clinic Product Boundary
+
+1. **DoctoLeb is not SaaS in V1** — do not add tenant onboarding, public clinic registration, subscription billing, or marketplace discovery.
+2. **Support multiple doctors inside one clinic** — never assume there is exactly one doctor unless a function is explicitly named as a temporary fallback.
+3. **Patients may self-register publicly** — this creates patient accounts only.
+4. **Staff accounts are internal** — doctors, predoctors, secretaries, and future clinic managers must be created through a trusted staff/admin workflow, never public signup.
+5. **Future `admin` means clinic manager** — not a SaaS/platform administrator.
+
+---
+
 ## 🔴 RULE 2 — One Auth System Only
 
 1. **Use Supabase Auth exclusively** — `signUp()`, `signInWithPassword()`, `signOut()`, `resetPasswordForEmail()`.

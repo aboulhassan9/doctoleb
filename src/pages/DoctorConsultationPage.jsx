@@ -139,7 +139,6 @@ export default function DoctorConsultationPage() {
                 message: 'Doctor has completed a consultation. Please generate the invoice for this visit.',
                 type: 'consultation',
                 related_id: result.data?.id || id,
-                related_type: 'consultation',
             });
 
             showToast('Consultation saved successfully', 'success');

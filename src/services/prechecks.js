@@ -1,25 +1,8 @@
 import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
+import { PRECHECK_SELECT_FIELDS } from '../lib/selects';
+import { assertTransition } from '../lib/stateMachines';
 import { parseWithSchema, precheckDraftSchema, precheckSubmitSchema } from '../schemas';
-
-const PRECHECK_SELECT_FIELDS = [
-  'id',
-  'patient_id',
-  'predoctor_id',
-  'blood_pressure',
-  'heart_rate',
-  'temperature',
-  'weight',
-  'height',
-  'current_medications',
-  'allergies',
-  'symptoms',
-  'status',
-  'submitted_at',
-  'is_urgent',
-  'created_at',
-  'updated_at',
-].join(', ');
 
 function buildPrecheckPayload(data, status) {
   return {
@@ -64,6 +47,15 @@ export const precheckService = {
     const { data, error } = parseWithSchema(precheckDraftSchema, payload);
     if (error) {
       return { data: null, error };
+    }
+
+    const { data: current, error: currentError } = await this.getById(id);
+    if (currentError || !current) return { data: null, count: null, error: currentError || 'Pre-check form not found' };
+
+    try {
+      assertTransition('precheck', current.status, 'draft');
+    } catch (transitionError) {
+      return { data: null, count: null, error: transitionError.message };
     }
 
     return apiCall(

@@ -72,7 +72,6 @@ export default function PreDoctorCheckPage() {
                 message: `${patientDisplay.name} has completed pre-check and is ready for consultation.`,
                 type: 'precheck',
                 related_id: ptId,
-                related_type: 'patient',
             });
 
             showToast('Pre-check submitted successfully to doctor queue', 'success');

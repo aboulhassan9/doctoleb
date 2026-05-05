@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { reportService } from '../services/reports';
 import { patientService } from '../services/patients';
+import { doctorService } from '../services/doctors';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import DoctorSidebar from '../components/DoctorSidebar';
@@ -18,6 +19,7 @@ export default function DoctorReportsPage() {
     const [showSuccess, setShowSuccess] = useState(false);
     const [patients, setPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [doctorId, setDoctorId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const { user } = useAuth();
     const { showToast } = useToast();
@@ -33,26 +35,54 @@ export default function DoctorReportsPage() {
         fetchPatients();
     }, []);
 
+    useEffect(() => {
+        const fetchDoctorProfile = async () => {
+            if (!user?.id) return;
+            const { data } = await doctorService.getByUserId(user.id);
+            setDoctorId(data?.id || null);
+        };
+
+        fetchDoctorProfile();
+    }, [user?.id]);
+
     const handleSave = async () => {
         if (!selectedPatient) {
             showToast('Please select a patient', 'error');
             return;
         }
+        if (!doctorId) {
+            showToast('Doctor profile not found. Please try again after your profile loads.', 'error');
+            return;
+        }
 
         setIsSaving(true);
         try {
+            const patientName = `${selectedPatient.users?.first_name || ''} ${selectedPatient.users?.last_name || ''}`.trim();
+            const content = [
+                `Patient: ${patientName || selectedPatient.id}`,
+                '',
+                'Medical History',
+                medicalHistory || 'Not provided.',
+                '',
+                'Clinical Findings',
+                clinicalFindings || 'Not provided.',
+                '',
+                'Diagnosis',
+                diagnosis || 'Not provided.',
+                '',
+                'Treatment Plan',
+                treatmentPlan || 'Not provided.',
+                '',
+                'Recommendations',
+                recommendations || 'Not provided.',
+            ].join('\n');
+
             const { error } = await reportService.create({
                 patient_id: selectedPatient.id,
-                doctor_id: user?.id,
+                doctor_id: doctorId,
                 report_type: 'Comprehensive Report',
-                content: {
-                    medicalHistory,
-                    clinicalFindings,
-                    diagnosis,
-                    treatmentPlan,
-                    recommendations
-                },
-                status: 'final'
+                title: `Comprehensive Report - ${patientName || selectedPatient.id.slice(0, 8)}`,
+                content,
             });
 
             if (error) throw error;

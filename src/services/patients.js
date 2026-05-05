@@ -2,19 +2,28 @@ import { supabase } from '../lib/supabase';
 import { apiCall } from './api';
 import { buildInitials } from '../lib/authIdentity';
 import { PATIENT_SELECT_FIELDS, USER_PUBLIC_FIELDS } from '../lib/selects';
+import { paginateQuery } from '../lib/pagination';
 import { parseWithSchema, patientProfileUpdateSchema } from '../schemas';
 
 function isMissingFunctionError(error, functionName) {
   return error?.code === 'PGRST202' || error?.message?.includes(functionName);
 }
 
+function sanitizeSearchTerm(query) {
+  return String(query || '').replace(/[%,.()]/g, '').trim();
+}
+
 export const patientService = {
-  async getAll() {
+  async getAll(options = {}) {
     return apiCall(
-      supabase
-        .from('patients')
-        .select(PATIENT_SELECT_FIELDS)
-        .order('created_at', { ascending: false })
+      paginateQuery(
+        supabase
+          .from('patients')
+          .select(PATIENT_SELECT_FIELDS, { count: 'exact' })
+          .eq('is_archived', false)
+          .order('created_at', { ascending: false }),
+        options
+      )
     );
   },
 
@@ -148,14 +157,25 @@ export const patientService = {
   },
 
   async search(query) {
+    const sanitizedQuery = sanitizeSearchTerm(query);
+    if (!sanitizedQuery) {
+      return { data: [], count: null, error: null };
+    }
+
     // Step 1: find matching user IDs
-    const { data: matchingUsers } = await supabase
-      .from('users')
-      .select('id')
-      .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%`);
+    const { data: matchingUsers, error: userError } = await apiCall(
+      supabase
+        .from('users')
+        .select('id')
+        .or(`first_name.ilike.%${sanitizedQuery}%,last_name.ilike.%${sanitizedQuery}%,email.ilike.%${sanitizedQuery}%,phone.ilike.%${sanitizedQuery}%`)
+    );
+
+    if (userError) {
+      return { data: null, count: null, error: userError };
+    }
 
     if (!matchingUsers || matchingUsers.length === 0) {
-      return { data: [], error: null };
+      return { data: [], count: null, error: null };
     }
 
     const userIds = matchingUsers.map(u => u.id);
@@ -213,23 +233,34 @@ export const patientService = {
       // Return combined object expected by the UI
       return { data: { ...newPatient, users: newUser, full_name }, error: null };
     } catch (error) {
-      console.error('Walk-in creation error:', error);
       return { data: null, error: { message: error.message || 'Database error occurred' } };
     }
   },
 
-  async getPatientsByDoctor(doctorId) {
-    return apiCall(
+  async getPatientsByDoctor(doctorId, options = {}) {
+    const { data: appointmentRows, error } = await apiCall(
       supabase
-        .from('patients')
-        .select(PATIENT_SELECT_FIELDS)
-        .in('id',
-          supabase
-            .from('appointments')
-            .select('patient_id')
-            .select('patient_id')
-            .eq('doctor_id', doctorId)
-        )
+        .from('appointments')
+        .select('patient_id')
+        .eq('doctor_id', doctorId)
+    );
+
+    if (error) return { data: null, count: null, error };
+
+    const patientIds = [...new Set((appointmentRows || []).map(row => row.patient_id).filter(Boolean))];
+    if (!patientIds.length) {
+      return { data: [], count: 0, error: null };
+    }
+
+    return apiCall(
+      paginateQuery(
+        supabase
+          .from('patients')
+          .select(PATIENT_SELECT_FIELDS, { count: 'exact' })
+          .eq('is_archived', false)
+          .in('id', patientIds),
+        options
+      )
     );
   },
 
@@ -242,5 +273,9 @@ export const patientService = {
         .eq('id', id)
         .select(PATIENT_SELECT_FIELDS)
     );
+  },
+
+  async delete(id, archivedBy) {
+    return this.archive(id, archivedBy);
   },
 };

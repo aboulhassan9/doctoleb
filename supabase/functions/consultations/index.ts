@@ -10,8 +10,10 @@ const CONSULTATION_SELECT = `
   session_end,
   diagnosis,
   treatment_plan,
+  notes,
   medications,
   status,
+  is_archived,
   created_at,
   updated_at
 `;
@@ -23,6 +25,8 @@ const REPORT_SELECT = `
   report_type,
   title,
   content,
+  file_url,
+  is_archived,
   created_at,
   updated_at
 `;
@@ -78,6 +82,7 @@ Deno.serve(async (req: Request) => {
           session_start: new Date().toISOString(),
           diagnosis: body?.diagnosis ?? null,
           treatment_plan: body?.treatment_plan ?? null,
+          notes: body?.notes ?? null,
           medications: body?.medications ?? null,
           status: normalizeConsultationStatus(body?.status) ?? "in_progress",
         }])
@@ -101,6 +106,9 @@ Deno.serve(async (req: Request) => {
       }
       if (body?.treatment_plan !== undefined) {
         updatePayload.treatment_plan = body.treatment_plan;
+      }
+      if (body?.notes !== undefined) {
+        updatePayload.notes = body.notes;
       }
       if (body?.medications !== undefined) {
         updatePayload.medications = body.medications;
