@@ -1,5 +1,7 @@
 # TIER 0 v2 - Executed Foundation: Code and DB Alignment
 
+> **Status**: Archived historical plan. The current execution roadmap is `NEXT_STEPS_PLAN.md`.
+
 > **Status**: Executed and accepted as the Secure Web V1 foundation.
 > **Date updated**: 2026-05-05.
 > **Source of truth**: Live Supabase schema for project `gezmfmskhmjgnquoyosq`.

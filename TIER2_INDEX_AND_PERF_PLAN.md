@@ -4,8 +4,8 @@
 > **Date**: 2026-05-07.
 > **Scope**: indexing strategy, partial-index policy, audit-log strategy, zero-downtime migration patterns, hot-table tuning. Tier 1 + Tier 2 + Tier 2.5 schema, post legacy burn-down.
 > **Constraint**: live DB has zero production rows yet. Recommendations optimize for the *first paying tenant*, not for backfilling a hot system.
-> **Output style**: every recommendation includes exact SQL or a CONCURRENTLY migration sketch.
-> **Deliberately not in scope**: writing or applying migrations.
+> **Output style**: every recommendation includes exact SQL or a migration sketch.
+> **Implementation status**: Blocks A + C and the two redundant clinical-note drops were implemented/applied in `20260507102119_tier2_index_block_a_c.sql` on 2026-05-07.
 
 ---
 
@@ -21,14 +21,14 @@ What is **not** there yet, and is worth adding before first-tenant production tr
 
 | # | Recommendation | Why |
 |---|---|---|
-| A | 5 RLS-driven FK indexes (`messages.sender_*`, `document_attachments.patient_id`, `patient_consents.consent_document_id`, `lab/imaging_orders.result_document_id`) | RLS predicates and cross-document joins. |
+| A | 6 RLS-driven/reverse-lookup index definitions (`messages.sender_*`, `document_attachments.patient_id`, `patient_consents.consent_document_id`, `lab/imaging_orders.result_document_id`) | RLS predicates and cross-document joins. |
 | B | Extend `WHERE is_archived = false` partial pattern to clinical_notes, diagnoses, prescriptions, lab/imaging orders, clinical_documents, care_tasks. | Active list views are the dominant query shape; cuts partial-index size by ~archive ratio. |
 | C | One partial index on `messages` for non-deleted ordering (`WHERE deleted_at IS NULL`). | Inbox view filters out deleted messages — keeps the hot fan-out path tight. |
 | D | Drop two redundant single-column indexes that are subsumed by composites: `idx_clinical_notes_patient_id`, `idx_clinical_notes_doctor_id`. | They duplicate the leading column of better composites; write-amplification with no read benefit. |
 | E | Audit-log monthly partitioning **deferred** until row count crosses 1 M; document the trigger condition now. | Premature partitioning costs more than it saves at < 100 K rows. |
 | F | Make every future index migration use `CREATE INDEX CONCURRENTLY` in a non-transactional file. | The foundation migration uses `begin/commit`, which forbids `CONCURRENTLY`. New tuning must not repeat that pattern. |
 
-Total recommended writes: **6 new indexes, 2 drops, 1 deferred decision**. No structural rework.
+Total recommended writes: **7 new indexes, 2 drops, 1 deferred decision**. No structural rework. The implemented migration includes six RLS/reverse-lookup indexes plus the non-deleted message-history partial index.
 
 ---
 
@@ -338,6 +338,8 @@ The big foundation migrations (`20260506150820_tier2_product_core_foundation.sql
 1. **One concern per migration file**: index additions go in their own migration, no `BEGIN`/`COMMIT` wrapper, no other DDL alongside.
 2. **Always `CREATE INDEX CONCURRENTLY IF NOT EXISTS`**. If the migration is rerun after a crash, idempotent.
 3. **Always include the matching `DROP INDEX CONCURRENTLY` in a rollback script** (in `supabase/sql/`, not as a migration).
+
+Implementation note from 2026-05-07: Supabase MCP migration application wraps SQL in a transaction, so `CREATE INDEX CONCURRENTLY` failed with `CREATE INDEX CONCURRENTLY cannot run inside a transaction block`. Because this tenant has no production rows, `20260507102119_tier2_index_block_a_c.sql` intentionally uses normal idempotent index DDL. For a high-volume tenant later, use a non-transactional maintenance path or a dedicated migration runner that supports concurrent index DDL.
 4. **Never combine** index drops with index creates in the same transaction — they need separate, non-transactional migrations.
 5. **Verify post-deploy** with `\d+ tablename` and `pg_stat_user_indexes` for `idx_scan` movement.
 
@@ -463,8 +465,8 @@ Run weekly post-launch. Anything in the bottom of query 1 with `idx_scan = 0` af
 
 | Block | Files | Trigger to deploy |
 |---|---|---|
-| **Block A — RLS-driven FK indexes** (5 indexes) | one new migration, non-transactional, `CONCURRENTLY` | Before first real-user traffic. Cheap, no risk. |
-| **Block C — `messages.deleted_at` partial** (1 index) | one new migration, non-transactional | When message-delete UX ships. |
+| **Block A — RLS-driven FK indexes** (6 index definitions) | ✅ `20260507102119_tier2_index_block_a_c.sql` | Applied before first real-user traffic. |
+| **Block C — `messages.deleted_at` partial** (1 index) | ✅ `20260507102119_tier2_index_block_a_c.sql` | Applied with Block A because the redaction/delete model is already in the DB. |
 | **Block B — Soft-delete partials** (6 indexes) | one new migration, non-transactional | When `pg_stat_user_tables.n_live_tup` shows ≥10 % archived ratio on any of those tables. |
 | **Block D — Drop subsumed `clinical_notes` indexes** (2 drops) | separate migration, non-transactional, deploy ≥1 week after Block B B.1 | Gate on `pg_stat_user_indexes.idx_scan` for the two indexes. |
 | **Block E — `audit_log` partitioning** | major migration with rebuild | When row count > 1 M *and* p95 > 50 ms. Document only for now. |
@@ -484,4 +486,4 @@ Run weekly post-launch. Anything in the bottom of query 1 with `idx_scan = 0` af
 
 ---
 
-**End of TIER2_INDEX_AND_PERF_PLAN.md.** No code or migrations have been written or applied. Ship Blocks A and C immediately; defer the rest behind concrete telemetry triggers.
+**End of TIER2_INDEX_AND_PERF_PLAN.md.** Blocks A + C are applied. Defer the remaining work behind concrete telemetry triggers.

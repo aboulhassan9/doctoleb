@@ -144,7 +144,7 @@ This is the working backlog for the next 4–6 weeks. Each row points back to it
 
 ### Block B — Index/perf (parallel; deploy when traffic justifies)
 
-See `TIER2_INDEX_AND_PERF_PLAN.md` §8 for migration order. Ship Blocks A (5 RLS-driven FK indexes) and C (`messages.deleted_at` partial) immediately. Defer the rest behind telemetry triggers documented in §6 of that plan.
+See `TIER2_INDEX_AND_PERF_PLAN.md` §8 for migration order. Blocks A + C are now applied in `20260507102119_tier2_index_block_a_c.sql`; the migration also dropped the two redundant clinical-note indexes while the tenant has no production rows. Defer the rest behind telemetry triggers documented in §6 of that plan.
 
 ### Block C — Slices 1 → 7 (3–4 months total)
 
@@ -422,8 +422,8 @@ subscribeToFoo(id, callback) {
 |---|---|---|---|
 | H-1 | Add `docs/erd/` to repo (after §B) — `schema_dump.sql`, `erd.png`, `tables.txt` | 1h | Visual truth; embeddable in pitches |
 | H-2 | CI step: regenerate `docs/erd/tables.txt`, fail on diff | ½ day | Automated drift detector |
-| H-3 | Add `BACKLOG.md` with the deferred items from §D and TIER2 review §4 | 30 min | Single backlog instead of scattered notes |
-| H-4 | Move TIER0 / TIER0_V2 plans to `docs/archive/` (per Tier 1 plan §1.10) | 15 min | Stop misleading future readers with historical plans |
+| H-3 | Add `BACKLOG.md` with the deferred items from §D and TIER2 review §4 | ✅ Done | Single backlog instead of scattered notes |
+| H-4 | Move TIER0 / TIER0_V2 plans to `docs/archive/legacy-tier-plans/` (per Tier 1 plan §1.10) | ✅ Done | Stop misleading future readers with historical plans |
 | H-5 | Add JSDoc/TS-doc on every service method (parameter shapes + return shape) | 1 day | Mobile/SDK consumers can autogenerate types |
 | H-6 | `pre-commit` hook running `npm run audit:backend-contract` | 15 min | Catches drift at commit time, not CI |
 | H-7 | Document the disaster-recovery runbook (PITR restore drill) | ½ day | Healthcare data without a tested restore is not safe |
@@ -434,10 +434,10 @@ subscribeToFoo(id, callback) {
 
 | Week | Focus |
 |---|---|
-| **Week 1** | §A1–A4 (Block A residue) · full replay proof for §B baseline · finish `schema_dump.sql`/`erd.png` branch export · §H-3, H-4 (housekeeping) |
+| **Week 1** | §A1–A4 (Block A residue) · full replay proof for §B baseline · finish `schema_dump.sql`/`erd.png` branch export · §H-3, H-4 (housekeeping) ✅ · Index/perf Blocks A+C ✅ |
 | **Week 2** | Slice 1 — Doctor encounter MVP (E-1, F-1b/c) · pgTAP RLS suite (A3, runs alongside) |
 | **Week 3** | Slice 2 — Patient documents (Storage RLS prerequisite is in repo; run branch/local proof before release) · Slice 3 prep |
-| **Week 4** | Slice 3 — Patient ↔ staff messaging (E-3) · index plan Block A indexes shipped |
+| **Week 4** | Slice 3 — Patient ↔ staff messaging (E-3) |
 
 After Week 4: Slices 4 (consent) + 6 (tenant config) in parallel; Slice 5 (notifications worker) immediately after.
 

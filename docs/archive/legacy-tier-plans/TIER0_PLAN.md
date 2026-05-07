@@ -1,6 +1,6 @@
 # TIER 0 - Legacy Schema Expansion Plan (Superseded)
 
-> **Status**: Superseded by `TIER0_V2_PLAN.md`.
+> **Status**: Archived historical plan. Superseded by `TIER0_V2_PLAN.md`, then by the active roadmap in `NEXT_STEPS_PLAN.md`.
 > **Decision**: Do not continue this plan.
 > **Reason**: It solved UI breakage by expanding the database to match stale frontend assumptions. After deeper review, that was the wrong direction for Secure Web V1.
 

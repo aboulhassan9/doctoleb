@@ -105,7 +105,7 @@ These are committed-or-ready-to-commit changes you should expect to see in `git 
 
 - `src/pages/DoctorMedicalHistoryPage.jsx` — added `import { motion } from 'framer-motion'` (line 2). Fixed runtime crash; page used `<motion.div>` without import.
 - `git rm --cached -r dist/` — 5 build artifacts untracked from git (kept on disk). `.gitignore` already had `dist`.
-- `TIER2_INDEX_AND_PERF_PLAN.md` — new, ~380 lines. 9 sections. 6 net new index recs + 2 drops + audit_log partitioning trigger conditions. **No SQL applied.**
+- `TIER2_INDEX_AND_PERF_PLAN.md` — index/perf plan. Blocks A + C and the redundant clinical-note drops are now applied in `20260507102119_tier2_index_block_a_c.sql`; defer the remaining work behind telemetry.
 - `TIER2_REVIEW_ADDENDUM.md` — reconciles every P1 / P2 / P3 / H finding against post-review migrations and Block F follow-up. All original P1/P2 findings are closed; remaining work is RLS automated tests, purge orchestration, and deferred document-type role matrix.
 - `NEXT_STEPS_PLAN.md` — new, ~400 lines, 11 sections. Forward roadmap covering ERD export, UX flows, business logic, API contracts.
 

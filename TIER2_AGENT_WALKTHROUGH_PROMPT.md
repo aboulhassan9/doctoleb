@@ -49,8 +49,8 @@ The product should cover the full medical practice sequence:
 Read these before making changes:
 
 - `AGENTS.md` if present in the workspace root.
-- `TIER0_PLAN.md`
-- `TIER0_V2_PLAN.md`
+- `docs/archive/legacy-tier-plans/TIER0_PLAN.md`
+- `docs/archive/legacy-tier-plans/TIER0_V2_PLAN.md`
 - `TIER1_DOCTOR_PIVOT_PLAN.md`
 - `TIER1_SCHEMA_DESIGN.md`
 - `TIER2_PLAN.md`

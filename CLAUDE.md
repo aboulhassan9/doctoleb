@@ -70,7 +70,7 @@ export const apiCall = async (fn) => {
 
 - **Never `.select('*')` or bare `.select()`** in services. Use the typed constant for that table.
 - If a constant doesn't exist for a table you need, **add one to `selects.js` first**, then import it. Don't inline column lists.
-- After editing `selects.js`, **diff against the live DB** before shipping. Use `mcp__supabase__list_tables` on project `gezmfmskhmjgnquoyosq`, schema `public`, `verbose=true`. Past audits found 16 ghost columns silently 400-ing 4 services. See `TIER0_V2_PLAN.md` for the canonical example.
+- After editing `selects.js`, **diff against the live DB** before shipping. Use `mcp__supabase__list_tables` on project `gezmfmskhmjgnquoyosq`, schema `public`, `verbose=true`. Past audits found 16 ghost columns silently 400-ing 4 services. See `docs/archive/legacy-tier-plans/TIER0_V2_PLAN.md` for the historical example.
 
 ### 3. Clinical and financial data is soft-deleted, never hard-deleted
 
@@ -368,7 +368,7 @@ Read in order before non-trivial changes:
 
 | File | Status |
 |---|---|
-| `TIER0_PLAN.md` / `TIER0_V2_PLAN.md` | historical remediation context |
+| `docs/archive/legacy-tier-plans/TIER0_PLAN.md` / `docs/archive/legacy-tier-plans/TIER0_V2_PLAN.md` | historical remediation context |
 | `TIER1_DOCTOR_PIVOT_PLAN.md` / `TIER1_SCHEMA_DESIGN.md` | doctor-branded practice pivot |
 | `TIER2_PRODUCT_ARCHITECTURE_PLAN.md` / `TIER2_5_HARDENING_PLAN.md` | canonical backend/API foundation |
 | `BACKEND_CONTRACT_LEDGER.md` / `BACKEND_DUPLICATION_AUDIT.md` | current source-of-truth guardrails |
