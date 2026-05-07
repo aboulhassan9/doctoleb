@@ -37,16 +37,18 @@ export function useEncounter({ appointmentId, encounterId } = {}) {
   const { showToast } = useToast();
   const mountedRef = useRef(true);
   const encounterIdRef = useRef(null);
+  const appointmentIdRef = useRef(null);
 
   useEffect(() => {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Keep ref in sync so lifecycle callbacks don't need encounter in deps
+  // Keep refs in sync so lifecycle callbacks don't need the full encounter in deps.
   useEffect(() => {
     encounterIdRef.current = encounter?.id ?? null;
-  }, [encounter?.id]);
+    appointmentIdRef.current = appointmentId || encounter?.appointment_id || encounter?.appointments?.id || null;
+  }, [appointmentId, encounter?.id, encounter?.appointment_id, encounter?.appointments?.id]);
 
   const fetch = useCallback(async () => {
     if (!appointmentId && !encounterId) {
@@ -86,14 +88,16 @@ export function useEncounter({ appointmentId, encounterId } = {}) {
   useEffect(() => { fetch(); }, [fetch]);
 
   const startEncounter = useCallback(async (chiefComplaint = null) => {
-    if (!appointmentId) {
+    const activeAppointmentId = appointmentIdRef.current;
+
+    if (!activeAppointmentId) {
       showToast('Cannot start encounter without an appointment.', 'error');
       return false;
     }
 
     try {
       setIsStarting(true);
-      const { data, error: err } = await clinicalService.startEncounter(appointmentId, { chiefComplaint });
+      const { data, error: err } = await clinicalService.startEncounter(activeAppointmentId, { chiefComplaint });
       if (err) throw new Error(err);
 
       showToast('Encounter started.', 'success');
@@ -117,7 +121,7 @@ export function useEncounter({ appointmentId, encounterId } = {}) {
     } finally {
       if (mountedRef.current) setIsStarting(false);
     }
-  }, [appointmentId, fetch, showToast]);
+  }, [fetch, showToast]);
 
   const completeEncounter = useCallback(async (summary = null) => {
     const eid = encounterIdRef.current;

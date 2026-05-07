@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { TopBar, LoadingSkeleton, ErrorState, StatusBadge, ConfirmDialog } from '@/components/ui';
+import { useToast } from '@/contexts/ToastContext';
 import {
   useEncounter,
   useDoctorEncounterTimeline,
@@ -39,6 +40,7 @@ const TABS = [
 export default function DoctorEncounterPage() {
   const { appointmentId, encounterId: routeEncounterId } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('patient');
   const [chiefComplaint, setChiefComplaint] = useState('');
   const [completeSummary, setCompleteSummary] = useState('');
@@ -74,6 +76,7 @@ export default function DoctorEncounterPage() {
   const ordersHook = useEncounterOrders(encounterScope);
   const careTasksHook = useEncounterCareTasks(encounterScope);
   const documentsHook = useEncounterDocuments(encId);
+  const draftDocuments = documentsHook.documents.filter((document) => document.status === 'draft');
 
   // Cancel confirmation dialog
   const cancelDialog = useConfirmDialog();
@@ -86,7 +89,19 @@ export default function DoctorEncounterPage() {
     }
   };
 
+  const hasBlockingDraftDocuments = () => {
+    if (draftDocuments.length === 0) return false;
+
+    const label = draftDocuments.length === 1 ? 'document' : 'documents';
+    showToast(`Finalize or void ${draftDocuments.length} draft ${label} before completing this encounter.`, 'error');
+    setActiveTab('documents');
+    setShowCompleteForm(false);
+    return true;
+  };
+
   const handleComplete = async () => {
+    if (hasBlockingDraftDocuments()) return;
+
     const success = await completeEncounter(completeSummary.trim() || null);
     if (success) {
       setCompleteSummary('');
@@ -216,7 +231,12 @@ export default function DoctorEncounterPage() {
                       <span className="material-symbols-outlined text-sm">cancel</span>
                       Cancel
                     </button>
-                    <button onClick={() => setShowCompleteForm(true)} className={`${BUTTON_PRIMARY} flex items-center gap-2`}>
+                    <button
+                      onClick={() => {
+                        if (!hasBlockingDraftDocuments()) setShowCompleteForm(true);
+                      }}
+                      className={`${BUTTON_PRIMARY} flex items-center gap-2`}
+                    >
                       <span className="material-symbols-outlined text-lg">check_circle</span>
                       Complete Encounter
                     </button>
