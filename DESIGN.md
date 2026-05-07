@@ -54,6 +54,8 @@ The palette should stay tight:
 Rules:
 
 - Prefer semantic variables over raw literals inside components.
+- Tenant-facing app colors must resolve from `tenant_app_config` through runtime CSS variables. The documented palette is the neutral default, not a tenant-specific hardcode.
+- New tenant-aware custom styling should use `--tenant-brand-primary` / `--tenant-brand-secondary` or Tailwind semantic classes backed by those values.
 - New tokens should be authored in OKLCH, even if legacy code still contains hex values.
 - Do not introduce purple-blue startup gradients.
 - Do not expand the hue set beyond the existing teal, cool neutral, and semantic companions.

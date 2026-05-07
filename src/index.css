@@ -24,7 +24,11 @@
 
   /* Semantic (mirroring tailwind.config.js) */
   --color-primary: #0891b2;
+  --color-primary-rgb: 8 145 178;
   --color-primary-hover: #0e7490;
+  --color-primary-hover-rgb: 14 116 144;
+  --color-secondary: #0f172a;
+  --color-secondary-rgb: 15 23 42;
   --color-primary-light: rgba(8, 145, 178, 0.1);
   --color-success: #059669;
   --color-warning: #d97706;
@@ -50,7 +54,11 @@
   --border-default: #334155;
   --border-subtle: #1e293b;
   --color-primary: #22d3ee;
+  --color-primary-rgb: 34 211 238;
   --color-primary-hover: #06b6d4;
+  --color-primary-hover-rgb: 6 182 212;
+  --color-secondary: #f1f5f9;
+  --color-secondary-rgb: 241 245 249;
   --color-primary-light: rgba(34, 211, 238, 0.15);
   --color-success: #34d399;
   --color-warning: #fbbf24;

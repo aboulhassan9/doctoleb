@@ -69,6 +69,37 @@ function isExpectedForbidden(error) {
   );
 }
 
+function isTransientRpcError(error) {
+  const message = String(error?.message || error || '').toLowerCase();
+  return (
+    message.includes('fetch failed') ||
+    message.includes('failed to fetch') ||
+    message.includes('network') ||
+    message.includes('timeout') ||
+    message.includes('econnreset') ||
+    message.includes('etimedout')
+  );
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function callRpcWithRetry(client, name, args = {}) {
+  const delays = [250, 750, 1500];
+  let result;
+
+  for (let attempt = 0; attempt <= delays.length; attempt += 1) {
+    result = await client.rpc(name, args);
+    if (!result.error || !isTransientRpcError(result.error) || attempt === delays.length) {
+      return result;
+    }
+    await sleep(delays[attempt]);
+  }
+
+  return result;
+}
+
 function assertNotLive(url) {
   if (allowLive) return;
   if (url?.includes(LIVE_PROJECT_REF)) {
@@ -144,7 +175,7 @@ function runPgTapRlsSuiteIfConfigured() {
 }
 
 async function expectRpcAllowed(client, name, args = {}) {
-  const { error } = await client.rpc(name, args);
+  const { error } = await callRpcWithRetry(client, name, args);
   if (error) {
     fail(`anon RPC ${name} allowed`, error.message || 'Unexpected error.');
     return;
@@ -153,7 +184,7 @@ async function expectRpcAllowed(client, name, args = {}) {
 }
 
 async function expectRpcForbidden(client, name, args = {}) {
-  const { error } = await client.rpc(name, args);
+  const { error } = await callRpcWithRetry(client, name, args);
   if (!error) {
     fail(`anon RPC ${name} forbidden`, 'RPC succeeded but should not be callable by anon.');
     return;

@@ -4,6 +4,7 @@
 > **Status:** Tier 2.5 In-Progress — Foundation Solid, UI/Branding Incomplete
 > **Architecture:** Database-per-Tenant, Monorepo, Mobile-Ready
 > **Live DB:** `gezmfmskhmjgnquoyosq.supabase.co`
+> **Branding Rule:** Tenant identity/theme is configuration, not code. See `docs/decisions/ADR-003-tenant-branding-and-control-plane-config.md`.
 
 ---
 
@@ -42,6 +43,8 @@
 ```
 
 **Key decision:** NO `tenant_id` columns anywhere. Each doctor gets their own isolated Supabase project.
+
+**Brand/config decision:** Doctor/clinic name, logo, favicon, app title, color palette, support contact, enabled locales, mobile version gates, consent/content, and feature flags are seeded by the future SaaS super-admin/control plane into each tenant project. Patient web, clinic-ops, and Flutter must read those values from tenant config at runtime. Do not hardcode tenant identity in pages.
 
 ### 1.2 Monorepo Structure
 ```
@@ -213,6 +216,7 @@ doctoleb/
 - [x] Both apps build successfully with Vite 8
 - [x] PostCSS config fix for Tailwind resolution in Vite 8
 - [x] BrandContext + BrandProvider + useBrand() hook
+- [x] Runtime tenant title/favicon/theme token wiring from `tenant_app_config`
 - [x] AuthContext with role-based routing
 - [x] AppSidebar with ROLE_CONFIG + BrandContext wiring started
 - [x] DashboardLayout shared across all roles

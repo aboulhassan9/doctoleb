@@ -41,7 +41,7 @@ const LandingPage = () => {
                                     whileHover={{ rotate: 180 }}
                                     transition={{ duration: 0.5 }}
                                     className="p-2 rounded-lg text-white flex items-center justify-center"
-                                    style={{ backgroundColor: 'var(--doctor-brand-primary)' }}
+                                    style={{ backgroundColor: 'var(--tenant-brand-primary)' }}
                                 >
                                     <span className="material-symbols-outlined block">health_metrics</span>
                                 </motion.div>

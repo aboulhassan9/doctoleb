@@ -27,6 +27,8 @@ The product should be split into separate deployable user surfaces:
 
 The clinic-admin role is internal to the clinic tenant. It is not the SaaS super-admin.
 
+Tenant branding is configuration, not code. Doctor/clinic name, logo, favicon, colors, public copy, mobile app labels, feature flags, and consent/content surfaces must come from `tenant_profile`, `tenant_app_config`, and related tenant config tables. The future SaaS super-admin provisions those values when creating a tenant; tenant-facing web/mobile clients consume them at runtime.
+
 The product exists to reduce friction across the full visit lifecycle: patient signup, scheduling, pre-check, consultation, documentation, billing, and follow-up. The interface has to support both patient confidence and staff speed, with most day-to-day complexity living in doctor, predoctor, and secretary workflows.
 
 ## Primary Audiences
@@ -98,6 +100,7 @@ The product should feel:
 - No consumer-social tone or decorative novelty that weakens trust
 - No staff/admin login flow as part of the patient landing-page journey
 - No SaaS super-admin PHI access inside the clinic operations app
+- No hardcoded tenant identity, doctor names, logos, palettes, or mobile app theme constants inside frontend pages
 
 ## Design Implications
 

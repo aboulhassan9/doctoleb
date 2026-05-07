@@ -71,7 +71,7 @@ function App() {
       <SidebarProvider>
         <ToastProvider>
           <AuthProvider>
-            <BrandProvider>
+            <BrandProvider appSurface="patient-web">
               <ErrorBoundary>
                 <Router>
                   <Suspense fallback={<LoadingSkeleton rows={8} />}>

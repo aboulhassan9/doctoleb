@@ -10,9 +10,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        "primary": "#0891b2", // Clinical Teal/Cyan
-        "primary-hover": "#0e7490",
-        "secondary": "#0f172a", // Midnight Blue Authority
+        "primary": "rgb(var(--color-primary-rgb) / <alpha-value>)", // Tenant-configured primary
+        "primary-hover": "rgb(var(--color-primary-hover-rgb) / <alpha-value>)",
+        "secondary": "rgb(var(--color-secondary-rgb) / <alpha-value>)", // Tenant-configured secondary
         "background": "#f4f7fa", // Icy sterile white
         "background-light": "#f4f7fa", // Alias for legacy usages
         "background-dark": "#0f172a", // Dark panel used in auth pages
@@ -26,7 +26,7 @@ export default {
         "primary-container": "#cffafe",
         "on-primary": "#ffffff",
         "on-secondary": "#f8fafc",
-        "surface-tint": "#0891b2",
+        "surface-tint": "rgb(var(--color-primary-rgb) / <alpha-value>)",
         "tertiary": "#14b8a6", // Teal/Mint
       },
       fontFamily: {
