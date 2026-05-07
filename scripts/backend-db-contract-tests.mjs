@@ -208,6 +208,7 @@ async function runAnonRpcExposureTests() {
 
   for (const triggerOnlyFunction of [
     'enforce_message_redaction',
+    'enforce_prescription_requires_diagnosis',
     'enforce_tier2_status_transition',
     'normalize_encounter_from_appointment',
     'normalize_medical_intake_workflow',

@@ -14,6 +14,8 @@
 | Index/perf | Wrote `TIER2_INDEX_AND_PERF_PLAN.md` (9 sections, < 500 lines, no SQL applied) | 6 net new index recs + 2 drops + audit-log partitioning trigger documented |
 | Security | Updated `TIER2_REVIEW_ADDENDUM.md` reconciling P1 / P2 / P3 / H findings through Block F | Original P1/P2 findings are closed; RLS automated tests and purge orchestration remain |
 | Bugfix | Added `import { motion } from 'framer-motion'` to `DoctorMedicalHistoryPage.jsx` | Page no longer crashes at runtime when motion blocks render |
+| Encounter lifecycle | Hardened `complete_encounter` and prescription creation via `20260507103747_tier2_encounter_completion_contract.sql` | Completion now requires no draft documents plus either clinical notes or a summary; prescriptions require an encounter diagnosis |
+| Encounter UI | Tightened `DoctorEncounterPage` and prescriptions tab | Direct encounter resume can start from loaded appointment context; completion/prescribing rules surface before DB rejection |
 | Repo hygiene | `git rm --cached -r dist/` (5 files) | Build artifacts no longer tracked; `.gitignore` already had `dist` |
 | Schema replay | Added `20240625000000_baseline_core_tables.sql` before the old scheduling migration | Fresh tenants get the pre-history core tables plus temporary legacy shells needed by older migrations |
 | Schema replay cleanup | Added `20240627000000_cleanup_bootstrap_scheduling_artifacts.sql` | Drops prototype RLS policies and transient `patients.created_by` immediately after the 2024 scheduling migration |

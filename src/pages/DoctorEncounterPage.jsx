@@ -76,7 +76,7 @@ export default function DoctorEncounterPage() {
   const ordersHook = useEncounterOrders(encounterScope);
   const careTasksHook = useEncounterCareTasks(encounterScope);
   const documentsHook = useEncounterDocuments(encId);
-  const draftDocuments = documentsHook.documents.filter((document) => document.status === 'draft');
+  const draftDocuments = documentsHook.documents.filter((clinicalDocument) => clinicalDocument.status === 'draft');
 
   // Cancel confirmation dialog
   const cancelDialog = useConfirmDialog();
@@ -102,7 +102,13 @@ export default function DoctorEncounterPage() {
   const handleComplete = async () => {
     if (hasBlockingDraftDocuments()) return;
 
-    const success = await completeEncounter(completeSummary.trim() || null);
+    const summary = completeSummary.trim();
+    if (notesHook.notes.length === 0 && !summary) {
+      showToast('Add at least one clinical note or write a completion summary before completing this encounter.', 'error');
+      return;
+    }
+
+    const success = await completeEncounter(summary || null);
     if (success) {
       setCompleteSummary('');
       setShowCompleteForm(false);
@@ -315,6 +321,7 @@ export default function DoctorEncounterPage() {
                     prescriptions={prescriptionsHook.prescriptions} loading={prescriptionsHook.loading} isSaving={prescriptionsHook.isSaving}
                     onAddPrescription={prescriptionsHook.addPrescription} encounterId={encId} patientId={patId}
                     doctorId={docId} prescribedBy={userId} isActive={isActive}
+                    hasEncounterDiagnosis={diagnosesHook.diagnoses.length > 0}
                   />
                 )}
                 {activeTab === 'orders' && (

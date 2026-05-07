@@ -108,6 +108,10 @@ These are committed-or-ready-to-commit changes you should expect to see in `git 
 - `TIER2_INDEX_AND_PERF_PLAN.md` — index/perf plan. Blocks A + C and the redundant clinical-note drops are now applied in `20260507102119_tier2_index_block_a_c.sql`; defer the remaining work behind telemetry.
 - `TIER2_REVIEW_ADDENDUM.md` — reconciles every P1 / P2 / P3 / H finding against post-review migrations and Block F follow-up. All original P1/P2 findings are closed; remaining work is RLS automated tests, purge orchestration, and deferred document-type role matrix.
 - `NEXT_STEPS_PLAN.md` — new, ~400 lines, 11 sections. Forward roadmap covering ERD export, UX flows, business logic, API contracts.
+- `src/hooks/features/useEncounter.js` + `src/pages/DoctorEncounterPage.jsx` — direct encounter resume can now start from the loaded appointment relation, not only the route appointment id.
+- `src/pages/DoctorEncounterPage.jsx` + `src/components/encounter/EncounterPrescriptionsTab.jsx` — completion and prescribing UX now mirrors the backend contract: draft documents block completion, empty encounters require a note or summary, prescriptions require an encounter diagnosis.
+- `supabase/migrations/20260507103747_tier2_encounter_completion_contract.sql` — live-applied migration. `complete_encounter` enforces draft-document/no-note guards; `enforce_prescription_requires_diagnosis` blocks prescriptions without an encounter diagnosis.
+- `scripts/backend-db-contract-tests.mjs` — anon RPC diagnostics now include `enforce_prescription_requires_diagnosis`.
 
 `npm run verify` exit 0 after these changes.
 

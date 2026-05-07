@@ -2,7 +2,18 @@ import { useState } from 'react';
 import { LoadingSkeleton, EmptyState, StatusBadge } from '@/components/ui';
 import { INPUT_CLASS, TEXTAREA_CLASS, BUTTON_PRIMARY, BUTTON_SECONDARY } from '@/lib/styles';
 
-export default function EncounterPrescriptionsTab({ prescriptions, loading, isSaving, onAddPrescription, encounterId, patientId, doctorId, prescribedBy, isActive = false }) {
+export default function EncounterPrescriptionsTab({
+  prescriptions,
+  loading,
+  isSaving,
+  onAddPrescription,
+  encounterId,
+  patientId,
+  doctorId,
+  prescribedBy,
+  isActive = false,
+  hasEncounterDiagnosis = false,
+}) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ medication_name: '', dosage: '', route: '', frequency: '', duration: '', instructions: '' });
 
@@ -23,9 +34,18 @@ export default function EncounterPrescriptionsTab({ prescriptions, loading, isSa
 
   return (
     <div className="space-y-4">
-      {isActive && !showForm && (
-        <button onClick={() => setShowForm(true)} className={`${BUTTON_PRIMARY} flex items-center gap-2`}>
-          <span className="material-symbols-outlined text-lg">add</span>Add Prescription
+      {isActive && !hasEncounterDiagnosis && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Record a diagnosis for this encounter before adding prescriptions.
+        </div>
+      )}
+      {isActive && !showForm && hasEncounterDiagnosis && (
+        <button
+          onClick={() => setShowForm(true)}
+          className={`${BUTTON_PRIMARY} flex items-center gap-2`}
+        >
+          <span className="material-symbols-outlined text-lg">add</span>
+          Add Prescription
         </button>
       )}
       {isActive && showForm && (

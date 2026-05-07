@@ -35,7 +35,7 @@ This file exists so deferred items do not stay scattered across tier plans, revi
 
 | Slice | Scope | Status |
 |---|---|---|
-| Slice 1 | Doctor encounter MVP: start/resume/complete encounter, notes, diagnoses, prescriptions, orders, documents, care tasks | Ready |
+| Slice 1 | Doctor encounter MVP: start/resume/complete encounter, notes, diagnoses, prescriptions, orders, documents, care tasks | In progress — lifecycle contract guards landed |
 | Slice 2 | Patient documents + lab/imaging viewer with signed URLs | Ready after branch/local Storage RLS proof |
 | Slice 3 | Patient-staff messaging MVP with realtime, read receipts, redact-only behavior | Ready after Slice 1/2 priority decision |
 | Slice 4 | Consent onboarding after registration and on consent version changes | Deferred |
@@ -65,4 +65,5 @@ This file exists so deferred items do not stay scattered across tier plans, revi
 | Legacy tables/services | Removed: `consultations`, `notifications`, `doctor_brand`, `clinic_settings`, `medical_reports`, `certificates`, `referrals` |
 | Retired deployed Edge Functions | Deleted from live Supabase: `auth`, `appointments`, `patients`, `process-payment`, `consultations`, `referrals` |
 | Private file buckets | `clinical-documents` and `message-attachments` exist and are private |
+| Encounter completion contract | `complete_encounter` blocks draft documents and empty encounters; prescriptions require an encounter diagnosis |
 | Live anon RPC exposure diagnostics | Active through `.env.test.local` + `.env.local`; SQL audit/pgTAP still need `BACKEND_TEST_DATABASE_URL` |
