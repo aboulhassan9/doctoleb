@@ -131,7 +131,7 @@ These are choices the prior session made. Adopt unless you have a written reason
 | # | Decision | Rationale |
 |---|---|---|
 | D1 | **All 5 P1 from `TIER2_REVIEW.md` are closed** | Verified against migrations 20260506155237, 20260506155321, 20260506170000, 20260506190000 + service-layer code reading. See `TIER2_REVIEW_ADDENDUM.md` §A. |
-| D2 | **H9 Storage RLS is closed in repo** | `20260507020000_storage_rls_and_private_buckets.sql` creates private buckets and policies; service helpers issue signed URLs. Full branch/local replay remains recommended before document UI release. |
+| D2 | **H9 Storage RLS is closed in repo and live** | `20260507092121_storage_rls_and_private_buckets.sql` creates private buckets and policies; service helpers issue signed URLs. Full branch/local replay remains recommended before document UI release. |
 | D3 | **Index plan: ship Blocks A and C immediately, defer the rest behind telemetry** | At zero rows, partial archive indexes are wasted writes. Document trigger conditions; ship when measurable. |
 | D4 | **`audit_log` partitioning is deferred** | Trigger condition: ≥1 M rows AND p95 query time > 50 ms. Document only. |
 | D5 | **`predoctors` table is NOT merged with `staff_members`** | Different concepts. `predoctors` models the application/onboarding lifecycle; `staff_members` models employed staff hierarchy. Documented in `NEXT_STEPS_PLAN.md` §J. |
@@ -176,8 +176,8 @@ With §6 implemented in repo, work these in any order. Each ends with `npm run v
 
 Current status after the latest execution pass:
 
-- A1 `feature_flags.audience`: implemented in `20260507010000_feature_flags_audience.sql`, transaction-validated.
-- A2 Storage RLS + signed URLs: implemented in `20260507020000_storage_rls_and_private_buckets.sql`, `storageService`, `clinicalService`, `messagingService`, and `documentService`, transaction-validated.
+- A1 `feature_flags.audience`: implemented/applied in `20260507092109_feature_flags_audience.sql`.
+- A2 Storage RLS + signed URLs: implemented/applied in `20260507092121_storage_rls_and_private_buckets.sql`, `storageService`, `clinicalService`, `messagingService`, and `documentService`.
 - A4 redaction model: documented in `CLAUDE.md` as scrub mode.
 - `npm run verify`: green after A1/A2/A4.
 - A3 pgTAP/RLS test suite: scaffolded in `supabase/tests/pgtap_rls.sql` and wired into `scripts/backend-db-contract-tests.mjs`; branch/local execution still pending.
@@ -189,11 +189,11 @@ Current status after the latest execution pass:
 
 ### 7.1 A1 · `feature_flags.audience` column + audience-gated SELECT · ✅ done
 
-Implemented in `20260507010000_feature_flags_audience.sql`, `src/lib/selects.js`, and `src/services/tenantConfig.js`. Migration SQL was transaction-validated through Supabase MCP; `npm run verify` is green.
+Implemented in `20260507092109_feature_flags_audience.sql`, `src/lib/selects.js`, and `src/services/tenantConfig.js`. Migration SQL was applied through Supabase MCP; `npm run verify` is green.
 
 ### 7.2 A2 · Storage RLS + signed-URL helpers · ✅ done
 
-Implemented in `20260507020000_storage_rls_and_private_buckets.sql`, `src/services/storage.js`, `clinicalService`, `messagingService`, and `documentService`. The migration creates private buckets and policies; no separate Studio bucket step is required. Policy SQL was transaction-validated through Supabase MCP; `npm run verify` is green. Still run branch/local RLS tests before releasing document UI.
+Implemented in `20260507092121_storage_rls_and_private_buckets.sql`, `src/services/storage.js`, `clinicalService`, `messagingService`, and `documentService`. The migration creates private buckets and policies; no separate Studio bucket step is required. Policy SQL was applied through Supabase MCP; `npm run verify` is green. Still run branch/local RLS tests before releasing document UI.
 
 ### 7.3 A3 · pgTAP RLS test suite · scaffolded
 
@@ -419,7 +419,7 @@ If you find new findings while doing this work, log them in `TIER2_REVIEW_ADDEND
 | State machines | `src/lib/stateMachines.js` |
 | Routing map | `src/App.jsx` |
 | Schemas | `src/schemas/index.js` |
-| Active migrations | `supabase/migrations/` (27 files; earliest = `20240625000000_baseline_core_tables.sql`, latest = `20260507020000_storage_rls_and_private_buckets.sql`) |
+| Active migrations | `supabase/migrations/` (27 files; earliest = `20240625000000_baseline_core_tables.sql`, latest = `20260507092121_storage_rls_and_private_buckets.sql`) |
 | Lifecycle RPCs | `supabase/migrations/20260506155237_tier2_5_lifecycle_idempotency_hardening.sql` lines 290–630 |
 | Tier 2 RLS | `supabase/migrations/20260506150820_tier2_product_core_foundation.sql` lines 791–1200 |
 | Live DB inventory | `mcp__supabase__list_tables(project_id="gezmfmskhmjgnquoyosq", schemas=["public"], verbose=true)` |

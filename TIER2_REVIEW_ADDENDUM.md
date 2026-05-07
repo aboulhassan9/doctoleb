@@ -31,7 +31,7 @@ Legend: ✅ closed · ⚠️ partial · ❌ open · ⏸ deferred (intentional).
 | # | Title | Status | Evidence |
 |---|---|---|---|
 | P2-1 | `doctor_brand` redundant with `tenant_profile`/`tenant_app_config` | ✅ closed | `drop table if exists public.doctor_brand cascade` (burndown line 266). `get_public_tenant_app_config` rewritten to remove the `doctor_brand` join (burndown lines 45–107). |
-| P2-2 | `feature_flags` SELECT open to all authenticated; flag-name leak | ✅ closed | `20260507010000_feature_flags_audience.sql` adds `audience` (`public`, `patient`, `staff`, `admin`) and replaces the broad authenticated SELECT with audience-gated RLS. `tenantConfigService.getFeatureFlags()` can filter by audience. |
+| P2-2 | `feature_flags` SELECT open to all authenticated; flag-name leak | ✅ closed | `20260507092109_feature_flags_audience.sql` adds `audience` (`public`, `patient`, `staff`, `admin`) and replaces the broad authenticated SELECT with audience-gated RLS. `tenantConfigService.getFeatureFlags()` can filter by audience. |
 | P2-3 | No state-machine helpers for Tier 2 lifecycles | ✅ closed | `src/lib/stateMachines.js` exposes `canTransition*` for `encounter`, `clinicalDocument`, `order`, `prescription`, `careTask`. State maps match the DB trigger 1:1. `clinicalService.transitionCareTask` and `clinicalService.updateEncounter` use `assertTransition` server-side proxy (clinical.js lines 461–478, 179–181). |
 | P2-4 | `messages.UPDATE` allows silent edits | ✅ closed | `enforce_message_redaction` BEFORE-UPDATE trigger blocks body edits and forces redact-only. The scrub model is now explicitly documented in `CLAUDE.md`: original content is unrecoverable after redaction. |
 | P2-5 | `notification_events.created_by NOT NULL` blocks system events | ✅ closed | Column nullable + `source` column with check `source = 'system' OR created_by IS NOT NULL` (Tier 2.5 lines 30–54). |
@@ -62,7 +62,7 @@ Legend: ✅ closed · ⚠️ partial · ❌ open · ⏸ deferred (intentional).
 | H6 | `patient_consents` tightening | ✅ closed (= P2-6) |
 | H7 | RLS pgTAP test suite | 🟡 **scaffolded** (`supabase/tests/pgtap_rls.sql`; branch/local execution pending) |
 | H8 | "Purge a patient" Edge Function | ❌ **open** (admin DELETE policy exists; orchestration does not) |
-| H9 | Storage bucket policies + signed-URL discipline | ✅ closed (`20260507020000_storage_rls_and_private_buckets.sql` + `storageService` signed URL helpers) |
+| H9 | Storage bucket policies + signed-URL discipline | ✅ closed (`20260507092121_storage_rls_and_private_buckets.sql` + `storageService` signed URL helpers) |
 
 ---
 
@@ -165,7 +165,7 @@ The temporary `doctor_dashboard_summary`, `doctor_patients`, and `upcoming_appoi
 
 ### C-1 · H9 — Storage RLS + signed URLs · ✅ closed
 
-`20260507020000_storage_rls_and_private_buckets.sql` creates private `clinical-documents` and `message-attachments` buckets, adds `storage.objects` SELECT/INSERT/DELETE policies, and indexes attachment storage references. `storageService` wraps `createSignedUrl(..., 300)` with a bounded TTL, and `clinicalService`, `documentService`, and `messagingService` expose signed URL helpers.
+`20260507092121_storage_rls_and_private_buckets.sql` creates private `clinical-documents` and `message-attachments` buckets, adds `storage.objects` SELECT/INSERT/DELETE policies, and indexes attachment storage references. `storageService` wraps `createSignedUrl(..., 300)` with a bounded TTL, and `clinicalService`, `documentService`, and `messagingService` expose signed URL helpers.
 
 Policy SQL was transaction-validated through Supabase MCP on the development project. Full branch/local replay is still recommended before ERD export or SaaS onboarding.
 
@@ -177,7 +177,7 @@ Remaining work: run it on a Supabase branch/local DB and wire that database URL 
 
 ### C-3 · P2-2 / H3 — `feature_flags` audience leak · ✅ closed
 
-Closed by `20260507010000_feature_flags_audience.sql`. The old broad authenticated SELECT policy is replaced by an audience-gated policy.
+Closed by `20260507092109_feature_flags_audience.sql`. The old broad authenticated SELECT policy is replaced by an audience-gated policy.
 
 ### C-4 · H8 — "Purge a patient" Edge Function · **operational gap**
 

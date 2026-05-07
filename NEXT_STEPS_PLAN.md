@@ -17,8 +17,8 @@
 | Repo hygiene | `git rm --cached -r dist/` (5 files) | Build artifacts no longer tracked; `.gitignore` already had `dist` |
 | Schema replay | Added `20240625000000_baseline_core_tables.sql` before the old scheduling migration | Fresh tenants get the pre-history core tables plus temporary legacy shells needed by older migrations |
 | Schema replay cleanup | Added `20240627000000_cleanup_bootstrap_scheduling_artifacts.sql` | Drops prototype RLS policies and transient `patients.created_by` immediately after the 2024 scheduling migration |
-| Feature flags | Added `20260507010000_feature_flags_audience.sql` and exposed `audience` in `tenantConfigService.getFeatureFlags()` | Feature flags are audience-gated (`public`, `patient`, `staff`, `admin`) instead of visible to every authenticated user |
-| Storage security | Added `20260507020000_storage_rls_and_private_buckets.sql` plus `storageService` signed URL helpers | Clinical and message attachments use private buckets and short-lived signed URLs, not public file URLs |
+| Feature flags | Added/applied `20260507092109_feature_flags_audience.sql` and exposed `audience` in `tenantConfigService.getFeatureFlags()` | Feature flags are audience-gated (`public`, `patient`, `staff`, `admin`) instead of visible to every authenticated user |
+| Storage security | Added/applied `20260507092121_storage_rls_and_private_buckets.sql` plus `storageService` signed URL helpers | Clinical and message attachments use private buckets and short-lived signed URLs, not public file URLs |
 | Redaction model | Documented message redaction in `CLAUDE.md` | Current behavior is scrub: `messages.body` is overwritten with `[redacted]`, original content unrecoverable |
 | RLS tests | Added `supabase/tests/pgtap_rls.sql` and wired it into `test:backend-db-contract` | Branch/local DBs now run synthetic patient/staff RLS checks when `BACKEND_TEST_DATABASE_URL` is set |
 | ERD inventory | Added `docs/erd/README.md` and `docs/erd/tables.txt` | Active public table inventory is captured; full `schema_dump.sql`/`erd.png` still need branch/local DB export |
