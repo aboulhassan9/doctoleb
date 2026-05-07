@@ -6,9 +6,39 @@ import { createClient } from '@supabase/supabase-js';
 const LIVE_PROJECT_REF = 'gezmfmskhmjgnquoyosq';
 const root = process.cwd();
 
+function loadDotEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+
+  const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const equalsIndex = trimmed.indexOf('=');
+    if (equalsIndex === -1) continue;
+
+    const key = trimmed.slice(0, equalsIndex).trim();
+    let value = trimmed.slice(equalsIndex + 1).trim();
+    if (!key || process.env[key] !== undefined) continue;
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    process.env[key] = value;
+  }
+}
+
+for (const envFile of ['.env.test.local', '.env.local', '.env']) {
+  loadDotEnvFile(path.join(root, envFile));
+}
+
 const env = process.env;
-const testUrl = env.BACKEND_TEST_SUPABASE_URL;
-const anonKey = env.BACKEND_TEST_SUPABASE_ANON_KEY;
+const testUrl = env.BACKEND_TEST_SUPABASE_URL || env.VITE_SUPABASE_URL;
+const anonKey = env.BACKEND_TEST_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY;
 const databaseUrl = env.BACKEND_TEST_DATABASE_URL;
 const allowLive = env.BACKEND_TEST_ALLOW_LIVE === 'true';
 

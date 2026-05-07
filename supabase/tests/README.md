@@ -10,6 +10,10 @@ for live diagnostic reads/writes and accepts the risk.
 BACKEND_TEST_DATABASE_URL="postgresql://..." npm run test:backend-db-contract
 ```
 
+The runner loads `.env.test.local` / `.env.local` / `.env` automatically. If
+`BACKEND_TEST_SUPABASE_URL` and `BACKEND_TEST_SUPABASE_ANON_KEY` are not set, it
+falls back to `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+
 The runner executes:
 
 - `supabase/sql/backend_contract_audit.sql` for schema/policy/index inventory.
@@ -18,7 +22,9 @@ The runner executes:
   `BACKEND_TEST_SUPABASE_ANON_KEY` are also set.
 
 If `BACKEND_TEST_DATABASE_URL` is absent, `npm run verify` skips these DB-backed
-checks by design.
+checks by design. Set `BACKEND_TEST_ALLOW_LIVE=true` only when intentionally
+running read-only anon RPC exposure diagnostics against the live development
+tenant; SQL audit and pgTAP should still use a disposable branch/local DB URL.
 
 ## RLS Coverage
 
