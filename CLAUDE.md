@@ -13,6 +13,7 @@ A React + Supabase clinic management SPA with five user roles: `doctor`, `predoc
 - **Live Supabase project**: `clinic-website` (`gezmfmskhmjgnquoyosq`, us-east-1, Postgres 17, ACTIVE_HEALTHY)
 - **Scripts**: `npm run dev` · `npm run build` · `npm run lint` · `npm run verify` · Playwright installed
 - **Stack**: Postgres + Auth + Realtime via Supabase. Edge Functions are currently retired in repo and should only return when a server-side worker/proxy is explicitly designed.
+- **Frontend direction**: split the current all-in-one SPA into separate deployable apps: patient web and clinic operations. See `docs/decisions/ADR-002-separate-patient-and-clinic-ops-apps.md` and `FRONTEND_APP_SPLIT_PLAN.md`.
 
 ---
 
@@ -83,6 +84,8 @@ export const apiCall = async (fn) => {
 ---
 
 ## Routing Map (`App.jsx`)
+
+Current status: these routes still live in one Vite app during migration. Target status: public/patient routes move to the patient web app; doctor/secretary/predoctor/clinic-admin routes move to clinic operations with its own login and URL. Do not add new staff/admin surfaces to the patient landing journey.
 
 ### Public routes
 

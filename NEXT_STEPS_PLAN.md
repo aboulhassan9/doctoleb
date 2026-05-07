@@ -3,6 +3,7 @@
 > **Date**: 2026-05-07.
 > **Companion docs**: `CLAUDE.md`, `TIER2_REVIEW.md`, `TIER2_REVIEW_ADDENDUM.md`, `TIER2_INDEX_AND_PERF_PLAN.md`, `BLOCK_F_AGENT_HANDOFF_PROMPT.md`.
 > **Purpose**: forward roadmap covering ERD export readiness, UX flows, business logic, and API contracts. Consumes the open items already cataloged in the review docs; does not re-litigate them.
+> **Frontend boundary update**: patient web and clinic operations must split into separate deployable apps. See `docs/decisions/ADR-002-separate-patient-and-clinic-ops-apps.md` and `FRONTEND_APP_SPLIT_PLAN.md`.
 
 ---
 
@@ -17,6 +18,7 @@
 | Encounter lifecycle | Hardened `complete_encounter` and prescription creation via `20260507103747_tier2_encounter_completion_contract.sql` | Completion now requires no draft documents plus either clinical notes or a summary; prescriptions require an encounter diagnosis |
 | Encounter UI | Tightened `DoctorEncounterPage` and prescriptions tab | Direct encounter resume can start from loaded appointment context; completion/prescribing rules surface before DB rejection |
 | Encounter notes | Added `useEncounterDraft` and wired `EncounterNotesTab` | Unsaved clinical-note drafts persist locally per encounter and autosave every 30 seconds |
+| Frontend architecture | Accepted patient-web vs clinic-ops split | Staff/admin/doctor UX should move to a separate operations app; patient landing remains patient/client only |
 | Repo hygiene | `git rm --cached -r dist/` (5 files) | Build artifacts no longer tracked; `.gitignore` already had `dist` |
 | Schema replay | Added `20240625000000_baseline_core_tables.sql` before the old scheduling migration | Fresh tenants get the pre-history core tables plus temporary legacy shells needed by older migrations |
 | Schema replay cleanup | Added `20240627000000_cleanup_bootstrap_scheduling_artifacts.sql` | Drops prototype RLS policies and transient `patients.created_by` immediately after the 2024 scheduling migration |
@@ -151,7 +153,7 @@ See `TIER2_INDEX_AND_PERF_PLAN.md` §8 for migration order. Blocks A + C are now
 
 ### Block C — Slices 1 → 7 (3–4 months total)
 
-Detailed in `TIER2_REVIEW.md` §7 and §10. Summary:
+Detailed in `TIER2_REVIEW.md` §7 and §10. These slices now land inside the target app boundary from `FRONTEND_APP_SPLIT_PLAN.md`: patient flows in patient web; doctor/staff/admin flows in clinic operations. Summary:
 
 - **Slice 1 — Doctor encounter MVP** (6–8 days): the headline doctor workflow. All Tier 2.5 RPCs already shipped; build the page + hooks.
 - **Slice 2 — Patient documents + lab/imaging viewer** (4–5 days): blocked on A2 (Storage RLS).

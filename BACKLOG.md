@@ -15,6 +15,7 @@ This file exists so deferred items do not stay scattered across tier plans, revi
 | Branch/local SQL audit + pgTAP execution | Turns the RLS scaffold into real proof against a disposable DB | `BACKEND_TEST_DATABASE_URL` for branch/local Postgres | Pending |
 | Full fresh migration replay proof | Proves the migration directory can create a new doctor tenant from zero | Local Docker/Postgres or Supabase branch | Pending |
 | ERD export | Gives humans/agents a visual schema truth for the doctor-branded tenant model | Fresh replay or branch schema dump | Pending |
+| Patient web / clinic-ops split | Stops staff/admin UX from living behind the patient landing-page journey | `FRONTEND_APP_SPLIT_PLAN.md` | Planned |
 | Index/perf Block A + C | Adds only the high-value indexes from `TIER2_INDEX_AND_PERF_PLAN.md` | Applied in `20260507102119_tier2_index_block_a_c.sql` | Done |
 | Slice 1 doctor encounter MVP | Main doctor workflow after backend foundation | Backend proof preferred, not strictly blocked | Ready |
 

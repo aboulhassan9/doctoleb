@@ -18,6 +18,15 @@ brand_personality:
 
 DoctoLeb V1 is the operating system for one specific clinic with multiple doctors. It is not a marketplace, not a multi-tenant SaaS, and not a doctor-discovery product. Patients can self-register from the public website, while staff accounts are created through trusted internal clinic workflows.
 
+The product should be split into separate deployable user surfaces:
+
+- **Patient Web**: the public clinic website plus patient portal.
+- **Clinic Operations**: the internal doctor, secretary, predoctor, assistant/nurse, and clinic-admin app.
+- **Flutter Patient App**: later mobile client using the same patient-facing backend contracts.
+- **SaaS Control Plane**: later DoctoLeb-owner/super-admin app with no PHI.
+
+The clinic-admin role is internal to the clinic tenant. It is not the SaaS super-admin.
+
 The product exists to reduce friction across the full visit lifecycle: patient signup, scheduling, pre-check, consultation, documentation, billing, and follow-up. The interface has to support both patient confidence and staff speed, with most day-to-day complexity living in doctor, predoctor, and secretary workflows.
 
 ## Primary Audiences
@@ -55,6 +64,7 @@ The product exists to reduce friction across the full visit lifecycle: patient s
 - Maintain doctor-branded presentation
 - Keep tenant profile, app config, and public trust surfaces coherent
 - Ensure the product feels professional enough to represent the clinic directly
+- Manage staff, mobile-facing configuration, consent/content surfaces, and operational settings from the clinic operations app
 
 ## Core Product Jobs
 
@@ -86,6 +96,8 @@ The product should feel:
 - No multi-clinic switching UX
 - No exaggerated AI-first positioning unless the feature is truly implemented
 - No consumer-social tone or decorative novelty that weakens trust
+- No staff/admin login flow as part of the patient landing-page journey
+- No SaaS super-admin PHI access inside the clinic operations app
 
 ## Design Implications
 
