@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import { patientService } from '../services/patients';
-import { getHomeRouteForRole } from '../lib/routes';
+import { useAuth } from '@/contexts/AuthContext';
+import { logError } from '@/lib/logger';
+import { useToast } from '@/contexts/ToastContext';
+import { patientService } from '@/services/patients';
+import { getHomeRouteForRole } from '@/lib/routes';
 
 export default function PatientOwnProfilePage() {
     const navigate = useNavigate();
@@ -53,7 +54,7 @@ export default function PatientOwnProfilePage() {
                 });
             }
         } catch (err) {
-            console.error('Error fetching profile:', err);
+            logError('Error fetching profile:', err);
             showToast('Failed to load profile', 'error');
         } finally {
             setLoading(false);
@@ -112,11 +113,11 @@ export default function PatientOwnProfilePage() {
                 setIsEditing(false);
                 fetchPatientProfile();
             } else {
-                console.error(error);
+                logError('error', error);
                 showToast(error || 'Failed to update profile', 'error');
             }
         } catch (err) {
-            console.error('Error updating profile:', err);
+            logError('Error updating profile:', err);
             showToast('An error occurred', 'error');
         } finally {
             setSubmitting(false);

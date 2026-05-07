@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import { appointmentService } from '../services/appointments';
-import { slotService } from '../services/slots';
-import { clinicService } from '../services/clinics';
-import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_STEPS, normalizeAppointments } from '../lib/appointments';
-import { formatClinicDate, formatClinicTime, isFutureClinicDateTime, normalizeTimeValue } from '../lib/time';
-import { getHomeRouteForRole } from '../lib/routes';
+import { logError } from '@/lib/logger';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { appointmentService } from '@/services/appointments';
+import { slotService } from '@/services/slots';
+import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_STEPS, normalizeAppointments } from '@/lib/appointments';
+import { formatClinicDate, formatClinicTime, isFutureClinicDateTime, normalizeTimeValue } from '@/lib/time';
+import { getHomeRouteForRole } from '@/lib/routes';
 
 export default function PatientAppointmentsPage() {
     const navigate = useNavigate();
@@ -47,13 +47,22 @@ export default function PatientAppointmentsPage() {
 
     async function fetchAvailableSlots() {
         try {
-            const { data: doctor, error } = await clinicService.getMainDoctor();
-            if (!error && doctor?.id) {
-                const { data: slots } = await slotService.getAvailableSlots(doctor.id, selectedDate);
-                setAvailableSlots(slots || []);
+            if (!user?.doctor_id) {
+                setAvailableSlots([]);
+                showToast('Doctor schedule is not ready yet. Please refresh or contact the clinic.', 'error');
+                return;
             }
+
+            const { data: slots, error } = await slotService.getAvailableSlots(user.doctor_id, selectedDate);
+            if (error) {
+                showToast('Failed to load available slots', 'error');
+                setAvailableSlots([]);
+                return;
+            }
+
+            setAvailableSlots(slots || []);
         } catch (err) {
-            console.error('Error fetching slots:', err);
+            logError('Error fetching slots:', err);
         }
     }
 
@@ -85,7 +94,7 @@ export default function PatientAppointmentsPage() {
                 showToast(error || 'Failed to book appointment', 'error');
             }
         } catch (err) {
-            console.error('Error booking appointment:', err);
+            logError('Error booking appointment:', err);
             showToast('An error occurred', 'error');
         } finally {
             setSubmitting(false);
@@ -103,7 +112,7 @@ export default function PatientAppointmentsPage() {
                 showToast('Failed to cancel appointment', 'error');
             }
         } catch (err) {
-            console.error('Error cancelling appointment:', err);
+            logError('Error cancelling appointment:', err);
         } finally {
             setSubmitting(false);
             setCancelConfirmId(null);

@@ -1,45 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { patientService } from '../services/patients';
-import { useToast } from '../contexts/ToastContext';
-import PreDoctorSidebar from '../components/PreDoctorSidebar';
-import { stagger, fadeUp } from '../lib/animations';
+import { patientService } from '@/services/patients';
+import { usePatients } from '@/hooks/features/usePatients';
+import { useToast } from '@/contexts/ToastContext';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { stagger, fadeUp } from '@/lib/animations';
 
 export default function PreDoctorPatientsPage() {
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const [patients, setPatients] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { patients, loading } = usePatients();
     const [searchQuery, setSearchQuery] = useState('');
-
-    const fetchPatients = async () => {
-        try {
-            setLoading(true);
-            const { data, error } = await patientService.getAll();
-            if (!error && data) {
-                setPatients(data || []);
-            } else {
-                showToast('Failed to load patients', 'error');
-            }
-        } catch (err) {
-            console.error('Error fetching patients:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchPatients();
-    }, []);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
 
     return (
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <PreDoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-y-auto">
+        <DashboardLayout role="pre_doctor">
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -120,7 +99,7 @@ export default function PreDoctorPatientsPage() {
                         </table>
                     </motion.div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </DashboardLayout>
     );
 }

@@ -1,22 +1,22 @@
-import { supabase } from '../lib/supabase';
-import { apiCall } from './api';
+import { supabase } from '@/lib/supabase';
+import { apiCall, apiPaged } from './api';
 import {
   APPOINTMENT_SELECT_FIELDS,
   CLINIC_SELECT_FIELDS,
-  CLINIC_SETTINGS_SELECT_FIELDS,
-  DOCTOR_DASHBOARD_SUMMARY_FIELDS,
-  DOCTOR_SELECT_FIELDS,
-  REPORT_SELECT_FIELDS,
-} from '../lib/selects';
+} from '@/lib/selects';
+import { clinicSchema, parseWithSchema } from '@/schemas';
 
-// Unified clinic service — handles both CRUD (multi-clinic) and single-clinic operations
+// Unified practice-location service. Branding/config belongs to tenantConfigService.
 export const clinicService = {
   // ─── Multi-clinic CRUD ───────────────────────────────────────────────────────
 
-  async getAll() {
-    return apiCall(
-      supabase.from('clinics').select(CLINIC_SELECT_FIELDS).order('name', { ascending: true })
-    );
+  async getAll({ page = 1, pageSize = 100 } = {}) {
+    const query = supabase
+      .from('clinics')
+      .select(CLINIC_SELECT_FIELDS, { count: 'exact' })
+      .order('name', { ascending: true });
+
+    return apiPaged(query, { page, pageSize });
   },
 
   async getById(id) {
@@ -26,71 +26,26 @@ export const clinicService = {
   },
 
   async create(data) {
+    const { data: clinic, error: validationError } = parseWithSchema(clinicSchema, data);
+    if (validationError) return { data: null, error: validationError };
+
     return apiCall(
-      supabase.from('clinics').insert([data]).select(CLINIC_SELECT_FIELDS).single()
+      supabase.from('clinics').insert([clinic]).select(CLINIC_SELECT_FIELDS).single()
     );
   },
 
   async update(id, data) {
+    const { data: updates, error: validationError } = parseWithSchema(clinicSchema.partial(), data);
+    if (validationError) return { data: null, error: validationError };
+
     return apiCall(
-      supabase.from('clinics').update(data).eq('id', id).select(CLINIC_SELECT_FIELDS).single()
+      supabase.from('clinics').update(updates).eq('id', id).select(CLINIC_SELECT_FIELDS).single()
     );
   },
 
   async delete(id) {
     return apiCall(
       supabase.from('clinics').delete().eq('id', id)
-    );
-  },
-
-  // ─── Single-clinic operations ─────────────────────────────────────────────────
-
-  // Get the main doctor (clinic owner — first created doctor)
-  async getMainDoctor() {
-    return apiCall(
-      supabase
-        .from('doctors')
-        .select(DOCTOR_SELECT_FIELDS)
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .single()
-    );
-  },
-
-  // Get clinic settings
-  async getClinicSettings() {
-    return apiCall(
-      supabase.from('clinic_settings').select(CLINIC_SETTINGS_SELECT_FIELDS).single()
-    );
-  },
-
-  // Update clinic settings
-  async updateClinicSettings(data) {
-    const { data: existing, error } = await supabase
-      .from('clinic_settings')
-      .select('id')
-      .limit(1)
-      .maybeSingle();
-
-    if (error) {
-      return { data: null, error: error.message || 'Failed to load clinic settings' };
-    }
-
-    if (!existing?.id) {
-      return apiCall(
-        supabase.from('clinic_settings').insert([data]).select(CLINIC_SETTINGS_SELECT_FIELDS).single()
-      );
-    }
-
-    return apiCall(
-      supabase.from('clinic_settings').update(data).eq('id', existing.id).select(CLINIC_SETTINGS_SELECT_FIELDS).single()
-    );
-  },
-
-  // Get dashboard overview (uses DB view)
-  async getDashboardSummary() {
-    return apiCall(
-      supabase.from('doctor_dashboard_summary').select(DOCTOR_DASHBOARD_SUMMARY_FIELDS).single()
     );
   },
 
@@ -110,19 +65,4 @@ export const clinicService = {
     );
   },
 
-  // Request a lab test (creates a medical_report record)
-  async requestLabTest(patientId, testType, reason, doctorId) {
-    return apiCall(
-      supabase
-        .from('medical_reports')
-        .insert([{
-          patient_id:  patientId,
-          doctor_id:   doctorId,
-          report_type: 'Lab Request',
-          title:       testType,
-          content:     reason,
-        }])
-        .select(REPORT_SELECT_FIELDS)
-    );
-  },
 };

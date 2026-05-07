@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { reportService } from '../services/reports';
-import { patientService } from '../services/patients';
-import { doctorService } from '../services/doctors';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import DoctorSidebar from '../components/DoctorSidebar';
+import { documentService } from '@/services/documents';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { usePatients } from '@/hooks/features/usePatients';
+import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 
 
 const CATEGORIES = ['Hematology', 'Biochemistry', 'Immunology', 'Toxicology'];
@@ -22,33 +23,19 @@ export default function DoctorLabRequestPage() {
     const [collectionDate, setCollectionDate] = useState(new Date().toISOString().split('T')[0]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-    const [patients, setPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
-    const [doctorId, setDoctorId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const { user } = useAuth();
     const { showToast } = useToast();
 
-    useEffect(() => {
-        const fetchPatients = async () => {
-            const { data } = await patientService.getAll();
-            if (data) {
-                setPatients(data);
-                if (data.length > 0) setSelectedPatient(data[0]);
-            }
-        };
-        fetchPatients();
-    }, []);
+    const { patients } = usePatients();
+    const { doctorId } = useDoctorProfile();
 
     useEffect(() => {
-        const fetchDoctorProfile = async () => {
-            if (!user?.id) return;
-            const { data } = await doctorService.getByUserId(user.id);
-            setDoctorId(data?.id || null);
-        };
-
-        fetchDoctorProfile();
-    }, [user?.id]);
+        if (patients && patients.length > 0 && !selectedPatient) {
+            setSelectedPatient(patients[0]);
+        }
+    }, [patients, selectedPatient]);
 
     const removeTest = (index) => {
         setTests(tests.filter((_, i) => i !== index));
@@ -60,7 +47,7 @@ export default function DoctorLabRequestPage() {
 
     const handleDiscard = () => {
         if (confirm('Are you sure you want to discard this lab request?')) {
-            navigate('/doctor-consultation');
+            navigate(selectedPatient?.id ? `/doctor-patient/${selectedPatient.id}` : '/doctor-patients');
         }
     };
 
@@ -148,12 +135,12 @@ export default function DoctorLabRequestPage() {
                 `Collection date: ${collectionDate}`,
             ].join('\n');
 
-            const { error } = await reportService.create({
+            const { error } = await documentService.createLabRequest({
                 patient_id: selectedPatient.id,
                 doctor_id: doctorId,
-                report_type: 'Lab Request',
                 title: `Lab Request - ${testNames.join(', ').slice(0, 160)}`,
                 content,
+                created_by: user.id,
             });
 
             if (error) throw error;
@@ -165,7 +152,7 @@ export default function DoctorLabRequestPage() {
                 navigate('/doctor-dashboard');
             }, 2000);
         } catch (error) {
-            console.error('Failed to submit lab request:', error);
+            logError('Failed to submit lab request:', error);
             showToast('Failed to submit lab request', 'error');
         } finally {
             setIsSaving(false);
@@ -173,9 +160,7 @@ export default function DoctorLabRequestPage() {
     };
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] text-[#0f172a] overflow-hidden font-['Inter']">
-            <DoctorSidebar />
-
+        <DashboardLayout role="doctor">
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <header className="flex items-center justify-between px-6 w-full h-16 bg-white shadow-sm sticky top-0 z-40 border-b border-slate-100">
                     <div className="flex items-center gap-4 flex-1">
@@ -202,22 +187,22 @@ export default function DoctorLabRequestPage() {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <nav className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                                 <span onClick={() => navigate('/doctor-patients')} className="hover:text-[#0d6cf2] transition-colors cursor-pointer">Patients</span>
                                 <span className="material-symbols-outlined text-[10px]">chevron_right</span>
-                                <span onClick={() => navigate('/doctor-consultation')} className="hover:text-[#0d6cf2] transition-colors cursor-pointer text-slate-500">{selectedPatient ? `${selectedPatient.users?.first_name || ''} ${selectedPatient.users?.last_name || ''}`.trim() : 'Patient'}</span>
+                                <span onClick={() => navigate(selectedPatient?.id ? `/doctor-patient/${selectedPatient.id}` : '/doctor-patients')} className="hover:text-[#0d6cf2] transition-colors cursor-pointer text-slate-500">{selectedPatient ? `${selectedPatient.users?.first_name || ''} ${selectedPatient.users?.last_name || ''}`.trim() : 'Patient'}</span>
                                 <span className="material-symbols-outlined text-[10px]">chevron_right</span>
                                 <span className="text-[#0d6cf2]">New Lab Request</span>
                             </nav>
                             <h2 className="text-3xl font-black text-slate-900 tracking-tighter leading-none">Lab Test Request</h2>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button onClick={() => navigate('/doctor-consultation')} className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-[#0d6cf2] transition-colors px-4 py-2">
+                            <button onClick={() => navigate(selectedPatient?.id ? `/doctor-patient/${selectedPatient.id}` : '/doctor-patients')} className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-[#0d6cf2] transition-colors px-4 py-2">
                                 <span className="material-symbols-outlined text-lg">arrow_back</span>
-                                Back to Consultation
+                                Back to Patient
                             </button>
                         </div>
                     </div>
@@ -468,8 +453,8 @@ export default function DoctorLabRequestPage() {
                             </div>
                         </div>
                     )}
-                </main>
+                </div>
             </div>
-        </div>
+    </DashboardLayout>
     );
 }

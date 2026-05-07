@@ -8,19 +8,6 @@ export const STATE_MACHINES = Object.freeze({
     cancelled: [],
     no_show: [],
   },
-  consultation: {
-    pending: ['in_progress', 'cancelled'],
-    in_progress: ['completed', 'cancelled'],
-    completed: [],
-    cancelled: [],
-  },
-  referral: {
-    pending: ['accepted', 'rejected'],
-    accepted: ['in_progress', 'completed'],
-    in_progress: ['completed'],
-    completed: [],
-    rejected: [],
-  },
   payment: {
     pending: ['completed', 'failed'],
     completed: ['refunded'],
@@ -33,7 +20,47 @@ export const STATE_MACHINES = Object.freeze({
     reviewed: ['completed'],
     completed: [],
   },
+  encounter: {
+    planned: ['in_progress', 'cancelled', 'entered_in_error'],
+    in_progress: ['completed', 'cancelled', 'entered_in_error'],
+    completed: [],
+    cancelled: [],
+    entered_in_error: [],
+  },
+  clinicalDocument: {
+    draft: ['final', 'void'],
+    final: ['superseded', 'void'],
+    superseded: [],
+    void: [],
+  },
+  order: {
+    draft: ['ordered', 'cancelled'],
+    ordered: ['in_progress', 'resulted', 'cancelled'],
+    in_progress: ['resulted', 'cancelled'],
+    resulted: [],
+    cancelled: [],
+  },
+  prescription: {
+    draft: ['active', 'cancelled'],
+    active: ['completed', 'stopped', 'cancelled'],
+    completed: [],
+    stopped: [],
+    cancelled: [],
+  },
+  careTask: {
+    open: ['in_progress', 'done', 'cancelled'],
+    in_progress: ['done', 'cancelled'],
+    done: [],
+    cancelled: [],
+  },
 });
+
+export const APPOINTMENT_STATUSES = Object.freeze(Object.keys(STATE_MACHINES.appointment));
+export const ENCOUNTER_STATUSES = Object.freeze(Object.keys(STATE_MACHINES.encounter));
+export const CLINICAL_DOCUMENT_STATUSES = Object.freeze(Object.keys(STATE_MACHINES.clinicalDocument));
+export const ORDER_STATUSES = Object.freeze(Object.keys(STATE_MACHINES.order));
+export const PRESCRIPTION_STATUSES = Object.freeze(Object.keys(STATE_MACHINES.prescription));
+export const CARE_TASK_STATUSES = Object.freeze(Object.keys(STATE_MACHINES.careTask));
 
 export function normalizeStatus(status) {
   return String(status || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
@@ -58,3 +85,9 @@ export function assertTransition(entity, from, to) {
     `Invalid ${entity} transition: "${from}" -> "${to}". Allowed: [${allowed.join(', ') || 'none'}]`
   );
 }
+
+export const canTransitionEncounter = (from, to) => canTransition('encounter', from, to);
+export const canTransitionClinicalDocument = (from, to) => canTransition('clinicalDocument', from, to);
+export const canTransitionOrder = (from, to) => canTransition('order', from, to);
+export const canTransitionPrescription = (from, to) => canTransition('prescription', from, to);
+export const canTransitionCareTask = (from, to) => canTransition('careTask', from, to);

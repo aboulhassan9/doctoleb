@@ -1,0 +1,292 @@
+# DoctoLeb Backend Contract Ledger
+
+> Status: contract-freeze working ledger.
+> Scope: backend/API only; no large frontend implementation in this phase.
+> Live source of truth: Supabase project `gezmfmskhmjgnquoyosq`.
+> Tenancy model: one Supabase project/database per doctor tenant; no `tenant_id` inside tenant DB.
+
+## Contract Rules
+
+- List reads return `{ data, meta, error }`, where `meta.pagination` exists for paged lists.
+- Single reads and writes return `{ data, error }`.
+- Every write validates through Zod before touching Supabase.
+- Retryable mobile writes include `client_request_id`.
+- Lifecycle status changes go through a named lifecycle method/RPC, never a raw page-level status update.
+- Pages/components do not import Supabase directly.
+- Services own DB selectors, normalizers, RPC calls, and DB-to-UI shape.
+- There are currently no canonical repo Edge Functions. Future Edge Functions must not duplicate business logic; they validate/authenticate and call canonical RPC/service paths.
+- Old duplicate tables are removed once replacement consumers are migrated. There is no production data yet, so dead/duplicate surfaces should not be preserved by default.
+- New work must not recreate or build on the removed legacy surfaces: `consultations`, `notifications`, `doctor_brand`, `clinic_settings`, `medical_reports`, `certificates`, or `referrals`.
+
+## Legacy Removal Reminder
+
+Read this before every backend/UI slice:
+
+- Legacy history compatibility is deleted. New clinical workflow is `encounters` plus Tier 2 clinical tables.
+- Legacy in-app notifications are deleted. New notification core is `notification_events` plus notification send-attempt records and devices.
+- Legacy branding/config surfaces are deleted. New tenant/mobile config is `tenant_profile` plus `tenant_app_config`.
+- Legacy report/certificate/referral tables are deleted. Generated/printable/downloadable records live in `clinical_documents` plus attachments/templates.
+- Old role sidebars and old doctor consultation route are already removed. Do not recreate them.
+- Each implementation pass should run `npm run audit:backend-contract` so removed legacy table/service references cannot return.
+- Live Supabase still needs a project-owner action to delete deployed retired V1 Edge Functions (`auth`, `appointments`, `patients`, `process-payment`, `consultations`, `referrals`) if they appear in the dashboard. Repo source is gone and the current web app has no consumer for them.
+
+## Migration Replay Baseline
+
+The live tenant originally had several tables created outside the tracked migration history. Fresh tenant replay is now handled by:
+
+- `supabase/migrations/20240625000000_baseline_core_tables.sql`
+- `supabase/migrations/20240627000000_cleanup_bootstrap_scheduling_artifacts.sql`
+
+The baseline runs before the old `20240626_create_scheduling_tables.sql` migration and creates the current core table shape plus temporary legacy shells required by historical migrations. The cleanup migration removes prototype scheduling RLS policies and the transient `patients.created_by` column immediately afterward. Do not move this baseline to 2026 ordering; fresh replay needs it before the 2024 scheduling migration. The legacy shells are not canonical surfaces and are still dropped by `20260506190000_legacy_compatibility_burndown.sql`.
+
+## Domain Ledger
+
+### Auth And Identity
+
+**Canonical tables**
+
+- `auth.users`: Supabase Auth identity.
+- `public.users`: domain identity, role, profile basics, `auth_user_id` link.
+- `patients`, `doctors`, `predoctors`, `staff_members`: role/domain extensions.
+
+**Canonical services**
+
+- `authService`: sign-in, sign-up, logout, forgot/reset password.
+- `authIdentity`: session profile resolution by `auth_user_id`; email inference is not allowed for new identity work.
+
+**Writes**
+
+- Patient sign-up is auth-backed and should provision domain profile through DB/server-backed creation.
+- Staff/doctor creation is staff/admin workflow; public signup must not create staff.
+
+**Security**
+
+- `password_hash` is legacy only and must not be read/written by frontend code.
+- Inactive users are blocked at auth/profile resolution.
+- Role redirects are centralized through role route helpers.
+
+**Tests**
+
+- Session resolves through `auth_user_id`.
+- Inactive users cannot enter.
+- Frontend source has no `password_hash` references.
+
+### Appointments, Slots, And Schedule
+
+**Canonical tables**
+
+- `secretary_slots`: concrete bookable availability.
+- `doctor_schedule_templates`: recurring schedule rules for locations.
+- `appointments`: booked visits with snapshot fields `clinic_id`, `visit_type_id`, `scheduled_at`, `duration_minutes`, `reason`, `status`.
+- `visit_types`: appointment product/flow rules, including intake requirement.
+- `clinics`: practice locations.
+
+**Canonical lifecycle**
+
+- Appointment statuses: `scheduled`, `confirmed`, `pre_check`, `in_consultation`, `completed`, `cancelled`, `no_show`.
+- Allowed transitions live in `src/lib/stateMachines.js`.
+
+**Canonical operations**
+
+- Appointment creation owner: `book_slot` RPC, called through `bookSlot()` and `appointmentService.bookFromSlot()`.
+- Direct appointment inserts are forbidden by service contract and should also be blocked by RLS/trigger.
+- Appointment status updates use service lifecycle methods and state-machine validation.
+
+**Services**
+
+- `appointmentService`: read appointments, canonical slot booking, lifecycle updates.
+- `slotService`: read/create slot inventory and call booking RPC.
+- `scheduleService`: schedule templates and materialization.
+
+**Tests**
+
+- Patient/secretary both book through `book_slot`.
+- Direct insert without slot is rejected.
+- Double booking fails under concurrent calls.
+- Staff cannot spoof `booked_by`.
+- First/follow-up booking respects intake gate.
+
+### Intake And Patient History
+
+**Canonical tables**
+
+- `medical_intake`: one-time patient intake scalars and completion gate.
+- `precheck_forms`: per-visit vitals and predoctor workflow.
+- `patient_vaccinations`, `patient_surgeries`, `patient_diseases`, `patient_family_history`: structured history timelines.
+- Catalogs: `blood_groups`, `occupations`, `vaccines`, `diseases`, `surgery_types`, `family_relations`.
+
+**Canonical operations**
+
+- Intake draft/save/complete/reopen belongs to `intakeService`.
+- Booking gate reads `patients.intake_completed_at` and/or visit type rules.
+- Patient history writes are staff-mediated; patients can read own history only.
+
+**Services**
+
+- `intakeService`: medical intake and structured history.
+- `precheckService`: per-appointment precheck forms.
+
+**Security**
+
+- PHI tables use soft archive.
+- Audit triggers cover medical/legal records.
+- DELETE is admin-only or service-role purge workflow.
+
+**Tests**
+
+- Patient cannot read another patient's intake/history.
+- Staff can record history with valid catalog references.
+- Reopen intake does not silently erase completed history.
+
+### Encounters And Clinical Care
+
+**Canonical tables**
+
+- `encounters`: visit/encounter timeline.
+- `clinical_notes`: SOAP/general/private notes.
+- `diagnoses`: structured encounter diagnoses.
+- `prescriptions`: medication orders.
+- `lab_orders`, `imaging_orders`: clinical orders.
+- `clinical_documents`, `document_attachments`: reports/certificates/results/files.
+- `care_tasks`: follow-up work items.
+
+**Canonical lifecycle**
+
+- Encounter: `planned -> in_progress -> completed`, with cancel/error paths.
+- Clinical document: `draft -> final`, plus `void`/`superseded`.
+- Orders, prescriptions, and care tasks use `src/lib/stateMachines.js`.
+
+**Canonical operations**
+
+- `start_encounter`, `complete_encounter`, `cancel_encounter` RPCs own encounter status and appointment coupling.
+- `finalize_clinical_document`, `void_clinical_document` RPCs own document status.
+- Clinical document file bytes live in the private `clinical-documents` Storage bucket. Clients receive short-lived signed URLs through `clinicalService.getDocumentSignedUrl()` / `documentService.getDownloadUrl()`, never direct public URLs.
+- Direct status updates from pages are not allowed.
+
+**Services**
+
+- `clinicalService`: current broad service for encounter, notes, diagnoses, prescriptions, orders, documents, care tasks.
+- Planned split: `encounterService`, `prescriptionService`, `orderService`, `documentService` once UI stabilizes.
+
+**Tests**
+
+- Doctor starts encounter from appointment and appointment moves to `in_consultation`.
+- Doctor completes encounter and appointment moves to `completed`.
+- Completed encounter cannot return to `in_progress`.
+- Draft document finalizes through RPC only.
+- Clinical writes enforce author/current user identity.
+
+### Insurance And Billing
+
+**Canonical tables**
+
+- `insurance_providers`
+- `doctor_insurance_contracts`
+- `patient_insurance_policies`
+- `insurance_claims`
+- `claim_form_templates`
+- `payments`
+- `billable_services`
+
+**Canonical operations**
+
+- Provider/contract/policy management belongs to `insuranceService`.
+- Claims are financial/legal records: soft archive, audit, admin-only purge.
+- Generated insurance forms should eventually be stored as `clinical_documents` or generated from `claim_form_templates`.
+
+**Tests**
+
+- Expired policy cannot be selected without warning.
+- Patient can read own policies/claims.
+- Staff can create claim; patient cannot spoof claim amounts.
+- Claims preserve audit history.
+
+### Messaging And Communication
+
+**Canonical tables**
+
+- `conversations`
+- `conversation_participants`
+- `messages`
+- `message_attachments`
+- `message_read_receipts`
+
+**Canonical operations**
+
+- Message creation owner: `messagingService.sendMessage()`.
+- Retryable sends include `client_request_id`.
+- Message body edits are not allowed; redaction is the safe mutation.
+- Message file bytes live in the private `message-attachments` Storage bucket. Clients receive short-lived signed URLs through `messagingService.getAttachmentSignedUrl()`.
+- Realtime subscription owner: `messagingService.subscribeToConversation()`.
+
+**Tests**
+
+- Patient can only access conversations where they are participant/owner.
+- Staff cannot spoof patient sender.
+- Duplicate retry with same `client_request_id` is idempotent.
+- Redacted messages cannot be edited back.
+
+### Notifications And Mobile Push/Send Attempts
+
+**Canonical tables**
+
+- `notification_events`: source event.
+- `notification_deliveries`: channel/device notification send attempts. This is not physical delivery; it records whether push/in-app/email/SMS notification attempts were sent, failed, retried, or acknowledged.
+- `patient_devices`: push token/device registration.
+- `reminder_rules`: reminder scheduling rules.
+
+**Canonical operations**
+
+- New work should create `notification_events`; a notification worker fans out into `notification_deliveries` send-attempt records.
+- `notificationCoreService` owns inbox reads, mark-read/dismiss actions, role events, and realtime notification subscriptions.
+- Device writes must prove both `user_id` and `patient_id` ownership.
+
+**Tests**
+
+- Patient cannot register a device for another patient.
+- Staff cannot create arbitrary patient-target notifications unless authorized by service/RPC.
+- Failed notification send-attempt records retry safely.
+
+### Tenant Branding And Mobile Config
+
+**Canonical tables**
+
+- `tenant_profile`
+- `tenant_app_config`
+- `feature_flags`
+- `content_pages`
+- `consent_documents`
+- `patient_consents`
+
+**Canonical operations**
+
+- Public brand/config reads go through safe public RPC/view only.
+- Authenticated app config writes are staff/doctor/admin only.
+- Feature flags are audience-gated (`public`, `patient`, `staff`, `admin`) through RLS and `tenantConfigService.getFeatureFlags({ audience })`.
+
+**Tests**
+
+- Anon can only read safe public fields.
+- Patients cannot read staff-only/internal feature flags.
+- Consent acceptance records who accepted and by what method.
+
+## Backend Test Harness Targets
+
+- `npm run audit:backend-contract`: static contract checks in repo.
+- `supabase/sql/backend_contract_audit.sql`: read-only live/branch DB introspection checks.
+- `supabase/tests/pgtap_rls.sql`: branch/local synthetic RLS matrix covering patient owner reads, cross-patient denials, staff reads, feature-flag audiences, and spoof/bypass write attempts.
+- Future expansion: lifecycle RPC transitions and idempotency assertions with branch-local seed data.
+
+## ERD And Schema Export Targets
+
+- `docs/erd/tables.txt`: active public table inventory from the migration replay manifest.
+- `docs/erd/schema_dump.sql`: generated only from a branch/local database with `pg_dump --schema-only`; do not fake this from partial introspection output.
+- `docs/erd/erd.png`: generated from `schema_dump.sql` after a clean replay.
+
+## Remaining Contract Work
+
+- Keep new list services on `{ data, meta, error }` and block regressions through `npm run audit:backend-contract`.
+- Treat the removed legacy surfaces as forbidden names in executable code; document-only references must explain history or removal.
+- Add Zod validation to any remaining write path discovered by audit/review.
+- Decide Edge Function parity for mobile before adding new function source: direct Supabase JS vs minimal Edge Function wrappers per domain. Do not resurrect the retired V1 wrappers.
+- Run the automated DB/RLS tests against a Supabase branch/local database and wire them into CI.

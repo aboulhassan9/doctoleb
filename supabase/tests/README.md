@@ -1,0 +1,42 @@
+# Supabase Backend Contract Tests
+
+These tests are for a disposable Supabase branch or local database. They must
+not be run against the live development tenant unless the user explicitly asks
+for live diagnostic reads/writes and accepts the risk.
+
+## How To Run
+
+```bash
+BACKEND_TEST_DATABASE_URL="postgresql://..." npm run test:backend-db-contract
+```
+
+The runner executes:
+
+- `supabase/sql/backend_contract_audit.sql` for schema/policy/index inventory.
+- `supabase/tests/pgtap_rls.sql` for synthetic RLS assertions.
+- anon RPC exposure checks when `BACKEND_TEST_SUPABASE_URL` and
+  `BACKEND_TEST_SUPABASE_ANON_KEY` are also set.
+
+If `BACKEND_TEST_DATABASE_URL` is absent, `npm run verify` skips these DB-backed
+checks by design.
+
+## RLS Coverage
+
+`pgtap_rls.sql` seeds two synthetic patients plus doctor/admin users in one
+transaction, switches JWT claims with `set_config(...)`, and rolls back at the
+end.
+
+| Domain | Tables Covered |
+|---|---|
+| Identity and booking | `patients`, `appointments` |
+| Intake and patient history | `medical_intake`, `patient_vaccinations`, `patient_surgeries`, `patient_diseases`, `patient_family_history`, `precheck_forms` |
+| Billing and insurance | `payments`, `patient_insurance_policies`, `insurance_claims` |
+| Encounter and clinical care | `encounters`, `clinical_notes`, `diagnoses`, `prescriptions`, `lab_orders`, `imaging_orders`, `clinical_documents`, `document_attachments`, `care_tasks` |
+| Messaging | `conversations`, `conversation_participants`, `messages`, `message_attachments`, `message_read_receipts` |
+| Mobile and notifications | `patient_devices`, `notification_events`, `notification_deliveries` |
+| Legal and tenant config | `patient_consents`, `feature_flags` |
+
+Each patient-scoped row gets three assertions: owner can read, another patient
+cannot read, and staff can read. The suite also checks forbidden direct
+appointment inserts, message sender spoofing, device ownership spoofing, clinical
+note author spoofing, and audience-gated feature flags.

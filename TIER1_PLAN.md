@@ -1,456 +1,191 @@
-# TIER 1 — Service Layer Hardening Plan
+# TIER 1 - Executed Service, RPC, and Operations Hardening
 
-> **Goal**: Make every service method bullet-proof — validated inputs, enforced state machines, paginated lists, consistent error handling, and zero silent failures.  
-> **Depends on**: Tier 0 (schema alignment) must be completed first.  
-> **Time**: ~3–4 hours  
-> **Risk**: Low — all changes are additive guards, not schema changes.
-
----
-
-## TABLE OF CONTENTS
-
-1. [State Machines](#1-state-machines)
-2. [Zod Validation Schemas](#2-zod-validation-schemas)
-3. [Pagination](#3-pagination)
-4. [Service Bugs](#4-service-bugs)
-5. [Error Handling Standardization](#5-error-handling-standardization)
-6. [Hard Delete Audit](#6-hard-delete-audit)
-7. [Execution Checklist](#7-execution-checklist)
+> **Status**: Executed with post-review improvements folded in.
+> **Date updated**: 2026-05-05.
+> **Depends on**: Tier 0 v2 schema alignment.
+> **Handoff**: Tier 2 starts after this baseline and hardens the Edge Function API layer.
 
 ---
 
-## 1. STATE MACHINES
+## 1. Executive Summary
 
-### Current State: No Validation At All
+Tier 1 moved DoctoLeb from "the UI can call tables" toward "domain operations enforce rules." The important shift was not only adding validation. We made booking canonical, reduced identity ambiguity, protected audit data, scoped doctor views, and added an operations gate so changes can be verified before deploy.
 
-The DB has CHECK constraints on status columns, but **the service layer never validates transitions before writing**. Any caller can set any status at any time.
+This document records what was actually executed after multiple review passes from security, DBA, system design, data governance, and operations viewpoints.
 
-### DB CHECK Constraints (verified live)
+---
 
-| Table | Allowed Statuses |
+## 2. Completed Baseline
+
+| Area | Executed result |
 |---|---|
-| `appointments` | `scheduled → confirmed → pre_check → in_consultation → completed`, `cancelled`, `no_show` |
-| `consultations` | `pending → in_progress → completed`, `cancelled` |
-| `referrals` | `pending → accepted → in_progress → completed`, `rejected` |
-| `payments` | `pending → completed`, `failed`, `refunded` |
-| `precheck_forms` | `draft → submitted → reviewed → completed` |
-
-### What Needs To Be Built
-
-#### A) `src/lib/stateMachines.js` — Shared Transition Map
-
-```js
-// Defines legal transitions for each entity type
-export const STATE_MACHINES = {
-  appointment: {
-    scheduled:        ['confirmed', 'cancelled', 'no_show'],
-    confirmed:        ['pre_check', 'cancelled', 'no_show'],
-    pre_check:        ['in_consultation', 'cancelled'],
-    in_consultation:  ['completed', 'cancelled'],
-    completed:        [],               // terminal
-    cancelled:        [],               // terminal
-    no_show:          [],               // terminal
-  },
-  consultation: {
-    pending:      ['in_progress', 'cancelled'],
-    in_progress:  ['completed', 'cancelled'],
-    completed:    [],
-    cancelled:    [],
-  },
-  referral: {
-    pending:      ['accepted', 'rejected'],
-    accepted:     ['in_progress', 'completed'],
-    in_progress:  ['completed'],
-    completed:    [],
-    rejected:     [],
-  },
-  payment: {
-    pending:   ['completed', 'failed'],
-    completed: ['refunded'],
-    failed:    [],
-    refunded:  [],
-  },
-  precheck: {
-    draft:     ['submitted'],
-    submitted: ['reviewed'],
-    reviewed:  ['completed'],
-    completed: [],
-  },
-};
-
-export function canTransition(entity, from, to) {
-  return STATE_MACHINES[entity]?.[from]?.includes(to) ?? false;
-}
-
-export function assertTransition(entity, from, to) {
-  if (!canTransition(entity, from, to)) {
-    throw new Error(
-      `Invalid ${entity} transition: "${from}" → "${to}". ` +
-      `Allowed: [${STATE_MACHINES[entity]?.[from]?.join(', ') || 'none'}]`
-    );
-  }
-}
-```
-
-#### B) Services That Need Guards
-
-| Service | Method | Current Behavior | Fix |
-|---|---|---|---|
-| `consultationService.create()` | L75 | Hardcodes `status: 'in_progress'` — OK, but no check that appointment is `in_consultation` | Add pre-check: fetch appointment, assert `appointment.status === 'in_consultation'` |
-| `consultationService.complete()` | L91–98 | Sets `completed` without checking current status | Add: `assertTransition('consultation', current.status, 'completed')` |
-| `consultationService.update()` | L81–88 | Accepts **any** data including `status` — no guard | If `data.status` present, fetch current row & validate transition |
-| `referralService.accept()` | L74–82 | Sets `accepted` blindly | Add: fetch current, `assertTransition('referral', current.status, 'accepted')` |
-| `referralService.reject()` | L84–91 | Sets `rejected` blindly | Same guard |
-| `referralService.complete()` | L94–101 | Sets `completed` blindly | Same guard |
-| `appointmentService.update()` | L182–190 | Accepts raw `data` with no validation | If `data.status` present, validate transition |
-| `appointmentService.cancel()` | L192–203 | Sets `cancelled` without checking if already completed | Guard: `assertTransition('appointment', current.status, 'cancelled')` |
-| `appointmentService.markCompleted()` | L205–213 | Sets `completed` without checking current | Guard: fetch current, validate |
-| `paymentService.update()` | L289–304 | Raw update, no status guard | If `updates.status`, validate transition |
-
-#### C) PreDoctorDashboardPage Unguarded Transition
-
-```
-File: src/pages/PreDoctorDashboardPage.jsx, Line 64
-Code: await appointmentService.update(appt.id, { status: 'pre_check' });
-```
-This calls `update()` with a raw status. After Tier 1, the service will validate that the appointment is currently `confirmed` before allowing `pre_check`.
+| State machines | `src/lib/stateMachines.js` defines canonical transitions for appointments, consultations, referrals, payments, and prechecks. |
+| Validation | `src/schemas/index.js` contains Zod schemas for auth, booking, patient profile, precheck, consultation, referral, certificate, report, and payment payloads. |
+| Service return shape | Services consistently return `{ data, error }` or `{ data, count, error }`. |
+| Pagination helper | `src/lib/pagination.js` supports bounded pagination without silently truncating legacy callers. |
+| Booking flow | Patient and secretary booking now use `appointmentService.bookFromSlot()` and the `book_slot` RPC. |
+| Booking RPC | `book_slot` owns initial lifecycle state, validates caller identity, locks the slot row, validates duration, and writes Beirut-local slot time as UTC `timestamptz`. |
+| Consultation workflow | Doctor consultation save transitions the appointment to `in_consultation` before creating consultation notes. |
+| Auth identity | Session profile resolution uses `users.auth_user_id`; email fallback is not allowed. |
+| Sign-up | Frontend no longer creates domain patient records through a non-atomic client fallback after auth creation. |
+| Walk-ins | Walk-in creation rolls back the domain `users` row if linked `patients` insert fails. |
+| Doctor scoping | Doctor appointment/dashboard reads resolve the current `doctors.id` and use doctor-scoped appointment queries. |
+| Audit governance | Direct `audit_log` reads are admin-only because rows contain full PHI snapshots. |
+| Edge sync | All six live Edge Functions exist in `supabase/functions/` and were redeployed after shared CORS hardening. |
+| CORS | Edge shared HTTP helper uses request-aware allowlisting, not `Access-Control-Allow-Origin: *`. |
+| CI/release gate | `npm run verify` runs lint, build, and high-severity npm audit; GitHub Actions runs the same gate. |
 
 ---
 
-## 2. ZOD VALIDATION SCHEMAS
+## 3. Review Findings Closed
 
-### Current Coverage
+### 3.1 Security Review
 
-| Schema | File | Used By |
-|---|---|---|
-| `authSignInSchema` | `schemas/index.js` L40 | `authService.signIn` ✅ |
-| `authSignUpSchema` | `schemas/index.js` L45 | `authService.signUp` ✅ |
-| `forgotPasswordSchema` | `schemas/index.js` L52 | `authService.requestPasswordReset` ✅ |
-| `resetPasswordSchema` | `schemas/index.js` L56 | Defined but **unused** ❌ |
-| `appointmentBookingSchema` | `schemas/index.js` L67 | `appointmentService.bookFromSlot` ✅ |
-| `patientProfileUpdateSchema` | `schemas/index.js` L84 | `patientService.updateOwnProfile` ✅ |
-| `precheckDraftSchema` | `schemas/index.js` L98 | `precheckService.saveDraft/updateDraft` ✅ |
-| `precheckSubmitSchema` | `schemas/index.js` L112 | `precheckService.submit` ✅ |
-
-### Missing Schemas (7 needed)
-
-| # | Schema Name | For Service Method | Fields to Validate |
-|---|---|---|---|
-| Z1 | `consultationCreateSchema` | `consultationService.create()` | `appointment_id` (uuid, required), `notes` (string), `diagnosis` (string), `medications` (jsonb array) |
-| Z2 | `consultationCompleteSchema` | `consultationService.complete()` | `notes` (required string), `diagnosis` (required string), `medications` (array) |
-| Z3 | `referralCreateSchema` | `referralService.create()` | `from_doctor_id` (uuid), `patient_id` (uuid), `reason` (required string), `to_doctor_name` (string), `priority` (enum), `clinical_findings` (string), `treatment_plan` (string) |
-| Z4 | `certificateCreateSchema` | `certificateService.create()` | `doctor_id` (uuid), `patient_id` (uuid), `diagnosis` (required string), `treatment` (string), `recommendations` (string), `start_date` (date), `end_date` (date), `status` (enum) |
-| Z5 | `reportCreateSchema` | `reportService.create()` | `patient_id` (uuid), `doctor_id` (uuid), `report_type` (required string), `title` (required string), `content` (string), `findings` (string) |
-| Z6 | `paymentCreateSchema` | `paymentService.create()` | `patient_id` (uuid), `appointment_id` (uuid), `amount` (positive number), `method` (enum), `status` (enum) |
-| Z7 | `resetPasswordSchema` | `authService.resetPassword()` | Already defined but not wired — wire it |
-
-### Implementation Pattern
-
-Every `.create()` and `.update()` method should follow the pattern already used by `precheckService`:
-
-```js
-async create(rawData) {
-  const { data, error } = parseWithSchema(consultationCreateSchema, rawData);
-  if (error) return { data: null, error };
-
-  return apiCall(
-    supabase.from('consultations')
-      .insert([{ ...data, status: 'in_progress', session_start: new Date().toISOString() }])
-      .select(CONSULTATION_SELECT_FIELDS)
-  );
-},
-```
-
----
-
-## 3. PAGINATION
-
-### Current State: Every `getAll()` Fetches Unbounded
-
-32 `getAll()` / `getByX()` calls across pages fetch **every row** with no `.range()` or `.limit()`. This will break as patient and appointment counts grow.
-
-### Priority Pagination Targets
-
-| Priority | Service Method | Page(s) Using It | Expected Growth |
-|---|---|---|---|
-| 🔴 P0 | `appointmentService.getAll()` | `AppointmentsPage`, `DoctorDashboardPage`, `DashboardPage` | 50-200+ daily |
-| 🔴 P0 | `patientService.getAll()` | `PatientsPage`, 6 other pages | Thousands over time |
-| 🟡 P1 | `paymentService.getAll()` | `BillingPage` | Grows with appointments |
-| 🟡 P1 | `notificationService.getAll()` | `DashboardPage` (via context) | High volume |
-| 🟢 P2 | `certificateService.getAll()` | `DoctorCertificatesPage` | Low volume |
-| 🟢 P2 | `referralService.getAll()` | Not used by any page yet | Low volume |
-| 🟢 P2 | `reportService.getAll()` | Not used by any page yet | Low volume |
-
-### Implementation Strategy
-
-Add a shared pagination helper and update services:
-
-```js
-// src/lib/pagination.js
-export const DEFAULT_PAGE_SIZE = 25;
-
-export function paginateQuery(query, { page = 0, pageSize = DEFAULT_PAGE_SIZE } = {}) {
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
-  return query.range(from, to);
-}
-```
-
-Service pattern:
-```js
-async getAll({ page = 0, pageSize = 25 } = {}) {
-  return apiCall(
-    paginateQuery(
-      supabase
-        .from('appointments')
-        .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
-        .order('scheduled_at', { ascending: true }),
-      { page, pageSize }
-    )
-  );
-},
-```
-
-> The `apiCall` wrapper already extracts `count` — this is pre-wired.
-
-### Pages That Need Pagination UI
-
-| Page | Current Pattern | Needed |
-|---|---|---|
-| `AppointmentsPage` | Client-side date filter | Add page buttons, pass `page` to service |
-| `PatientsPage` | Client-side search filter | Add "Load More" or page buttons |
-| `BillingPage` | Fetches all payments | Add date-range filter + pagination |
-| `DoctorCertificatesPage` | Fetches all certs | Add pagination (low priority) |
-
----
-
-## 4. SERVICE BUGS
-
-### Bug 1: `patientService.getPatientsByDoctor()` — Duplicate `.select()` Call
-
-**File**: `src/services/patients.js` L229-230
-```js
-.select('patient_id')   // ← first select
-.select('patient_id')   // ← DUPLICATE — overrides first, may cause unexpected behavior
-```
-**Fix**: Remove the duplicate line.
-
-### Bug 2: `patientService.search()` — PostgREST Filter Injection
-
-**File**: `src/services/patients.js` L155
-```js
-.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,...`)
-```
-If `query` contains PostgREST special characters (`,`, `.`, `(`), it can break the filter or cause unintended matching. This isn't SQL injection (PostgREST is parameterized), but it's a **filter injection** that can return wrong results or errors.
-
-**Fix**: Sanitize `query` before interpolation:
-```js
-const sanitized = query.replace(/[.,()]/g, '');
-```
-
-### Bug 3: `clinicService.getAvailableTimeSlots()` — Ignores `confirmed/pre_check/in_consultation`
-
-**File**: `src/services/clinics.js` L114
-```js
-.eq('status', 'scheduled')  // ← Only checks scheduled, misses confirmed etc.
-```
-A slot with a `confirmed` appointment will still show as "available".
-
-**Fix**: Use `.in('status', ['scheduled', 'confirmed', 'pre_check', 'in_consultation'])` or `.not('status', 'in', '(cancelled,no_show)')`.
-
-### Bug 4: `appointmentService.update()` — Returns `*` Instead of `APPOINTMENT_SELECT_FIELDS`
-
-**File**: `src/services/appointments.js` L188
-```js
-.select()  // ← Returns *, inconsistent with every other method
-```
-**Fix**: Change to `.select(APPOINTMENT_SELECT_FIELDS)`.
-
-### Bug 5: `consultationService.addMedications()` — Overwrites Instead of Appending
-
-**File**: `src/services/consultations.js` L101-108
-```js
-.update({ medications })  // ← REPLACES entire jsonb array
-```
-If a doctor adds medication in two separate saves, the second save destroys the first batch.
-
-**Fix**: Fetch existing, merge, then write:
-```js
-async addMedications(consultationId, newMedications) {
-  const { data: existing } = await this.getById(consultationId);
-  const merged = [...(existing?.medications || []), ...newMedications];
-  return apiCall(
-    supabase.from('consultations')
-      .update({ medications: merged })
-      .eq('id', consultationId)
-      .select(CONSULTATION_SELECT_FIELDS)
-  );
-},
-```
-
-### Bug 6: `paymentService` — Uses Manual try/catch Instead of `apiCall`
-
-**File**: `src/services/payments.js` (entire file)
-
-Every method uses hand-rolled `try/catch` instead of the standard `apiCall` wrapper. This means:
-- Error shapes are inconsistent (`error` vs `error.message`)
-- No `count` is ever returned
-- 5 redundant `console.error` calls
-
-**Fix**: Refactor all 5 methods to use `apiCall()`, matching every other service.
-
-### Bug 7: `notifications.notifyRole()` — Inconsistent Error Shape
-
-**File**: `src/services/notifications.js` L115-142
-
-Uses manual try/catch and returns `error: error?.message` (string) instead of `error: error` (object). Callers checking `if (result.error)` would get unexpected behavior.
-
-**Fix**: Normalize to `apiCall` pattern or ensure consistent shape.
-
----
-
-## 5. ERROR HANDLING STANDARDIZATION
-
-### Current Patterns (Mixed)
-
-| Pattern | Used By | Problem |
-|---|---|---|
-| `apiCall()` wrapper | 10 services | ✅ Consistent `{ data, count, error }` |
-| Manual `try/catch` | `paymentService` (5 methods) | ❌ Different error shape |
-| Manual + `console.error` | `payments`, `patients.createWalkIn`, `notifications.notifyRole` | ❌ Leaks to console in production |
-| Raw supabase call | `appointments.checkAvailability`, `patients.search` | ❌ No error normalization |
-
-### Target: Universal `apiCall`
-
-Every service method should use `apiCall()`. The only exceptions are multi-step operations (like `bookFromSlot` or `createWalkIn`) that need intermediate error handling — these should still normalize their final return shape.
-
-### Files to Refactor
-
-| File | Methods to Fix | Work |
-|---|---|---|
-| `payments.js` | `getAll`, `getBillableServices`, `create`, `update`, `delete` | Replace try/catch with `apiCall` |
-| `appointments.js` | `checkAvailability` | Wrap in `apiCall` |
-| `patients.js` | `search` (first query) | Wrap first supabase call |
-
----
-
-## 6. HARD DELETE AUDIT
-
-### Current Hard Deletes (Violate "Medical Data is Sacred" Rule)
-
-| Service | Method | Table | Risk |
-|---|---|---|---|
-| `paymentService.delete()` | L306-318 | `payments` | 🔴 **Financial records permanently destroyed** — audit trail lost |
-| `appointmentService.delete()` | L149-156 | `appointments` | 🔴 **Clinical history destroyed** — should soft-delete |
-| `notificationService.delete()` | L70-77 | `notifications` | 🟡 Acceptable — notifications are ephemeral |
-| `slotService.deleteSlot()` | L109-113 | `secretary_slots` | 🟡 Acceptable — scheduling config, not medical data |
-| `slotService.deleteGroup()` | L116-120 | `secretary_slots` | 🟡 Acceptable — same reasoning |
-| `clinicService.delete()` | L33-37 | `clinics` | 🟡 Acceptable — admin config |
-
-### Required Changes
-
-| Method | Fix |
+| Finding | Resolution |
 |---|---|
-| `paymentService.delete()` | Replace with `archive()` using soft-delete pattern |
-| `appointmentService.delete()` | Replace with `archive()` — appointments already have `is_archived` columns? Verify; if not, add in migration |
+| `update_patient_profile` trusted caller-supplied ids | Hardened with caller authorization in Secure Web V1 migrations before Tier 1 handoff. |
+| `book_slot` allowed impersonation through `p_booked_by` | RPC now requires `p_booked_by` to match the authenticated domain user. |
+| Patient direct appointment writes bypassed slots | Patient write policies were tightened and app booking paths use `book_slot`. |
+| Notification inserts were spoofable | Notification write access moved toward service/role-controlled paths; Edge Tier 2 will finish route-level RBAC. |
+| Email fallback could bind sessions to wrong domain users | Removed email fallback from `src/lib/authIdentity.js`. |
+| Non-atomic sign-up fallback left auth users without profiles | Removed client-side domain fallback from `src/services/auth.js`; auth provisioning must be server/database-backed. |
+
+### 3.2 DBA/Data Governance Review
+
+| Finding | Resolution |
+|---|---|
+| `book_slot` trusted caller-supplied initial status | RPC now forces initial appointment status to `scheduled`. |
+| `book_slot` trusted caller-supplied duration | RPC validates duration bounds and derives from slot when not supplied. |
+| Audit log exposed PHI snapshots to broad staff roles | `audit_log` select policy is admin-only; future staff views must be redacted. |
+| Missing operational indexes caused policy/function performance warnings | Added Tier 1 indexes in `20260505_tier1_operator_hardening.sql`. |
+| RLS helper policies were re-evaluating auth functions per row | Added policy-performance migration `20260505_tier1_rls_policy_performance.sql`. |
+
+### 3.3 System Design Review
+
+| Finding | Resolution |
+|---|---|
+| Legacy secretary scheduler bypassed canonical booking | `src/pages/AppointmentsPage.jsx` now routes booking through `appointmentService.bookFromSlot()`. |
+| Doctor consultation save was blocked by its own guard | `src/pages/DoctorConsultationPage.jsx` now moves appointment into `in_consultation` first. |
+| Doctor views were not scoped to logged-in doctor | Doctor appointment/dashboard pages use current doctor id and scoped service reads. |
+| Service pagination could silently truncate legacy pages | Pagination helper only applies `.range()` when pagination options are provided. |
+| Walk-in creation could orphan domain users | `patientService.createWalkIn()` deletes the created user if patient creation fails. |
+
+### 3.4 Sysadmin/Ops Review
+
+| Finding | Resolution |
+|---|---|
+| Edge CORS allowed any origin | `_shared/http.ts` now uses configured/local allowlist. |
+| Edge repo sync was partial | All six deployed functions are present in repo source. |
+| Release gate lacked CI/test entry point | Added `verify` and `test` scripts and `.github/workflows/ci.yml`. |
+| Edge fixes require deploy to become live | All six functions were redeployed after CORS/shared-source sync in the previous hardening pass. |
 
 ---
 
-## 7. EXECUTION CHECKLIST
+## 4. Key Files Changed
 
-### Phase 1: Foundation Files (create new)
-```
-- [ ] Create src/lib/stateMachines.js (transition maps + assertTransition)
-- [ ] Create src/lib/pagination.js (paginateQuery helper)
-```
+| File | Purpose |
+|---|---|
+| `src/lib/stateMachines.js` | Shared lifecycle transition rules. |
+| `src/lib/pagination.js` | Optional pagination helper with default/max size handling. |
+| `src/schemas/index.js` | Zod validation for write payloads. |
+| `src/services/appointments.js` | Canonical slot booking, transition guards, normalized returns. |
+| `src/services/consultations.js` | Appointment-state precondition, validation, medication append behavior. |
+| `src/services/referrals.js` | Required internal doctor referral model and transition guards. |
+| `src/services/reports.js` | Live-schema-safe reports with validation and archive behavior. |
+| `src/services/certificates.js` | Live-schema-safe doctor certificate contract. |
+| `src/services/payments.js` | `apiCall` pattern, validation, state guard, archive behavior. |
+| `src/services/patients.js` | Search sanitization, walk-in rollback, optional pagination. |
+| `src/lib/authIdentity.js` | `auth_user_id` identity resolution only. |
+| `src/services/auth.js` | No client-side domain fallback after Supabase Auth sign-up. |
+| `supabase/migrations/20260505_tier1_operator_hardening.sql` | Hardened `book_slot`, audit policy, and operational indexes. |
+| `supabase/migrations/20260505_tier1_rls_policy_performance.sql` | RLS policy performance cleanup. |
+| `supabase/functions/_shared/http.ts` | Shared request-aware CORS/auth helper. |
+| `.github/workflows/ci.yml` | CI release gate. |
 
-### Phase 2: Schemas (extend existing)
-```
-- [ ] Add consultationCreateSchema to src/schemas/index.js
-- [ ] Add consultationCompleteSchema
-- [ ] Add referralCreateSchema
-- [ ] Add certificateCreateSchema
-- [ ] Add reportCreateSchema
-- [ ] Add paymentCreateSchema
-- [ ] Wire resetPasswordSchema to authService.resetPassword()
-```
+---
 
-### Phase 3: Service Fixes (modify existing)
-```
-- [ ] Fix patientService.getPatientsByDoctor() — remove duplicate .select()
-- [ ] Fix patientService.search() — sanitize query input
-- [ ] Fix clinicService.getAvailableTimeSlots() — check all active statuses
-- [ ] Fix appointmentService.update() — use APPOINTMENT_SELECT_FIELDS
-- [ ] Fix consultationService.addMedications() — merge instead of overwrite
-- [ ] Refactor paymentService — replace try/catch with apiCall
-```
+## 5. Current Domain Rules After Tier 1
 
-### Phase 4: State Machine Guards (modify services)
-```
-- [ ] consultationService.create() — validate appointment status
-- [ ] consultationService.complete() — validate current status
-- [ ] consultationService.update() — guard status changes
-- [ ] referralService.accept/reject/complete() — validate transitions
-- [ ] appointmentService.update() — guard status changes
-- [ ] appointmentService.cancel() — validate current status
-- [ ] appointmentService.markCompleted() — validate current status
+### Appointment Lifecycle
+
+```text
+scheduled -> confirmed -> pre_check -> in_consultation -> completed
+scheduled -> cancelled | no_show
+confirmed -> cancelled | no_show
+pre_check -> cancelled
+in_consultation -> cancelled
 ```
 
-### Phase 5: Pagination (modify services + pages)
-```
-- [ ] appointmentService.getAll() — add pagination params
-- [ ] patientService.getAll() — add pagination params
-- [ ] paymentService.getAll() — add pagination params
-- [ ] notificationService.getAll() — add pagination params
-- [ ] Update AppointmentsPage with pagination controls
-- [ ] Update PatientsPage with pagination controls
+### Consultation Lifecycle
+
+```text
+pending -> in_progress -> completed
+pending -> cancelled
+in_progress -> cancelled
 ```
 
-### Phase 6: Hard Delete → Soft Delete
-```
-- [ ] paymentService.delete() → paymentService.archive()
-- [ ] appointmentService.delete() → appointmentService.archive()
-- [ ] Verify appointments table has is_archived column (add if missing)
+### Referral Lifecycle
+
+```text
+pending -> accepted -> in_progress -> completed
+pending -> rejected
+accepted -> completed
 ```
 
-### Phase 7: Smoke Test
-```
-- [ ] Book appointment → confirm → pre_check → consult → complete (full flow)
-- [ ] Try illegal transition (completed → scheduled) — must reject
-- [ ] Create consultation with Zod-invalid data — must reject with clear message
-- [ ] Create referral with all clinical fields — must succeed
-- [ ] paginated getAll returns correct page + total count
-- [ ] Payment archive preserves record, delete is removed
-- [ ] addMedications appends, not overwrites
+### Payment Lifecycle
+
+```text
+pending -> completed -> refunded
+pending -> failed
 ```
 
 ---
 
-## DEPENDENCY GRAPH
+## 6. Verification Record
+
+Previously verified during the Tier 1 hardening pass:
+
+- `npm run verify` passed.
+- Edge CORS preflight accepted `http://localhost:5173`.
+- Edge CORS preflight rejected `https://evil.example`.
+- Supabase security advisor had no new error-level findings from these changes.
+- Supabase performance advisor was reduced to non-blocking unused-index INFO notices.
+- Six Edge Functions were redeployed from repo source after shared CORS changes.
+
+Current local worktree may contain later uncommitted changes. Re-run `npm run verify` before push/deploy.
+
+---
+
+## 7. Accepted Residuals And Manual Items
+
+| Item | Decision |
+|---|---|
+| Leaked password protection | Must be enabled manually in Supabase Auth dashboard before real production use. |
+| Authenticated SECURITY DEFINER warnings | Accepted only where function bodies perform explicit authorization, such as booking/profile helpers. |
+| Unused-index INFO notices | Monitor after realistic traffic before dropping indexes. |
+| Full server-driven UI pagination | Services are safe; full page UX polish can be phased if data volume requires. |
+| Admin UI | Out of V1 scope. |
+| Mobile API expansion | Deferred to Tier 2+ after existing Edge Functions are hardened. |
+| Stripe/payment gateway | Deferred; V1 billing remains CRUD/manual. |
+
+---
+
+## 8. Handoff To Tier 2
+
+Tier 1 hardens frontend services and the most dangerous DB operators. Tier 2 now focuses on the Edge Function API layer.
+
+Tier 2 should not repeat Tier 1 work. It should standardize:
+
+- Edge response envelope.
+- Edge RBAC and self-scoping.
+- Edge validation helpers.
+- Edge pagination.
+- Edge status-transition parity.
+- Function-by-function deployment and smoke testing.
 
 ```mermaid
 graph TD
-    T0[Tier 0: Schema Alignment] --> P1[Phase 1: Foundation Files]
-    P1 --> P2[Phase 2: Zod Schemas]
-    P1 --> P3[Phase 3: Bug Fixes]
-    P2 --> P4[Phase 4: State Machine Guards]
-    P3 --> P4
-    P4 --> P5[Phase 5: Pagination]
-    P4 --> P6[Phase 6: Soft Delete]
-    P5 --> P7[Phase 7: Smoke Test]
-    P6 --> P7
+    T0["Tier 0 v2: schema contract"] --> T1["Tier 1: services/RPCs/operators"]
+    T1 --> T2["Tier 2: Edge Function API hardening"]
+    T2 --> T3["Tier 3+: mobile/API expansion"]
 ```
-
----
-
-## IMPACT SUMMARY
-
-| Before Tier 1 | After Tier 1 |
-|---|---|
-| Any status can be set on any entity | Enforced state machines with clear error messages |
-| 6 service methods accept raw unvalidated input | All mutations validated by Zod schemas |
-| Every list query fetches ALL rows | P0 queries paginated with `{ count }` support |
-| Payment records can be permanently deleted | Financial records preserved via soft-delete |
-| Medications overwritten on re-save | Medications appended correctly |
-| Mixed error shapes across services | Consistent `{ data, count, error }` everywhere |
-| PostgREST filter injection possible | Search input sanitized |

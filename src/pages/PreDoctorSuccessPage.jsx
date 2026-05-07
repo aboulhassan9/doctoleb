@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import PreDoctorSidebar from '../components/PreDoctorSidebar';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 
 export default function PreDoctorSuccessPage() {
     const navigate = useNavigate();
@@ -9,10 +9,8 @@ export default function PreDoctorSuccessPage() {
     const patient = state?.patient || { name: 'Patient', id: 'N/A' };
 
     return (
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <PreDoctorSidebar />
-
-            <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <DashboardLayout role="pre_doctor">
+            <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
                 <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30 flex items-center justify-between w-full px-6 h-16">
                     <div className="flex items-center gap-8">
                         <div className="uppercase text-xl font-black tracking-tighter text-slate-900">DoctoLeb</div>
@@ -114,7 +112,7 @@ export default function PreDoctorSuccessPage() {
                         </motion.button>
                     </motion.div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </DashboardLayout>
     );
 }

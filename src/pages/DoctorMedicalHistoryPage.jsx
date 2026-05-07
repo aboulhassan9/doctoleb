@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { logError } from '@/lib/logger';
 import { useNavigate, useParams } from 'react-router-dom';
-import { patientService } from '../services/patients';
-import { consultationService } from '../services/consultations';
-import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../contexts/AuthContext';
+import { patientService } from '@/services/patients';
+import { clinicalService } from '@/services/clinical';
+import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function DoctorMedicalHistoryPage() {
     const navigate = useNavigate();
@@ -21,9 +23,10 @@ export default function DoctorMedicalHistoryPage() {
             if (!id) return;
             setLoading(true);
             try {
-                const [patientRes, consultationsRes] = await Promise.all([
+                const [patientRes, encountersRes, diagnosesRes] = await Promise.all([
                     patientService.getById(id),
-                    consultationService.getByPatientId(id)
+                    clinicalService.getEncountersByPatient(id, { pageSize: 100 }),
+                    clinicalService.getDiagnoses(id, { pageSize: 100 })
                 ]);
 
                 if (patientRes.data) {
@@ -41,29 +44,33 @@ export default function DoctorMedicalHistoryPage() {
                     });
                 }
 
-                if (consultationsRes.data) {
-                    const mappedVisits = consultationsRes.data.map(c => {
-                        const date = new Date(c.created_at);
+                if (encountersRes.data) {
+                    const diagnosesByEncounter = new Map(
+                        (diagnosesRes.data || []).map((diagnosis) => [diagnosis.encounter_id, diagnosis])
+                    );
+                    const mappedVisits = encountersRes.data.map(c => {
+                        const date = new Date(c.started_at || c.created_at);
                         const doc = c.doctors?.users || {};
+                        const diagnosis = diagnosesByEncounter.get(c.id);
                         return {
                             date: date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }).toUpperCase(),
                             year: date.getFullYear().toString(),
-                            reason: c.appointments?.reason || 'Consultation',
+                            reason: c.chief_complaint || c.appointments?.reason || 'Clinical encounter',
                             type: 'Standard',
-                            reference: `#CONS-${c.id.split('-')[0]}`,
+                            reference: `#ENC-${c.id.split('-')[0]}`,
                             physician: `${doc.first_name || ''} ${doc.last_name || ''}`.trim() || 'Unknown',
                             physicianInitials: `${doc.first_name?.[0] || ''}${doc.last_name?.[0] || ''}`.toUpperCase(),
                             department: c.doctors?.department || 'General Practice',
                             status: c.status === 'completed' ? 'Completed' : 'In Progress',
                             statusIcon: c.status === 'completed' ? 'check_circle' : 'pending',
                             statusColor: c.status === 'completed' ? 'text-success' : 'text-warning',
-                            diagnosis: c.diagnosis || 'No diagnosis recorded yet.',
+                            diagnosis: diagnosis?.diagnosis_text || diagnosis?.diseases?.name || c.summary || 'No diagnosis recorded yet.',
                         };
                     });
                     setVisits(mappedVisits);
                 }
             } catch (err) {
-                console.error('Failed to fetch patient history:', err);
+                logError('Failed to fetch patient history:', err);
                 showToast('Failed to load history', 'error');
             } finally {
                 setLoading(false);
@@ -74,7 +81,7 @@ export default function DoctorMedicalHistoryPage() {
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#f5f7f8]">
+            <div className="flex h-screen items-center justify-center bg-[var(--bg-base)]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
         );
@@ -82,16 +89,14 @@ export default function DoctorMedicalHistoryPage() {
 
     if (!patient) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#f5f7f8]">
+            <div className="flex h-screen items-center justify-center bg-[var(--bg-base)]">
                 <p className="text-slate-500 font-semibold">Patient record not found</p>
             </div>
         );
     }
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] text-[#0f172a] overflow-hidden font-['Inter']">
-            <DoctorSidebar />
-
+        <DashboardLayout role="doctor">
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <header className="flex justify-between items-center h-16 px-8 bg-white/80 backdrop-blur-md border-b border-slate-200 shrink-0">
                     <div className="flex items-center gap-4">
@@ -134,7 +139,7 @@ export default function DoctorMedicalHistoryPage() {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto p-8 space-y-8">
+                <div className="flex-1 overflow-y-auto p-8 space-y-8">
                     <section className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
                         <div className="flex gap-6 items-start">
                             <div className="relative">
@@ -466,12 +471,12 @@ export default function DoctorMedicalHistoryPage() {
                             </button>
                         </div>
                     </section>
-                </main>
 
                 <button className="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform">
                     <span className="material-symbols-outlined text-2xl" style={{ fontWeight: 700 }}>add</span>
                 </button>
             </div>
-        </div>
+            </div>
+        </DashboardLayout>
     );
 }

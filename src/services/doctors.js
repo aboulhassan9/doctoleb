@@ -1,15 +1,15 @@
-import { supabase } from '../lib/supabase';
-import { apiCall } from './api';
-import { CERTIFICATE_SELECT_FIELDS, DOCTOR_SELECT_FIELDS } from '../lib/selects';
+import { supabase } from '@/lib/supabase';
+import { apiCall, apiPaged } from './api';
+import { CLINICAL_DOCUMENT_SELECT_FIELDS, DOCTOR_SELECT_FIELDS } from '@/lib/selects';
 
 export const doctorService = {
-  async getAll() {
-    return apiCall(
-      supabase
-        .from('doctors')
-        .select(DOCTOR_SELECT_FIELDS)
-        .order('created_at', { ascending: false })
-    );
+  async getAll(options = {}) {
+    const query = supabase
+      .from('doctors')
+      .select(DOCTOR_SELECT_FIELDS, { count: 'exact' })
+      .order('created_at', { ascending: false });
+
+    return apiPaged(query, options);
   },
 
   async getById(id) {
@@ -44,13 +44,14 @@ export const doctorService = {
     );
   },
 
-  async getByDepartment(department) {
-    return apiCall(
-      supabase
-        .from('doctors')
-        .select(DOCTOR_SELECT_FIELDS)
-        .eq('department', department)
-    );
+  async getByDepartment(department, options = {}) {
+    const query = supabase
+      .from('doctors')
+      .select(DOCTOR_SELECT_FIELDS, { count: 'exact' })
+      .eq('department', department)
+      .order('created_at', { ascending: false });
+
+    return apiPaged(query, options);
   },
 
   async create(data) {
@@ -73,35 +74,34 @@ export const doctorService = {
   },
 
   async getPatientCount(doctorId) {
-    const { data } = await apiCall(
-      supabase
-        .from('appointments')
-        .select('patient_id', { count: 'exact' })
-        .eq('doctor_id', doctorId)
-        .eq('status', 'completed')
-    );
-    return { data, error: null };
+    const { count, error } = await supabase
+      .from('appointments')
+      .select('patient_id', { count: 'exact', head: true })
+      .eq('doctor_id', doctorId)
+      .eq('status', 'completed');
+
+    return { data: count ?? 0, error: error?.message || null };
   },
 
   async getUpcomingAppointmentCount(doctorId) {
-    const { data } = await apiCall(
-      supabase
-        .from('appointments')
-        .select('id', { count: 'exact' })
-        .eq('doctor_id', doctorId)
-        .eq('status', 'scheduled')
-        .gt('scheduled_at', new Date().toISOString())
-    );
-    return { data, error: null };
+    const { count, error } = await supabase
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('doctor_id', doctorId)
+      .eq('status', 'scheduled')
+      .gt('scheduled_at', new Date().toISOString());
+
+    return { data: count ?? 0, error: error?.message || null };
   },
 
-  async getCertificates(doctorId) {
-    return apiCall(
-      supabase
-        .from('certificates')
-        .select(CERTIFICATE_SELECT_FIELDS)
-        .eq('doctor_id', doctorId)
-        .order('issue_date', { ascending: false })
-    );
+  async getCertificates(doctorId, options = {}) {
+    const query = supabase
+      .from('clinical_documents')
+      .select(CLINICAL_DOCUMENT_SELECT_FIELDS, { count: 'exact' })
+      .eq('doctor_id', doctorId)
+      .eq('document_type', 'certificate')
+      .order('created_at', { ascending: false });
+
+    return apiPaged(query, options);
   },
 };

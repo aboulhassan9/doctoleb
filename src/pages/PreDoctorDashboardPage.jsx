@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { logError } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import CountUp from '../components/CountUp';
-import BorderGlow from '../components/BorderGlow';
-import PreDoctorSidebar from '../components/PreDoctorSidebar';
-import MobileTopBar from '../components/MobileTopBar';
-import { useToast } from '../contexts/ToastContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { useAuth } from '../contexts/AuthContext';
-import { notificationService } from '../services/notifications';
-import { appointmentService } from '../services/appointments';
-import { normalizeAppointments } from '../lib/appointments';
-import { stagger, fadeUp } from '../lib/animations';
-import { timeAgo } from '../lib/dateUtils';
+import CountUp from '@/components/CountUp';
+import BorderGlow from '@/components/BorderGlow';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import MobileTopBar from '@/components/MobileTopBar';
+import { useToast } from '@/contexts/ToastContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { notificationCoreService } from '@/services/notificationCore';
+import { appointmentService } from '@/services/appointments';
+import { normalizeAppointments } from '@/lib/appointments';
+import { stagger, fadeUp } from '@/lib/animations';
+import { timeAgo } from '@/lib/dateUtils';
 
 export default function PreDoctorDashboardPage() {
     const navigate = useNavigate();
@@ -40,11 +41,11 @@ export default function PreDoctorDashboardPage() {
 
     useEffect(() => {
         if (!user?.id) return;
-        notificationService.getUnread(user.id).then(({ data }) => {
+        notificationCoreService.getUnread(user.id).then(({ data }) => {
             if (data) setNotifications(data);
         });
-        const sub = notificationService.subscribeToUserNotifications(user.id, () => {
-            notificationService.getUnread(user.id).then(({ data }) => {
+        const sub = notificationCoreService.subscribeToUserNotifications(user.id, () => {
+            notificationCoreService.getUnread(user.id).then(({ data }) => {
                 if (data) setNotifications(data);
             });
         });
@@ -52,7 +53,7 @@ export default function PreDoctorDashboardPage() {
     }, [user?.id]);
 
     const handleMarkAllRead = async () => {
-        if (user?.id) await notificationService.markAllAsRead(user.id);
+        if (user?.id) await notificationCoreService.markAllAsRead(user.id);
         setNotifications([]);
         setShowNotifications(false);
         showToast('All notifications marked as read', 'success');
@@ -61,11 +62,16 @@ export default function PreDoctorDashboardPage() {
     const handlePatientReady = async (appt) => {
         const pt = appt.patients?.users;
         const name = pt ? `${pt.first_name} ${pt.last_name}` : 'Patient';
-        await appointmentService.update(appt.id, { status: 'pre_check' });
-        await notificationService.notifyRole('doctor', {
-            title: 'Patient Ready for Consultation',
+        const { error } = await appointmentService.markPreChecked(appt.id);
+        if (error) {
+            showToast(error, 'error');
+            return;
+        }
+        await notificationCoreService.notifyRole('doctor', {
+            title: 'Patient Ready for Encounter',
             message: `${name} has completed pre-check and is ready for the doctor.`,
             type: 'precheck',
+            related_type: 'appointment',
             related_id: appt.id,
         });
         showToast(`${name} marked as ready — doctor notified`, 'success');
@@ -102,7 +108,7 @@ export default function PreDoctorDashboardPage() {
                     ]);
                 }
             } catch (err) {
-                console.error(err);
+                logError('error', err);
             } finally {
                 setApptLoading(false);
             }
@@ -120,10 +126,8 @@ export default function PreDoctorDashboardPage() {
     }, [showToast, notifications.length]);
 
     return (
-        <div className="flex h-screen overflow-hidden font-display" style={{ backgroundColor: customBg || (isDarkMode ? '#0f172a' : '#f5f7f8') }}>
-            <PreDoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-y-auto">
+        <DashboardLayout role="pre_doctor">
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 <MobileTopBar title="Pre-Doctor Dashboard" />
                 <header className="sticky top-0 z-20 h-20 hidden md:flex bg-white/80 backdrop-blur-md border-b border-slate-200 items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
@@ -189,7 +193,7 @@ export default function PreDoctorDashboardPage() {
                                                 <p className="text-sm text-slate-400 font-medium">All caught up!</p>
                                             </div>
                                         ) : notifications.map(n => (
-                                            <div key={n.id} onClick={async () => { await notificationService.markAsRead(n.id); setNotifications(prev => prev.filter(x => x.id !== n.id)); setShowNotifications(false); }}
+                                            <div key={n.id} onClick={async () => { await notificationCoreService.markAsRead(n.id); setNotifications(prev => prev.filter(x => x.id !== n.id)); setShowNotifications(false); }}
                                                 className="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors">
                                                 <div className="w-8 h-8 rounded-lg bg-warning/10 text-warning flex items-center justify-center shrink-0">
                                                     <span className="material-symbols-outlined text-[16px]">fact_check</span>
@@ -367,7 +371,7 @@ export default function PreDoctorDashboardPage() {
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
 
             {/* ── Profile Modals ── */}
             <AnimatePresence>
@@ -470,6 +474,6 @@ export default function PreDoctorDashboardPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </DashboardLayout>
     );
 }

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PreDoctorSidebar from '../components/PreDoctorSidebar';
-import { stagger, fadeUp } from '../lib/animations';
-import { useAuth } from '../contexts/AuthContext';
-import { notificationService } from '../services/notifications';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { stagger, fadeUp } from '@/lib/animations';
+import { useAuth } from '@/contexts/AuthContext';
+import { notificationCoreService } from '@/services/notificationCore';
 
 export default function PreDoctorNotificationsPage() {
     const { user } = useAuth();
@@ -30,8 +30,8 @@ export default function PreDoctorNotificationsPage() {
     const getIconForType = (type) => {
         switch (type) {
             case 'appointment': return 'event';
-            case 'consultation': return 'medical_information';
-            case 'referral': return 'assignment_ind';
+            case 'encounter': return 'medical_information';
+            case 'document': return 'assignment_ind';
             case 'critical': return 'warning';
             case 'lab': return 'description';
             default: return 'notifications';
@@ -42,7 +42,7 @@ export default function PreDoctorNotificationsPage() {
         if (!user?.id) return;
 
         const fetchNotifications = async () => {
-            const { data, error } = await notificationService.getAll(user.id);
+            const { data, error } = await notificationCoreService.getAll(user.id);
             if (!error && data) {
                 const now = new Date();
                 const today = [];
@@ -76,7 +76,7 @@ export default function PreDoctorNotificationsPage() {
 
         fetchNotifications();
 
-        const sub = notificationService.subscribeToUserNotifications(user.id, () => {
+        const sub = notificationCoreService.subscribeToUserNotifications(user.id, () => {
             fetchNotifications();
         });
 
@@ -87,11 +87,11 @@ export default function PreDoctorNotificationsPage() {
 
     const handleMarkAllRead = async () => {
         if (!user?.id) return;
-        await notificationService.markAllAsRead(user.id);
+        await notificationCoreService.markAllAsRead(user.id);
     };
 
     const handleMarkRead = async (id) => {
-        await notificationService.markAsRead(id);
+        await notificationCoreService.markAsRead(id);
     };
 
     const getColor = (type) => {
@@ -104,10 +104,8 @@ export default function PreDoctorNotificationsPage() {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <PreDoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-y-auto">
+        <DashboardLayout role="pre_doctor">
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 <header className="Sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -170,7 +168,7 @@ export default function PreDoctorNotificationsPage() {
                         ))}
                     </div>
                 </div>
-            </main>
+            </div>
 
             <AnimatePresence>
                 {showSettings && (
@@ -356,6 +354,6 @@ export default function PreDoctorNotificationsPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </DashboardLayout>
     );
 }

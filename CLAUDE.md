@@ -11,8 +11,8 @@ Project-specific instructions for Claude Code working on **clinic-web** (a.k.a. 
 A React + Supabase clinic management SPA with five user roles: `doctor`, `predoctor`, `secretary`, `patient`, `admin`. Built with Vite, React 19, Tailwind, react-router 7, framer-motion, Zod, and `@supabase/supabase-js`.
 
 - **Live Supabase project**: `clinic-website` (`gezmfmskhmjgnquoyosq`, us-east-1, Postgres 17, ACTIVE_HEALTHY)
-- **Scripts**: `npm run dev` · `npm run build` · `npm run lint` · Playwright installed
-- **Stack**: Postgres + Auth + Edge Functions + Realtime via Supabase
+- **Scripts**: `npm run dev` · `npm run build` · `npm run lint` · `npm run verify` · Playwright installed
+- **Stack**: Postgres + Auth + Realtime via Supabase. Edge Functions are currently retired in repo and should only return when a server-side worker/proxy is explicitly designed.
 
 ---
 
@@ -21,11 +21,11 @@ A React + Supabase clinic management SPA with five user roles: `doctor`, `predoc
 ```
 src/lib/selects.js   ← Single Source of Truth (DNA) — Postgres SELECT-field constants
         ↓
-src/services/*.js    ← All DB ops via supabase + apiCall() + SELECT constants
+src/services/*.js    ← All DB ops via supabase + apiCall/apiPaged + SELECT constants
         ↓
 src/pages/*.jsx      ← Consume services. NEVER import `supabase` directly.
         ↓
-supabase/functions/  ← Edge Functions mirror services for mobile
+supabase/functions/  ← currently no canonical functions; future workers/proxies only
 ```
 
 **If `selects.js` is wrong → services 400 → pages break silently.** It's the file most likely to cause invisible failures and the most important to verify.
@@ -34,23 +34,35 @@ supabase/functions/  ← Edge Functions mirror services for mobile
 
 ## Three rules that are not optional
 
-### 1. Every query goes through `apiCall()`
+### 0. Legacy compatibility burn-down is complete
 
-`src/services/api.js` (9 lines) is the error contract for the entire service layer:
+There is no production data yet. The system is still under development, so dead code and duplicate backend surfaces are removed rather than preserved.
+
+- **Removed legacy tables/services**: `consultations`, `notifications`, `doctor_brand`, `clinic_settings`, `medical_reports`, `certificates`, `referrals`.
+- **Canonical replacements**: `encounters` + Tier 2 clinical tables, `notification_events` + notification send-attempt records, `tenant_profile` + `tenant_app_config`, and `clinical_documents`.
+- **Already removed**: old role-specific sidebars (`Sidebar.jsx`, `DoctorSidebar.jsx`, `PreDoctorSidebar.jsx`), old doctor consultation route/page, legacy document services, legacy notification service, and legacy brand service. Do not recreate them.
+- **Live Edge Function note**: repo source for retired V1 functions (`auth`, `appointments`, `patients`, `process-payment`, `consultations`, `referrals`) is removed, but deleting deployed functions requires project-owner privileges. See `LEGACY_REMOVAL_COMPLETED.md`.
+- **Before adding a table/function/service**, check `BACKEND_DUPLICATION_AUDIT.md` and run `npm run audit:backend-contract`.
+
+### 1. Every service query uses `apiCall()` or `apiPaged()`
+
+`src/services/api.js` is the error contract for the entire service layer:
 
 ```js
 export const apiCall = async (fn) => {
   try {
-    const { data, error, count } = await fn;
+    const { data, error } = await fn;
     if (error) throw error;
-    return { data, count: count ?? null, error: null };
+    return { data, error: null };
   } catch (error) {
-    return { data: null, count: null, error: error?.message || 'An unexpected error occurred' };
+    return { data: null, error: error?.message || 'An unexpected error occurred' };
   }
 };
 ```
 
-- **Never write manual `try/catch` in services.** All 14 services use `apiCall()`. Match the pattern.
+- **List methods use `apiPaged()`** and return `{ data, meta, error }`.
+- **Single reads/writes use `apiCall()`** and return `{ data, error }`.
+- **Never write manual `try/catch` in services** unless wrapping multi-step logic that returns the same contract.
 - **Never `console.error()` in services.** The wrapper returns `error` as a string; pages decide how to render. Service-layer console logs are a production leak.
 - Pages may `console.error` in catch blocks (currently ~24 instances) — that's tolerated for now.
 
@@ -62,10 +74,11 @@ export const apiCall = async (fn) => {
 
 ### 3. Clinical and financial data is soft-deleted, never hard-deleted
 
-- Tables with `is_archived` (patients, consultations, medical_reports, certificates, referrals): **always archive, never DELETE**.
+- Tables with `is_archived` (patients, encounters, clinical documents, clinical notes, diagnoses, prescriptions, orders, care tasks): **always archive, never DELETE**.
 - `payments`: financial rows are retained. `archive()` sets `status: 'failed'` — the DB check constraint allows only `pending | completed | failed | refunded`. **`'cancelled'` will fail the constraint**, even though older docs may say otherwise.
 - `appointments`: use `cancel()` (`status: 'cancelled'`). There is no `delete()` and there should never be one.
-- `notifications` are the only exception — transient UI messages, may be hard-deleted.
+- Notification inbox state lives in `notification_deliveries`; user dismissal/read state updates delivery status instead of recreating the old `notifications` table.
+- Message redaction uses the current scrub model: `enforce_message_redaction` overwrites `messages.body` in place with `[redacted]`; the original content is unrecoverable, even by admins.
 
 ---
 
@@ -83,7 +96,7 @@ export const apiCall = async (fn) => {
 | `/forgot-password` | `ForgotPasswordPage` | |
 | `/reset-password` | `ResetPasswordPage` | |
 
-### Secretary (`requiredRole: secretary`) — uses `<Sidebar />`
+### Secretary (`requiredRole: secretary`) — uses canonical app layout/sidebar
 
 | Route | Page |
 |---|---|
@@ -95,7 +108,7 @@ export const apiCall = async (fn) => {
 | `/secretary-slots` | `SecretarySlotsPage` |
 | `/secretary-booking` | `SecretaryBookingPage` |
 
-### Pre-Doctor (`requiredRole: predoctor`) — uses `<PreDoctorSidebar />`
+### Pre-Doctor (`requiredRole: predoctor`) — uses canonical app layout/sidebar
 
 | Route | Page |
 |---|---|
@@ -107,14 +120,15 @@ export const apiCall = async (fn) => {
 | `/predoctor-success` | `PreDoctorSuccessPage` |
 | `/predoctor-schedule` | `PreDoctorSchedulePage` |
 
-### Doctor (`requiredRole: doctor`) — uses `<DoctorSidebar />`
+### Doctor (`requiredRole: doctor`) — uses canonical app layout/sidebar
 
 | Route | Page |
 |---|---|
 | `/doctor-dashboard` | `DoctorDashboardPage` |
 | `/doctor-patients` | `DoctorPatientsPage` |
 | `/doctor-appointments` | `DoctorAppointmentsPage` |
-| `/doctor-consultation` and `/doctor-consultation/:id` | `DoctorConsultationPage` (inline header) |
+| `/doctor-encounter/:appointmentId` | `DoctorEncounterPage` |
+| `/doctor-encounter-id/:encounterId` | `DoctorEncounterPage` |
 | `/doctor-lab-request` | `DoctorLabRequestPage` (inline header) |
 | `/doctor-patient/:id` | `DoctorPatientProfilePage` |
 | `/doctor-patient-history/:id` | `DoctorMedicalHistoryPage` (inline header) |
@@ -143,17 +157,17 @@ export const apiCall = async (fn) => {
 | (helper) `apiCall` | `api.js` | **Error wrapper for every service call** (not Edge Functions) |
 | `appointmentService` | `appointments.js` | Appointments CRUD + booking |
 | `authService` | `auth.js` | Login, signup, session |
-| `certificateService` | `certificates.js` | Medical certificates |
-| `clinicService` | `clinics.js` | Clinic profiles |
-| `consultationService` | `consultations.js` | Doctor consultation sessions |
+| `clinicService` | `clinics.js` | Clinic/practice locations |
+| `clinicalService` | `clinical.js` | Encounters, notes, diagnoses, prescriptions, orders, documents, care tasks |
+| `documentService` | `documents.js` | Reports, certificates, referrals, lab requests, insurance forms via `clinical_documents` |
 | `doctorService` | `doctors.js` | Doctor profiles / availability |
-| `notificationService` | `notifications.js` | Push notifications + role-based alerts |
+| `notificationCoreService` | `notificationCore.js` | Notification events, inbox deliveries, devices, reminders |
 | `patientService` | `patients.js` | Patient CRUD + search |
 | `paymentService` | `payments.js` | Billing / invoices |
 | `precheckService` | `prechecks.js` | Pre-doctor triage forms |
-| `referralService` | `referrals.js` | Doctor referral letters |
-| `reportService` | `reports.js` | Medical reports |
 | `slotService` | `slots.js` | Appointment slot management (uses `get_available_slots` + `book_slot` RPCs) |
+| `storageService` | `storage.js` | Private Supabase Storage signed URLs for clinical documents and message attachments |
+| `tenantConfigService` | `tenantConfig.js` | Tenant profile, mobile app config, content, consents |
 
 ### Service-method conventions
 
@@ -208,9 +222,7 @@ export const apiCall = async (fn) => {
 
 | Component | Purpose |
 |---|---|
-| `Sidebar.jsx` | Secretary sidebar, collapse + mobile drawer |
-| `DoctorSidebar.jsx` | Doctor sidebar, collapse + mobile drawer |
-| `PreDoctorSidebar.jsx` | Pre-Doctor sidebar, collapse + mobile drawer |
+| `AppSidebar.jsx` | Canonical role-aware sidebar for secretary, doctor, predoctor, and patient contexts |
 | `MobileTopBar.jsx` | Mobile header (dashboard pages) |
 | `BorderGlow.jsx` | Animated glow border (dashboard cards) |
 | `CountUp.jsx` | Animated number counter (stat cards) |
@@ -226,7 +238,7 @@ export const apiCall = async (fn) => {
 
 | File | Exports | Notes |
 |---|---|---|
-| **`selects.js`** | `USER_*`, `DOCTOR_*`, `PATIENT_*`, `APPOINTMENT_*`, `CONSULTATION_*`, `REPORT_*`, `CERTIFICATE_*`, `REFERRAL_*`, `NOTIFICATION_*`, `PRECHECK_*`, `PAYMENT_*`, `BILLABLE_SERVICE_*`, `CLINIC_*`, `SECRETARY_SLOT_*` field strings | **Postgres SELECT-field constants — single source of truth.** Each constant is the comma-joined column list for one table. The earlier Gemini doc described this as "dropdown option arrays" — that's incorrect. |
+| **`selects.js`** | `USER_*`, `DOCTOR_*`, `PATIENT_*`, `APPOINTMENT_*`, `ENCOUNTER_*`, `CLINICAL_*`, `DOCUMENT_*`, `NOTIFICATION_EVENT_*`, `NOTIFICATION_DELIVERY_*`, `PRECHECK_*`, `PAYMENT_*`, `BILLABLE_SERVICE_*`, `CLINIC_*`, `SECRETARY_SLOT_*` field strings | **Postgres SELECT-field constants — single source of truth.** Each constant is the comma-joined column list for one table. The earlier Gemini doc described this as "dropdown option arrays" — that's incorrect. |
 | `supabase.js` | `supabase` client | Single client instance |
 | `animations.js` | `stagger`, `fadeUp`, `formFade` | Framer Motion variants — import, don't redeclare |
 | `userDisplay.js` | `getUserDisplayName()`, `getUserInitials()`, `getDoctorLabel()` | Identity display — use instead of inline template literals |
@@ -235,6 +247,7 @@ export const apiCall = async (fn) => {
 | `appointments.js` | `normalizeAppointment` | Joined-row → flat object for UI |
 | `authIdentity.js` | Identity helpers | `auth_user_id` ↔ `users.id` mapping |
 | `routes.js` | Route-path constants | |
+| `stateMachines.js` | lifecycle status helpers | Appointment, encounter, document, order, prescription, care-task transitions |
 
 ---
 
@@ -267,8 +280,8 @@ Helpers exposed: `nullableTrimmedString(maxLength)`, `nullablePhone`, `nullableN
 ### Header identity
 
 ```jsx
-import { useAuth } from '../contexts/AuthContext';
-import { getUserDisplayName, getUserInitials } from '../lib/userDisplay';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserDisplayName, getUserInitials } from '@/lib/userDisplay';
 const { user } = useAuth();
 <p>{getUserDisplayName(user) || 'Doctor'}</p>
 <div>{getUserInitials(user) || '?'}</div>
@@ -278,14 +291,13 @@ Don't inline `${user.first_name} ${user.last_name}` — that pattern was already
 
 ### Sidebar
 
-- Secretary → `<Sidebar />`
-- Doctor → `<DoctorSidebar />`
-- Pre-Doctor → `<PreDoctorSidebar />`
+- All roles use the canonical `AppSidebar` through the app layout.
+- Do not recreate the deleted role-specific sidebars.
 
 ### Animation
 
 ```jsx
-import { stagger, fadeUp } from '../lib/animations';
+import { stagger, fadeUp } from '@/lib/animations';
 ```
 
 ---
@@ -294,13 +306,16 @@ import { stagger, fadeUp } from '../lib/animations';
 
 - **Status enums are check-constrained.** Don't invent values:
   - `appointments.status`: `scheduled | confirmed | pre_check | in_consultation | completed | cancelled | no_show`
-  - `consultations.status`: `pending | in_progress | completed | cancelled`
-  - `referrals.status`: `pending | accepted | in_progress | completed | rejected`
+  - `encounters.status`: `planned | in_progress | completed | cancelled | entered_in_error`
+  - `clinical_documents.status`: `draft | final | superseded | void`
+  - `lab_orders.status` / `imaging_orders.status`: `draft | ordered | in_progress | resulted | cancelled`
+  - `prescriptions.status`: `draft | active | completed | stopped | cancelled`
+  - `care_tasks.status`: `open | in_progress | done | cancelled`
   - `payments.status`: `pending | completed | failed | refunded`
   - `precheck_forms.status`: `draft | submitted | reviewed | completed`
   - `predoctors.status`: `pending | approved | rejected | graduated`
   - `users.role`: `doctor | secretary | patient | predoctor | admin`
-- **`symptoms` lives on `precheck_forms`, NOT on `consultations`.** Common confusion that caused a ghost-column bug.
+- **`symptoms` lives on `precheck_forms`, not on encounter/clinical note rows.** Common confusion that caused a ghost-column bug in the old consultation model.
 - **FK joins use explicit FK names** when a table has multiple paths to the same target — e.g. `users!doctors_user_id_fkey(${USER_CONTACT_FIELDS})` and `users!patients_user_id_fkey(...)`. PostgREST needs the disambiguation.
 - **Slot booking is atomic via `book_slot` RPC.** Don't re-implement booking by inserting rows — call `bookSlot()` from `slots.js`, then `getById(appointmentId)` for the full row. See `appointmentService.bookFromSlot`.
 - **Available slots come from `get_available_slots` RPC** via `slotService`. A duplicate `clinicService.getAvailableTimeSlots` doing manual math was removed in TIER0_V2 and must not return.
@@ -326,28 +341,24 @@ src/
   services/
     api.js (apiCall wrapper)  # ⭐ ERROR CONTRACT
     auth.js, slots.js
-    appointments.js, consultations.js, referrals.js, certificates.js
-    reports.js (medical_reports)
+    appointments.js, clinical.js, documents.js, notificationCore.js
     patients.js, doctors.js, prechecks.js, clinics.js
-    payments.js, notifications.js
+    payments.js, intakes.js, insurance.js, schedules.js, staff.js, tenantConfig.js
 supabase/
   migrations/                 # SQL migrations (DB truth)
-  functions/                  # Edge Functions (mirror services for mobile)
-    _shared/http.ts           # Shared HTTP helpers
-    auth/, appointments/, consultations/, patients/, referrals/, process-payment/
+  functions/
+    README.md                 # No canonical Edge Functions right now
 ```
 
 ### Edge Functions (Deno)
 
-Each Edge Function mirrors the matching service for mobile clients that can't use the JS SDK directly. **When you change a service, update the matching Edge Function in the same PR.** Divergence here is the most common source of "works on web, broken on mobile" bugs.
+There are no canonical Edge Functions in the repo right now. The previous V1 wrappers were removed because they duplicated service/RPC contracts and were not consumed by the current app.
+
+When Edge Functions return, they must be intentionally designed as server-side workers/proxies only, for example notification fan-out, purge orchestration, or signed document URL helpers. They must validate input, authorize the caller, call canonical RPC/service paths, and return the same envelope as services. Do not recreate the retired V1 wrappers.
 
 ### Migration history (the ghost-column lesson)
 
-`supabase/migrations/` includes:
-- `20260505_tier0_schema_alignment.sql` — TIER0 v1 attempted to **add** columns the code referenced (`symptoms` on consultations, `findings` on reports, etc.).
-- `20260505_tier0_v2_revert_schema_expansion.sql` — TIER0 v2 **reverted** that, deciding the code should match the existing schema instead.
-
-That revert is *why* `selects.js` had ghost columns — the code still referenced columns the second migration deleted. Treat both migrations as a unit when reading history. **Do not add columns to "match" stale code; remove the code reference instead.**
+`supabase/migrations/` includes early Tier 0/Tier 1 files that reference now-deleted legacy tables. Treat them as migration history only. The active domain model is the latest Tier 2/Tier 2.5 schema plus `20260506190000_legacy_compatibility_burndown.sql`, which drops the duplicate legacy surfaces. **Do not add columns or tables to "match" stale code; remove the stale code reference instead.**
 
 ---
 
@@ -357,12 +368,12 @@ Read in order before non-trivial changes:
 
 | File | Status |
 |---|---|
-| `TIER0_PLAN.md` | superseded by V2 |
-| `TIER0_V2_PLAN.md` | ✅ implemented (Phase 6 manual UI smoke-test still pending) |
-| `TIER1_PLAN.md` | next up |
-| `TIER2_PLAN.md` – `TIER4_PLAN.md` | sequenced after T1 |
-| `DOCTOLEB_FLOW_GAPS.md` | gap log; reconcile with tier plans before adding features |
-| `PLAN.md` | top-level roadmap |
+| `TIER0_PLAN.md` / `TIER0_V2_PLAN.md` | historical remediation context |
+| `TIER1_DOCTOR_PIVOT_PLAN.md` / `TIER1_SCHEMA_DESIGN.md` | doctor-branded practice pivot |
+| `TIER2_PRODUCT_ARCHITECTURE_PLAN.md` / `TIER2_5_HARDENING_PLAN.md` | canonical backend/API foundation |
+| `BACKEND_CONTRACT_LEDGER.md` / `BACKEND_DUPLICATION_AUDIT.md` | current source-of-truth guardrails |
+| `TIER3_PLAN.md` / `BLOCK_D_PLAN.md` | current frontend hardening track |
+| `DOCTOLEB_FLOW_GAPS.md` / `PLAN.md` | historical gap logs; reconcile before using |
 
 ---
 
@@ -370,12 +381,11 @@ Read in order before non-trivial changes:
 
 | Issue | Location | Priority |
 |---|---|---|
-| Mock `NOTIFICATIONS` constant (sanitized but static) | `PreDoctorNotificationsPage.jsx` L6-18 | Medium — wire to `notificationService` |
-| Hardcoded `AVAILABLE_SERVICES` array | `CreateBillPage.jsx` L13 | Low — could become `billable_services` query |
-| `/demo` route exposed in production | `App.jsx` L59 | Medium — gate or remove |
+| Browser encounter E2E needs known doctor login | `BLOCK_D_AGENT_HANDOFF_PROMPT.md` | Medium — do not reset passwords silently |
+| Some page data-fetching still lives inline instead of hooks | `TIER3_PLAN.md` Phase 3 | Medium — migrate large pages incrementally |
+| `/demo` route exposed in production | `App.jsx` | Medium — gate or remove |
 | `console.error` in catch blocks (~24 instances) | Various pages | Low — acceptable in pages, NOT services |
 | Bundle > 500KB (~1.2MB) | Build output | Low — code-split with dynamic `import()` |
-| Phase 6 UI smoke test of TIER0_V2 not run | — | Medium — use Playwright via the `webapp-testing` skill |
 
 ## Resolved this sprint
 
@@ -397,7 +407,7 @@ Read in order before non-trivial changes:
 ## Things that look wrong but aren't
 
 - **`payments.archive()` sets `status: 'failed'`, not `'cancelled'`.** The DB enum has no `cancelled`. The inline comment explains it. Don't "fix" it.
-- **`is_archived` exists on patients/consultations/reports/referrals/certificates but `archived_at`/`archived_by` aren't in the SELECT constants.** Intentional — the app only filters on `is_archived`. Add audit columns to the constant only when the UI needs to display them.
+- **Some older migration files mention removed tables.** That's history, not an active contract. Current executable code must use `encounters`, `clinical_documents`, `notification_events`/`notification_deliveries`, and `tenant_profile`/`tenant_app_config`.
 - **`auth_user_id` on `users` isn't in `USER_PUBLIC_FIELDS`.** Auth lookups go through `lib/authIdentity.js`, not bulk selects.
 
 ---

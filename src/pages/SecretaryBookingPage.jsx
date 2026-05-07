@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Sidebar from '../components/Sidebar';
-import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../contexts/AuthContext';
-import { slotService } from '../services/slots';
-import { patientService } from '../services/patients';
-import { clinicService } from '../services/clinics';
-import { appointmentService } from '../services/appointments';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { slotService } from '@/services/slots';
+import { patientService } from '@/services/patients';
+import { appointmentService } from '@/services/appointments';
 
 function formatTime(t) {
   if (!t) return '';
@@ -59,9 +58,14 @@ export default function SecretaryBookingPage() {
     setSelectedSlot(null);
     if (!date) return;
     setSlotsLoading(true);
-    const { data: doctor, error: doctorError } = await clinicService.getMainDoctor();
-    if (doctorError || !doctor?.id) { showToast('No doctor found in system', 'error'); setSlotsLoading(false); return; }
-    const { data, error } = await slotService.getAvailableSlots(doctor.id, date);
+    if (!user?.doctor_id) {
+      showToast('Doctor schedule is not linked to your account yet. Please sign in again or contact the clinic owner.', 'error');
+      setAvailableSlots([]);
+      setSlotsLoading(false);
+      return;
+    }
+
+    const { data, error } = await slotService.getAvailableSlots(user.doctor_id, date);
     setSlotsLoading(false);
     if (error) { showToast('Failed to load slots', 'error'); return; }
     setAvailableSlots(data || []);
@@ -125,9 +129,8 @@ export default function SecretaryBookingPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-      <main className="flex-1 p-8 ml-64 overflow-y-auto max-w-3xl mx-auto">
+    <DashboardLayout role="secretary">
+      <div className="flex-1 p-8 ml-64 overflow-y-auto max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Book Appointment</h1>
@@ -373,7 +376,7 @@ export default function SecretaryBookingPage() {
             </div>
           </motion.div>
         )}
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

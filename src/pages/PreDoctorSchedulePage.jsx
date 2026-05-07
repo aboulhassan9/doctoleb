@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import Sidebar from '../components/Sidebar';
-import { useToast } from '../contexts/ToastContext';
-import { slotService } from '../services/slots';
-import { clinicService } from '../services/clinics';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { useToast } from '@/contexts/ToastContext';
+import { slotService } from '@/services/slots';
+import { clinicService } from '@/services/clinics';
 
 function formatTime(t) {
   if (!t) return '';
@@ -50,9 +50,8 @@ export default function PreDoctorSchedulePage() {
   const available = filteredSlots.filter(s => s.is_active).length;
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-      <main className="flex-1 p-8 ml-64 overflow-y-auto">
+    <DashboardLayout role="pre_doctor">
+      <div className="flex-1 p-8 ml-64 overflow-y-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Daily Schedule</h1>
@@ -175,7 +174,7 @@ export default function PreDoctorSchedulePage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

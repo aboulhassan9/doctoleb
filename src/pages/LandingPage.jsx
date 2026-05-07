@@ -1,12 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import CountUp from '../components/CountUp';
-import TrueFocus from '../components/TrueFocus';
-import BorderGlow from '../components/BorderGlow';
+import CountUp from '@/components/CountUp';
+import TrueFocus from '@/components/TrueFocus';
+import BorderGlow from '@/components/BorderGlow';
+import { useBrand } from '@/contexts/BrandContext';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const { displayName, tagline, brand } = useBrand();
     const scrollToSection = (id) => {
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -32,14 +34,19 @@ const LandingPage = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
                         <div className="flex items-center gap-2">
-                            <motion.div 
-                                whileHover={{ rotate: 180 }}
-                                transition={{ duration: 0.5 }}
-                                className="bg-primary p-2 rounded-lg text-white flex items-center justify-center"
-                            >
-                                <span className="material-symbols-outlined block">health_metrics</span>
-                            </motion.div>
-                            <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">DoctoLeb</span>
+                            {brand.logo_url ? (
+                                <img src={brand.logo_url} alt={displayName} className="h-10 w-10 rounded-lg object-cover" />
+                            ) : (
+                                <motion.div
+                                    whileHover={{ rotate: 180 }}
+                                    transition={{ duration: 0.5 }}
+                                    className="p-2 rounded-lg text-white flex items-center justify-center"
+                                    style={{ backgroundColor: 'var(--doctor-brand-primary)' }}
+                                >
+                                    <span className="material-symbols-outlined block">health_metrics</span>
+                                </motion.div>
+                            )}
+                            <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">{displayName}</span>
                         </div>
                         <nav className="hidden md:flex items-center gap-10">
                             <a className="text-sm font-semibold hover:text-primary transition-colors" href="#">Home</a>
@@ -89,14 +96,14 @@ const LandingPage = () => {
                                     />
                                 </div>
                                 <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-slate-100 leading-[1.1] tracking-tight mb-6">
-                                    The Future of <span className="text-primary">Clinic Management</span> is Here
+                                    Book care with <span className="text-primary">{displayName}</span>
                                 </h1>
                                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-10 max-w-xl mx-auto lg:mx-0">
-                                    An all-in-one solution for patient records, smart scheduling, and automated billing designed for modern healthcare professionals.
+                                    {tagline}
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/signup')} className="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/30">Get Started Now</motion.button>
-                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection('features')} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg border border-slate-200 dark:border-slate-700">Explore Features</motion.button>
+                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/signup')} className="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/30">Book an Appointment</motion.button>
+                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection('features')} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg border border-slate-200 dark:border-slate-700">See How It Works</motion.button>
                                 </div>
                             </motion.div>
                             <motion.div 
@@ -129,7 +136,7 @@ const LandingPage = () => {
                 {/* Social Proof & Stats */}
                 <section className="py-12 bg-white dark:bg-slate-900/50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <p className="text-center text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-12">Trusted by 500+ Healthcare Institutions</p>
+                        <p className="text-center text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-12">A doctor-branded patient portal for appointments, intake, and follow-up</p>
                         <motion.div 
                             variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
                             className="grid grid-cols-2 md:grid-cols-4 gap-8 opacity-60 grayscale hover:grayscale-0 transition-all cursor-pointer"
@@ -145,9 +152,9 @@ const LandingPage = () => {
                             className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6"
                         >
                             {[
-                                { to: 10000, suffix: "+", label: "Patients Managed" },
-                                { to: 500, suffix: "+", label: "Users Joined" },
-                                { to: 99.9, suffix: "%", label: "System Uptime" }
+                                { to: 24, suffix: "/7", label: "Appointment Requests" },
+                                { to: 3, suffix: "+", label: "Practice Location Types" },
+                                { to: 100, suffix: "%", label: "Doctor-Owned Workflow" }
                             ].map((stat, i) => (
                                 <motion.div 
                                     key={i} variants={fadeUp} whileHover={{ y: -10 }}

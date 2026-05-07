@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../contexts/AuthContext';
-import { notificationService } from '../services/notifications';
-import { precheckService } from '../services/prechecks';
-import PreDoctorSidebar from '../components/PreDoctorSidebar';
-import { stagger, fadeUp, formFade } from '../lib/animations';
+import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { notificationCoreService } from '@/services/notificationCore';
+import { appointmentService } from '@/services/appointments';
+import { precheckService } from '@/services/prechecks';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { stagger, fadeUp, formFade } from '@/lib/animations';
 
 export default function PreDoctorCheckPage() {
     const navigate = useNavigate();
@@ -29,6 +31,7 @@ export default function PreDoctorCheckPage() {
 
     const patientInfo = state?.patient?.users;
     const ptId = state?.patient?.id;
+    const appointmentId = state?.appointment?.id;
     const patientDisplay = {
         name: patientInfo ? `${patientInfo.first_name || ''} ${patientInfo.last_name || ''}`.trim() : 'Unknown Patient',
         initials: patientInfo ? `${(patientInfo.first_name?.[0] || '').toUpperCase()}${(patientInfo.last_name?.[0] || '').toUpperCase()}` : '?',
@@ -67,17 +70,23 @@ export default function PreDoctorCheckPage() {
 
             if (error) throw error;
 
-            await notificationService.notifyRole('doctor', {
+            if (appointmentId) {
+                const { error: statusError } = await appointmentService.markPreChecked(appointmentId);
+                if (statusError) throw new Error(statusError);
+            }
+
+            await notificationCoreService.notifyRole('doctor', {
                 title: 'Pre-Check Complete',
-                message: `${patientDisplay.name} has completed pre-check and is ready for consultation.`,
+                message: `${patientDisplay.name} has completed pre-check and is ready for the doctor encounter.`,
                 type: 'precheck',
-                related_id: ptId,
+                related_type: appointmentId ? 'appointment' : 'patient',
+                related_id: appointmentId || ptId,
             });
 
             showToast('Pre-check submitted successfully to doctor queue', 'success');
             navigate('/predoctor-success', { state: { patient: { name: patientDisplay.name, id: ptId } } });
         } catch (error) {
-            console.error('Failed to submit precheck:', error);
+            logError('Failed to submit precheck:', error);
             showToast('Failed to submit pre-check', 'error');
         } finally {
             setIsSaving(false);
@@ -116,10 +125,8 @@ export default function PreDoctorCheckPage() {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <PreDoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-y-auto">
+        <DashboardLayout role="pre_doctor">
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -286,7 +293,7 @@ export default function PreDoctorCheckPage() {
                         </div>
                     </motion.div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </DashboardLayout>
     );
 }

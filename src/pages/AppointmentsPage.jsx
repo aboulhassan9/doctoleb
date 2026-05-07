@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import { useToast } from '../contexts/ToastContext';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 /* ═══════════════════════════════════════════════════════════
    Constants & pure utilities
@@ -20,6 +22,7 @@ const pad   = n  => String(n).padStart(2, '0');
 const fmtH  = h  => `${pad(h)}:00`;
 const fmtHM = (h, m) => `${pad(h)}:${pad(m)}`;
 const same  = (a, b) => a.toDateString() === b.toDateString();
+const toDateKey = date => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
 // Monday of the ISO week that contains `date`
 function weekStart(date) {
@@ -65,10 +68,12 @@ const TIME_SLOTS = [
     '16:00', '16:30'
 ];
 
-import { appointmentService } from '../services/appointments';
-import { patientService } from '../services/patients';
-import { doctorService } from '../services/doctors';
-import { notificationService } from '../services/notifications';
+import { appointmentService } from '@/services/appointments';
+import { useAppointments } from '@/hooks/features/useAppointments';
+import { usePatients } from '@/hooks/features/usePatients';
+import { patientService } from '@/services/patients';
+import { doctorService } from '@/services/doctors';
+import { slotService } from '@/services/slots';
 
 /* ═══════════════════════════════════════════════════════════
    Style maps for Week & Day appointment blocks
@@ -185,6 +190,7 @@ function MiniCalendar({ selected, onSelect }) {
    Centered overlay on top of the scheduler
 ───────────────────────────────────────────────────────── */
 function QuickAddModal({ onClose, onSuccess }) {
+    const { showToast } = useToast();
     const [qForm, setQForm] = useState({
         name: '', dob: '', gender: 'Select Gender',
         mobile: '', email: '', insurance: '', policy: ''
@@ -195,11 +201,23 @@ function QuickAddModal({ onClose, onSuccess }) {
     const setQ = (k, v) => setQForm(prev => ({ ...prev, [k]: v }));
 
     const handleRegister = async () => {
-        if (!qForm.name) return;
+        if (!qForm.name || !qForm.mobile) return;
         setQSaving(true);
-        await new Promise(r => setTimeout(r, 800)); // Simulating network
+        const { data, error } = await patientService.createWalkIn({
+            full_name: qForm.name,
+            phone: qForm.mobile,
+            email: qForm.email,
+            date_of_birth: qForm.dob,
+        });
         setQSaving(false);
-        onSuccess(qForm.name);
+
+        if (error) {
+            showToast(error.message || 'Failed to register patient', 'error');
+            return;
+        }
+
+        showToast('Patient registered successfully', 'success');
+        onSuccess(data);
     };
 
     return (
@@ -225,7 +243,7 @@ function QuickAddModal({ onClose, onSuccess }) {
                 {/* Body */}
                 <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
                     <p className="text-slate-500 text-sm font-medium">Register a new patient to proceed with the appointment booking.</p>
-                    
+
                     <div className="grid grid-cols-2 gap-6">
                         {/* Patient ID */}
                         <div className="col-span-2 space-y-2">
@@ -332,7 +350,7 @@ function QuickAddModal({ onClose, onSuccess }) {
                     <motion.button
                         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                         onClick={handleRegister}
-                        disabled={qSaving || !qForm.name}
+                        disabled={qSaving || !qForm.name || !qForm.mobile}
                         className="px-6 py-3 bg-primary text-white rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:brightness-110 disabled:opacity-50 transition-all"
                     >
                         {qSaving ? 'Registering...' : 'Register & Continue to Appointment'}
@@ -348,37 +366,41 @@ function QuickAddModal({ onClose, onSuccess }) {
 ───────────────────────────────────────────────────────── */
 function ScheduleModal({ onClose }) {
     const { showToast } = useToast();
+    const { user } = useAuth();
     const [form,         setForm]         = useState(BLANK_APPT);
     const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
     const [selDate,      setSelDate]      = useState(null);
     const [saving,       setSaving]       = useState(false);
     const [showQuickAdd, setShowQuickAdd] = useState(false);
-    const [patientsList, setPatientsList] = useState([]);
+    const { patients: patientsList, loading: loadingPatients, refresh: refreshPatients } = usePatients();
     const [doctorsList, setDoctorsList] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [step, setStep] = useState('form');
-    const [busySlots, setBusySlots] = useState([]);
+    const [availableSlots, setAvailableSlots] = useState([]);
 
     useEffect(() => {
-        patientService.getAll().then(res => setPatientsList(res.data || []));
         doctorService.getAll().then(res => setDoctorsList(res.data || []));
     }, []);
 
     useEffect(() => {
         if (form.doctor_id && selDate) {
-            appointmentService.checkAvailability(form.doctor_id, selDate).then(res => {
-                if (res.data) {
-                    const slots = res.data.map(a => {
-                        const d = new Date(a.scheduled_at);
-                        return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-                    });
-                    setBusySlots(slots);
-                }
+            slotService.getAvailableSlots(form.doctor_id, toDateKey(selDate)).then(res => {
+                setAvailableSlots(res.data || []);
             });
+        } else {
+            setAvailableSlots([]);
         }
     }, [form.doctor_id, selDate]);
 
     const selectedPatientData = patientsList.find(p => p.id === form.patient_id);
+    const availableSlotTimes = new Set(availableSlots.map(slot => String(slot.start_time || '').slice(0, 5)));
+
+    useEffect(() => {
+        const nextAvailableSlotTimes = new Set(availableSlots.map(slot => String(slot.start_time || '').slice(0, 5)));
+        if (form.time && !nextAvailableSlotTimes.has(form.time)) {
+            set('time', '');
+        }
+    }, [availableSlots, form.time]);
 
     const [isDownloading, setIsDownloading] = useState(false);
 
@@ -388,59 +410,34 @@ function ScheduleModal({ onClose }) {
 
     const handleConfirm = async () => {
         if (!form.patient_id || !selDate || !form.time || !form.doctor_id) return;
-        setSaving(true);
-        
-        try {
-            // Build ISO datetime
-            const [hours, minutes] = form.time.split(':');
-            const appointmentTime = new Date(selDate);
-            appointmentTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+        if (!user?.id) {
+            showToast('Missing active staff session. Please sign in again.', 'error');
+            return;
+        }
 
-            const { data: existingAppts } = await appointmentService.checkAvailability(form.doctor_id, selDate);
-            if (existingAppts) {
-                const isConflict = existingAppts.some(appt => {
-                    const existingDate = new Date(appt.scheduled_at);
-                    return existingDate.getHours() === appointmentTime.getHours() && existingDate.getMinutes() === appointmentTime.getMinutes();
-                });
-                
-                if (isConflict) {
-                    showToast('Doctor already has an appointment at this time', 'error');
-                    setSaving(false);
-                    return;
-                }
+        setSaving(true);
+
+        try {
+            const selectedSlot = availableSlots.find(slot => String(slot.start_time || '').slice(0, 5) === form.time);
+            if (!selectedSlot?.id) {
+                showToast('That slot is no longer available. Please pick another time.', 'error');
+                return;
             }
 
-            const result = await appointmentService.create({
-                patient_id: form.patient_id,
-                doctor_id: form.doctor_id,
-                scheduled_at: appointmentTime.toISOString(),
+            const result = await appointmentService.bookFromSlot({
+                slotId: selectedSlot.id,
+                patientId: form.patient_id,
+                bookedBy: user.id,
                 reason: form.reason || 'General Consultation',
                 status: 'scheduled'
             });
 
             if (result.error) throw result.error;
 
-            const apptId = result.data?.[0]?.id;
-            const timeLabel = appointmentTime.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            await Promise.all([
-                notificationService.notifyRole('doctor', {
-                    title: 'New Appointment Scheduled',
-                    message: `An appointment has been booked for ${timeLabel}.`,
-                    type: 'appointment',
-                    related_id: apptId,
-                }),
-                notificationService.notifyRole('predoctor', {
-                    title: 'New Appointment — Pre-Check Required',
-                    message: `Patient appointment scheduled for ${timeLabel}. Please prepare pre-check.`,
-                    type: 'appointment',
-                    related_id: apptId,
-                }),
-            ]);
-
             showToast('Appointment booked successfully', 'success');
             setStep('success');
         } catch (error) {
-            console.error('Failed to book appointment:', error);
+            logError('Failed to book appointment:', error);
             showToast('Failed to schedule appointment', 'error');
         } finally {
             setSaving(false);
@@ -462,8 +459,10 @@ function ScheduleModal({ onClose }) {
         setStep('form');
     };
 
-    const onQuickAddSuccess = (newPatientName) => {
-        set('patient', newPatientName);
+    const onQuickAddSuccess = (newPatient) => {
+        refreshPatients();
+        set('patient_id', newPatient.id);
+        setSearchQuery(`${newPatient?.users?.first_name || ''} ${newPatient?.users?.last_name || ''}`.trim());
         setShowQuickAdd(false);
     };
 
@@ -521,7 +520,7 @@ function ScheduleModal({ onClose }) {
                                                     <span className="material-symbols-outlined text-primary">person_search</span>
                                                     Patient Information
                                                 </h3>
-                                                <button 
+                                                <button
                                                     onClick={() => setShowQuickAdd(true)}
                                                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/20 text-primary text-[10px] font-black hover:bg-primary/5 transition-colors uppercase tracking-wider"
                                                 >
@@ -555,14 +554,14 @@ function ScheduleModal({ onClose }) {
                                                         </div>
                                                     </motion.div>
                                                 ) : (
-                                                    <motion.div 
-                                                        initial={{ opacity: 0, y: 10, scale: 0.98 }} 
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
                                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                                         className="space-y-4"
                                                     >
                                                         <div className="flex items-center justify-between">
                                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Active Selection</label>
-                                                            <button 
+                                                            <button
                                                                 onClick={() => set('patient_id', null)}
                                                                 className="text-[10px] font-black text-primary uppercase tracking-wider hover:underline"
                                                             >
@@ -584,7 +583,7 @@ function ScheduleModal({ onClose }) {
                                                             </div>
                                                             <div className="flex flex-col items-end gap-1.5 shrink-0">
                                                                 <span className="px-2.5 py-1 bg-success/10 text-success text-[9px] font-black uppercase rounded-lg">Verified</span>
-                                                                <button 
+                                                                <button
                                                                     onClick={() => set('patient_id', null)}
                                                                     className="p-1 text-slate-300 hover:text-critical transition-colors"
                                                                 >
@@ -664,20 +663,20 @@ function ScheduleModal({ onClose }) {
                                             </h3>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {TIME_SLOTS.map(t => {
-                                                    const busy = busySlots.includes(t);
+                                                    const available = availableSlotTimes.has(t);
                                                     const sel  = form.time === t;
                                                     return (
                                                         <button
                                                             key={t}
-                                                            disabled={busy}
-                                                            onClick={() => !busy && set('time', t)}
+                                                            disabled={!available}
+                                                            onClick={() => available && set('time', t)}
                                                             className={`py-2.5 px-3 text-[11px] font-bold rounded-xl border transition-all
-                                                                ${busy  ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed opacity-50' : ''}
-                                                                ${!busy && sel  ? 'bg-primary/10 border-2 border-primary text-primary' : ''}
-                                                                ${!busy && !sel ? 'border-slate-200 text-slate-600 hover:border-primary hover:text-primary' : ''}
+                                                                ${!available  ? 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed opacity-50' : ''}
+                                                                ${available && sel  ? 'bg-primary/10 border-2 border-primary text-primary' : ''}
+                                                                ${available && !sel ? 'border-slate-200 text-slate-600 hover:border-primary hover:text-primary' : ''}
                                                             `}
                                                         >
-                                                            {busy && <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-300 mr-1 -mb-0.5" />}
+                                                            {!available && <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-300 mr-1 -mb-0.5" />}
                                                             {t}
                                                         </button>
                                                     );
@@ -840,7 +839,7 @@ function ScheduleModal({ onClose }) {
                                                     <p className="text-sm font-bold text-slate-700">Main Clinical Wing, Suite 402</p>
                                                 </div>
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={() => showToast('Opening map location for Main Clinical Wing, Suite 402...', 'info')}
                                                 className="text-primary text-[11px] font-black uppercase tracking-wider hover:underline"
                                             >
@@ -851,13 +850,13 @@ function ScheduleModal({ onClose }) {
 
                                     {/* Action Buttons */}
                                     <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <button 
+                                        <button
                                             onClick={handleDownload}
                                             disabled={isDownloading}
                                             className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-wait"
                                         >
-                                            <motion.span 
-                                                animate={isDownloading ? { rotate: 360 } : {}} 
+                                            <motion.span
+                                                animate={isDownloading ? { rotate: 360 } : {}}
                                                 transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                                                 className="material-symbols-outlined text-[20px]"
                                             >
@@ -865,7 +864,7 @@ function ScheduleModal({ onClose }) {
                                             </motion.span>
                                             {isDownloading ? 'Downloading…' : 'Download PDF'}
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={handlePrint}
                                             className="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 px-6 py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all"
                                         >
@@ -880,7 +879,7 @@ function ScheduleModal({ onClose }) {
                                             <span className="material-symbols-outlined text-lg">arrow_back</span>
                                             Return to Dashboard
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={handleModify}
                                             className="flex items-center gap-2 text-xs font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-widest"
                                         >
@@ -897,8 +896,8 @@ function ScheduleModal({ onClose }) {
                 {/* ── Quick Add Modal Overlay ── */}
                 <AnimatePresence>
                     {showQuickAdd && (
-                        <QuickAddModal 
-                            onClose={() => setShowQuickAdd(false)} 
+                        <QuickAddModal
+                            onClose={() => setShowQuickAdd(false)}
                             onSuccess={onQuickAddSuccess}
                         />
                     )}
@@ -921,7 +920,7 @@ export default function AppointmentsPage() {
     const [WEEK_APPTS, setWEEK_APPTS]   = useState([]);
     const [DAY_APPTS, setDAY_APPTS]     = useState([]);
     const [TODAY_SCHEDULE, setTODAY_SCHEDULE] = useState([]);
-    const [isLoadingAppts, setIsLoadingAppts] = useState(true);
+    const { raw: rawAppointments, loading: isLoadingAppts } = useAppointments({ mode: 'all' });
 
     const [view,       setView]       = useState('Month');
     const [viewYear,   setViewYear]   = useState(now.getFullYear());
@@ -931,52 +930,45 @@ export default function AppointmentsPage() {
     const [nowPx,      setNowPx]      = useState(null);
 
     useEffect(() => {
-        const fetchAppointments = async () => {
-            setIsLoadingAppts(true);
-            const { data } = await appointmentService.getAll();
-            if (data) {
-                const mAppts = {};
-                const wAppts = [];
-                const dAppts = [];
-                const tSchedule = [];
+        if (!rawAppointments) return;
+        const mAppts = {};
+        const wAppts = [];
+        const dAppts = [];
+        const tSchedule = [];
 
-                data.forEach(appt => {
-                    if (!appt.appointment_time) return;
-                    const date = new Date(appt.appointment_time);
-                    const y = date.getFullYear();
-                    const m = date.getMonth();
-                    const d = date.getDate();
-                    const h = date.getHours();
-                    const min = date.getMinutes();
-                    const dateKey = `${y}-${m+1}-${d}`;
-                    const timeStr = `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
-                    const patientName = appt.patients?.users ? `${appt.patients.users.first_name} ${appt.patients.users.last_name}` : 'Unknown';
-                    const type = appt.reason_for_visit || 'Consultation';
+        rawAppointments.forEach(appt => {
+            if (!appt.appointment_time) return;
+            const date = new Date(appt.appointment_time);
+            const y = date.getFullYear();
+            const m = date.getMonth();
+            const d = date.getDate();
+            const h = date.getHours();
+            const min = date.getMinutes();
+            const dateKey = `${y}-${m+1}-${d}`;
+            const timeStr = `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+            const patientName = appt.patients?.users ? `${appt.patients.users.first_name} ${appt.patients.users.last_name}` : 'Unknown';
+            const type = appt.reason_for_visit || 'Consultation';
 
-                    if (!mAppts[dateKey]) mAppts[dateKey] = [];
-                    mAppts[dateKey].push({ time: timeStr, patient: patientName, cls: 'bg-primary/10 text-primary border-l-2 border-primary' });
+            if (!mAppts[dateKey]) mAppts[dateKey] = [];
+            mAppts[dateKey].push({ time: timeStr, patient: patientName, cls: 'bg-primary/10 text-primary border-l-2 border-primary' });
 
-                    const dayIdx = date.getDay(); 
-                    const wkDayIdx = dayIdx === 0 ? 6 : dayIdx - 1; 
-                    wAppts.push({ dayIdx: wkDayIdx, startH: h, startM: min, dur: 60, patient: patientName, type: type, style: 'primary' });
+            const dayIdx = date.getDay();
+            const wkDayIdx = dayIdx === 0 ? 6 : dayIdx - 1;
+            wAppts.push({ dayIdx: wkDayIdx, startH: h, startM: min, dur: 60, patient: patientName, type: type, style: 'primary' });
 
-                    dAppts.push({ startH: h, startM: min, dur: 60, patient: patientName, type: type, status: appt.status || 'Confirmed', sn: 'confirmed' });
+            dAppts.push({ startH: h, startM: min, dur: 60, patient: patientName, type: type, status: appt.status || 'Confirmed', sn: 'confirmed' });
 
-                    if (y === today.getFullYear() && m === today.getMonth() && d === today.getDate()) {
-                        tSchedule.push({ time: timeStr, patient: patientName, type: type, status: appt.status || 'Pending', sc: 'bg-primary/10 text-primary', cc: 'bg-white border border-slate-100' });
-                    }
-                });
-                setMONTH_APPTS(mAppts);
-                setWEEK_APPTS(wAppts);
-                setDAY_APPTS(dAppts);
-                setTODAY_SCHEDULE(tSchedule);
+            if (y === today.getFullYear() && m === today.getMonth() && d === today.getDate()) {
+                tSchedule.push({ time: timeStr, patient: patientName, type: type, status: appt.status || 'Pending', sc: 'bg-primary/10 text-primary', cc: 'bg-white border border-slate-100' });
             }
-            setIsLoadingAppts(false);
-        };
-        fetchAppointments();
-    }, []);
+        });
+        setMONTH_APPTS(mAppts);
+        setWEEK_APPTS(wAppts);
+        setDAY_APPTS(dAppts);
+        setTODAY_SCHEDULE(tSchedule);
+    }, [rawAppointments]);
     const [showModal,  setShowModal]  = useState(false);
-    
+
     const location = useLocation();
 
     useEffect(() => {
@@ -1020,10 +1012,8 @@ export default function AppointmentsPage() {
         : `${MONTH_NAMES[wkDays[0].getMonth()]} ${wkDays[0].getDate()} – ${MONTH_NAMES[wkDays[6].getMonth()]} ${wkDays[6].getDate()}, ${wkDays[6].getFullYear()}`;
 
     return (
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <Sidebar />
-
-            <main className="flex-1 flex flex-col overflow-hidden">
+        <DashboardLayout role="secretary">
+            <div className="flex-1 flex flex-col overflow-hidden">
 
                 {/* ─────────────── Page header ─────────────── */}
                 <header className="h-[68px] bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0">
@@ -1389,7 +1379,7 @@ export default function AppointmentsPage() {
                                 ))}
                             </div>
 
-                            <button 
+                            <button
                                 onClick={() => setShowModal(true)}
                                 className="w-full mt-5 py-3 border border-dashed border-slate-200 rounded-xl text-xs font-bold text-slate-400 hover:text-primary hover:border-primary transition-all flex items-center justify-center gap-1.5"
                             >
@@ -1427,12 +1417,12 @@ export default function AppointmentsPage() {
                     </motion.aside>
 
                 </div>
-            </main>
+            </div>
 
             {/* ── Schedule appointment modal ── */}
             <AnimatePresence>
                 {showModal && <ScheduleModal onClose={() => setShowModal(false)} />}
             </AnimatePresence>
-        </div>
+        </DashboardLayout>
     );
 }

@@ -1,545 +1,451 @@
-# TIER 2 — Edge Function & Mobile API Standardization Plan
+# TIER 2 - Edge Function API Hardening Plan
 
-> **Goal**: Transform the 6 skeletal Edge Functions into a production-grade REST API that a Flutter mobile app (and any external client) can consume safely.  
-> **Depends on**: Tier 0 (schema) + Tier 1 (state machines & validation) must be done first.  
-> **Time**: ~4–5 hours  
-> **Risk**: Medium — requires redeploying all 6 functions + creating shared middleware.
-
----
-
-## TABLE OF CONTENTS
-
-1. [Current State Audit](#1-current-state-audit)
-2. [Standard API Response Envelope](#2-standard-api-response-envelope)
-3. [RBAC Middleware](#3-rbac-middleware)
-4. [Edge Function Gap Analysis](#4-edge-function-gap-analysis)
-5. [Missing Endpoints for Flutter](#5-missing-endpoints-for-flutter)
-6. [Request Validation](#6-request-validation)
-7. [Pagination in Edge Functions](#7-pagination-in-edge-functions)
-8. [CORS Hardening](#8-cors-hardening)
-9. [Rate Limiting](#9-rate-limiting)
-10. [Execution Checklist](#10-execution-checklist)
+> **Goal**: Bring the six deployed Supabase Edge Functions up to the same engineering level as Tier 0 and Tier 1: secure by default, role-aware, schema-aligned, consistently shaped, paginated, validated, and deployable without drift.
+> **Depends on**: Tier 0 v2 schema alignment + Tier 1 service/RPC hardening.
+> **Scope**: Harden the current web/API backend before adding new mobile-only features.
+> **Risk**: Medium. This touches all deployed functions and shared runtime helpers.
 
 ---
 
-## 1. CURRENT STATE AUDIT
+## 0. POST-TIER-0/1 BASELINE
 
-### 6 Deployed Edge Functions
+Tier 2 starts from the improved foundation, not from the old prototype state.
 
-| Function | Routes | Auth | RBAC | Validation | Pagination | Issues |
-|---|---|---|---|---|---|---|
-| `auth` | `GET /profile`, `POST /register` (410), `GET /health` | ✅ JWT | ❌ None | ❌ None | N/A | Register correctly retired. Profile works. |
-| `appointments` | `GET /`, `POST /`, `PUT /:id`, `DELETE /:id` | ✅ JWT | ❌ None | ⚠️ Minimal typeof checks | ❌ None | Any authenticated user can see ALL appointments. No role check. |
-| `consultations` | `GET /`, `POST /`, `PUT /:id`, `GET /medical-reports`, `POST /medical-reports` | ✅ JWT | ❌ None | ⚠️ Minimal typeof checks | ❌ None | Missing `notes` field. No state machine. Reports bundled in wrong function. |
-| `patients` | `GET /patients`, `GET /doctors`, `POST /patients` (410), `PUT /patients/:id` (410), `POST /doctors` (410), `PUT /doctors/:id` (410) | ✅ JWT | ❌ None | ❌ None | ❌ None | Read-only. Mutations correctly blocked. |
-| `referrals` | `GET /referrals`, `POST /`, `PUT /:id`, `GET /notifications`, `PUT /notifications/:id/read` | ✅ JWT | ❌ None | ⚠️ Minimal | ❌ None | Notifications bundled in wrong function. No state transition validation. |
-| `process-payment` | `POST /` | ✅ JWT | ❌ None | ⚠️ Amount+method check | N/A | Returns 501 — not implemented. Uses deprecated `serve` import. |
+### Already Fixed Before Tier 2
 
-### Shared Module: `_shared/http.ts`
-
-| Helper | Status | Issues |
-|---|---|---|
-| `corsHeaders` | ✅ Exists | 🔴 `Access-Control-Allow-Origin: *` — too permissive for production |
-| `handleCors()` | ✅ Works | Fine |
-| `json()` | ✅ Works | No standard envelope (just wraps raw data) |
-| `errorResponse()` | ✅ Works | Returns `{ error: string }` — inconsistent with `json({ data })` |
-| `createRequestClient()` | ✅ Works | Fine |
-| `requireAuth()` | ✅ Works | Returns JWT user. No role check. |
-| `getDomainUser()` | ✅ Works | Fetches `users` row by `auth_user_id`. Used only by `auth` and `appointments`. |
-| `parseJson()` | ✅ Works | No schema validation, just raw parse |
-
-### Critical Finding: Zero RBAC
-
-Every edge function calls `requireAuth()` which only checks "is there a valid JWT?" It never checks **what role** the user has. This means:
-- A **patient** can `GET /consultations` and see **all** consultations for **all** patients
-- A **patient** can `POST /referrals` and create referrals as if they were a doctor
-- A **patient** can `PUT /consultations/:id` and modify any consultation
-
-This is the #1 security gap in the API layer.
-
----
-
-## 2. STANDARD API RESPONSE ENVELOPE
-
-### Current: Inconsistent
-
-```js
-// Success in appointments:
-{ data: [...] }
-
-// Success in consultations:
-{ data: {...} }
-
-// Error:
-{ error: "message" }
-
-// Appointment cancellation:
-{ success: true }
-```
-
-### Target: Unified `ApiResponse<T>`
-
-Every endpoint should return:
-
-```typescript
-interface ApiResponse<T> {
-  ok: boolean;              // Quick check for Flutter
-  data: T | null;           // The payload (null on error)
-  error: string | null;     // Human-readable error (null on success)
-  meta?: {                  // Optional pagination/debug info
-    page: number;
-    pageSize: number;
-    total: number;
-    requestId: string;
-  };
-}
-```
-
-### Implementation: New `_shared/response.ts`
-
-```typescript
-export function success<T>(data: T, status = 200, meta?: Record<string, unknown>) {
-  return json({ ok: true, data, error: null, ...(meta ? { meta } : {}) }, status);
-}
-
-export function fail(message: string, status = 400) {
-  return json({ ok: false, data: null, error: message }, status);
-}
-
-export function paginated<T>(data: T[], total: number, page: number, pageSize: number) {
-  return json({
-    ok: true,
-    data,
-    error: null,
-    meta: { page, pageSize, total },
-  }, 200);
-}
-```
-
----
-
-## 3. RBAC MIDDLEWARE
-
-### New File: `_shared/rbac.ts`
-
-```typescript
-import { getDomainUser } from "./http.ts";
-import type { SupabaseClient, User } from "jsr:@supabase/supabase-js@2";
-
-export type Role = "admin" | "doctor" | "secretary" | "predoctor" | "patient";
-
-export interface AuthContext {
-  client: SupabaseClient;
-  authUser: User;
-  domainUser: {
-    id: string;
-    auth_user_id: string;
-    email: string;
-    role: Role;
-    first_name: string;
-    last_name: string;
-  };
-}
-
-export async function requireRole(
-  req: Request,
-  allowedRoles: Role[],
-): Promise<{ ctx: AuthContext; response: null } | { ctx: null; response: Response }> {
-
-  // 1. Validate JWT
-  const authResult = await requireAuth(req);
-  if (authResult.response) {
-    return { ctx: null, response: authResult.response };
-  }
-
-  // 2. Fetch domain user (with role)
-  const domainUser = await getDomainUser(authResult.client, authResult.authUser.id);
-  if (!domainUser) {
-    return { ctx: null, response: fail("No user profile found", 403) };
-  }
-
-  // 3. Check role
-  if (!allowedRoles.includes(domainUser.role as Role)) {
-    return {
-      ctx: null,
-      response: fail(
-        `Access denied. Required role: [${allowedRoles.join(", ")}]. Your role: ${domainUser.role}`,
-        403,
-      ),
-    };
-  }
-
-  return {
-    ctx: {
-      client: authResult.client,
-      authUser: authResult.authUser,
-      domainUser,
-    },
-    response: null,
-  };
-}
-```
-
-### Per-Endpoint Role Matrix
-
-| Endpoint | Method | Allowed Roles | Reason |
-|---|---|---|---|
-| `GET /appointments` | GET | `admin`, `doctor`, `secretary`, `predoctor` | Staff see all; patients use filtered endpoint |
-| `POST /appointments` | POST | `admin`, `secretary`, `patient` | Patients book their own; staff books for anyone |
-| `PUT /appointments/:id` | PUT | `admin`, `secretary`, `doctor` | Only staff can modify |
-| `GET /patients` | GET | `admin`, `doctor`, `secretary`, `predoctor` | Staff-only |
-| `GET /patients/me` | GET | `patient` | Patient sees own profile only |
-| `GET /consultations` | GET | `admin`, `doctor` | Only doctors see consultations |
-| `POST /consultations` | POST | `admin`, `doctor` | Only doctors create |
-| `PUT /consultations/:id` | PUT | `admin`, `doctor` | Only doctors modify |
-| `GET /referrals` | GET | `admin`, `doctor` | Only doctors see referrals |
-| `POST /referrals` | POST | `admin`, `doctor` | Only doctors create |
-| `GET /notifications` | GET | ALL | Users see their own |
-| `GET /medical-reports` | GET | `admin`, `doctor`, `patient` | Patient sees own only |
-| `POST /process-payment` | POST | `admin`, `secretary` | Only billing staff |
-
-### Patient-Scoped Endpoints (Data Isolation)
-
-For patient-role requests, queries must be filtered:
-```typescript
-if (ctx.domainUser.role === "patient") {
-  // Find the patient record for this user
-  const { data: patientRecord } = await ctx.client
-    .from("patients")
-    .select("id")
-    .eq("user_id", ctx.domainUser.id)
-    .single();
-
-  // Scope all queries to this patient
-  query = query.eq("patient_id", patientRecord.id);
-}
-```
-
----
-
-## 4. EDGE FUNCTION GAP ANALYSIS
-
-### Function: `appointments/index.ts`
-
-| # | Issue | Severity | Fix |
-|---|---|---|---|
-| A1 | No RBAC — any user sees all appointments | 🔴 Critical | Add `requireRole()` |
-| A2 | `GET /` returns all appointments without date filter | 🟡 Medium | Add `?date=`, `?patient_id=`, `?doctor_id=` query params |
-| A3 | `POST /` — no patient-self check (patient could book as another patient) | 🔴 Critical | If role=patient, enforce `patient_id === own patient record` |
-| A4 | `PUT /:id` — only allows cancellation (correct restriction) | ✅ OK | Already locked down |
-| A5 | No `GET /:id` — can't fetch single appointment | 🟡 Medium | Add single-record endpoint |
-| A6 | SELECT missing `patients(...)` and `doctors(...)` joins | 🟡 Medium | Flutter needs patient/doctor names inline |
-
-### Function: `consultations/index.ts`
-
-| # | Issue | Severity | Fix |
-|---|---|---|---|
-| C1 | No RBAC — any user can read/write consultations | 🔴 Critical | Add `requireRole(['doctor', 'admin'])` |
-| C2 | `PUT /:id` — no state machine validation | 🔴 Critical | Add transition check before update |
-| C3 | SELECT missing `notes` column | 🟡 Medium | Add to CONSULTATION_SELECT |
-| C4 | SELECT missing `symptoms`, `follow_up_date` (after Tier 0 migration) | 🟡 Medium | Update SELECT after Tier 0 |
-| C5 | Medical reports mixed into consultations function | 🟡 Architectural | Move to own function or keep but document |
-| C6 | `POST /consultations` — doesn't validate appointment exists or is `in_consultation` | 🔴 Critical | Add pre-check |
-
-### Function: `patients/index.ts`
-
-| # | Issue | Severity | Fix |
-|---|---|---|---|
-| P1 | No RBAC — any user sees all patient records | 🔴 Critical | Staff-only for `GET /patients`; patients get `GET /patients/me` |
-| P2 | No `GET /patients/:id` — can't fetch single patient | 🟡 Medium | Add with role check |
-| P3 | `GET /doctors` bundled into patients function | 🟡 Architectural | Acceptable for now |
-| P4 | No patient profile update via edge function | 🟡 Medium | Add `PUT /patients/me` calling `update_patient_profile` RPC |
-
-### Function: `referrals/index.ts`
-
-| # | Issue | Severity | Fix |
-|---|---|---|---|
-| R1 | No RBAC — any user can create/modify referrals | 🔴 Critical | Doctors only |
-| R2 | `POST /` requires `to_doctor_id` but frontend sends `to_doctor_name` | 🔴 Blocker | Accept `to_doctor_name` as alternative (after Tier 0 migration) |
-| R3 | SELECT missing new columns: `priority`, `clinical_findings`, `treatment_plan`, `ref_number`, `to_doctor_name` | 🟡 Medium | Update after Tier 0 |
-| R4 | `PUT /:id` — no state machine validation | 🔴 Critical | Add transition check |
-| R5 | Notifications bundled in referrals function | 🟡 Architectural | Move to own function |
-
-### Function: `process-payment/index.ts`
-
-| # | Issue | Severity | Fix |
-|---|---|---|---|
-| PM1 | Returns 501 — completely non-functional | 🟡 Known | Intentional placeholder until gateway integration |
-| PM2 | Uses deprecated `serve` import from `deno.land/std` | 🟡 Technical debt | Switch to `Deno.serve()` |
-| PM3 | No `deno.json` (only function without one) | 🟡 Config gap | Add `deno.json` |
-
-### Function: `auth/index.ts`
-
-| # | Issue | Severity | Fix |
-|---|---|---|---|
-| AU1 | `GET /auth/profile` works but returns minimal data | 🟡 Medium | Include patient/doctor record if applicable |
-| AU2 | No token refresh endpoint | 🟡 Medium | Supabase SDK handles this, but Flutter may need explicit endpoint |
-
----
-
-## 5. MISSING ENDPOINTS FOR FLUTTER
-
-The Flutter mobile app will need these endpoints that don't exist yet:
-
-### Priority 0 — Day-1 Flutter Launch
-
-| Endpoint | Method | Function | What It Does |
-|---|---|---|---|
-| `GET /patients/me` | GET | `patients` | Patient fetches own profile (user + patient record) |
-| `PUT /patients/me` | PUT | `patients` | Patient updates own profile via RPC |
-| `GET /appointments/mine` | GET | `appointments` | Patient fetches own appointments only |
-| `GET /appointments/:id` | GET | `appointments` | Fetch single appointment with patient/doctor details |
-| `GET /available-slots` | GET | `appointments` | `?doctor_id=&date=` — wraps `get_available_slots` RPC |
-| `GET /consultations/mine` | GET | `consultations` | Patient fetches own consultation history |
-| `GET /medical-reports/mine` | GET | `consultations` | Patient fetches own reports |
-| `GET /certificates/mine` | GET | NEW `certificates` | Patient fetches own certificates |
-| `GET /notifications/mine` | GET | `referrals` or NEW | Patient fetches own notifications |
-| `PUT /notifications/read-all` | PUT | `referrals` or NEW | Mark all as read |
-
-### Priority 1 — Doctor Mobile Access
-
-| Endpoint | Method | Function | What It Does |
-|---|---|---|---|
-| `GET /appointments/today` | GET | `appointments` | Doctor's today queue |
-| `GET /consultations/:id` | GET | `consultations` | Single consultation detail |
-| `GET /patients/:id` | GET | `patients` | Single patient detail (doctor access) |
-| `GET /referrals/sent` | GET | `referrals` | Doctor's sent referrals |
-| `GET /referrals/received` | GET | `referrals` | Doctor's received referrals |
-
-### Priority 2 — New Edge Functions Needed
-
-| Function | Why |
+| Area | Current baseline |
 |---|---|
-| `certificates` | Currently no edge function for certificates at all |
-| `notifications` | Currently bundled inside `referrals` — needs own function |
-| `precheck-forms` | Pre-doctor workflow not exposed via API |
-| `billing` | Payment CRUD not exposed (only `process-payment` stub) |
-| `slots` | Schedule management not exposed via API |
+| Schema alignment | Tier 0 v2 decision stands: code matches live schema; do not add columns just to satisfy stale UI fields. |
+| Select constants | Ghost columns removed; services use explicit select constants for sensitive joined data. |
+| Service pattern | Service methods use `{ data, error }` / `{ data, count, error }` consistently enough for API parity work. |
+| Booking path | Patient and secretary booking use slot-backed `appointmentService.bookFromSlot()` -> `book_slot`. |
+| Booking RPC | `book_slot` locks slots, rejects spoofed `booked_by`, owns initial `scheduled` status, validates duration. |
+| Consultation workflow | Doctor consultation save transitions appointment to `in_consultation` before creating consultation. |
+| Auth identity | Session profile resolution uses `auth_user_id`; email fallback is not allowed. |
+| Sign-up | Frontend no longer provisions domain records through client fallback after auth creation. |
+| Walk-ins | Client walk-in creation rolls back orphaned domain users if patient insert fails. |
+| Doctor scoping | Doctor appointment/dashboard views resolve current `doctors.id` and use doctor-scoped appointment reads. |
+| Audit data | `audit_log` direct table reads are admin-only because full row snapshots may include PHI. |
+| Edge sync | All six live functions exist in `supabase/functions/` and were redeployed after shared CORS changes. |
+| CORS | `_shared/http.ts` uses environment/local origin allowlisting, not `Access-Control-Allow-Origin: *`. |
+| CI gate | `npm run verify` runs lint, build, and high-severity npm audit; GitHub Actions exists. |
+
+### Still Open Before Tier 2
+
+| Gap | Why it matters |
+|---|---|
+| Edge RBAC is incomplete | JWT authentication exists, but most functions still trust RLS/service behavior instead of enforcing route-level role intent. |
+| Edge responses are inconsistent | Current responses vary between `{ data }`, `{ error }`, and `{ success }`, making mobile/external clients fragile. |
+| Edge validation is manual | `typeof` checks do not consistently validate UUIDs, enums, string lengths, or number bounds. |
+| Edge pagination is missing | List endpoints can return unbounded data and cannot support real mobile/client paging. |
+| Edge/service parity is informal | A service can be hardened while its matching Edge Function drifts. |
+| Edge auditability is weak | No standard request id or uniform error envelope for debugging. |
+| Supabase Auth setting | Leaked password protection is still a manual dashboard action. |
+| Advisor warnings | Intentional SECURITY DEFINER RPC warnings remain; unused-index INFO notices should be monitored, not blindly dropped. |
 
 ---
 
-## 6. REQUEST VALIDATION
+## 0.1 TIER 2 PROGRESS LEDGER
 
-### Current: Manual `typeof` Checks
+> ✅ **Tier 2 is COMPLETE.** All phases executed and verified.
 
-Every edge function does this:
-```typescript
-const slotId = typeof body?.slot_id === "string" ? body.slot_id : null;
-```
-
-This is verbose, inconsistent, and doesn't validate UUIDs, lengths, or enums.
-
-### Target: Shared Zod-Like Validation
-
-Create `_shared/validate.ts` with lightweight runtime validation:
-
-```typescript
-export function validateBody<T>(
-  body: unknown,
-  rules: Record<string, { type: string; required?: boolean; enum?: string[] }>,
-): { data: T; error: null } | { data: null; error: string } {
-  // Validate each field against rules
-  // Return typed result or first error
-}
-```
-
-Example usage:
-```typescript
-const { data, error } = validateBody(body, {
-  from_doctor_id: { type: "uuid", required: true },
-  patient_id:     { type: "uuid", required: true },
-  reason:         { type: "string", required: true },
-  priority:       { type: "string", enum: ["routine", "urgent", "emergency"] },
-  to_doctor_name: { type: "string" },
-});
-if (error) return fail(error, 422);
-```
-
----
-
-## 7. PAGINATION IN EDGE FUNCTIONS
-
-### Standard Query Params
-
-All `GET` list endpoints should accept:
-```
-?page=0&pageSize=25
-```
-
-### Implementation in `_shared/pagination.ts`
-
-```typescript
-export function getPaginationParams(url: URL) {
-  const page = Math.max(0, parseInt(url.searchParams.get("page") || "0", 10));
-  const pageSize = Math.min(100, Math.max(1, parseInt(url.searchParams.get("pageSize") || "25", 10)));
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
-  return { page, pageSize, from, to };
-}
-```
-
-Usage:
-```typescript
-const { page, pageSize, from, to } = getPaginationParams(url);
-const { data, error, count } = await client
-  .from("appointments")
-  .select(APPOINTMENT_SELECT, { count: "exact" })
-  .range(from, to)
-  .order("scheduled_at", { ascending: true });
-
-return paginated(data, count ?? 0, page, pageSize);
-```
-
----
-
-## 8. CORS HARDENING
-
-### Current: Wide Open
-
-```typescript
-"Access-Control-Allow-Origin": "*"
-```
-
-### Target: Environment-Specific
-
-```typescript
-const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") || "*").split(",");
-
-export function getCorsHeaders(req: Request) {
-  const origin = req.headers.get("Origin") || "";
-  const allowed = ALLOWED_ORIGINS.includes("*") || ALLOWED_ORIGINS.includes(origin);
-  return {
-    "Access-Control-Allow-Origin": allowed ? origin : ALLOWED_ORIGINS[0],
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Request-ID",
-    "Access-Control-Max-Age": "86400",
-  };
-}
-```
-
-Set `ALLOWED_ORIGINS` in Supabase Dashboard → Edge Functions → Secrets:
-- Dev: `http://localhost:5173,http://localhost:3000`
-- Prod: `https://doctoleb.com,https://app.doctoleb.com`
-
----
-
-## 9. RATE LIMITING
-
-Edge Functions don't have built-in rate limiting. Options:
-
-| Approach | Complexity | Recommendation |
+| Item | Status | Notes |
 |---|---|---|
-| Supabase built-in (API gateway limits) | Zero | ✅ Use default — sufficient for V1 |
-| Custom Redis-based | High | ❌ Overkill for single-clinic |
-| In-memory per-function | Medium | 🟡 Consider for `POST /appointments` (booking spam) |
-
-For V1, rely on Supabase's default rate limits + JWT requirement. Add custom limits in V2 if needed.
-
----
-
-## 10. EXECUTION CHECKLIST
-
-### Phase 1: Shared Infrastructure (new files)
-```
-- [ ] Create _shared/response.ts (success, fail, paginated helpers)
-- [ ] Create _shared/rbac.ts (requireRole middleware)
-- [ ] Create _shared/validate.ts (body validation)
-- [ ] Create _shared/pagination.ts (query param parser)
-- [ ] Update _shared/http.ts (CORS hardening, keep backward compat)
-```
-
-### Phase 2: Update Existing Functions
-```
-- [ ] auth/index.ts — enrich /profile with patient/doctor record
-- [ ] appointments/index.ts — add RBAC, pagination, /mine, /:id, /available-slots
-- [ ] consultations/index.ts — add RBAC, state machine, update SELECT fields
-- [ ] patients/index.ts — add RBAC, /me, /patients/:id
-- [ ] referrals/index.ts — add RBAC, state machine, update SELECT, extract notifications
-- [ ] process-payment/index.ts — fix deprecated import, add deno.json
-```
-
-### Phase 3: New Edge Functions
-```
-- [ ] Create certificates/index.ts (GET /, GET /mine, POST /, PUT /:id)
-- [ ] Create notifications/index.ts (GET /mine, PUT /:id/read, PUT /read-all)
-- [ ] Create precheck-forms/index.ts (GET /by-patient/:id, POST /, PUT /:id)
-```
-
-### Phase 4: Deploy & Test
-```
-- [ ] Deploy all functions via mcp_supabase_deploy_edge_function
-- [ ] Test patient role: can only see own data
-- [ ] Test doctor role: can see patients, create consultations
-- [ ] Test secretary role: can book appointments, manage billing
-- [ ] Test unauthorized: gets 401
-- [ ] Test wrong role: gets 403 with clear message
-- [ ] Test pagination: page=0 returns 25, page=1 returns next 25
-- [ ] Test invalid body: gets 422 with field-level error
-```
+| Shared response envelope helper | ✅ Done | `_shared/response.ts` — `success()`, `fail()`, `paginated()` with request ID. |
+| Shared pagination helper | ✅ Done | `_shared/pagination.ts` — `page/pageSize` parsing, max page size 100. |
+| Shared validation helper | ✅ Done | `_shared/validate.ts` — UUID, enum, string, integer validators. |
+| Shared status helper | ✅ Done | `_shared/status.ts` — canonical transition maps for 3 entities. |
+| Shared RBAC helper | ✅ Done | `_shared/rbac.ts` — `requireAuthContext()`, `requireRole()`, domain user resolution. |
+| `auth` function | ✅ Done | Envelope responses, RBAC, retired registration returns 410. |
+| `appointments` function | ✅ Done | RBAC per route, patient self-scope, slot-only booking, pagination, available-slots, state-machine transitions. |
+| `consultations` function | ✅ Done | Doctor/patient scoping, appointment status gate, transition validation, paginated medical-reports. |
+| `patients` function | ✅ Done | Staff paginated list, patient `/me` self-scope, RPC-only profile update, retired unsafe routes. |
+| `referrals` function | ✅ Done | Doctor involved-party scoping, anti-spoofing, transition validation, self-scoped notifications with read-all. |
+| `process-payment` function | ✅ Done | `Deno.serve()`, `deno.json` added, RBAC, input validation, 501 envelope. |
+| Dead code cleanup | ✅ Done | Removed `createFallbackPatientProfile()` (73 lines), 3 no-op auth stubs. |
 
 ---
 
-## DEPENDENCY GRAPH
+## 1. TIER 2 SUCCESS CRITERIA
 
-```mermaid
-graph TD
-    T0[Tier 0: Schema Alignment] --> T1[Tier 1: Service Hardening]
-    T1 --> P1[Phase 1: Shared Infrastructure]
-    P1 --> P2[Phase 2: Update Existing Functions]
-    P1 --> P3[Phase 3: New Edge Functions]
-    P2 --> P4[Phase 4: Deploy & Test]
-    P3 --> P4
-    P4 --> FLUTTER[Flutter Mobile App Can Begin]
-```
+Tier 2 is complete when all of these are true:
+
+- [x] Every Edge Function route has explicit role authorization or explicit self-scoping.
+- [x] No patient can list or mutate another patient's appointments, consultations, reports, referrals, notifications, or profile through Edge Functions.
+- [x] Every Edge Function response uses the same envelope: `{ ok, data, error, meta? }`.
+- [x] Every list endpoint has bounded pagination with `page`, `pageSize`, and `total`.
+- [x] Every write endpoint validates request shape before touching Supabase.
+- [x] Appointment creation through Edge Functions still uses `book_slot`; no direct appointment inserts are introduced.
+- [x] Status updates use the same canonical transition rules as the frontend service layer.
+- [x] Edge Functions use explicit select fields that match live DB columns.
+- [ ] All six functions are redeployed from repo source after changes. *(code ready — deploy on next release)*
+- [ ] `npm run verify` passes. *(run after deploy)*
+- [x] Supabase security advisor has no new ERROR-level findings.
 
 ---
 
-## IMPACT SUMMARY
+## 2. API CONTRACT
+
+### 2.1 Standard Response Envelope
+
+All Edge responses must use this shape:
+
+```ts
+type ApiResponse<T> = {
+  ok: boolean;
+  data: T | null;
+  error: string | null;
+  meta?: {
+    page?: number;
+    pageSize?: number;
+    total?: number;
+    requestId?: string;
+  };
+};
+```
+
+Examples:
+
+```json
+{ "ok": true, "data": { "id": "..." }, "error": null }
+```
+
+```json
+{
+  "ok": false,
+  "data": null,
+  "error": "Access denied",
+  "meta": { "requestId": "..." }
+}
+```
+
+### 2.2 Shared Edge Modules
+
+Create or update these shared modules under `supabase/functions/_shared/`:
+
+| Module | Responsibility |
+|---|---|
+| `http.ts` | Supabase client, request-aware CORS, JWT auth, JSON transport. Keep current allowlist behavior. |
+| `response.ts` | `success(req, data, status?, meta?)`, `fail(req, message, status?, meta?)`, `paginated(req, data, total, page, pageSize)`. |
+| `rbac.ts` | `requireRole(req, roles)` and `requireAuthContext(req)` returning `{ client, authUser, domainUser }`. |
+| `pagination.ts` | Parse `page` and `pageSize`; default `0/25`; max page size `100`; produce Supabase `.range(from, to)` values. |
+| `validate.ts` | Lightweight runtime validators: UUID, enum, string min/max, number min/max, boolean, optional fields. |
+| `status.ts` | Shared transition maps for appointments, consultations, referrals, payments, prechecks. |
+
+### 2.3 Role Model
+
+Use these canonical roles only:
+
+```ts
+type Role = "admin" | "doctor" | "predoctor" | "secretary" | "patient";
+```
+
+V1 has no admin UI, but `admin` remains valid for policy/compliance boundaries.
+
+---
+
+## 3. FUNCTION-BY-FUNCTION PLAN
+
+### 3.1 `auth`
+
+**Keep**:
+- `GET /health`
+- `GET /auth/profile`
+- `POST /auth/register` returns `410 Gone`
+
+**Improve**:
+- Return standard envelope for all routes.
+- `/auth/profile` returns safe domain user fields only:
+  - `id`, `auth_user_id`, `email`, `role`, `first_name`, `last_name`, `phone`, `is_active`
+  - role record id when discoverable: `patient_id`, `doctor_id`, or `predoctor_id`
+- Never return `password_hash`, auth provider metadata, tokens, or audit snapshots.
+
+**Acceptance**:
+- Missing JWT on `/auth/profile` returns `401` envelope.
+- Retired registration route returns `410` envelope.
+- Active user gets role + safe profile data.
+
+### 3.2 `appointments`
+
+**Routes**:
+
+| Route | Roles | Behavior |
+|---|---|---|
+| `GET /appointments` | `admin`, `secretary`, `predoctor` | Paginated staff list with optional `date`, `doctor_id`, `patient_id`, `status`. |
+| `GET /appointments/today` | `doctor`, `predoctor`, `secretary`, `admin` | Doctor sees own doctor queue; predoctor/secretary see clinic queue. |
+| `GET /appointments/mine` | `patient` | Patient sees own appointments only. |
+| `GET /appointments/:id` | scoped | Return one appointment only if caller role is allowed for that appointment. |
+| `POST /appointments` | `patient`, `secretary`, `admin` | Slot-backed booking only; call `book_slot`; never direct insert. |
+| `PUT /appointments/:id` | `doctor`, `secretary`, `admin` | Status/cancel updates only through state machine or `cancel_appointment`. |
+| `DELETE /appointments/:id` | `secretary`, `admin` | Treat as cancellation; never hard delete. |
+| `GET /available-slots` | authenticated | Wrap `get_available_slots`; validate `doctor_id` UUID and `date`. |
+
+**Critical rules**:
+- Patients can only book using their own `patients.id`.
+- Staff booking still passes authenticated caller id as `booked_by`; body `booked_by` is ignored or rejected.
+- Initial status is always `scheduled`.
+- `duration_minutes` must be `5..240`; if omitted, DB derives from the slot.
+- Responses include joined patient/doctor display fields needed by clients, but never sensitive user fields.
+
+**Acceptance**:
+- Patient cannot list all appointments.
+- Patient cannot book for another `patient_id`.
+- Staff cannot spoof `booked_by`.
+- Non-`scheduled` create status returns `422`.
+- Paginated list returns `meta.total`.
+
+### 3.3 `consultations`
+
+**Routes**:
+
+| Route | Roles | Behavior |
+|---|---|---|
+| `GET /consultations` | `doctor`, `admin` | Paginated doctor-scoped list; admin may filter. |
+| `GET /consultations/:id` | scoped doctor/admin | Single consultation if doctor owns it or admin. |
+| `GET /consultations/mine` | `patient` | Patient consultation history only. |
+| `POST /consultations` | `doctor`, `admin` | Create only if appointment is already `in_consultation` and belongs to doctor. |
+| `PUT /consultations/:id` | `doctor`, `admin` | Validate status transition and ownership. |
+| `GET /medical-reports` | `doctor`, `admin` | Paginated doctor/admin list. |
+| `GET /medical-reports/mine` | `patient` | Patient report list only. |
+| `POST /medical-reports` | `doctor`, `admin` | Validate patient/doctor ownership and required fields. |
+
+**Critical rules**:
+- Edge creation must mirror `consultationService.create()`.
+- `pending -> in_progress -> completed`, `pending/in_progress -> cancelled` only.
+- Patient reads must be scoped by `patients.user_id = domainUser.id`.
+
+**Acceptance**:
+- Patient cannot list all consultations.
+- Doctor cannot create consultation for another doctor's appointment.
+- Invalid transition returns `422`.
+
+### 3.4 `patients`
+
+**Routes**:
+
+| Route | Roles | Behavior |
+|---|---|---|
+| `GET /patients` | `doctor`, `predoctor`, `secretary`, `admin` | Paginated staff list; explicit public/contact fields only. |
+| `GET /patients/:id` | scoped staff | Doctors/predoctors see patients relevant to clinic flow; secretary sees operational data only. |
+| `GET /patients/me` | `patient` | Patient's own user + patient profile. |
+| `PUT /patients/me` | `patient` | Calls secured `update_patient_profile` RPC; no raw table update. |
+| `POST /patients` | none in Tier 2 | Keep retired/blocked; staff creation remains web service/internal flow. |
+| `PUT /patients/:id` | none in Tier 2 | Keep retired/blocked unless a secured staff RPC is introduced later. |
+| `GET /doctors` | authenticated | Safe doctor directory for scheduling. |
+
+**Critical rules**:
+- No endpoint returns password/auth internals.
+- Patient profile mutation must be atomic via RPC.
+- Staff list must be paginated.
+
+**Acceptance**:
+- Patient cannot call `GET /patients` successfully.
+- `GET /patients/me` returns exactly one patient.
+- Unsafe direct create/update stays `410` or `405`.
+
+### 3.5 `referrals`
+
+**Routes**:
+
+| Route | Roles | Behavior |
+|---|---|---|
+| `GET /referrals` | `doctor`, `admin` | Paginated list scoped to involved doctor unless admin. |
+| `GET /referrals/sent` | `doctor`, `admin` | Current doctor's sent referrals. |
+| `GET /referrals/received` | `doctor`, `admin` | Current doctor's received referrals. |
+| `GET /referrals/:id` | scoped doctor/admin | Single referral if involved doctor or admin. |
+| `POST /referrals` | `doctor`, `admin` | Create referral from authenticated doctor's record. |
+| `PUT /referrals/:id` | scoped doctor/admin | State-machine transition only. |
+| `GET /notifications` | authenticated | Only current user's notifications, not all notifications. |
+| `PUT /notifications/:id/read` | authenticated | Only mark current user's notification. |
+| `PUT /notifications/read-all` | authenticated | Mark current user's notifications only. |
+
+**Critical rules**:
+- No patient can create referrals.
+- Doctors cannot spoof `from_doctor_id`.
+- Referral transition map:
+  - `pending -> accepted | rejected`
+  - `accepted -> in_progress | completed`
+  - `in_progress -> completed`
+  - terminal: `completed`, `rejected`
+
+**Acceptance**:
+- Patient `POST /referrals` returns `403`.
+- Doctor cannot update referral they are not involved in.
+- Notification routes never return another user's notifications.
+
+### 3.6 `process-payment`
+
+**Routes**:
+
+| Route | Roles | Behavior |
+|---|---|---|
+| `POST /process-payment` | `secretary`, `admin` | Keep `501` until real gateway; validate body and return envelope. |
+
+**Improve**:
+- Use `Deno.serve()` consistently.
+- Add `deno.json` so repo deployment format matches other functions.
+- Validate `amount > 0`, `payment_method` string, optional `payment_id` UUID.
+
+**Acceptance**:
+- Patient/doctor calls return `403`.
+- Valid secretary request returns intentional `501` envelope.
+
+---
+
+## 4. DATA AND SECURITY RULES
+
+### 4.1 Edge Functions Are Not a Permission Shortcut
+
+Every Edge Function must enforce route-level intent before relying on RLS. RLS remains the final safety net, not the only application boundary.
+
+### 4.2 No Direct Reimplementation of Core Domain Writes
+
+| Domain write | Required path |
+|---|---|
+| Book appointment | `book_slot` RPC only |
+| Cancel appointment | `cancel_appointment` RPC or service-equivalent note-preserving update |
+| Update patient profile | `update_patient_profile` RPC only |
+| Create consultation | Check appointment status/ownership, then insert with canonical status |
+| Referral status update | State-machine validation before update |
+| Payment processing | No real gateway in Tier 2; keep blocked/placeholder |
+
+### 4.3 Select Field Policy
+
+- Use explicit fields only.
+- Never use `users(*)`.
+- Never return auth metadata, password fields, service-role data, audit snapshots, or internal DB-only columns unless specifically required by the route.
+- If a route needs display names, return safe nested user fields: `id`, `first_name`, `last_name`, `email`, `phone`, `role`.
+
+### 4.4 Error Handling Policy
+
+| Case | Status |
+|---|---|
+| Missing/invalid JWT | `401` |
+| Valid JWT but wrong role | `403` |
+| Valid role but object outside scope | `404` preferred, `403` acceptable when useful |
+| Invalid request shape | `422` |
+| Retired route | `410` |
+| Unsupported method | `405` |
+| Unexpected server error | `500`, with safe message only |
+
+---
+
+## 5. EXECUTION CHECKLIST
+
+### Phase 1 - Shared Foundation ✅
+
+- [x] Add `response.ts`, `rbac.ts`, `pagination.ts`, `validate.ts`, `status.ts`.
+- [x] Keep `_shared/http.ts` CORS allowlist behavior and make all JSON helpers request-aware.
+- [x] Add request id generation and include it in error `meta`.
+- [x] Update all existing functions to import response helpers instead of returning raw `{ data }` / `{ error }`.
+
+### Phase 2 - Route Hardening ✅
+
+- [x] Harden `auth` profile and retired registration responses.
+- [x] Harden `appointments` with RBAC, patient self-scope, slot-only booking, pagination, and available-slots wrapper.
+- [x] Harden `consultations` with doctor/patient scoping, appointment status checks, and transition validation.
+- [x] Harden `patients` with staff list, `me` routes, and blocked unsafe mutations.
+- [x] Harden `referrals` with doctor scoping, transition validation, and self-scoped notification routes.
+- [x] Harden `process-payment` with RBAC, validation, `Deno.serve()`, and `deno.json`.
+
+### Phase 3 - Parity Sweep ✅
+
+- [x] Compare each function against its matching service module.
+- [x] Confirm no Edge Function has weaker validation, broader select fields, or looser state transitions than the service layer.
+- [x] Confirm all Edge selects match live DB columns.
+- [x] Confirm all list endpoints are paginated and bounded.
+
+### Phase 4 - Deploy and Validate
+
+- [ ] Run `npm run verify`.
+- [ ] Deploy all six functions from repo source.
+- [x] Run Supabase security advisor — zero new ERROR-level findings.
+- [x] Run Supabase performance advisor — only expected unused-index INFO.
+- [ ] Test live CORS: allowed origin passes, unknown origin gets `403`.
+- [x] Document remaining accepted warnings.
+
+---
+
+## 6. TEST PLAN
+
+### Automated / Command Tests
+
+- [ ] `npm run lint`
+- [ ] `npm run build`
+- [ ] `npm run audit:high`
+- [ ] `npm run verify`
+
+### Edge Contract Tests ✅ (design verified, live testing on deploy)
+
+For every function — the following behaviors are enforced by code:
+
+- [x] Missing JWT returns `{ ok:false, data:null, error, meta }` with `401`.
+- [x] Wrong role returns `403`.
+- [x] Invalid JSON/body returns `422`.
+- [x] Unknown route returns `404`.
+- [x] Retired route returns `410`.
+- [x] Success route returns `{ ok:true, data, error:null }`.
+
+### Role Isolation Tests ✅ (enforced in code)
+
+| Scenario | Expected | Enforced |
+|---|---|---|
+| Patient calls `GET /appointments` | `403` | ✅ `requireRole(req, STAFF_ROLES)` |
+| Patient calls `GET /appointments/mine` | Own rows only | ✅ scoped by `patient.user_id` |
+| Patient books with another `patient_id` | `403` | ✅ ownership check in POST |
+| Doctor calls `GET /appointments/today` | Own doctor queue only | ✅ scoped by `doctor_id` |
+| Doctor creates consultation for another doctor's appointment | `403` | ✅ ownership check in POST |
+| Secretary calls consultation mutation route | `403` | ✅ `requireRole(req, DOCTOR_WRITE_ROLES)` |
+| Patient calls referrals create/update | `403` | ✅ `requireRole(req, DOCTOR_ROLES)` |
+| User marks another user's notification as read | `404` | ✅ `.eq("user_id", domainUser.id)` |
+| Secretary process-payment placeholder | `501` envelope | ✅ returns 501 with standard envelope |
+
+### Data Integrity Tests ✅ (enforced in code)
+
+- [x] Appointment create cannot set `completed`, `cancelled`, `in_consultation`, or `no_show` — always `scheduled`.
+- [x] Appointment create cannot spoof `booked_by` — uses `domainUser.id`.
+- [x] Booking consumes exactly one active slot — via `book_slot` RPC.
+- [x] Consultation create requires appointment `in_consultation` — pre-insert status check.
+- [x] Referral status cannot skip invalid transitions — `assertTransition()` guards.
+- [x] Pagination returns stable `page`, `pageSize`, and `total` — via `paginated()` helper.
+
+---
+
+## 7. DO NOT DO IN TIER 2
+
+These are intentionally deferred so Tier 2 stays focused and reviewable:
+
+- Do not add a full mobile app.
+- Do not add new mobile-only functions unless required to harden an existing route.
+- Do not introduce Stripe or real payment processing.
+- Do not add admin UI.
+- Do not redesign RLS from scratch.
+- Do not add schema columns to match old UI assumptions.
+- Do not remove unused indexes just because the advisor reports INFO after a fresh migration.
+- Do not replace Supabase Auth.
+
+---
+
+## 8. IMPACT SUMMARY
 
 | Before Tier 2 | After Tier 2 |
 |---|---|
-| Any authenticated user sees ALL data via API | RBAC enforces role-based data isolation |
-| Patients can read all consultations/referrals | Patients can only see their own records |
-| No standard response format | Unified `ApiResponse<T>` envelope for Flutter |
-| No pagination in API | All list endpoints paginated |
-| `Access-Control-Allow-Origin: *` | Environment-specific CORS |
-| 6 edge functions, no certificates/precheck API | 9 edge functions covering full Flutter needs |
-| Manual typeof validation | Shared validation module with clear 422 errors |
-| No state machine in API layer | Transition validation before every status change |
-| Notifications buried in referrals function | Dedicated notifications endpoint |
+| Edge Functions authenticate JWT but do not consistently enforce route intent | Every route has explicit RBAC or self-scope |
+| Responses vary by function | One envelope for all functions |
+| Manual validation differs route by route | Shared validators with consistent `422` |
+| List endpoints are unbounded | Pagination everywhere |
+| Edge/service drift can reappear | Parity gate required before deploy |
+| CORS hardening exists but must be preserved through refactors | Request-aware CORS stays centralized |
+| Mobile API expansion would be risky | Existing API becomes safe foundation for mobile/API Tier 3+ |
 
 ---
 
-## FLUTTER CLIENT INTEGRATION NOTES
+## 9. ACCEPTED WARNINGS AFTER TIER 2
 
-After Tier 2, a Flutter app can consume:
+These can remain if documented:
 
-```
-Base URL: https://gezmfmskhmjgnquoyosq.supabase.co/functions/v1
-
-Auth:
-  GET  /auth/profile          → Get current user + role
-  GET  /auth/health            → Health check
-
-Patient Flow:
-  GET  /patients/me            → Own profile
-  PUT  /patients/me            → Update profile
-  GET  /appointments/mine      → Own appointments
-  POST /appointments           → Book appointment
-  PUT  /appointments/:id       → Cancel appointment
-  GET  /available-slots?doctor_id=&date=  → Available slots
-  GET  /consultations/mine     → Own consultation history
-  GET  /medical-reports/mine   → Own reports
-  GET  /certificates/mine      → Own certificates
-  GET  /notifications/mine     → Own notifications
-  PUT  /notifications/read-all → Mark all read
-
-Doctor Flow (mobile):
-  GET  /appointments/today     → Today's queue
-  GET  /patients/:id           → Patient detail
-  GET  /consultations/:id      → Consultation detail
-  POST /consultations          → Start consultation
-  PUT  /consultations/:id      → Update/complete consultation
-  POST /referrals              → Create referral
-  GET  /referrals/sent         → Sent referrals
-```
+| Warning | Decision |
+|---|---|
+| Authenticated SECURITY DEFINER RPCs | Accepted only for intentionally public authenticated RPCs such as booking/profile helpers, because the function body performs authorization. |
+| Leaked password protection disabled | Not accepted for production. Must be enabled manually in Supabase Auth settings before real deployment. |
+| Unused index INFO notices | Do not remove immediately after migrations; wait for production-like traffic or query analysis. |

@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import { reportService } from '../services/reports';
-import { getHomeRouteForRole } from '../lib/routes';
+import { logError } from '@/lib/logger';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { documentService } from '@/services/documents';
+import { getHomeRouteForRole } from '@/lib/routes';
 
 export default function PatientMedicalHistoryPage() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
     const { showToast } = useToast();
-    const [reports, setReports] = useState([]);
+    const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
 
@@ -21,22 +22,22 @@ export default function PatientMedicalHistoryPage() {
     async function fetchMedicalHistory() {
         try {
             setLoading(true);
-            const { data, error } = await reportService.getByPatientId(user?.patient_id);
+            const { data, error } = await documentService.getByPatientId(user?.patient_id);
             if (!error && data) {
-                setReports(data || []);
+                setDocuments(data || []);
             }
         } catch (err) {
-            console.error('Error fetching medical history:', err);
+            logError('Error fetching medical history:', err);
             showToast('Failed to load medical history', 'error');
         } finally {
             setLoading(false);
         }
     }
 
-    const prescriptions = reports.filter(r => r.report_type === 'Prescription');
-    const labResults = reports.filter(r => r.report_type === 'Lab Request' || r.report_type === 'Lab Result');
-    const certificates = reports.filter(r => r.report_type === 'Certificate');
-    const referrals = reports.filter(r => r.report_type === 'Referral');
+    const prescriptions = documents.filter(r => r.document_type === 'prescription');
+    const labResults = documents.filter(r => r.document_type === 'lab_request' || r.document_type === 'lab_result');
+    const certificates = documents.filter(r => r.document_type === 'certificate');
+    const referrals = documents.filter(r => r.document_type === 'referral');
 
     const getTabCount = () => {
         switch (activeTab) {
@@ -44,7 +45,7 @@ export default function PatientMedicalHistoryPage() {
             case 'labs': return labResults.length;
             case 'certificates': return certificates.length;
             case 'referrals': return referrals.length;
-            default: return reports.length;
+            default: return documents.length;
         }
     };
 
@@ -54,7 +55,7 @@ export default function PatientMedicalHistoryPage() {
             case 'labs': return labResults;
             case 'certificates': return certificates;
             case 'referrals': return referrals;
-            default: return reports;
+            default: return documents;
         }
     };
 
@@ -112,7 +113,7 @@ export default function PatientMedicalHistoryPage() {
                                         : 'border-transparent text-slate-600 hover:text-slate-900'
                                 }`}
                             >
-                                All Records ({reports.length})
+                                All Records ({documents.length})
                             </button>
                             <button
                                 onClick={() => setActiveTab('prescriptions')}
@@ -174,17 +175,17 @@ export default function PatientMedicalHistoryPage() {
                                             <div className="flex items-start justify-between gap-4 mb-3">
                                                 <div className="flex items-start gap-4 flex-1">
                                                     <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xl">
-                                                        {report.report_type === 'Prescription' && '💊'}
-                                                        {report.report_type?.includes('Lab') && '🧪'}
-                                                        {report.report_type === 'Certificate' && '📜'}
-                                                        {report.report_type === 'Referral' && '🏥'}
-                                                        {!['Prescription', 'Lab Request', 'Lab Result', 'Certificate', 'Referral'].includes(report.report_type) && '📋'}
+                                                        {report.document_type === 'prescription' && '💊'}
+                                                        {report.document_type?.includes('lab') && '🧪'}
+                                                        {report.document_type === 'certificate' && '📜'}
+                                                        {report.document_type === 'referral' && '🏥'}
+                                                        {!['prescription', 'lab_request', 'lab_result', 'certificate', 'referral'].includes(report.document_type) && '📋'}
                                                     </div>
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-3 mb-1">
                                                             <h3 className="font-bold text-slate-900 text-lg">{report.title}</h3>
                                                             <span className="px-2.5 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase rounded-full">
-                                                                {report.report_type}
+                                                                {documentService.labels[report.document_type] || report.document_type}
                                                             </span>
                                                         </div>
                                                         <p className="text-sm text-slate-600 mb-2">{report.content}</p>
@@ -230,7 +231,7 @@ export default function PatientMedicalHistoryPage() {
                         </motion.div>
 
                         {/* Summary Stats */}
-                        {reports.length > 0 && (
+                        {documents.length > 0 && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}

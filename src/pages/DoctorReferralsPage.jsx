@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import DoctorSidebar from '../components/DoctorSidebar';
-import { referralService } from '../services/referrals';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import { patientService } from '../services/patients';
-import { doctorService } from '../services/doctors';
-import { getUserDisplayName, getUserInitials } from '../lib/userDisplay';
-import { useSignaturePad } from '../hooks/useSignaturePad';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { documentService } from '@/services/documents';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { doctorService } from '@/services/doctors';
+import { usePatients } from '@/hooks/features/usePatients';
+import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
+import { getUserDisplayName, getUserInitials } from '@/lib/userDisplay';
+import { useSignaturePad } from '@/hooks/useSignaturePad';
 
 export default function DoctorReferralsPage() {
     const navigate = useNavigate();
@@ -19,35 +21,37 @@ export default function DoctorReferralsPage() {
     const [treatmentPlan, setTreatmentPlan] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [patients, setPatients] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const { user } = useAuth();
     const { showToast } = useToast();
-    const [doctorId, setDoctorId] = useState(null);
     const [doctorRecord, setDoctorRecord] = useState(null);
     const { canvasRef, startDraw, draw, stopDraw, clearSignature } = useSignaturePad();
 
+    const { patients } = usePatients();
+    const { doctorId } = useDoctorProfile();
+
     useEffect(() => {
-        const fetchData = async () => {
-            const [pRes, dRes, doctorsRes] = await Promise.all([
-                patientService.getAll(),
-                doctorService.getByUserId(user?.id),
-                doctorService.getAll(),
-            ]);
-            if (pRes.data) {
-                setPatients(pRes.data);
-                if (pRes.data.length > 0) setSelectedPatient(pRes.data[0]);
+        if (patients && patients.length > 0 && !selectedPatient) {
+            setSelectedPatient(patients[0]);
+        }
+    }, [patients, selectedPatient]);
+
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            if (doctorId) {
+                const { data } = await doctorService.getByUserId(user?.id);
+                setDoctorRecord(data);
             }
-            if (dRes.data) { setDoctorId(dRes.data.id); setDoctorRecord(dRes.data); }
-            if (doctorsRes.data) {
-                setDoctors(doctorsRes.data);
-                const firstRecipient = doctorsRes.data.find(d => d.id !== dRes.data?.id) || doctorsRes.data[0];
+            const { data: doctorsRes } = await doctorService.getAll();
+            if (doctorsRes) {
+                setDoctors(doctorsRes);
+                const firstRecipient = doctorsRes.find(d => d.id !== doctorId) || doctorsRes[0];
                 if (firstRecipient) setReferToDoctorId(firstRecipient.id);
             }
         };
-        if (user?.id) fetchData();
-    }, [user?.id]);
+        fetchDoctors();
+    }, [doctorId, user?.id]);
 
     const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const refNumber = `REF-${Date.now().toString().slice(-6)}`;
@@ -68,19 +72,29 @@ export default function DoctorReferralsPage() {
 
         setIsSaving(true);
         try {
-            const fullReason = [
-                `Priority: ${patientStatus}`,
-                `Reason: ${reason}`,
-                clinicalFindings ? `Clinical findings: ${clinicalFindings}` : null,
-                treatmentPlan ? `Treatment plan: ${treatmentPlan}` : null,
-                `Reference: ${refNumber}`,
-            ].filter(Boolean).join('\n\n');
+            const recipient = doctors.find((doctor) => doctor.id === referToDoctorId);
+            const recipientName = recipient
+                ? `Dr. ${recipient.users?.first_name || ''} ${recipient.users?.last_name || ''}`.trim()
+                : 'Selected specialist';
 
-            const { error } = await referralService.create({
-                from_doctor_id: doctorId,
+            const { error } = await documentService.createReferral({
                 patient_id: selectedPatient.id,
-                to_doctor_id: referToDoctorId,
-                reason: fullReason,
+                doctor_id: doctorId,
+                title: `Referral Letter - ${selectedPatient.users?.first_name || ''} ${selectedPatient.users?.last_name || ''}`.trim(),
+                referring_to: recipientName,
+                reason,
+                patient_status: patientStatus,
+                clinical_findings: clinicalFindings,
+                treatment_plan: treatmentPlan,
+                content: [
+                    `Reference: ${refNumber}`,
+                    `Referred to: ${recipientName}`,
+                    `Priority: ${patientStatus}`,
+                    `Reason: ${reason}`,
+                    clinicalFindings ? `Clinical findings: ${clinicalFindings}` : null,
+                    treatmentPlan ? `Treatment plan: ${treatmentPlan}` : null,
+                ].filter(Boolean).join('\n\n'),
+                created_by: user.id,
             });
 
             if (error) throw error;
@@ -91,7 +105,7 @@ export default function DoctorReferralsPage() {
                 navigate('/doctor-dashboard');
             }, 3000);
         } catch (error) {
-            console.error('Failed to send referral:', error);
+            logError('Failed to send referral:', error);
             showToast('Failed to send referral letter', 'error');
         } finally {
             setIsSaving(false);
@@ -99,10 +113,7 @@ export default function DoctorReferralsPage() {
     };
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] text-[#0f172a] overflow-hidden font-['Inter']">
-            <DoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-hidden">
+        <DashboardLayout role="doctor">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -330,7 +341,6 @@ export default function DoctorReferralsPage() {
                         </div>
                     </div>
                 </div>
-            </main>
 
             {showSuccess && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -345,6 +355,6 @@ export default function DoctorReferralsPage() {
                     </div>
                 </div>
             )}
-        </div>
+        </DashboardLayout>
     );
 }

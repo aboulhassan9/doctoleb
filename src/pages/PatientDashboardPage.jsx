@@ -1,11 +1,12 @@
+import { logError } from '@/lib/logger';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import { appointmentService } from '../services/appointments';
-import { notificationService } from '../services/notifications';
-import { patientService } from '../services/patients';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { appointmentService } from '@/services/appointments';
+import { notificationCoreService } from '@/services/notificationCore';
+import { patientService } from '@/services/patients';
 
 export default function PatientDashboardPage() {
     const navigate = useNavigate();
@@ -31,10 +32,10 @@ export default function PatientDashboardPage() {
                 }
 
                 // Fetch notifications
-                const { data: notifs } = await notificationService.getUnread(user?.id);
+                const { data: notifs } = await notificationCoreService.getUnread(user?.id);
                 if (notifs) setNotifications(notifs.slice(0, 5));
             } catch (error) {
-                console.error('Error fetching data:', error);
+                logError('Error fetching data:', error);
             } finally {
                 setLoading(false);
             }

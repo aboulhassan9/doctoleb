@@ -1,13 +1,20 @@
-import { supabase } from '../lib/supabase';
-import { apiCall } from './api';
-import { SECRETARY_SLOT_SELECT_FIELDS } from '../lib/selects';
-import { paginateQuery } from '../lib/pagination';
+import { supabase } from '@/lib/supabase';
+import { apiCall, apiPaged } from './api';
+import { SECRETARY_SLOT_SELECT_FIELDS } from '@/lib/selects';
+import { manualSlotSchema, parseWithSchema, recurringSlotsSchema } from '@/schemas';
+
+function validationError(error) {
+  return { data: null, error };
+}
 
 export const slotService = {
   /** Create a single manual slot */
   async createManualSlot(data) {
+    const { data: slot, error: validationErrorMessage } = parseWithSchema(manualSlotSchema, data);
+    if (validationErrorMessage) return validationError(validationErrorMessage);
+
     return apiCall(
-      supabase.from('secretary_slots').insert([data]).select(SECRETARY_SLOT_SELECT_FIELDS).single()
+      supabase.from('secretary_slots').insert([slot]).select(SECRETARY_SLOT_SELECT_FIELDS).single()
     );
   },
 
@@ -23,6 +30,17 @@ export const slotService = {
    * @param {string} params.created_by  secretary user id
    */
   async createRecurringSlots({ doctor_id, clinic_id, start_time, end_time, weekdays, occurrences, created_by }) {
+    const { data: payload, error: validationErrorMessage } = parseWithSchema(recurringSlotsSchema, {
+      doctor_id,
+      clinic_id,
+      start_time,
+      end_time,
+      weekdays,
+      occurrences,
+      created_by,
+    });
+    if (validationErrorMessage) return validationError(validationErrorMessage);
+
     const recurrence_group_id = crypto.randomUUID();
     const slots = [];
     let count = 0;
@@ -30,15 +48,15 @@ export const slotService = {
     cursor.setHours(0, 0, 0, 0);
 
     while (count < occurrences) {
-      if (weekdays.includes(cursor.getDay())) {
+      if (payload.weekdays.includes(cursor.getDay())) {
         slots.push({
-          doctor_id,
-          clinic_id,
+          doctor_id: payload.doctor_id,
+          clinic_id: payload.clinic_id,
           date: cursor.toISOString().split('T')[0],
-          start_time,
-          end_time,
+          start_time: payload.start_time,
+          end_time: payload.end_time,
           is_active: true,
-          created_by,
+          created_by: payload.created_by,
           recurrence_group_id,
         });
         count++;
@@ -54,16 +72,13 @@ export const slotService = {
 
   /** Get all slots (secretary view) */
   async getAll(options = {}) {
-    return apiCall(
-      paginateQuery(
-        supabase
-          .from('secretary_slots')
-          .select(`${SECRETARY_SLOT_SELECT_FIELDS}, clinics(id, name, address), doctors(id, user_id, users!doctors_user_id_fkey(first_name, last_name))`, { count: 'exact' })
-          .order('date', { ascending: true })
-          .order('start_time', { ascending: true }),
-        options
-      )
-    );
+    const query = supabase
+      .from('secretary_slots')
+      .select(`${SECRETARY_SLOT_SELECT_FIELDS}, clinics(id, name, address), doctors(id, user_id, users!doctors_user_id_fkey(first_name, last_name))`, { count: 'exact' })
+      .order('date', { ascending: true })
+      .order('start_time', { ascending: true });
+
+    return apiPaged(query, options);
   },
 
   /** Get slots for a specific doctor + date (used by patients and doctor view) */
@@ -78,42 +93,39 @@ export const slotService = {
 
   /** Get all slots for a doctor (doctor schedule view) */
   async getByDoctor(doctorId, options = {}) {
-    return apiCall(
-      paginateQuery(
-        supabase
-          .from('secretary_slots')
-          .select(`${SECRETARY_SLOT_SELECT_FIELDS}, clinics(id, name, address)`, { count: 'exact' })
-          .eq('doctor_id', doctorId)
-          .order('date', { ascending: true })
-          .order('start_time', { ascending: true }),
-        options
-      )
-    );
+    const query = supabase
+      .from('secretary_slots')
+      .select(`${SECRETARY_SLOT_SELECT_FIELDS}, clinics(id, name, address)`, { count: 'exact' })
+      .eq('doctor_id', doctorId)
+      .order('date', { ascending: true })
+      .order('start_time', { ascending: true });
+
+    return apiPaged(query, options);
   },
 
   /** Get slots by date (predoctor schedule view) */
   async getByDate(date, options = {}) {
-    return apiCall(
-      paginateQuery(
-        supabase
-          .from('secretary_slots')
-          .select(`
+    const query = supabase
+      .from('secretary_slots')
+      .select(`
             ${SECRETARY_SLOT_SELECT_FIELDS},
             clinics(id, name, address),
             doctors(id, user_id, users!doctors_user_id_fkey(first_name, last_name)),
             appointments(id, status, patient_id, patients(id, user_id, users!patients_user_id_fkey(first_name, last_name)))
           `, { count: 'exact' })
-          .eq('date', date)
-          .order('start_time', { ascending: true }),
-        options
-      )
-    );
+      .eq('date', date)
+      .order('start_time', { ascending: true });
+
+    return apiPaged(query, options);
   },
 
   /** Edit a single slot */
   async editSlot(slotId, data) {
+    const { data: updates, error: validationErrorMessage } = parseWithSchema(manualSlotSchema.partial(), data);
+    if (validationErrorMessage) return validationError(validationErrorMessage);
+
     return apiCall(
-      supabase.from('secretary_slots').update(data).eq('id', slotId).select(SECRETARY_SLOT_SELECT_FIELDS).single()
+      supabase.from('secretary_slots').update(updates).eq('id', slotId).select(SECRETARY_SLOT_SELECT_FIELDS).single()
     );
   },
 
@@ -127,9 +139,9 @@ export const slotService = {
         .limit(1)
     );
 
-    if (error) return { data: null, count: null, error };
+    if (error) return { data: null, error };
     if (appointments?.length) {
-      return { data: null, count: null, error: 'Cannot delete a slot that already has an appointment.' };
+      return { data: null, error: 'Cannot delete a slot that already has an appointment.' };
     }
 
     return apiCall(
@@ -146,7 +158,7 @@ export const slotService = {
         .eq('recurrence_group_id', groupId)
     );
 
-    if (slotError) return { data: null, count: null, error: slotError };
+    if (slotError) return { data: null, error: slotError };
 
     const slotIds = (slots || []).map(slot => slot.id);
     if (slotIds.length) {
@@ -158,9 +170,9 @@ export const slotService = {
           .limit(1)
       );
 
-      if (appointmentError) return { data: null, count: null, error: appointmentError };
+      if (appointmentError) return { data: null, error: appointmentError };
       if (appointments?.length) {
-        return { data: null, count: null, error: 'Cannot delete a recurrence group that contains booked slots.' };
+        return { data: null, error: 'Cannot delete a recurrence group that contains booked slots.' };
       }
     }
 
@@ -171,7 +183,7 @@ export const slotService = {
 };
 
 /** Book a slot via the server-side RPC (race-condition safe, fully atomic) */
-export async function bookSlot({ slotId, patientId, bookedBy, status = 'pending', reason = null, durationMinutes = null }) {
+export async function bookSlot({ slotId, patientId, bookedBy, status = 'scheduled', reason = null, durationMinutes = null, visitTypeId = null }) {
   const { data, error } = await supabase.rpc('book_slot', {
     p_slot: slotId,
     p_patient: patientId,
@@ -179,6 +191,7 @@ export async function bookSlot({ slotId, patientId, bookedBy, status = 'pending'
     p_status: status,
     p_reason: reason,
     p_duration_minutes: durationMinutes,
+    p_visit_type: visitTypeId,
   });
   return { data, error };
 }

@@ -7,6 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "audit:backend-contract": "node scripts/backend-contract-audit.mjs",
+    "test:backend-db-contract": "node scripts/backend-db-contract-tests.mjs",
+    "audit:high": "npm audit --audit-level=high",
+    "verify": "npm run lint && npm run build && npm run audit:backend-contract && npm run test:backend-db-contract && npm run audit:high",
+    "test": "npm run verify",
     "preview": "vite preview"
   },
   "dependencies": {

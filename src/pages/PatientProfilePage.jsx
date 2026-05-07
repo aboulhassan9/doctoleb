@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
-import { patientService } from '../services/patients';
-import { precheckService } from '../services/prechecks';
-import { consultationService } from '../services/consultations';
-import PreDoctorSidebar from '../components/PreDoctorSidebar';
-import { SidebarProvider } from '../contexts/SidebarContext';
-import { stagger, fadeUp } from '../lib/animations';
+import { patientService } from '@/services/patients';
+import { precheckService } from '@/services/prechecks';
+import { clinicalService } from '@/services/clinical';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { SidebarProvider } from '@/contexts/SidebarContext';
+import { stagger, fadeUp } from '@/lib/animations';
 
 export default function PatientProfilePage() {
     const navigate = useNavigate();
@@ -73,24 +74,17 @@ export default function PatientProfilePage() {
                     setVitals(v);
                 }
 
-                // Fetch medications from consultations
-                const { data: consults } = await consultationService.getByPatientId(data.id);
-                if (consults?.length) {
-                    const meds = [];
-                    for (const c of consults) {
-                        if (!c.medications || !Array.isArray(c.medications)) continue;
-                        for (const m of c.medications) {
-                            meds.push({
-                                name: m.name || m.medication || 'Unknown',
-                                dose: [m.dosage || m.dose, m.frequency].filter(Boolean).join(' • ') || 'N/A',
-                                prescribed: c.created_at ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—',
-                            });
-                        }
-                    }
-                    setMedications(meds);
+                // Fetch medications from canonical prescriptions.
+                const { data: prescriptions } = await clinicalService.getPrescriptions(data.id, { status: 'active', pageSize: 50 });
+                if (prescriptions?.length) {
+                    setMedications(prescriptions.map((prescription) => ({
+                        name: prescription.medication_name || 'Unknown',
+                        dose: [prescription.dosage, prescription.frequency, prescription.duration].filter(Boolean).join(' • ') || 'N/A',
+                        prescribed: prescription.created_at ? new Date(prescription.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—',
+                    })));
                 }
             } catch (err) {
-                console.error('PatientProfilePage fetch error:', err);
+                logError('PatientProfilePage fetch error:', err);
                 setPatientData(null);
                 setLoadError('This patient record could not be loaded.');
             } finally {
@@ -102,7 +96,7 @@ export default function PatientProfilePage() {
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#f5f7f8]">
+            <div className="flex h-screen items-center justify-center bg-[var(--bg-base)]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
         );
@@ -110,7 +104,7 @@ export default function PatientProfilePage() {
 
     if (!patientData) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#f5f7f8] px-6">
+            <div className="flex h-screen items-center justify-center bg-[var(--bg-base)] px-6">
                 <div className="max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-500">
                         <span className="material-symbols-outlined text-3xl">person_off</span>
@@ -130,10 +124,8 @@ export default function PatientProfilePage() {
 
     return (
     <SidebarProvider>
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <PreDoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-y-auto">
+        <DashboardLayout role="pre_doctor">
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -444,8 +436,8 @@ export default function PatientProfilePage() {
                         )}
                     </AnimatePresence>
                 </div>
-            </main>
-        </div>
+            </div>
+        </DashboardLayout>
     </SidebarProvider>
     );
 }

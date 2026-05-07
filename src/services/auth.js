@@ -1,17 +1,41 @@
-import { supabase } from '../lib/supabase';
-import { getProfileForSessionUser, buildSessionUser, createFallbackPatientProfile } from '../lib/authIdentity';
-import { authSignInSchema, authSignUpSchema, forgotPasswordSchema, parseWithSchema, resetPasswordSchema } from '../schemas';
+import { supabase } from '@/lib/supabase';
+import { getProfileForSessionUser, buildSessionUser } from '@/lib/authIdentity';
+import { authSignInSchema, authSignUpSchema, forgotPasswordSchema, parseWithSchema, resetPasswordSchema } from '@/schemas';
+
+async function waitForProvisionedProfile(authUser, requireActive = false) {
+  const maxAttempts = 5;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const result = await getProfileForSessionUser(supabase, authUser, { requireActive });
+    if (result.data || !result.error?.includes?.('not linked')) {
+      return result;
+    }
+
+    await new Promise(resolve => window.setTimeout(resolve, 250 * (attempt + 1)));
+  }
+
+  return { data: null, error: 'Account created, but profile provisioning is still pending. Please try again in a moment.' };
+}
 
 export const authService = {
+  setUserSession() {
+    // Compatibility no-op. Supabase Auth is the only session source of truth.
+  },
+
   async signIn(email, password) {
-    const { data: credentials, error: validationError } = parseWithSchema(authSignInSchema, { email, password });
+    const { error: validationError } = parseWithSchema(authSignInSchema, { email, password });
     if (validationError) return { data: null, error: validationError };
 
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError) return { data: null, error: 'Invalid email or password' };
 
     const { data: { session } } = await supabase.auth.getSession();
-    const { data: profile, error: profileError } = await getProfileForSessionUser(supabase, session?.user || credentials, { requireActive: true });
+    if (!session?.user?.id) {
+      await supabase.auth.signOut();
+      return { data: null, error: 'Authenticated session could not be established.' };
+    }
+
+    const { data: profile, error: profileError } = await getProfileForSessionUser(supabase, session.user, { requireActive: true });
     if (profileError || !profile) {
       await supabase.auth.signOut();
       return { data: null, error: 'User profile not found or account is inactive' };
@@ -51,7 +75,7 @@ export const authService = {
       };
     }
 
-    const { data: existingProfile, error: existingProfileError } = await getProfileForSessionUser(supabase, authUser, { requireActive: false });
+    const { data: existingProfile, error: existingProfileError } = await waitForProvisionedProfile(authUser, false);
     if (existingProfileError) {
       return { data: null, error: existingProfileError };
     }
@@ -60,12 +84,7 @@ export const authService = {
       return buildSessionUser(supabase, existingProfile);
     }
 
-    return createFallbackPatientProfile(supabase, {
-      authUserId: authUser.id,
-      email: payload.email,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-    });
+    return { data: null, error: 'Account created, but profile provisioning did not complete.' };
   },
 
   async getCurrentUser() {
@@ -104,24 +123,5 @@ export const authService = {
     }
 
     return this.getCurrentUser();
-  },
-
-  // localStorage is no longer used for session tracking as we rely on Supabase Auth and AuthContext
-  setUserSession(email, role, _patientId = null) {
-    // No-op - session handled by Supabase
-  },
-
-  getUserSession() {
-    // Return empty placeholders if called before AuthContext takes over
-    return {
-      email: null,
-      role: null,
-      patientId: null,
-    };
-  },
-
-  isAuthenticated() {
-    // Rely on Supabase session or AuthContext instead
-    return false;
   },
 };

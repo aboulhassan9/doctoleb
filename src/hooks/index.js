@@ -1,0 +1,26 @@
+// Barrel export for all custom hooks
+// Generic hooks
+export { useSearch } from './useSearch';
+export { usePagination } from './usePagination';
+export { useConfirmDialog } from './useConfirmDialog';
+export { useDocumentTitle } from './useDocumentTitle';
+export { useUrlFilters } from './useUrlFilters';
+
+// Feature hooks
+export { usePatients } from './features/usePatients';
+export { useAppointments } from './features/useAppointments';
+export { useNotifications } from './features/useNotifications';
+export { useReferrals } from './features/useReferrals';
+export { useDoctorProfile } from './features/useDoctorProfile';
+export { useBilling } from './features/useBilling';
+export { useCertificates } from './features/useCertificates';
+
+// Encounter hooks (Block B)
+export { useEncounter } from './features/useEncounter';
+export { useDoctorEncounterTimeline } from './features/useDoctorEncounterTimeline';
+export { useEncounterNotes } from './features/useEncounterNotes';
+export { useEncounterDiagnoses } from './features/useEncounterDiagnoses';
+export { useEncounterPrescriptions } from './features/useEncounterPrescriptions';
+export { useEncounterOrders } from './features/useEncounterOrders';
+export { useEncounterCareTasks } from './features/useEncounterCareTasks';
+export { useEncounterDocuments } from './features/useEncounterDocuments';

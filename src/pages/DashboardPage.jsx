@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import MobileTopBar from '../components/MobileTopBar';
-import CountUp from '../components/CountUp';
-import BorderGlow from '../components/BorderGlow';
-import { useToast } from '../contexts/ToastContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../services/auth';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import CountUp from '@/components/CountUp';
+import BorderGlow from '@/components/BorderGlow';
+import { useToast } from '@/contexts/ToastContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { authService } from '@/services/auth';
 import PatientDashboardPage from './PatientDashboardPage';
 
 const ACTION_CARDS = [
@@ -54,20 +53,22 @@ const ACTION_CARDS = [
     },
 ];
 
-import { appointmentService } from '../services/appointments';
-import { patientService } from '../services/patients';
-import { notificationService } from '../services/notifications';
-import { stagger, fadeUp } from '../lib/animations';
-import { getUserDisplayName } from '../lib/userDisplay';
-import { timeAgo } from '../lib/dateUtils';
+import { appointmentService } from '@/services/appointments';
+import { patientService } from '@/services/patients';
+import { useAppointments } from '@/hooks/features/useAppointments';
+import { usePatients } from '@/hooks/features/usePatients';
+import { useNotifications } from '@/hooks/features/useNotifications';
+import { stagger, fadeUp } from '@/lib/animations';
+import { getUserDisplayName } from '@/lib/userDisplay';
+import { timeAgo } from '@/lib/dateUtils';
 
 
 const NOTIF_ICONS = {
     appointment: { icon: 'calendar_month', cls: 'bg-primary/10 text-primary' },
     patient:     { icon: 'person_add',     cls: 'bg-success/10 text-success' },
-    consultation:{ icon: 'stethoscope',    cls: 'bg-tertiary/10 text-tertiary' },
+    encounter:   { icon: 'stethoscope',    cls: 'bg-tertiary/10 text-tertiary' },
     precheck:    { icon: 'fact_check',     cls: 'bg-warning/10 text-warning' },
-    referral:    { icon: 'swap_horiz',     cls: 'bg-secondary/10 text-secondary' },
+    document:    { icon: 'description',    cls: 'bg-secondary/10 text-secondary' },
     default:     { icon: 'notifications',  cls: 'bg-slate-100 text-slate-500' },
 };
 
@@ -79,31 +80,26 @@ export default function DashboardPage() {
     const { logout, user } = useAuth();
     const role = user?.role;
 
-    const [stats, setStats] = useState([]);
-    const [statsLoading, setStatsLoading] = useState(true);
-    const [activities, setActivities] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            const [apptsRes, patientsRes] = await Promise.all([
-                appointmentService.getAll(),
-                patientService.getAll(),
-            ]);
-            const pendingAppts = apptsRes.data?.filter(a => a.status === 'scheduled').length ?? 0;
-            const todayStr = new Date().toLocaleDateString('en-US');
-            const newToday = patientsRes.data?.filter(p =>
-                new Date(p.created_at).toLocaleDateString('en-US') === todayStr
-            ).length ?? 0;
-            setStats([
-                { label: 'Pending Appointments', value: pendingAppts, icon: 'calendar_month', trend: 'Scheduled', trendIcon: 'trending_up', trendCls: 'text-success' },
-                { label: 'New Registrations', value: newToday, icon: 'person_add', trend: 'Registered today', trendIcon: 'group_add', trendCls: 'text-primary' },
-                { label: 'Total Patients', value: patientsRes.data?.length ?? 0, icon: 'groups', trend: 'All time', trendIcon: 'history', trendCls: 'text-warning' },
-            ]);
-            setStatsLoading(false);
-        };
-        fetchStats();
-    }, []);
+    const { appointments, loading: loadingAppointments } = useAppointments({ mode: 'all' });
+    const { patients, loading: loadingPatients } = usePatients();
+    const { notifications, unreadCount, markRead, markAllRead, loading: loadingNotifs } = useNotifications({ userId: user?.id });
+
+    const stats = React.useMemo(() => {
+        const pendingAppts = appointments.filter(a => a.status === 'scheduled').length;
+        const todayStr = new Date().toLocaleDateString('en-US');
+        const newToday = patients.filter(p => new Date(p.created_at).toLocaleDateString('en-US') === todayStr).length;
+
+        return [
+            { label: 'Pending Appointments', value: pendingAppts, icon: 'calendar_month', trend: 'Scheduled', trendIcon: 'trending_up', trendCls: 'text-success' },
+            { label: 'New Registrations', value: newToday, icon: 'person_add', trend: 'Registered today', trendIcon: 'group_add', trendCls: 'text-primary' },
+            { label: 'Total Patients', value: patients.length, icon: 'groups', trend: 'All time', trendIcon: 'history', trendCls: 'text-warning' },
+        ];
+    }, [appointments, patients]);
+
+    const statsLoading = loadingAppointments || loadingPatients;
+
     const [showNotifications, setShowNotifications] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const { showToast } = useToast();
@@ -114,42 +110,23 @@ export default function DashboardPage() {
     const [showThemeModal, setShowThemeModal] = useState(false);
     const [showSecurityModal, setShowSecurityModal] = useState(false);
 
-    const [notifications, setNotifications] = useState([]);
-
-    useEffect(() => {
-        if (!user?.id) return;
-        notificationService.getUnread(user.id).then(({ data }) => {
-            if (data) {
-                setNotifications(data);
-                // Map notifications to activity feed format
-                const activityFeed = data.slice(0, 5).map(n => ({
-                    title: n.title,
-                    sub: n.message,
-                    time: new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    icon: n.type === 'appointment' ? 'calendar_month' : 'notifications',
-                    iconCls: 'bg-primary/10 text-primary'
-                }));
-                setActivities(activityFeed);
-            }
-        });
-        const sub = notificationService.subscribeToUserNotifications(user.id, () => {
-            notificationService.getUnread(user.id).then(({ data }) => {
-                if (data) setNotifications(data);
-            });
-        });
-        return () => sub?.unsubscribe();
-    }, [user?.id]);
+    const activities = React.useMemo(() => {
+        return notifications.filter(n => !n.is_read).slice(0, 5).map(n => ({
+            title: n.title,
+            sub: n.message,
+            time: new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            icon: n.type === 'appointment' ? 'calendar_month' : 'notifications',
+            iconCls: 'bg-primary/10 text-primary'
+        }));
+    }, [notifications]);
 
     const handleMarkRead = async () => {
-        if (user?.id) await notificationService.markAllAsRead(user.id);
-        setNotifications([]);
+        await markAllRead();
         setShowNotifications(false);
-        showToast('All notifications marked as read', 'success');
     };
 
     const handleNotifClick = async (notif) => {
-        await notificationService.markAsRead(notif.id);
-        setNotifications(prev => prev.filter(n => n.id !== notif.id));
+        await markRead(notif.id);
         setShowNotifications(false);
     };
 
@@ -170,12 +147,8 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <Sidebar />
-
-            <main className="flex-1 flex flex-col overflow-y-auto">
-                <MobileTopBar title="Secretary Dashboard" />
-
+        <DashboardLayout role="secretary" title="Secretary Dashboard">
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 {/* Header */}
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
@@ -191,7 +164,7 @@ export default function DashboardPage() {
                             {/* Search Dropdown Mock */}
                             <AnimatePresence>
                                 {searchQuery && (
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ opacity: 0, y: 5 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: 5 }}
@@ -233,7 +206,7 @@ export default function DashboardPage() {
 
                         <AnimatePresence>
                             {showNotifications && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -276,7 +249,7 @@ export default function DashboardPage() {
                             )}
                         </AnimatePresence>
 
-                        <button 
+                        <button
                             onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); }}
                             className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary transition-all relative"
                         >
@@ -285,25 +258,25 @@ export default function DashboardPage() {
 
                         <AnimatePresence>
                             {showSettings && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                     className="absolute top-[120%] right-0 w-56 bg-white shadow-2xl rounded-2xl border border-slate-100 z-50 overflow-hidden py-1.5"
                                 >
-                                    <button 
+                                    <button
                                         onClick={() => { setShowProfileModal(true); setShowSettings(false); }}
                                         className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-medium text-slate-700 flex items-center gap-3 transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-[18px]">manage_accounts</span> Profile Options
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => { setShowThemeModal(true); setShowSettings(false); }}
                                         className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-medium text-slate-700 flex items-center gap-3 transition-colors"
                                     >
                                         <span className="material-symbols-outlined text-[18px]">display_settings</span> UI Preferences
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => { setShowSecurityModal(true); setShowSettings(false); }}
                                         className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-medium text-slate-700 flex items-center gap-3 transition-colors"
                                     >
@@ -443,8 +416,8 @@ export default function DashboardPage() {
                     <div>
                         <div className="flex items-center justify-between mb-5">
                             <h3 className="text-xl font-black text-slate-900">Recent Activity</h3>
-                            <motion.button 
-                                whileHover={{ x: 3 }} 
+                            <motion.button
+                                whileHover={{ x: 3 }}
                                 onClick={() => navigate('/patients')}
                                 className="text-primary text-sm font-bold flex items-center gap-1 hover:underline"
                             >
@@ -482,7 +455,7 @@ export default function DashboardPage() {
                     </div>
 
                 </div>
-            </main>
+            </div>
 
             {/* ── Profile Modals ── */}
             <AnimatePresence>
@@ -540,14 +513,14 @@ export default function DashboardPage() {
                                 <div>
                                     <label className="text-xs font-semibold uppercase text-slate-400 mb-3 block">Theme Mode</label>
                                     <div className="flex gap-2">
-                                        <button 
-                                            onClick={() => setIsDarkMode(false)} 
+                                        <button
+                                            onClick={() => setIsDarkMode(false)}
                                             className={`flex-1 py-3 text-sm font-semibold rounded-xl border flex items-center justify-center gap-2 ${!isDarkMode ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200 text-slate-500'}`}
                                         >
                                             <span className="material-symbols-outlined text-[18px]">light_mode</span> Light
                                         </button>
-                                        <button 
-                                            onClick={() => setIsDarkMode(true)} 
+                                        <button
+                                            onClick={() => setIsDarkMode(true)}
                                             className={`flex-1 py-3 text-sm font-semibold rounded-xl border flex items-center justify-center gap-2 ${isDarkMode ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200 text-slate-500'}`}
                                         >
                                             <span className="material-symbols-outlined text-[18px]">dark_mode</span> Dark
@@ -558,7 +531,7 @@ export default function DashboardPage() {
                                     <label className="text-xs font-semibold uppercase text-slate-400 mb-3 block">Custom Background Color</label>
                                     <div className="flex flex-wrap gap-2">
                                         {['', '#f5f7f8', '#eef2ff', '#f0fdf4', '#fffbeb', '#fef2f2'].map(c => (
-                                            <button 
+                                            <button
                                                 key={c}
                                                 onClick={() => setCustomBg(c)}
                                                 className={`w-10 h-10 rounded-full border-2 shadow-sm ${customBg === c ? 'border-primary scale-110' : 'border-slate-200 hover:scale-105'}`}
@@ -613,6 +586,6 @@ export default function DashboardPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </DashboardLayout>
     );
 }

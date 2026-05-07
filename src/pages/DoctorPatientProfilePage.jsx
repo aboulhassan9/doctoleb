@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
-import DoctorSidebar from '../components/DoctorSidebar';
-import { patientService } from '../services/patients';
-import { precheckService } from '../services/prechecks';
-import { consultationService } from '../services/consultations';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { patientService } from '@/services/patients';
+import { precheckService } from '@/services/prechecks';
+import { clinicalService } from '@/services/clinical';
 
 function calcAge(dob) {
     if (!dob) return '—';
@@ -48,17 +49,16 @@ export default function DoctorPatientProfilePage() {
     const [patientError, setPatientError] = useState(null);
     const [vitals, setVitals] = useState([]);
     const [medications, setMedications] = useState([]);
-    const [consultations, setConsultations] = useState([]);
 
     useEffect(() => {
         if (!id) return;
         const fetchData = async () => {
             setPatientLoading(true);
             try {
-                const [pRes, vRes, cRes] = await Promise.all([
+                const [pRes, vRes, prescriptionsRes] = await Promise.all([
                     patientService.getById(id),
                     precheckService.getByPatientId(id),
-                    consultationService.getByPatientId(id)
+                    clinicalService.getPrescriptions(id, { status: 'active', pageSize: 25 })
                 ]);
 
                 if (pRes.error || !pRes.data) {
@@ -82,16 +82,15 @@ export default function DoctorPatientProfilePage() {
                     ]);
                 }
 
-                if (cRes.data) {
-                    setConsultations(cRes.data);
-                    // Extract latest medications
-                    const latestCons = cRes.data[0];
-                    if (latestCons && latestCons.medications) {
-                        setMedications(latestCons.medications);
-                    }
+                if (prescriptionsRes.data) {
+                    setMedications(prescriptionsRes.data.map((prescription) => ({
+                        name: prescription.medication_name,
+                        dosage: [prescription.dosage, prescription.frequency].filter(Boolean).join(' • ') || '—',
+                        duration: prescription.duration || prescription.status || 'Active',
+                    })));
                 }
             } catch (err) {
-                console.error(err);
+                logError('error', err);
                 setPatientError('Failed to load data');
             } finally {
                 setPatientLoading(false);
@@ -101,21 +100,19 @@ export default function DoctorPatientProfilePage() {
     }, [id]);
 
     if (patientLoading) return (
-        <div className="flex h-screen items-center justify-center bg-[#f5f7f8]">
+        <div className="flex h-screen items-center justify-center bg-[var(--bg-base)]">
             <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
         </div>
     );
 
     if (patientError || !patient) return (
-        <div className="flex h-screen items-center justify-center bg-[#f5f7f8]">
+        <div className="flex h-screen items-center justify-center bg-[var(--bg-base)]">
             <p className="text-slate-500 font-semibold">{patientError || 'Patient not found'}</p>
         </div>
     );
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] text-[#0f172a] overflow-hidden font-['Inter']">
-            <DoctorSidebar />
-
+        <DashboardLayout role="doctor">
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <header className="bg-white border-b border-slate-100 shadow-sm h-16 px-6 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-4">
@@ -338,6 +335,6 @@ export default function DoctorPatientProfilePage() {
                     </div>
                 </footer>
             </div>
-        </div>
+        </DashboardLayout>
     );
 }

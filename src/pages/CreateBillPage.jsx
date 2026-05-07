@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../contexts/AuthContext';
-import { patientService } from '../services/patients';
-import { paymentService } from '../services/payments';
-import { doctorService } from '../services/doctors';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { patientService } from '@/services/patients';
+import { paymentService } from '@/services/payments';
+import { usePatients } from '@/hooks/features/usePatients';
+import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
 
 /* ─────────────────────────────────────────────────────────
    Create Bill Page
@@ -27,14 +28,23 @@ export default function CreateBillPage() {
     const [selectedPatientId, setSelectedPatientId] = useState('');
     const [billingDoctorId, setBillingDoctorId] = useState(null);
 
+    const { patients, loading: loadingPatients } = usePatients();
+    const { doctorId: loadedDoctorId, loading: loadingProfile } = useDoctorProfile();
+
     React.useEffect(() => {
-        const fetchPatients = async () => {
-            const { data } = await patientService.getAll();
-            if (data) {
-                setPatientsList(data);
-                if (data.length > 0) setSelectedPatientId(data[0].id);
-            }
-        };
+        if (patients && patients.length > 0 && !selectedPatientId) {
+            setPatientsList(patients);
+            setSelectedPatientId(patients[0].id);
+        }
+    }, [patients, selectedPatientId]);
+
+    React.useEffect(() => {
+        if (loadedDoctorId) {
+            setBillingDoctorId(loadedDoctorId);
+        }
+    }, [loadedDoctorId]);
+
+    React.useEffect(() => {
         const fetchServices = async () => {
             const { data } = await paymentService.getBillableServices();
             if (data) {
@@ -42,13 +52,7 @@ export default function CreateBillPage() {
             }
             setIsLoadingServices(false);
         };
-        const fetchBillingDoctor = async () => {
-            const { data } = await doctorService.getFirst();
-            setBillingDoctorId(data?.id || null);
-        };
-        fetchPatients();
         fetchServices();
-        fetchBillingDoctor();
     }, []);
 
     const selectedPatient = useMemo(() => {
@@ -170,10 +174,8 @@ export default function CreateBillPage() {
     };
 
     return (
-        <div className="flex h-screen bg-background font-body text-on-background antialiased overflow-hidden">
-            <Sidebar />
-
-            <main className="flex-1 h-full flex flex-col overflow-y-auto">
+        <DashboardLayout role="secretary">
+            <div className="flex-1 h-full flex flex-col overflow-y-auto">
                 {/* Header (Matching existing design tokens) */}
                 <header className="sticky top-0 z-40 flex items-center justify-between px-8 h-20 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
                     <div className="flex items-center gap-8 flex-1">
@@ -596,7 +598,7 @@ export default function CreateBillPage() {
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
 
             {/* ── Success Modal overlay ──────────────────────────── */}
             <AnimatePresence>
@@ -812,6 +814,6 @@ export default function CreateBillPage() {
                     );
                 })()}
             </AnimatePresence>
-        </div>
+        </DashboardLayout>
     );
 }

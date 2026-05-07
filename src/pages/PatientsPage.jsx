@@ -1,12 +1,14 @@
+import { logError } from '@/lib/logger';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import CountUp from '../components/CountUp';
-import { useToast } from '../contexts/ToastContext';
-import { stagger } from '../lib/animations';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import CountUp from '@/components/CountUp';
+import { useToast } from '@/contexts/ToastContext';
+import { stagger } from '@/lib/animations';
 
-import { patientService } from '../services/patients';
+import { patientService } from '@/services/patients';
+import { usePatients } from '@/hooks/features/usePatients';
 const ACTION_BTNS = [
     { icon: 'visibility', hover: 'hover:text-primary'   },
     { icon: 'edit',       hover: 'hover:text-slate-700' },
@@ -533,7 +535,7 @@ export default function PatientsPage() {
     const [showFilters, setShowFilters] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [patientList, setPatientList] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { patients, loading, refresh: fetchPatients } = usePatients();
 
     const { showToast } = useToast();
     const location = useLocation();
@@ -553,45 +555,33 @@ export default function PatientsPage() {
             setTimeout(() => searchInputRef.current?.focus(), 100);
             window.history.replaceState({}, document.title);
         }
-        
-        fetchPatients();
     }, [location.state]);
 
-    const fetchPatients = async () => {
-        try {
-            setLoading(true);
-            const { data, error } = await patientService.getAll();
-            if (error) throw error;
+    useEffect(() => {
+        if (!patients) return;
+        const mapped = patients.map((p, index) => {
+            const firstName = p.users?.first_name || '';
+            const lastName = p.users?.last_name || '';
+            const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
+            const colors = [
+                'bg-primary/10 text-primary', 'bg-secondary/10 text-secondary',
+                'bg-success/10 text-success', 'bg-orange-100 text-orange-700',
+                'bg-sky-100 text-sky-700', 'bg-critical/10 text-critical',
+            ];
             
-            const mapped = data.map((p, index) => {
-                const firstName = p.users?.first_name || '';
-                const lastName = p.users?.last_name || '';
-                const fullName = `${firstName} ${lastName}`.trim() || 'Unknown';
-                const colors = [
-                    'bg-primary/10 text-primary', 'bg-secondary/10 text-secondary',
-                    'bg-success/10 text-success', 'bg-orange-100 text-orange-700',
-                    'bg-sky-100 text-sky-700', 'bg-critical/10 text-critical',
-                ];
-                
-                return {
-                    id: p.id,
-                    dbId: p.id,
-                    name: fullName,
-                    initials: ((firstName[0] || '') + (lastName[0] || '')).toUpperCase(),
-                    color: colors[index % colors.length],
-                    phone: p.users?.phone || '—',
-                    visit: new Date(p.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                    raw: p
-                };
-            });
-            setPatientList(mapped);
-        } catch (err) {
-            console.error("Error fetching patients:", err);
-            showToast("Failed to load patients", "error");
-        } finally {
-            setLoading(false);
-        }
-    };
+            return {
+                id: p.id,
+                dbId: p.id,
+                name: fullName,
+                initials: ((firstName[0] || '') + (lastName[0] || '')).toUpperCase(),
+                color: colors[index % colors.length],
+                phone: p.users?.phone || '—',
+                visit: new Date(p.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                raw: p
+            };
+        });
+        setPatientList(mapped);
+    }, [patients]);
 
     const ITEMS_PER_PAGE = 5;
 
@@ -617,7 +607,7 @@ export default function PatientsPage() {
                 
                 await patientService.delete(id);
             } catch (err) {
-                console.error("Failed to delete patient:", err);
+                logError('Failed to delete patient:', err);
                 showToast('Failed to delete patient', 'error');
                 fetchPatients(); // Rollback
             }
@@ -667,10 +657,8 @@ export default function PatientsPage() {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <Sidebar />
-
-            <main className="flex-1 flex flex-col overflow-hidden">
+        <DashboardLayout role="secretary">
+            <div className="flex-1 flex flex-col overflow-hidden">
 
                 {/* Page header */}
                 <header className="h-[68px] bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0">
@@ -913,7 +901,7 @@ export default function PatientsPage() {
 
                     </div>
                 </div>
-            </main>
+            </div>
 
             {/* ── Registration modal ── */}
             <AnimatePresence>
@@ -936,6 +924,6 @@ export default function PatientsPage() {
                     <EditPatientModal patient={editingPatient} onClose={() => setEditingPatient(null)} onSave={handleEditSave} />
                 )}
             </AnimatePresence>
-        </div>
+        </DashboardLayout>
     );
 }

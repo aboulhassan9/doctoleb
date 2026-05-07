@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import DoctorSidebar from '../components/DoctorSidebar';
-import MobileTopBar from '../components/MobileTopBar';
-import BorderGlow from '../components/BorderGlow';
-import { useToast } from '../contexts/ToastContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { notificationService } from '../services/notifications';
-import { useAuth } from '../contexts/AuthContext';
-import { appointmentService } from '../services/appointments';
-import { patientService } from '../services/patients';
-import { doctorService } from '../services/doctors';
-import { stagger, fadeUp } from '../lib/animations';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import BorderGlow from '@/components/BorderGlow';
+import { useToast } from '@/contexts/ToastContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { notificationCoreService } from '@/services/notificationCore';
+import { useAuth } from '@/contexts/AuthContext';
+import { appointmentService } from '@/services/appointments';
+import { patientService } from '@/services/patients';
+import { doctorService } from '@/services/doctors';
+import { stagger, fadeUp } from '@/lib/animations';
+import { normalizeAppointments } from '@/lib/appointments';
+import { formatClinicTime, isSameClinicDay } from '@/lib/time';
+import { useAppointments } from '@/hooks/features/useAppointments';
+import { useNotifications } from '@/hooks/features/useNotifications';
+import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
 
 export default function DoctorDashboardPage() {
     const navigate = useNavigate();
@@ -28,101 +32,84 @@ export default function DoctorDashboardPage() {
         department: 'General Practice'
     } : { name: 'Doctor', role: 'Doctor', initials: '??', department: '—' };
 
-    const [doctorStats, setDoctorStats] = useState([
-        { label: 'Total Patients', value: '...', icon: 'groups', color: 'bg-primary/10 text-primary', change: '', changeColor: 'text-success' },
-        { label: "Today's Appointments", value: '...', icon: 'event_note', color: 'bg-primary/10 text-primary', change: '', changeColor: 'text-primary' },
-        { label: 'Pending Pre-Checks', value: '...', icon: 'pending_actions', color: 'bg-warning/10 text-warning', change: '', changeColor: 'text-warning' },
-        { label: 'Unread Notifications', value: '...', icon: 'mail', color: 'bg-critical/10 text-critical', change: '', changeColor: 'text-critical' }
-    ]);
-    const [doctorAppointments, setDoctorAppointments] = useState([]);
-    const [activeAlerts, setActiveAlerts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { appointments, loading: loadingAppointments, refresh: refreshAppointments } = useAppointments({ mode: 'doctor' });
+    const { notifications, unreadCount, loading: loadingNotifs, refresh: refreshNotifs } = useNotifications({ userId: user?.id });
+    const { doctor: doctorRecord, loading: loadingProfile } = useDoctorProfile();
+
+    const loading = loadingAppointments || loadingNotifs || loadingProfile;
+
+    const todaysAppointments = React.useMemo(() => {
+        return appointments.filter(a => a.scheduled_at && isSameClinicDay(a.scheduled_at, new Date()));
+    }, [appointments]);
+
+    const formattedAppts = React.useMemo(() => {
+        return todaysAppointments.map(appt => {
+            const s = appt.status || 'scheduled';
+            const statusColor = s === 'confirmed' ? 'bg-success/10 text-success' : s === 'completed' ? 'bg-slate-100 text-slate-500' : 'bg-warning/10 text-warning';
+
+            return {
+                id: appt.id,
+                patientId: appt.patient_id,
+                name: appt.patientName || 'Unknown Patient',
+                initials: appt.patientInitials || '??',
+                time: formatClinicTime(appt.scheduled_at, { hour: '2-digit', minute: '2-digit' }),
+                status: appt.statusLabel,
+                statusColor
+            };
+        });
+    }, [todaysAppointments]);
+
+    const doctorStats = React.useMemo(() => {
+        if (!doctorRecord?.id && !loadingProfile) {
+            return [
+                { label: 'Total Patients', value: '0', icon: 'groups', color: 'bg-primary/10 text-primary', change: 'Profile missing', changeColor: 'text-critical' },
+                { label: "Today's Appointments", value: '0', icon: 'event_note', color: 'bg-primary/10 text-primary', change: 'Today', changeColor: 'text-primary' },
+                { label: 'Pending Pre-Checks', value: '0', icon: 'pending_actions', color: 'bg-warning/10 text-warning', change: 'Action Needed', changeColor: 'text-warning' },
+                { label: 'Unread Notifications', value: '0', icon: 'mail', color: 'bg-critical/10 text-critical', change: '', changeColor: 'text-critical' }
+            ];
+        }
+
+        const totalPatients = new Set(appointments.map(a => a.patient_id).filter(Boolean)).size;
+        return [
+            { label: 'Total Patients', value: totalPatients.toString(), icon: 'groups', color: 'bg-primary/10 text-primary', change: 'Your panel', changeColor: 'text-success' },
+            { label: "Today's Appointments", value: todaysAppointments.length.toString(), icon: 'event_note', color: 'bg-primary/10 text-primary', change: 'Today', changeColor: 'text-primary' },
+            { label: 'Pending Pre-Checks', value: todaysAppointments.filter(a => a.status === 'pre_check').length.toString(), icon: 'pending_actions', color: 'bg-warning/10 text-warning', change: 'Action Needed', changeColor: 'text-warning' },
+            { label: 'Unread Notifications', value: unreadCount.toString(), icon: 'mail', color: 'bg-critical/10 text-critical', change: unreadCount > 0 ? 'New' : '', changeColor: 'text-critical' }
+        ];
+    }, [doctorRecord, loadingProfile, appointments, todaysAppointments, unreadCount]);
+
+    const activeAlerts = React.useMemo(() => {
+        return notifications.filter(n => !n.is_read).slice(0, 5);
+    }, [notifications]);
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            setLoading(true);
-            const [apptsRes, patientsRes, notifsRes] = await Promise.all([
-                appointmentService.getAll(),
-                patientService.getAll(),
-                user ? notificationService.getUnread(user.id) : { data: [] }
-            ]);
-
-            if (apptsRes.data) {
-                const todayStr = new Date().toLocaleDateString('en-US');
-                const todays = apptsRes.data.filter(a => {
-                    if(!a.scheduled_at) return false;
-                    return new Date(a.scheduled_at).toLocaleDateString('en-US') === todayStr;
-                });
-
-                const formattedAppts = todays.map(appt => {
-                    const fname = appt.patients?.users?.first_name || 'Unknown';
-                    const lname = appt.patients?.users?.last_name || 'Patient';
-                    const s = appt.status || 'Pending';
-                    const date = new Date(appt.scheduled_at);
-                    const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-                    const statusColor = s.toLowerCase() === 'confirmed' ? 'bg-success/10 text-success' : s.toLowerCase() === 'completed' ? 'bg-slate-100 text-slate-500' : 'bg-warning/10 text-warning';
-                    
-                    return {
-                        id: appt.id,
-                        patientId: appt.patient_id,
-                        name: `${fname} ${lname}`,
-                        initials: `${fname[0]||''}${lname[0]||''}`.toUpperCase(),
-                        time: timeStr,
-                        status: s.charAt(0).toUpperCase() + s.slice(1),
-                        statusColor
-                    };
-                });
-                setDoctorAppointments(formattedAppts);
-
-                const totalPatients = patientsRes.data ? patientsRes.data.length : 0;
-                const unreadCount = notifsRes.data ? notifsRes.data.length : 0;
-                setDoctorStats([
-                    { label: 'Total Patients', value: totalPatients.toString(), icon: 'groups', color: 'bg-primary/10 text-primary', change: 'Total', changeColor: 'text-success' },
-                    { label: "Today's Appointments", value: todays.length.toString(), icon: 'event_note', color: 'bg-primary/10 text-primary', change: 'Today', changeColor: 'text-primary' },
-                    { label: 'Pending Pre-Checks', value: '0', icon: 'pending_actions', color: 'bg-warning/10 text-warning', change: 'Action Needed', changeColor: 'text-warning' },
-                    { label: 'Unread Notifications', value: unreadCount.toString(), icon: 'mail', color: 'bg-critical/10 text-critical', change: unreadCount > 0 ? 'New' : '', changeColor: 'text-critical' }
-                ]);
-                
-                if (notifsRes.data) {
-                    setActiveAlerts(notifsRes.data.slice(0, 5));
-                }
-            }
-            setLoading(false);
-        };
-        fetchDashboardData();
-
         let notifSub = null;
         if (user) {
-            notifSub = notificationService.subscribeToUserNotifications(user.id, () => {
-                fetchDashboardData(); // Refetch on new notification
+            notifSub = notificationCoreService.subscribeToUserNotifications(user.id, () => {
+                refreshNotifs();
+                refreshAppointments();
                 showToast('New notification received', 'info');
             });
         }
-
         return () => {
             if (notifSub) notifSub.unsubscribe();
         };
-    }, [user, showToast]);
+    }, [user, refreshNotifs, refreshAppointments, showToast]);
 
-    const [doctorRecord, setDoctorRecord] = useState(null);
     const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', phone: '', specialization: '', department: '' });
     const [profileSaving, setProfileSaving] = useState(false);
 
     useEffect(() => {
-        if (!user?.id) return;
-        doctorService.getByUserId(user.id).then(({ data }) => {
-            if (data) {
-                setDoctorRecord(data);
-                setProfileForm({
-                    firstName: data.users?.first_name || '',
-                    lastName: data.users?.last_name || '',
-                    phone: data.users?.phone || '',
-                    specialization: data.specialization || '',
-                    department: data.department || '',
-                });
-            }
-        });
-    }, [user?.id]);
+        if (doctorRecord) {
+            setProfileForm({
+                firstName: doctorRecord.users?.first_name || '',
+                lastName: doctorRecord.users?.last_name || '',
+                phone: doctorRecord.users?.phone || '',
+                specialization: doctorRecord.specialization || '',
+                department: doctorRecord.department || '',
+            });
+        }
+    }, [doctorRecord]);
 
     const handleProfileSave = async () => {
         setProfileSaving(true);
@@ -166,11 +153,9 @@ export default function DoctorDashboardPage() {
     }, []);
 
     return (
-        <div className="flex h-screen w-full overflow-hidden font-display" style={{ backgroundColor: customBg || (isDarkMode ? '#0f172a' : '#f5f7f8') }}>
-            <DoctorSidebar />
+        <DashboardLayout role="doctor" title="Doctor Dashboard">
 
-            <main className="flex-1 flex flex-col overflow-y-auto">
-                <MobileTopBar title="Doctor Dashboard" />
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 <header className="sticky top-0 z-20 h-20 hidden md:flex bg-white/80 backdrop-blur-md border-b border-slate-200 items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -338,14 +323,14 @@ export default function DoctorDashboardPage() {
                                                         <td className="px-6 py-4 text-right"><div className="h-7 bg-slate-200 rounded-lg w-24 ml-auto"></div></td>
                                                     </tr>
                                                 ))
-                                            ) : doctorAppointments.length === 0 ? (
+                                            ) : formattedAppts.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={4} className="px-6 py-16 text-center">
                                                         <span className="material-symbols-outlined text-4xl text-slate-300 block mb-3">event_busy</span>
                                                         <p className="text-sm font-medium text-slate-400">No appointments scheduled for today</p>
                                                     </td>
                                                 </tr>
-                                            ) : doctorAppointments.map((appt, i) => (
+                                            ) : formattedAppts.map((appt, i) => (
                                                 <motion.tr key={i} variants={fadeUp} whileHover={{ backgroundColor: 'rgba(var(--primary-rgb), 0.05)' }} className="group cursor-pointer">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3" onClick={() => navigate(`/doctor-patient/${appt.patientId}`)}>
@@ -364,7 +349,7 @@ export default function DoctorDashboardPage() {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
-                                                        <button onClick={() => navigate(`/doctor-consultation/${appt.id}`)} className="px-3 py-1.5 text-xs font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all">Start Consult</button>
+                                                        <button onClick={() => navigate(`/doctor-encounter/${appt.id}`)} className="px-3 py-1.5 text-xs font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all">Start Encounter</button>
                                                     </td>
                                                 </motion.tr>
                                             ))}
@@ -375,7 +360,7 @@ export default function DoctorDashboardPage() {
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
 
             {/* ── Profile Modals ── */}
             <AnimatePresence>
@@ -515,6 +500,6 @@ export default function DoctorDashboardPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </DashboardLayout>
     );
 }

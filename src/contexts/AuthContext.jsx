@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { authService } from '../services/auth';
+import { supabase } from '@/lib/supabase';
+import { authService } from '@/services/auth';
 
 const AuthContext = createContext();
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000;

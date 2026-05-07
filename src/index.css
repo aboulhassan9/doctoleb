@@ -2,9 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS — Single source of truth
+   All UI components reference these variables.
+   Dark mode: set via [data-theme="dark"] on <html>.
+   ───────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-base: #f4f7fa;
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+
+  /* Text */
+  --text-base: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+
+  /* Borders */
+  --border-default: #e2e8f0;
+  --border-subtle: #f1f5f9;
+
+  /* Semantic (mirroring tailwind.config.js) */
+  --color-primary: #0891b2;
+  --color-primary-hover: #0e7490;
+  --color-primary-light: rgba(8, 145, 178, 0.1);
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-danger: #e11d48;
+
+  /* Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] {
+  --bg-base: #0f172a;
+  --bg-card: #1e293b;
+  --bg-elevated: #334155;
+  --text-base: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --border-default: #334155;
+  --border-subtle: #1e293b;
+  --color-primary: #22d3ee;
+  --color-primary-hover: #06b6d4;
+  --color-primary-light: rgba(34, 211, 238, 0.15);
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #fb7185;
+}
+
+/* ─────────────────────────────────────────────
+   GLOBAL RESET — Font set ONCE here
+   Remove all inline font-['Inter'] from pages.
+   ───────────────────────────────────────────── */
 @layer base {
   body {
-    @apply font-sans bg-background text-slate-900 transition-colors duration-300;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-background text-slate-900 transition-colors duration-300;
   }
 }
 

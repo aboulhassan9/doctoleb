@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import DoctorSidebar from '../components/DoctorSidebar';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 
-import { appointmentService } from '../services/appointments';
-import { useAuth } from '../contexts/AuthContext';
-import { normalizeAppointments } from '../lib/appointments';
-import { formatClinicTime, isSameClinicDay, parseClinicDateTime } from '../lib/time';
+import { appointmentService } from '@/services/appointments';
+import { doctorService } from '@/services/doctors';
+import { useAuth } from '@/contexts/AuthContext';
+import { normalizeAppointments } from '@/lib/appointments';
+import { formatClinicTime, isSameClinicDay, parseClinicDateTime } from '@/lib/time';
 
 const HOURS = ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -20,6 +21,7 @@ export default function DoctorAppointmentsPage() {
     const [weeklyAppointments, setWeeklyAppointments] = useState([]);
     const [monthlyDays, setMonthlyDays] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
     const { user } = useAuth();
     
     const doctorUser = user ? {
@@ -30,104 +32,138 @@ export default function DoctorAppointmentsPage() {
     } : { name: 'Doctor', role: 'Doctor', initials: '??', department: '—' };
 
     useEffect(() => {
+        let sub = null;
+        let isMounted = true;
+
+        const applyAppointments = (records = []) => {
+            const normalizedData = normalizeAppointments(records);
+
+            // Generate Daily View
+            const dailyData = normalizedData.filter(a => a.scheduled_at && isSameClinicDay(a.scheduled_at, currentDate));
+            const mappedDaily = dailyData.map(a => {
+                const timeDisplay = formatClinicTime(a.scheduled_at, { hour: 'numeric', minute: '2-digit' });
+                const [time = '', timePeriod = ''] = timeDisplay.split(' ');
+                return {
+                    id: a.id,
+                    name: a.patientName,
+                    initials: a.patientInitials,
+                    time, timePeriod,
+                    type: a.reason || 'Consultation',
+                    reason: a.reason || '',
+                    status: a.statusLabel || 'Scheduled',
+                    room: 'Room 101',
+                    cancelled: a.isCancelled
+                };
+            });
+            setAppointments(mappedDaily);
+
+            // Generate Weekly View
+            const start = new Date(currentDate);
+            start.setDate(start.getDate() - start.getDay() + 1);
+            start.setHours(0,0,0,0);
+            const end = new Date(start);
+            end.setDate(end.getDate() + 6);
+            end.setHours(23,59,59,999);
+
+            const weeklyData = normalizedData.filter(a => {
+                if(!a.scheduled_at) return false;
+                const d = parseClinicDateTime(a.scheduled_at);
+                return d >= start && d <= end;
+            });
+            const mappedWeekly = weeklyData.map(a => {
+                const d = parseClinicDateTime(a.scheduled_at);
+                return {
+                    day: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()],
+                    date: d.getDate(),
+                    time: `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`,
+                    duration: a.duration_minutes || 30,
+                    name: a.patientName,
+                    type: a.reason || 'Consult',
+                    color: 'bg-primary-hover',
+                    colorClass: 'border-blue-400'
+                };
+            });
+            setWeeklyAppointments(mappedWeekly);
+
+            // Generate Monthly View
+            const y = currentDate.getFullYear();
+            const m = currentDate.getMonth();
+            const first = new Date(y, m, 1).getDay();
+            const total = new Date(y, m + 1, 0).getDate();
+            const prevTotal = new Date(y, m, 0).getDate();
+
+            const mDays = [];
+            for (let i = first - 1; i >= 0; i--) {
+                mDays.push({ day: prevTotal - i, inMonth: false });
+            }
+            for (let i = 1; i <= total; i++) {
+                const d = new Date(y, m, i);
+                const apptsForDay = normalizedData.filter(a => a.scheduled_at && isSameClinicDay(a.scheduled_at, d));
+                mDays.push({
+                    day: i,
+                    inMonth: true,
+                    isToday: d.toLocaleDateString('en-US') === new Date().toLocaleDateString('en-US'),
+                    appointments: apptsForDay.map(a => {
+                        const ad = parseClinicDateTime(a.scheduled_at);
+                        return {
+                            time: `${ad.getHours() % 12 || 12}:${ad.getMinutes().toString().padStart(2, '0')}`,
+                            name: a.patientName || 'Patient',
+                            type: 'blue'
+                        };
+                    }).slice(0, 3)
+                });
+            }
+            let nextDay = 1;
+            while (mDays.length % 7 !== 0) {
+                mDays.push({ day: nextDay++, inMonth: false });
+            }
+            setMonthlyDays(mDays);
+        };
+
+        const fetchAppointments = async (doctorId) => {
+            const { data, error } = await appointmentService.getByDoctorId(doctorId);
+            if (!isMounted) return;
+            if (error) {
+                setLoadError(error.message || 'Unable to load appointments.');
+                applyAppointments([]);
+                return;
+            }
+            setLoadError(null);
+            applyAppointments(data || []);
+        };
+
         const fetchData = async () => {
             setLoading(true);
-            const { data } = await appointmentService.getAll();
-            if (data) {
-                const normalizedData = normalizeAppointments(data);
-                // Generate Daily View
-                const dailyData = normalizedData.filter(a => a.scheduled_at && isSameClinicDay(a.scheduled_at, currentDate));
-                const mappedDaily = dailyData.map(a => {
-                    const timeDisplay = formatClinicTime(a.scheduled_at, { hour: 'numeric', minute: '2-digit' });
-                    const [time = '', timePeriod = ''] = timeDisplay.split(' ');
-                    return {
-                        id: a.id,
-                        name: a.patientName,
-                        initials: a.patientInitials,
-                        time, timePeriod,
-                        type: a.reason || 'Consultation',
-                        reason: a.reason || '',
-                        status: a.statusLabel || 'Scheduled',
-                        room: 'Room 101',
-                        cancelled: a.isCancelled
-                    };
-                });
-                setAppointments(mappedDaily);
-
-                // Generate Weekly View
-                const start = new Date(currentDate);
-                start.setDate(start.getDate() - start.getDay() + 1);
-                start.setHours(0,0,0,0);
-                const end = new Date(start);
-                end.setDate(end.getDate() + 6);
-                end.setHours(23,59,59,999);
-                
-                const weeklyData = normalizedData.filter(a => {
-                    if(!a.scheduled_at) return false;
-                    const d = parseClinicDateTime(a.scheduled_at);
-                    return d >= start && d <= end;
-                });
-                const mappedWeekly = weeklyData.map(a => {
-                    const d = parseClinicDateTime(a.scheduled_at);
-                    return {
-                        day: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()],
-                        date: d.getDate(),
-                        time: `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`,
-                        duration: 60,
-                        name: a.patientName,
-                        type: a.reason || 'Consult',
-                        color: 'bg-primary-hover',
-                        colorClass: 'border-blue-400'
-                    };
-                });
-                setWeeklyAppointments(mappedWeekly);
-
-                // Generate Monthly View
-                const y = currentDate.getFullYear();
-                const m = currentDate.getMonth();
-                const first = new Date(y, m, 1).getDay();
-                const total = new Date(y, m + 1, 0).getDate();
-                const prevTotal = new Date(y, m, 0).getDate();
-                
-                const mDays = [];
-                for (let i = first - 1; i >= 0; i--) {
-                    mDays.push({ day: prevTotal - i, inMonth: false });
-                }
-                for (let i = 1; i <= total; i++) {
-                    const d = new Date(y, m, i);
-                    const apptsForDay = normalizedData.filter(a => a.scheduled_at && isSameClinicDay(a.scheduled_at, d));
-                    mDays.push({
-                        day: i,
-                        inMonth: true,
-                        isToday: d.toLocaleDateString('en-US') === new Date().toLocaleDateString('en-US'),
-                        appointments: apptsForDay.map(a => {
-                            const ad = parseClinicDateTime(a.scheduled_at);
-                            return {
-                                time: `${ad.getHours() % 12 || 12}:${ad.getMinutes().toString().padStart(2, '0')}`,
-                                name: a.patientName || 'Patient',
-                                type: 'blue'
-                            };
-                        }).slice(0, 3)
-                    });
-                }
-                let nextDay = 1;
-                while (mDays.length % 7 !== 0) {
-                    mDays.push({ day: nextDay++, inMonth: false });
-                }
-                setMonthlyDays(mDays);
+            if (!user?.id) {
+                applyAppointments([]);
+                setLoadError('Unable to resolve the logged-in doctor.');
+                setLoading(false);
+                return;
             }
+
+            const { data: doctor, error } = await doctorService.getByUserId(user.id);
+            if (!isMounted) return;
+            if (error || !doctor?.id) {
+                applyAppointments([]);
+                setLoadError('Unable to resolve the logged-in doctor profile.');
+                setLoading(false);
+                return;
+            }
+
+            await fetchAppointments(doctor.id);
+            if (!isMounted) return;
+            sub = appointmentService.subscribeToAppointments(doctor.id, () => {
+                fetchAppointments(doctor.id);
+            });
             setLoading(false);
         };
         fetchData();
 
-        const sub = appointmentService.subscribeToAppointments(null, () => {
-            fetchData();
-        });
-
         return () => {
+            isMounted = false;
             if (sub) sub.unsubscribe();
         };
-    }, [currentDate]);
+    }, [currentDate, user?.id]);
 
     const getAvatarColor = (name) => {
         const colors = {
@@ -184,10 +220,7 @@ export default function DoctorAppointmentsPage() {
     };
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] text-[#0f172a] overflow-hidden font-['Inter']">
-            <DoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-hidden">
+        <DashboardLayout role="doctor">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -234,10 +267,16 @@ export default function DoctorAppointmentsPage() {
                         </motion.div>
                     )}
 
+                    {loadError && (
+                        <div className="mb-6 rounded-xl border border-critical/20 bg-critical/5 px-4 py-3 text-sm font-semibold text-critical">
+                            {loadError}
+                        </div>
+                    )}
+
                     {view === 'weekly' && (
                         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex justify-between items-end">
                             <div>
-                                <h2 className="text-[30px] font-black tracking-tight text-slate-900 font-['Inter'] leading-tight">Weekly Schedule</h2>
+                                <h2 className="text-[30px] font-black tracking-tight text-slate-900 leading-tight">Weekly Schedule</h2>
                                 <p className="text-slate-500 font-medium text-sm">{formatWeeklyDate()}</p>
                             </div>
                             <div className="flex gap-3">
@@ -306,11 +345,11 @@ export default function DoctorAppointmentsPage() {
                                                             <motion.button
                                                                 whileHover={{ scale: 1.02 }}
                                                                 whileTap={{ scale: 0.98 }}
-                                                                onClick={() => navigate('/doctor-consultation')}
+                                                                onClick={() => navigate(`/doctor-encounter/${appt.id}`)}
                                                                 className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm hover:brightness-110 transition-all mr-2"
                                                             >
                                                                 <span className="material-symbols-outlined text-sm">play_arrow</span>
-                                                                Start Consultation
+                                                                Start Encounter
                                                             </motion.button>
                                                         )}
                                                         <span className={`material-symbols-outlined ${appt.cancelled ? 'text-slate-300' : 'text-slate-300 group-hover:text-primary'} transition-colors`}>
@@ -515,12 +554,6 @@ export default function DoctorAppointmentsPage() {
                         </div>
                     )}
                 </div>
-            </main>
-
-            <button onClick={() => navigate('/doctor-consultation')} className="fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-primary-hover text-white rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-50">
-                <span className="material-symbols-outlined" style={{ fontWeight: 700 }}>add</span>
-                <span className="font-bold text-sm tracking-tight">Start New Consultation</span>
-            </button>
-        </div>
+        </DashboardLayout>
     );
 }

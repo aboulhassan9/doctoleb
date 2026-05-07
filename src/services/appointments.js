@@ -1,24 +1,20 @@
-import { supabase } from '../lib/supabase';
-import { apiCall } from './api';
-import { APPOINTMENT_SELECT_FIELDS } from '../lib/selects';
-import { normalizeAppointment } from '../lib/appointments';
-import { paginateQuery } from '../lib/pagination';
-import { assertTransition } from '../lib/stateMachines';
-import { appointmentBookingSchema, parseWithSchema } from '../schemas';
+import { supabase } from '@/lib/supabase';
+import { apiCall, apiPaged } from './api';
+import { APPOINTMENT_SELECT_FIELDS } from '@/lib/selects';
+import { normalizeAppointment } from '@/lib/appointments';
+import { assertTransition } from '@/lib/stateMachines';
+import { appointmentBookingSchema, parseWithSchema } from '@/schemas';
 import { bookSlot } from './slots';
-import { notificationService } from './notifications';
+import { notificationCoreService } from './notificationCore';
 
 export const appointmentService = {
   async getAll(options = {}) {
-    return apiCall(
-      paginateQuery(
-        supabase
-          .from('appointments')
-          .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
-          .order('scheduled_at', { ascending: true }),
-        options
-      )
-    );
+    const query = supabase
+      .from('appointments')
+      .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+      .order('scheduled_at', { ascending: true });
+
+    return apiPaged(query, options);
   },
 
   async getById(id) {
@@ -32,62 +28,63 @@ export const appointmentService = {
   },
 
   async getByDoctorId(doctorId, options = {}) {
-    return apiCall(
-      paginateQuery(
-        supabase
-          .from('appointments')
-          .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
-          .eq('doctor_id', doctorId)
-          .order('scheduled_at', { ascending: true }),
-        options
-      )
-    );
+    const query = supabase
+      .from('appointments')
+      .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+      .eq('doctor_id', doctorId)
+      .order('scheduled_at', { ascending: true });
+
+    return apiPaged(query, options);
   },
 
   async getByPatientId(patientId, options = {}) {
-    return apiCall(
-      paginateQuery(
-        supabase
-          .from('appointments')
-          .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
-          .eq('patient_id', patientId)
-          .order('scheduled_at', { ascending: true }),
-        options
-      )
-    );
+    const query = supabase
+      .from('appointments')
+      .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+      .eq('patient_id', patientId)
+      .order('scheduled_at', { ascending: true });
+
+    return apiPaged(query, options);
   },
 
-  async getByStatus(status) {
-    return apiCall(
-      supabase
-        .from('appointments')
-        .select(APPOINTMENT_SELECT_FIELDS)
-        .eq('status', status)
-        .order('scheduled_at', { ascending: true })
-    );
+  async getByStatus(status, options = {}) {
+    const query = supabase
+      .from('appointments')
+      .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+      .eq('status', status)
+      .order('scheduled_at', { ascending: true });
+
+    return apiPaged(query, options);
   },
 
   async getUpcoming(options = {}) {
-    return apiCall(
-      paginateQuery(
-        supabase
-          .from('appointments')
-          .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
-          .in('status', ['scheduled', 'confirmed', 'pre_check', 'in_consultation'])
-          .gt('scheduled_at', new Date().toISOString())
-          .order('scheduled_at', { ascending: true }),
-        options
-      )
-    );
+    const query = supabase
+      .from('appointments')
+      .select(APPOINTMENT_SELECT_FIELDS, { count: 'exact' })
+      .in('status', ['scheduled', 'confirmed', 'pre_check', 'in_consultation'])
+      .gt('scheduled_at', new Date().toISOString())
+      .order('scheduled_at', { ascending: true });
+
+    return apiPaged(query, options);
   },
 
   async create(data) {
-    return apiCall(
-      supabase
-        .from('appointments')
-        .insert([{ ...data, status: data.status || 'scheduled' }])
-        .select(APPOINTMENT_SELECT_FIELDS)
-    );
+    if (data?.slot_id && data?.patient_id && data?.booked_by) {
+      return this.bookFromSlot({
+        slotId: data.slot_id,
+        patientId: data.patient_id,
+        bookedBy: data.booked_by,
+        visitTypeId: data.visit_type_id || null,
+        reason: data.reason || data.notes || 'Appointment',
+        durationMinutes: data.duration_minutes || 30,
+        status: data.status || 'scheduled',
+      });
+    }
+
+    return {
+      data: null,
+      error: 'Appointments must be created from an available slot.',
+    };
   },
 
   async getBySlotId(slotId) {
@@ -116,10 +113,19 @@ export const appointmentService = {
       status: data.status,
       reason: data.reason,
       durationMinutes: data.durationMinutes,
+      visitTypeId: data.visitTypeId || null,
     });
 
     if (bookingError) {
-      return { data: null, error: bookingError.message || 'Failed to book appointment' };
+      const message = bookingError.message || 'Failed to book appointment';
+      if (message.includes('INTAKE_REQUIRED')) {
+        return {
+          data: null,
+          error: 'This patient must complete medical intake before booking another appointment.',
+        };
+      }
+
+      return { data: null, error: message };
     }
 
     // Fetch the full appointment record using the returned UUID
@@ -140,13 +146,13 @@ export const appointmentService = {
 
     // Fire-and-forget notifications — never block the booking response
     Promise.allSettled([
-      notificationService.notifyRole('doctor', {
+      notificationCoreService.notifyRole('doctor', {
         title: 'Appointment Booked',
         message: `${patientName} booked an appointment for ${scheduledAt}.`,
         type: 'appointment',
         related_id: normalizedAppointment.id,
       }),
-      notificationService.notifyRole('predoctor', {
+      notificationCoreService.notifyRole('predoctor', {
         title: 'Patient Added to Queue',
         message: `${patientName} booked an appointment for ${scheduledAt}.`,
         type: 'appointment',
@@ -182,12 +188,12 @@ export const appointmentService = {
   async update(id, data) {
     if (data?.status) {
       const { data: current, error } = await this.getById(id);
-      if (error || !current) return { data: null, count: null, error: error || 'Appointment not found' };
+      if (error || !current) return { data: null, error: error || 'Appointment not found' };
 
       try {
         assertTransition('appointment', current.status, data.status);
       } catch (transitionError) {
-        return { data: null, count: null, error: transitionError.message };
+        return { data: null, error: transitionError.message };
       }
     }
 
@@ -202,12 +208,12 @@ export const appointmentService = {
 
   async cancel(id, reason = null) {
     const { data: existingAppointment, error } = await this.getById(id);
-    if (error || !existingAppointment) return { data: null, count: null, error: error || 'Appointment not found' };
+    if (error || !existingAppointment) return { data: null, error: error || 'Appointment not found' };
 
     try {
       assertTransition('appointment', existingAppointment.status, 'cancelled');
     } catch (transitionError) {
-      return { data: null, count: null, error: transitionError.message };
+      return { data: null, error: transitionError.message };
     }
 
     const nextNotes = [existingAppointment?.notes, reason].filter(Boolean).join('\n\n');
@@ -223,18 +229,56 @@ export const appointmentService = {
 
   async markCompleted(id) {
     const { data: current, error } = await this.getById(id);
-    if (error || !current) return { data: null, count: null, error: error || 'Appointment not found' };
+    if (error || !current) return { data: null, error: error || 'Appointment not found' };
 
     try {
       assertTransition('appointment', current.status, 'completed');
     } catch (transitionError) {
-      return { data: null, count: null, error: transitionError.message };
+      return { data: null, error: transitionError.message };
     }
 
     return apiCall(
       supabase
         .from('appointments')
         .update({ status: 'completed' })
+        .eq('id', id)
+        .select(APPOINTMENT_SELECT_FIELDS)
+    );
+  },
+
+  async markPreChecked(id) {
+    const { data: current, error } = await this.getById(id);
+    if (error || !current) return { data: null, error: error || 'Appointment not found' };
+
+    if (current.status === 'pre_check') {
+      return { data: current, error: null };
+    }
+
+    let working = current;
+    if (working.status === 'scheduled') {
+      const { data: confirmed, error: confirmError } = await this.update(id, { status: 'confirmed' });
+      if (confirmError) return { data: null, error: confirmError };
+      working = Array.isArray(confirmed) ? confirmed[0] : confirmed;
+    }
+
+    if (!working?.status) {
+      const refreshed = await this.getById(id);
+      if (refreshed.error || !refreshed.data) {
+        return { data: null, error: refreshed.error || 'Appointment not found after confirmation' };
+      }
+      working = refreshed.data;
+    }
+
+    try {
+      assertTransition('appointment', working.status, 'pre_check');
+    } catch (transitionError) {
+      return { data: null, error: transitionError.message };
+    }
+
+    return apiCall(
+      supabase
+        .from('appointments')
+        .update({ status: 'pre_check' })
         .eq('id', id)
         .select(APPOINTMENT_SELECT_FIELDS)
     );

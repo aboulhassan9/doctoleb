@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Sidebar from '../components/Sidebar';
-import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../contexts/AuthContext';
-import { slotService } from '../services/slots';
-import { clinicService } from '../services/clinics';
-import { doctorService } from '../services/doctors';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { slotService } from '@/services/slots';
+import { clinicService } from '@/services/clinics';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -102,12 +101,14 @@ export default function SecretarySlotsPage() {
       showToast('End time must be after start time', 'error');
       return;
     }
+    if (!user?.doctor_id) {
+      showToast('Doctor schedule is not linked to your account yet. Please sign in again or contact the clinic owner.', 'error');
+      return;
+    }
     setSaving(true);
-    // Get doctor_id for the single doctor in the system
-    const { data: doctorRow } = await doctorService.getFirst();
     const { error } = await slotService.createManualSlot({
       ...manualForm,
-      doctor_id: doctorRow?.id,
+      doctor_id: user.doctor_id,
       created_by: user.id,
       is_active: true,
     });
@@ -130,10 +131,13 @@ export default function SecretarySlotsPage() {
       showToast('End time must be after start time', 'error');
       return;
     }
+    if (!user?.doctor_id) {
+      showToast('Doctor schedule is not linked to your account yet. Please sign in again or contact the clinic owner.', 'error');
+      return;
+    }
     setSaving(true);
-    const { data: doctorRow } = await doctorService.getFirst();
     const { error } = await slotService.createRecurringSlots({
-      doctor_id: doctorRow?.id,
+      doctor_id: user.doctor_id,
       clinic_id,
       start_time,
       end_time,
@@ -194,9 +198,8 @@ export default function SecretarySlotsPage() {
   const cardAnim = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-      <main className="flex-1 p-8 ml-64 overflow-y-auto">
+    <DashboardLayout role="secretary">
+      <div className="flex-1 p-8 ml-64 overflow-y-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Slot Management</h1>
@@ -525,7 +528,7 @@ export default function SecretarySlotsPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

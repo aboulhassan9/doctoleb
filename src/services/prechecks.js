@@ -1,8 +1,8 @@
-import { supabase } from '../lib/supabase';
-import { apiCall } from './api';
-import { PRECHECK_SELECT_FIELDS } from '../lib/selects';
-import { assertTransition } from '../lib/stateMachines';
-import { parseWithSchema, precheckDraftSchema, precheckSubmitSchema } from '../schemas';
+import { supabase } from '@/lib/supabase';
+import { apiCall, apiPaged } from './api';
+import { PRECHECK_SELECT_FIELDS } from '@/lib/selects';
+import { assertTransition } from '@/lib/stateMachines';
+import { parseWithSchema, precheckDraftSchema, precheckSubmitSchema } from '@/schemas';
 
 function buildPrecheckPayload(data, status) {
   return {
@@ -23,14 +23,14 @@ function buildPrecheckPayload(data, status) {
 }
 
 export const precheckService = {
-  async getByPatientId(patientId) {
-    return apiCall(
-      supabase
-        .from('precheck_forms')
-        .select(PRECHECK_SELECT_FIELDS)
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false })
-    );
+  async getByPatientId(patientId, options = {}) {
+    const query = supabase
+      .from('precheck_forms')
+      .select(PRECHECK_SELECT_FIELDS, { count: 'exact' })
+      .eq('patient_id', patientId)
+      .order('created_at', { ascending: false });
+
+    return apiPaged(query, options);
   },
 
   async getById(id) {
@@ -50,12 +50,12 @@ export const precheckService = {
     }
 
     const { data: current, error: currentError } = await this.getById(id);
-    if (currentError || !current) return { data: null, count: null, error: currentError || 'Pre-check form not found' };
+    if (currentError || !current) return { data: null, error: currentError || 'Pre-check form not found' };
 
     try {
       assertTransition('precheck', current.status, 'draft');
     } catch (transitionError) {
-      return { data: null, count: null, error: transitionError.message };
+      return { data: null, error: transitionError.message };
     }
 
     return apiCall(

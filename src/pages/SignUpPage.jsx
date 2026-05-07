@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { getHomeRouteForRole } from '../lib/routes';
+import { useAuth } from '@/contexts/AuthContext';
+import { getHomeRouteForRole } from '@/lib/routes';
 
 const SignUpPage = () => {
     const navigate = useNavigate();

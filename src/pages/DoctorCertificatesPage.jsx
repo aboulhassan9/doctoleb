@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import DoctorSidebar from '../components/DoctorSidebar';
-import { certificateService } from '../services/certificates';
-import { doctorService } from '../services/doctors';
-import { patientService } from '../services/patients';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import { getUserDisplayName, getUserInitials } from '../lib/userDisplay';
-import { useSignaturePad } from '../hooks/useSignaturePad';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { documentService } from '@/services/documents';
+import { doctorService } from '@/services/doctors';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { getUserDisplayName, getUserInitials } from '@/lib/userDisplay';
+import { useSignaturePad } from '@/hooks/useSignaturePad';
+import { useCertificates } from '@/hooks/features/useCertificates';
+import { usePatients } from '@/hooks/features/usePatients';
 
 export default function DoctorCertificatesPage() {
     const navigate = useNavigate();
@@ -20,32 +22,23 @@ export default function DoctorCertificatesPage() {
     const [recommendations, setRecommendations] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [certificates, setCertificates] = useState([]);
-    const [patients, setPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [doctorId, setDoctorId] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+
+    const { certificates, refresh: refreshCerts } = useCertificates();
+    const { patients } = usePatients();
+
+    useEffect(() => {
+        if (patients && patients.length > 0 && !selectedPatient) {
+            setSelectedPatient(patients[0]);
+        }
+    }, [patients, selectedPatient]);
     const { user } = useAuth();
     const { showToast } = useToast();
     const { canvasRef, startDraw, draw, stopDraw, clearSignature } = useSignaturePad();
 
-    useEffect(() => {
-        const fetchAll = async () => {
-            setLoading(true);
-            const [certRes, patRes] = await Promise.all([
-                certificateService.getAll(),
-                patientService.getAll(),
-            ]);
-            if (certRes.data) setCertificates(certRes.data);
-            if (patRes.data) {
-                setPatients(patRes.data);
-                if (patRes.data.length > 0) setSelectedPatient(patRes.data[0]);
-            }
-            setLoading(false);
-        };
-        fetchAll();
-    }, []);
+
 
     useEffect(() => {
         const fetchDoctorProfile = async () => {
@@ -64,9 +57,9 @@ export default function DoctorCertificatesPage() {
 
     const filteredCertificates = certificates.filter(c => {
         const patientNameStr = c.title || '';
-        const matchesSearch = patientNameStr.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        const matchesSearch = patientNameStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (c.id && c.id.toLowerCase().includes(searchQuery.toLowerCase()));
-        const matchesFilter = filter === 'all' || c.certificate_type === filter;
+        const matchesFilter = filter === 'all' || c.document_type === 'certificate';
         return matchesSearch && matchesFilter;
     });
 
@@ -132,11 +125,11 @@ export default function DoctorCertificatesPage() {
             </body>
             </html>
         `;
-        
+
         const printWindow = window.open('', '_blank');
         printWindow.document.write(printContent);
         printWindow.document.close();
-        
+
         setTimeout(() => {
             printWindow.focus();
             printWindow.print();
@@ -152,13 +145,17 @@ export default function DoctorCertificatesPage() {
         setIsSaving(true);
         try {
             const titleDiagnosis = diagnosis.length > 120 ? `${diagnosis.slice(0, 117)}...` : diagnosis;
-            const { error } = await certificateService.create({
+            const { error } = await documentService.createCertificate({
+                patient_id: selectedPatient.id,
                 doctor_id: doctorId,
-                certificate_type: 'Medical Certificate',
                 title: `Medical Certificate - ${patientName || selectedPatient.id.slice(0, 8)} - ${titleDiagnosis}`.slice(0, 240),
                 issuer: getUserDisplayName(user, 'Doctor'),
-                issue_date: startDate || new Date().toISOString().slice(0, 10),
-                expiry_date: endDate || null,
+                start_date: startDate || new Date().toISOString().slice(0, 10),
+                end_date: endDate || null,
+                diagnosis,
+                treatment,
+                recommendations,
+                created_by: user.id,
             });
 
             if (error) throw error;
@@ -166,10 +163,9 @@ export default function DoctorCertificatesPage() {
             showToast('Certificate issued and saved successfully', 'success');
             setShowNewCert(false);
             // Refresh list
-            const { data } = await certificateService.getAll();
-            if (data) setCertificates(data);
+            await refreshCerts();
         } catch (error) {
-            console.error('Failed to save certificate:', error);
+            logError('Failed to save certificate:', error);
             showToast('Failed to issue certificate', 'error');
         } finally {
             setIsSaving(false);
@@ -177,20 +173,24 @@ export default function DoctorCertificatesPage() {
     };
 
     const handleSaveDraft = async () => {
-        if (!doctorId) {
-            showToast('Doctor profile not found. Please try again after your profile loads.', 'error');
+        if (!doctorId || !selectedPatient) {
+            showToast('Please select a patient and make sure your doctor profile is loaded.', 'error');
             return;
         }
 
         setIsSaving(true);
         try {
-            const { error } = await certificateService.create({
+            const { error } = await documentService.createCertificate({
+                patient_id: selectedPatient.id,
                 doctor_id: doctorId,
-                certificate_type: 'Medical Certificate',
                 title: `Draft Medical Certificate${patientName ? ` - ${patientName}` : ''}`,
                 issuer: getUserDisplayName(user, 'Doctor'),
-                issue_date: startDate || null,
-                expiry_date: endDate || null,
+                start_date: startDate || null,
+                end_date: endDate || null,
+                diagnosis,
+                treatment,
+                recommendations,
+                created_by: user.id,
             });
             if (error) throw error;
             showToast('Draft saved successfully', 'success');
@@ -203,10 +203,7 @@ export default function DoctorCertificatesPage() {
     };
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] text-[#0f172a] overflow-hidden font-['Inter']">
-            <DoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-hidden">
+        <DashboardLayout role="doctor">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -279,7 +276,7 @@ export default function DoctorCertificatesPage() {
                                             <span className="text-sm font-bold font-mono text-primary">{cert.id}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="text-sm text-slate-900">{cert.certificate_type}</span>
+                                            <span className="text-sm text-slate-900">Medical Certificate</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-sm font-bold text-slate-900">
@@ -314,7 +311,7 @@ export default function DoctorCertificatesPage() {
                         </table>
                     </div>
                 </div>
-            </main>
+
 
             {showNewCert && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto">
@@ -361,33 +358,33 @@ export default function DoctorCertificatesPage() {
 
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Diagnosis</label>
-                                            <textarea 
+                                            <textarea
                                                 value={diagnosis}
                                                 onChange={(e) => setDiagnosis(e.target.value)}
-                                                className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4" 
-                                                placeholder="Enter primary medical diagnosis..." 
+                                                className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4"
+                                                placeholder="Enter primary medical diagnosis..."
                                                 rows="2"
                                             />
                                         </div>
 
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Treatment Given</label>
-                                            <textarea 
+                                            <textarea
                                                 value={treatment}
                                                 onChange={(e) => setTreatment(e.target.value)}
-                                                className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4" 
-                                                placeholder="Detail procedures, medications, or interventions administered..." 
+                                                className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4"
+                                                placeholder="Detail procedures, medications, or interventions administered..."
                                                 rows="3"
                                             />
                                         </div>
 
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Recommendations</label>
-                                            <textarea 
+                                            <textarea
                                                 value={recommendations}
                                                 onChange={(e) => setRecommendations(e.target.value)}
-                                                className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4" 
-                                                placeholder="Rest requirements, follow-up dates, etc..." 
+                                                className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4"
+                                                placeholder="Rest requirements, follow-up dates, etc..."
                                                 rows="2"
                                             />
                                         </div>
@@ -395,19 +392,19 @@ export default function DoctorCertificatesPage() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Duration Start</label>
-                                                <input 
+                                                <input
                                                     value={startDate}
                                                     onChange={(e) => setStartDate(e.target.value)}
-                                                    className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4" 
+                                                    className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4"
                                                     type="date"
                                                 />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Duration End</label>
-                                                <input 
+                                                <input
                                                     value={endDate}
                                                     onChange={(e) => setEndDate(e.target.value)}
-                                                    className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4" 
+                                                    className="w-full rounded-xl border-slate-200 bg-white text-sm focus:ring-primary focus:border-primary transition-all p-4"
                                                     type="date"
                                                 />
                                             </div>
@@ -450,7 +447,7 @@ export default function DoctorCertificatesPage() {
                             <div className="w-[480px] hidden xl:block">
                                 <div className="sticky top-24 bg-white border border-slate-200 shadow-2xl p-10 min-h-[640px] flex flex-col relative overflow-hidden">
                                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-primary"></div>
-                                    
+
                                     <div className="flex justify-between items-start mb-12">
                                         <div className="space-y-1">
                                             <h4 className="text-2xl font-black tracking-tight text-slate-900 leading-none">MEDICAL CERTIFICATE</h4>
@@ -504,6 +501,6 @@ export default function DoctorCertificatesPage() {
                     </div>
                 </div>
             )}
-        </div>
+        </DashboardLayout>
     );
 }

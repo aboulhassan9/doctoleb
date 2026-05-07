@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import CountUp from '../components/CountUp';
-import { useToast } from '../contexts/ToastContext';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import CountUp from '@/components/CountUp';
+import { useToast } from '@/contexts/ToastContext';
 
-import { paymentService } from '../services/payments';
+import { paymentService } from '@/services/payments';
+import { useBilling } from '@/hooks/features/useBilling';
 
 /* ─────────────────────────────────────────────────────────
    Main BillingPage Component
@@ -13,89 +14,7 @@ import { paymentService } from '../services/payments';
 export default function BillingPage() {
     const navigate = useNavigate();
     const [search, setSearch]       = useState('');
-    const [invoices, setInvoices]   = useState([]);
-    const [stats, setStats]         = useState([
-        { label: 'Total Invoices', value: 0, icon: 'description', badge: 'Active system records', badgeCls: 'text-success bg-success/10' },
-        { label: 'Total Revenue', value: 0, icon: 'payments', badge: 'Lifetime Collected', badgeCls: 'text-primary bg-primary/5' },
-        { label: 'Unpaid Balance', value: 0, icon: 'account_balance_wallet', badge: '0 overdue invoices', badgeCls: 'text-critical bg-red-50' }
-    ]);
-    const [activity, setActivity]   = useState([]);
-    const [barData, setBarData]     = useState([]);
-    const [filter, setFilter]       = useState('All');
-    const [loading, setLoading]     = useState(true);
-
-    useEffect(() => {
-        const fetchPayments = async () => {
-            setLoading(true);
-            const { data } = await paymentService.getAll();
-            if (data) {
-                const formatted = data.map(p => {
-                    const fname = p.patients?.users?.first_name || 'Unknown';
-                    const lname = p.patients?.users?.last_name || 'Patient';
-                    const canonicalStatus = (p.status || 'pending').toLowerCase();
-                    const displayStatus = canonicalStatus === 'completed'
-                        ? 'Paid'
-                        : canonicalStatus.charAt(0).toUpperCase() + canonicalStatus.slice(1);
-                    const sCls = canonicalStatus === 'completed' ? 'bg-success/10 text-success' : canonicalStatus === 'pending' ? 'bg-warning/10 text-warning' : 'bg-error-container text-on-error-container';
-                    return {
-                        id: `#INV-${p.id.split('-')[0].toUpperCase()}`,
-                        dbId: p.id,
-                        patient: `${fname} ${lname}`,
-                        initials: `${fname[0]||''}${lname[0]||''}`.toUpperCase(),
-                        date: new Date(p.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                        amount: parseFloat(p.amount) || 0,
-                        status: displayStatus,
-                        statusCls: sCls
-                    };
-                });
-                setInvoices(formatted);
-
-                const totalInvoices = formatted.length;
-                const totalRevenue = formatted.filter(i => i.status === 'Paid').reduce((sum, i) => sum + i.amount, 0);
-                const unpaidBalance = formatted.filter(i => i.status !== 'Paid').reduce((sum, i) => sum + i.amount, 0);
-                const overdueCount = formatted.filter(i => i.status === 'Overdue').length;
-
-                setStats([
-                    { label: 'Total Invoices', value: totalInvoices, icon: 'description', badge: 'Active system records', badgeCls: 'text-success bg-success/10' },
-                    { label: 'Total Revenue', value: totalRevenue, icon: 'payments', badge: 'Lifetime Collected', badgeCls: 'text-primary bg-primary/5' },
-                    { label: 'Unpaid Balance', value: unpaidBalance, icon: 'account_balance_wallet', badge: `${overdueCount} overdue invoices`, badgeCls: 'text-critical bg-red-50' }
-                ]);
-
-                // Map recent activity
-                setActivity(formatted.slice(0, 5).map(inv => ({
-                    title: `Invoice ${inv.status}`,
-                    sub: `Patient: ${inv.patient}`,
-                    amount: `$${inv.amount.toFixed(2)}`,
-                    icon: inv.status === 'Paid' ? 'check_circle' : 'pending',
-                    iconCls: inv.status === 'Paid' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning',
-                    mutedAmount: inv.status !== 'Paid'
-                })));
-
-                // Calculate Bar Data (Revenue per day of week)
-                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const todayIdx = new Date().getDay();
-                const revenueByDay = new Array(7).fill(0);
-                
-                data.forEach(p => {
-                    if (p.status === 'completed') {
-                        const d = new Date(p.created_at).getDay();
-                        revenueByDay[d] += parseFloat(p.amount) || 0;
-                    }
-                });
-
-                const maxRev = Math.max(...revenueByDay, 100);
-                setBarData(days.map((day, i) => ({
-                    day,
-                    h: `${(revenueByDay[i] / maxRev) * 100}%`,
-                    cls: i === todayIdx ? 'bg-primary' : 'bg-slate-200',
-                    isToday: i === todayIdx
-                })));
-            }
-            setLoading(false);
-        };
-        fetchPayments();
-    }, []);
-    
+    const { invoices, stats, activity, barData, loading, updateInvoice: updateInvoiceHook, deleteInvoice: deleteInvoiceHook } = useBilling();
     // Header dropdowns
     const [showNotifications, setShowNotifications] = useState(false);
     const [showSettings,      setShowSettings]      = useState(false);
@@ -122,22 +41,21 @@ export default function BillingPage() {
     const [viewInv,  setViewInv]  = useState(null);
     const [editInv,  setEditInv]  = useState(null);
 
+    const [filter, setFilter]       = useState('All');
+
     const updateInvoice = (updatedInv) => {
-        setInvoices(prev => prev.map(inv => inv.id === updatedInv.id ? updatedInv : inv));
+        updateInvoiceHook(updatedInv);
         setEditInv(null);
-        showToast('Invoice updated successfully', 'success');
     };
 
     const handleDelete = (id) => {
         if(window.confirm(`Are you sure you want to delete Invoice ${id}?`)) {
-            setInvoices(prev => prev.filter(inv => inv.id !== id));
+            deleteInvoiceHook(id);
             
             // Adjust pagination if necessary
             if (paginatedInvoices.length === 1 && currentPage > 1) {
                 setCurrentPage(currentPage - 1);
             }
-            
-            showToast('Invoice deleted', 'success');
         }
     };
 
@@ -404,10 +322,8 @@ export default function BillingPage() {
                 </div>
             )}
 
-            <div className={`flex bg-slate-50 min-h-screen font-body selection:bg-primary/10 ${printInv ? 'print:hidden' : ''}`}>
-            <Sidebar />
-
-            <div className="flex-1 min-h-screen relative flex flex-col">
+            <DashboardLayout role="secretary">
+            <div className={`flex-1 relative flex flex-col ${printInv ? 'print:hidden' : ''}`}>
                 
                 {/* Header Anchor */}
                 <header className="fixed top-0 right-0 w-[calc(100%-18rem)] h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between px-8">
@@ -487,7 +403,7 @@ export default function BillingPage() {
                 </header>
 
                 {/* Main Content Scroll Canvas */}
-                <main className="pt-24 pb-12 px-8 flex-1 overflow-y-auto">
+                <div className="pt-24 pb-12 px-8 flex-1 overflow-y-auto">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                         className="max-w-[1400px] mx-auto"
@@ -759,10 +675,10 @@ export default function BillingPage() {
                             </div>
                         </div>
                     </motion.div>
-                </main>
+                </div>
 
             </div>
-        </div>
+        </DashboardLayout>
         </React.Fragment>
     );
 }

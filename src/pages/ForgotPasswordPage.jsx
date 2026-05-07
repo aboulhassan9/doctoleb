@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { authService } from '../services/auth';
+import { authService } from '@/services/auth';
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');

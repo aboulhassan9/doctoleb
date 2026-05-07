@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { reportService } from '../services/reports';
-import { patientService } from '../services/patients';
-import { doctorService } from '../services/doctors';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
-import DoctorSidebar from '../components/DoctorSidebar';
+import { documentService } from '@/services/documents';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { usePatients } from '@/hooks/features/usePatients';
+import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
 
 
 export default function DoctorReportsPage() {
@@ -17,33 +18,19 @@ export default function DoctorReportsPage() {
     const [treatmentPlan, setTreatmentPlan] = useState('');
     const [recommendations, setRecommendations] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
-    const [patients, setPatients] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
-    const [doctorId, setDoctorId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const { user } = useAuth();
     const { showToast } = useToast();
 
-    useEffect(() => {
-        const fetchPatients = async () => {
-            const { data } = await patientService.getAll();
-            if (data) {
-                setPatients(data);
-                if (data.length > 0) setSelectedPatient(data[0]);
-            }
-        };
-        fetchPatients();
-    }, []);
+    const { patients } = usePatients();
+    const { doctorId } = useDoctorProfile();
 
     useEffect(() => {
-        const fetchDoctorProfile = async () => {
-            if (!user?.id) return;
-            const { data } = await doctorService.getByUserId(user.id);
-            setDoctorId(data?.id || null);
-        };
-
-        fetchDoctorProfile();
-    }, [user?.id]);
+        if (patients && patients.length > 0 && !selectedPatient) {
+            setSelectedPatient(patients[0]);
+        }
+    }, [patients, selectedPatient]);
 
     const handleSave = async () => {
         if (!selectedPatient) {
@@ -77,12 +64,12 @@ export default function DoctorReportsPage() {
                 recommendations || 'Not provided.',
             ].join('\n');
 
-            const { error } = await reportService.create({
+            const { error } = await documentService.createReport({
                 patient_id: selectedPatient.id,
                 doctor_id: doctorId,
-                report_type: 'Comprehensive Report',
                 title: `Comprehensive Report - ${patientName || selectedPatient.id.slice(0, 8)}`,
                 content,
+                created_by: user.id,
             });
 
             if (error) throw error;
@@ -90,7 +77,7 @@ export default function DoctorReportsPage() {
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 3000);
         } catch (error) {
-            console.error('Failed to save report:', error);
+            logError('Failed to save report:', error);
             showToast('Failed to save report', 'error');
         } finally {
             setIsSaving(false);
@@ -142,10 +129,7 @@ export default function DoctorReportsPage() {
     };
 
     return (
-        <div className="flex h-screen w-full bg-[#f5f7f8] text-[#0f172a] overflow-hidden font-['Inter']">
-            <DoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-hidden">
+        <DashboardLayout role="doctor">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -372,7 +356,6 @@ export default function DoctorReportsPage() {
                         </footer>
                     </div>
                 </div>
-            </main>
 
             {showSuccess && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -387,6 +370,6 @@ export default function DoctorReportsPage() {
                     </div>
                 </div>
             )}
-        </div>
+        </DashboardLayout>
     );
 }

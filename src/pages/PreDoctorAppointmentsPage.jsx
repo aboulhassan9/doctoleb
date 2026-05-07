@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import PreDoctorSidebar from '../components/PreDoctorSidebar';
-import { appointmentService } from '../services/appointments';
-import { stagger, fadeUp } from '../lib/animations';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { appointmentService } from '@/services/appointments';
+import { useAppointments } from '@/hooks/features/useAppointments';
+import { stagger, fadeUp } from '@/lib/animations';
 
 const AVATAR_COLORS = [
     'bg-primary/10 text-primary', 'bg-success/10 text-success',
@@ -21,32 +22,24 @@ const STATUS_STYLE = {
 export default function PreDoctorAppointmentsPage() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
-    const [appointments, setAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const { raw: rawAppointments, loading } = useAppointments({ mode: 'all' });
 
-    useEffect(() => {
-        (async () => {
-            setLoading(true);
-            const { data } = await appointmentService.getAll();
-            if (data) {
-                const start = new Date(); start.setHours(0, 0, 0, 0);
-                const end   = new Date(); end.setHours(23, 59, 59, 999);
-                setAppointments(data.filter(a => {
-                    const d = new Date(a.scheduled_at);
-                    return d >= start && d <= end;
-                }));
-            }
-            setLoading(false);
-        })();
-    }, []);
+    const appointments = React.useMemo(() => {
+        if (!rawAppointments) return [];
+        const start = new Date(); start.setHours(0, 0, 0, 0);
+        const end   = new Date(); end.setHours(23, 59, 59, 999);
+        return rawAppointments.filter(a => {
+            if (!a.scheduled_at) return false;
+            const d = new Date(a.scheduled_at);
+            return d >= start && d <= end;
+        });
+    }, [rawAppointments]);
 
     return (
-        <div className="flex h-screen overflow-hidden font-display bg-background-light">
-            <PreDoctorSidebar />
-
-            <main className="flex-1 flex flex-col overflow-y-auto">
+        <DashboardLayout role="pre_doctor">
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
                         <div className="relative w-full">
@@ -154,7 +147,12 @@ export default function PreDoctorAppointmentsPage() {
                                                         View Record
                                                     </motion.button>
                                                 ) : (
-                                                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => navigate('/predoctor-new-check')} className="px-4 py-2 bg-primary text-white rounded-lg font-bold text-xs uppercase">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.02 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        onClick={() => navigate('/predoctor-new-check', { state: { patient: appt.patients, appointment: appt } })}
+                                                        className="px-4 py-2 bg-primary text-white rounded-lg font-bold text-xs uppercase"
+                                                    >
                                                         {appt.status === 'pre_check' ? 'Resume' : 'Start Pre-Check'}
                                                     </motion.button>
                                                 )}
@@ -166,7 +164,7 @@ export default function PreDoctorAppointmentsPage() {
                         </table>
                     </motion.div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </DashboardLayout>
     );
 }
