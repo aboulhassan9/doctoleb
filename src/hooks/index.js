@@ -18,6 +18,7 @@ export { useCertificates } from './features/useCertificates';
 // Encounter hooks (Block B)
 export { useEncounter } from './features/useEncounter';
 export { useDoctorEncounterTimeline } from './features/useDoctorEncounterTimeline';
+export { useEncounterDraft } from './features/useEncounterDraft';
 export { useEncounterNotes } from './features/useEncounterNotes';
 export { useEncounterDiagnoses } from './features/useEncounterDiagnoses';
 export { useEncounterPrescriptions } from './features/useEncounterPrescriptions';

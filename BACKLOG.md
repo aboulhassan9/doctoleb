@@ -66,4 +66,5 @@ This file exists so deferred items do not stay scattered across tier plans, revi
 | Retired deployed Edge Functions | Deleted from live Supabase: `auth`, `appointments`, `patients`, `process-payment`, `consultations`, `referrals` |
 | Private file buckets | `clinical-documents` and `message-attachments` exist and are private |
 | Encounter completion contract | `complete_encounter` blocks draft documents and empty encounters; prescriptions require an encounter diagnosis |
+| Encounter note draft | `useEncounterDraft` persists unsaved note text locally per encounter every 30 seconds |
 | Live anon RPC exposure diagnostics | Active through `.env.test.local` + `.env.local`; SQL audit/pgTAP still need `BACKEND_TEST_DATABASE_URL` |

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { LoadingSkeleton, EmptyState } from '@/components/ui';
+import { useEncounterDraft } from '@/hooks';
 import { INPUT_CLASS, TEXTAREA_CLASS, BUTTON_PRIMARY, BUTTON_SECONDARY } from '@/lib/styles';
 
 const NOTE_TYPES = [
@@ -37,8 +38,16 @@ export default function EncounterNotesTab({
   isActive = false,
 }) {
   const [showForm, setShowForm] = useState(false);
-  const [noteType, setNoteType] = useState('general');
-  const [content, setContent] = useState('');
+  const {
+    draft,
+    updateDraft,
+    persistDraft,
+    clearDraft,
+    hasDraft,
+    lastSavedAt,
+  } = useEncounterDraft(encounterId);
+  const noteType = draft.noteType;
+  const content = draft.content;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,8 +63,7 @@ export default function EncounterNotesTab({
     });
 
     if (success) {
-      setContent('');
-      setNoteType('general');
+      clearDraft();
       setShowForm(false);
     }
   };
@@ -73,16 +81,27 @@ export default function EncounterNotesTab({
               className={`${BUTTON_PRIMARY} flex items-center gap-2`}
             >
               <span className="material-symbols-outlined text-lg">add</span>
-              Add Note
+              {hasDraft ? 'Resume Note Draft' : 'Add Note'}
             </button>
           ) : (
             <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-slate-900">New Clinical Note</h4>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">New Clinical Note</h4>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {lastSavedAt
+                      ? `Draft saved locally ${formatTime(lastSavedAt)}`
+                      : 'Draft autosaves locally every 30 seconds.'}
+                  </p>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    persistDraft();
+                    setShowForm(false);
+                  }}
                   className="text-slate-400 hover:text-slate-600"
+                  aria-label="Close note draft"
                 >
                   <span className="material-symbols-outlined text-xl">close</span>
                 </button>
@@ -94,8 +113,8 @@ export default function EncounterNotesTab({
                   <button
                     key={value}
                     type="button"
-                    onClick={() => setNoteType(value)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    onClick={() => updateDraft({ noteType: value })}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
                       noteType === value
                         ? NOTE_TYPE_COLORS[value]
                         : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
@@ -110,7 +129,8 @@ export default function EncounterNotesTab({
               {/* Content */}
               <textarea
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => updateDraft({ content: e.target.value })}
+                onBlur={persistDraft}
                 placeholder="Enter your clinical note..."
                 rows={4}
                 className={TEXTAREA_CLASS}
@@ -119,12 +139,27 @@ export default function EncounterNotesTab({
 
               {/* Actions */}
               <div className="flex items-center gap-3 justify-end">
+                {hasDraft && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearDraft();
+                      setShowForm(false);
+                    }}
+                    className="px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-error transition-colors"
+                  >
+                    Discard Draft
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    persistDraft();
+                    setShowForm(false);
+                  }}
                   className={BUTTON_SECONDARY}
                 >
-                  Cancel
+                  Close
                 </button>
                 <button
                   type="submit"

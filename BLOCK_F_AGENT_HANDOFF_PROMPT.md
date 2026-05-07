@@ -110,6 +110,7 @@ These are committed-or-ready-to-commit changes you should expect to see in `git 
 - `NEXT_STEPS_PLAN.md` — new, ~400 lines, 11 sections. Forward roadmap covering ERD export, UX flows, business logic, API contracts.
 - `src/hooks/features/useEncounter.js` + `src/pages/DoctorEncounterPage.jsx` — direct encounter resume can now start from the loaded appointment relation, not only the route appointment id.
 - `src/pages/DoctorEncounterPage.jsx` + `src/components/encounter/EncounterPrescriptionsTab.jsx` — completion and prescribing UX now mirrors the backend contract: draft documents block completion, empty encounters require a note or summary, prescriptions require an encounter diagnosis.
+- `src/hooks/features/useEncounterDraft.js` + `src/components/encounter/EncounterNotesTab.jsx` — unsaved clinical-note text now persists locally per encounter and autosaves every 30 seconds; the saved medical record is still created only through explicit note save.
 - `supabase/migrations/20260507103747_tier2_encounter_completion_contract.sql` — live-applied migration. `complete_encounter` enforces draft-document/no-note guards; `enforce_prescription_requires_diagnosis` blocks prescriptions without an encounter diagnosis.
 - `scripts/backend-db-contract-tests.mjs` — anon RPC diagnostics now include `enforce_prescription_requires_diagnosis`.
 
