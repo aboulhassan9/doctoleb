@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { authService } from '@/services/auth';
+import { useBrand } from '@/contexts/BrandContext';
 
 const ForgotPasswordPage = () => {
+    const { displayName } = useBrand();
     const [email, setEmail] = useState('');
     const [step, setStep] = useState(1);
     const [error, setError] = useState('');
@@ -40,9 +42,9 @@ const ForgotPasswordPage = () => {
                 <div className="relative z-10 p-16 flex flex-col h-full">
                     <motion.div initial="hidden" animate="visible" variants={fadeUp}>
                         <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-primary/20">DL</div>
+                            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-primary/20">{displayName.slice(0, 2).toUpperCase()}</div>
                             <div>
-                                <h1 className="text-white font-black text-4xl tracking-tight">DoctoLeb</h1>
+                                <h1 className="text-white font-black text-4xl tracking-tight">{displayName}</h1>
                                 <p className="text-slate-400 text-lg mt-1 font-medium">Recovery Portal</p>
                             </div>
                         </div>

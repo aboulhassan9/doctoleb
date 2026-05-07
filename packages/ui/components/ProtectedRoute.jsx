@@ -9,12 +9,13 @@ import { isPatientRole, isClinicOpsRole } from '@/lib/appBoundaries';
  * @param {object} props
  * @param {React.ReactNode} props.children
  * @param {string} [props.requiredRole] - Exact role match guard.
+ * @param {string[]} [props.allowedRoles] - Multi-role guard for shared staff screens.
  * @param {'patient-web'|'clinic-ops'} [props.appSurface] - App-boundary guard.
  *   If 'patient-web', only patient roles pass.
  *   If 'clinic-ops', only staff/admin roles pass.
  *   Mismatches redirect to the correct home route.
  */
-export default function ProtectedRoute({ children, requiredRole = null, appSurface = null }) {
+export default function ProtectedRoute({ children, requiredRole = null, allowedRoles = null, appSurface = null }) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -44,8 +45,10 @@ export default function ProtectedRoute({ children, requiredRole = null, appSurfa
     return <Navigate to={getHomeRouteForRole(user.role)} replace />;
   }
 
-  // Per-role guard (existing behavior)
-  if (requiredRole && user.role !== requiredRole) {
+  const acceptedRoles = allowedRoles || (requiredRole ? [requiredRole] : null);
+
+  // Per-role guard (existing behavior, with optional multi-role support)
+  if (acceptedRoles && !acceptedRoles.includes(user.role)) {
     return <Navigate to={getHomeRouteForRole(user.role)} replace />;
   }
 
@@ -99,4 +102,3 @@ export function AuthRedirect({ children, intendedSurface = null, redirectAll = f
   // Right surface or no surface specified — show the page
   return children;
 }
-

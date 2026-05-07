@@ -25,7 +25,6 @@ const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Patient portal
-const PatientProfilePage = lazy(() => import('./pages/PatientProfilePage'));
 const PatientOwnProfilePage = lazy(() => import('./pages/PatientOwnProfilePage'));
 const PatientAppointmentsPage = lazy(() => import('./pages/PatientAppointmentsPage'));
 const PatientMedicalHistoryPage = lazy(() => import('./pages/PatientMedicalHistoryPage'));
@@ -53,7 +52,6 @@ function App() {
                       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                       {/* Patient Portal */}
-                      <Route path="/patient-profile/:id" element={<ProtectedRoute><PatientProfilePage /></ProtectedRoute>} />
                       <Route path="/patient-profile" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientOwnProfilePage /></ProtectedRoute>} />
                       <Route path="/patient-appointments" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientAppointmentsPage /></ProtectedRoute>} />
                       <Route path="/patient-dashboard" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientDashboardPage /></ProtectedRoute>} />

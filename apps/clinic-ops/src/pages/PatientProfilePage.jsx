@@ -7,11 +7,15 @@ import { precheckService } from '@/services/prechecks';
 import { clinicalService } from '@/services/clinical';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { SidebarProvider } from '@/contexts/SidebarContext';
+import { useBrand } from '@/contexts/BrandContext';
 import { stagger, fadeUp } from '@/lib/animations';
+import { escapeHtml } from '@/lib/html';
 
 export default function PatientProfilePage() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { displayName } = useBrand();
+    const printableBrandName = escapeHtml(displayName);
     const [searchQuery, setSearchQuery] = useState('');
     const [showNotifications, setShowNotifications] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
@@ -226,7 +230,7 @@ export default function PatientProfilePage() {
                                         <div class="logo">
                                             <div class="logo-icon">⚕</div>
                                             <div class="logo-text">
-                                                <h1>DoctoLeb</h1>
+                                                <h1>${printableBrandName}</h1>
                                                 <p>Medical Records</p>
                                             </div>
                                         </div>
@@ -271,7 +275,7 @@ export default function PatientProfilePage() {
                                         ${medications.map(med => `<div class="med-row"><div><div class="med-name">${med.name}</div><div class="med-dose">${med.dose}</div></div><div style="text-align:right;font-size:12px;color:#64748b;">${med.prescribed}</div></div>`).join('')}
                                     </div>
                                     <div class="footer">
-                                        <p>This is a computer-generated medical record. DoctoLeb • Generated on ${new Date().toLocaleString()}</p>
+                                        <p>This is a computer-generated medical record. ${printableBrandName} • Generated on ${new Date().toLocaleString()}</p>
                                     </div>
                                 </body>
                                 </html>

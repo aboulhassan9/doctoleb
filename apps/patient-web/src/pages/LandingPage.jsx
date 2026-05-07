@@ -125,7 +125,7 @@ const LandingPage = () => {
                                 <div className="relative w-full aspect-square max-w-[500px] bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-700/50 p-4">
                                     <div className="w-full h-full bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden relative group">
                                         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
-                                        <img alt="DoctoLeb Dashboard" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD061aa8HGVBAHHOhoW2cn8rtUrfONYiwb6mjT12r3V1u6iiNIFAkuII22ZGehCh6bHRzupxhBx6j0VYG_oXEl5NXTVVmE3lsWc2S0FLjZ8BaGNZ7ea7ljwiGzGMOdpX1ca5xa7gwGVMLGC_zfG4t9Z_6Kwk9ak15wDxAl9kBpEM_9raFO5tvUQtBPuL4nVWgszS40WdopLvq1_-XE-2pB181fgdE2Hd2lAUmJK6M4J_2J65es5TSDJkVZVOwkVq1mWTvCLXqkaN8c" />
+                                        <img alt={`${displayName} patient portal preview`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD061aa8HGVBAHHOhoW2cn8rtUrfONYiwb6mjT12r3V1u6iiNIFAkuII22ZGehCh6bHRzupxhBx6j0VYG_oXEl5NXTVVmE3lsWc2S0FLjZ8BaGNZ7ea7ljwiGzGMOdpX1ca5xa7gwGVMLGC_zfG4t9Z_6Kwk9ak15wDxAl9kBpEM_9raFO5tvUQtBPuL4nVWgszS40WdopLvq1_-XE-2pB181fgdE2Hd2lAUmJK6M4J_2J65es5TSDJkVZVOwkVq1mWTvCLXqkaN8c" />
                                     </div>
                                 </div>
                             </motion.div>
@@ -133,17 +133,25 @@ const LandingPage = () => {
                     </div>
                 </section>
 
-                {/* Social Proof & Stats */}
+                {/* Patient Flow Summary */}
                 <section className="py-12 bg-white dark:bg-slate-900/50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <p className="text-center text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-12">A doctor-branded patient portal for appointments, intake, and follow-up</p>
+                        <p className="text-center text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-12">A clinic patient portal for appointments, intake, and follow-up</p>
                         <motion.div 
                             variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
-                            className="grid grid-cols-2 md:grid-cols-4 gap-8 opacity-60 grayscale hover:grayscale-0 transition-all cursor-pointer"
+                            className="grid grid-cols-1 md:grid-cols-4 gap-4"
                         >
-                            {["MEDCORE", "HEALTHLINK", "VITALIS", "CAREPOINT"].map((logo) => (
-                                <motion.div key={logo} variants={fadeUp} className="flex items-center justify-center">
-                                    <div className="h-12 w-32 bg-slate-200 dark:bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400">{logo}</div>
+                            {[
+                                ['1', 'Create your patient account'],
+                                ['2', 'Choose an available visit slot'],
+                                ['3', 'Complete intake when requested'],
+                                ['4', 'Review clinic-shared documents'],
+                            ].map(([step, label]) => (
+                                <motion.div key={step} variants={fadeUp} className="flex items-center justify-center">
+                                    <div className="h-16 w-full bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center gap-3 font-bold text-slate-600 dark:text-slate-300">
+                                        <span className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">{step}</span>
+                                        <span>{label}</span>
+                                    </div>
                                 </motion.div>
                             ))}
                         </motion.div>
@@ -152,9 +160,9 @@ const LandingPage = () => {
                             className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6"
                         >
                             {[
-                                { to: 24, suffix: "/7", label: "Appointment Requests" },
-                                { to: 3, suffix: "+", label: "Practice Location Types" },
-                                { to: 100, suffix: "%", label: "Doctor-Owned Workflow" }
+                                { to: 1, suffix: "", label: "Patient Record" },
+                                { to: 3, suffix: "", label: "Main Patient Actions" },
+                                { to: 24, suffix: "/7", label: "Portal Access" }
                             ].map((stat, i) => (
                                 <motion.div 
                                     key={i} variants={fadeUp} whileHover={{ y: -10 }}
@@ -179,17 +187,17 @@ const LandingPage = () => {
                             className="text-center max-w-3xl mx-auto mb-20"
                         >
                             <h2 className="text-primary font-bold text-sm uppercase tracking-widest mb-4">Core Capabilities</h2>
-                            <p className="text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-100 mb-6">Built for the demands of modern medicine</p>
-                            <p className="text-slate-600 dark:text-slate-400 text-lg">Streamline your workflow with tools that actually understand the complexity of healthcare management.</p>
+                            <p className="text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-100 mb-6">Simple access before and after the visit</p>
+                            <p className="text-slate-600 dark:text-slate-400 text-lg">Use the web portal to request visits, complete clinic intake, and keep track of records shared with you.</p>
                         </motion.div>
                         <motion.div 
                             variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }}
                             className="grid md:grid-cols-3 gap-8"
                         >
                             {[
-                                { icon: "patient_list",  title: "Patient Tracking", text: "Secure, cloud-based electronic health records with real-time updates and intuitive history visualizations." },
-                                { icon: "calendar_month", title: "Smart Scheduling", text: "AI-powered scheduling that minimizes gaps and automatically sends appointment reminders to patients." },
-                                { icon: "payments",       title: "Automated Billing", text: "Integrated insurance claims processing and automated invoicing to ensure you get paid faster." }
+                                { icon: "calendar_month", title: "Book Appointments", text: "Request available visit times and keep upcoming appointments easy to find." },
+                                { icon: "assignment", title: "Prepare Intake", text: "Share required health details before your clinical team reviews your visit." },
+                                { icon: "description", title: "View Records", text: "Open medical documents, visit summaries, and follow-up information shared by your clinic." }
                             ].map((feat, i) => (
                                 <motion.div key={i} variants={fadeUp} whileHover={{ y: -10, scale: 1.02 }}>
                                     <BorderGlow
@@ -231,24 +239,24 @@ const LandingPage = () => {
                             <motion.div
                                 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                             >
-                                <h2 className="text-primary font-bold text-sm uppercase tracking-widest mb-4">Our Mission</h2>
+                                <h2 className="text-primary font-bold text-sm uppercase tracking-widest mb-4">About This Portal</h2>
                                 <p className="text-4xl md:text-5xl font-black text-slate-900 dark:text-slate-100 leading-tight mb-6">
-                                    Healthcare technology <span className="text-primary">built by clinicians</span>, for clinicians.
+                                    A direct digital front door for <span className="text-primary">{displayName}</span>.
                                 </p>
                                 <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-8">
-                                    DoctoLeb was founded in 2021 by a team of physicians and engineers who were frustrated by clunky, outdated practice management software. We believed clinics deserved a tool as modern and reliable as the care they provide.
+                                    This public web portal is for patients. It keeps registration, appointment requests, intake, and clinic-shared documents separate from internal staff operations.
                                 </p>
                                 <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-10">
-                                    Today, we serve thousands of healthcare professionals across the globe — helping them reclaim time, reduce errors, and deliver better patient experiences.
+                                    Doctors, secretaries, and pre-doctor staff use a different operations portal with its own login and permissions.
                                 </p>
                                 <motion.div
                                     variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}
                                     className="grid grid-cols-3 gap-6"
                                 >
                                     {[
-                                        { num: "2021", label: "Founded" },
-                                        { num: "50+", label: "Team Members" },
-                                        { num: "15+", label: "Countries" },
+                                        { num: "Patient", label: "Public Surface" },
+                                        { num: "Staff", label: "Separate Portal" },
+                                        { num: "Mobile", label: "Ready Later" },
                                     ].map((stat, i) => (
                                         <motion.div key={i} variants={fadeUp} className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
                                             <p className="text-primary text-2xl font-black mb-1">{stat.num}</p>
@@ -264,10 +272,10 @@ const LandingPage = () => {
                                 className="grid grid-cols-1 sm:grid-cols-2 gap-6"
                             >
                                 {[
-                                    { icon: "security", title: "Privacy First", text: "End-to-end encryption and full HIPAA compliance baked in from day one.", color: "bg-primary/50/10 text-primary" },
-                                    { icon: "bolt", title: "Built for Speed", text: "Snappy, real-time updates so your team never waits on the system.", color: "bg-warning/100/10 text-warning" },
-                                    { icon: "support_agent", title: "24/7 Support", text: "A dedicated team of humans ready to assist whenever you need us.", color: "bg-green-500/10 text-green-500" },
-                                    { icon: "auto_awesome", title: "Always Improving", text: "Weekly updates driven by direct feedback from our clinical community.", color: "bg-purple-500/10 text-purple-500" },
+                                    { icon: "security", title: "Private by Default", text: "Patient access is role-scoped and separate from internal clinic operations.", color: "bg-primary/50/10 text-primary" },
+                                    { icon: "event_available", title: "Appointment First", text: "The portal focuses on the practical steps around booking and preparing for care.", color: "bg-warning/100/10 text-warning" },
+                                    { icon: "fact_check", title: "Intake Ready", text: "Clinical intake can be collected before staff and doctor workflows continue.", color: "bg-green-500/10 text-green-500" },
+                                    { icon: "phone_iphone", title: "Mobile Path", text: "The same patient actions can later be served through the Flutter app.", color: "bg-slate-500/10 text-slate-500" },
                                 ].map((val, i) => (
                                     <motion.div
                                         key={i} variants={fadeUp} whileHover={{ y: -8, scale: 1.02 }}
@@ -300,7 +308,7 @@ const LandingPage = () => {
                             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                             className="text-2xl md:text-3xl font-medium text-slate-800 dark:text-slate-200 leading-relaxed italic mb-10"
                         >
-                            "DoctoLeb has completely transformed how we operate. Our administrative overhead has decreased by 40%, allowing our medical staff to focus more on what matters most: patient care."
+                            "Your patient portal should feel calm, direct, and separate from the staff tools that run the clinic behind the scenes."
                         </motion.p>
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
@@ -309,8 +317,8 @@ const LandingPage = () => {
                             <motion.div whileHover={{ scale: 1.1 }} className="w-20 h-20 rounded-full border-4 border-primary/20 p-1 mb-4 overflow-hidden shadow-lg shadow-primary/20">
                                 <img alt="Clinician portrait" className="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8iusuFH8fk3uegFC2xAi8521TKk37NZPGFmuVdAr8TcoYUb9eaTo4A6bUhNNYue9rt_i-TpTnPCoXpEHjRt_SInXav30H7Y37UQ2HFUjqfyaO52G8htWgFOtPTBBFZ70PJN8z80EIqcgvyjrkPbUBLe9Mkvo_3igCggE2jAxXdu0OMRAZ9VPlEACB-PKeffYsmF_Shpodc74vE5KzTFU-RlhnraA_kk54_wI8Ldze-PSaLUwbU0n2u8ajnx9KI_WyUFo9ivSFNKo" />
                             </motion.div>
-                            <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100">A Trusted Clinician</h4>
-                            <p className="text-slate-500 dark:text-slate-500 text-sm">Chief of Staff, Metropolitan Health</p>
+                            <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100">{displayName}</h4>
+                            <p className="text-slate-500 dark:text-slate-500 text-sm">Patient access and follow-up</p>
                         </motion.div>
                     </div>
                 </section>
@@ -325,10 +333,10 @@ const LandingPage = () => {
                                 <div className="bg-primary p-2 rounded-lg text-white">
                                     <span className="material-symbols-outlined block text-lg">health_metrics</span>
                                 </div>
-                                <span className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">DoctoLeb</span>
+                                <span className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">{displayName}</span>
                             </div>
                             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                                The world's leading clinic management software designed for efficiency and modern healthcare delivery.
+                                Patient appointment, intake, and follow-up access for this clinic.
                             </p>
                             <div className="flex gap-4 mt-6">
                                 {["public", "share", "mail"].map((icon) => (
@@ -367,7 +375,7 @@ const LandingPage = () => {
                         </div>
                     </div>
                     <div className="border-t border-slate-200 dark:border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-sm text-slate-500 dark:text-slate-500">© 2026 DoctoLeb Inc. All rights reserved.</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-500">© 2026 {displayName}. All rights reserved.</p>
                         <div className="flex gap-8 text-sm text-slate-500 dark:text-slate-500">
                             <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
                             <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>

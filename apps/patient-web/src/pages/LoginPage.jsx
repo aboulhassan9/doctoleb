@@ -3,25 +3,28 @@ import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useBrand } from '@/contexts/BrandContext';
 import { getHomeRouteForRole } from '@/lib/routes';
-import { isClinicOpsRole } from '@/lib/appBoundaries';
+import { getClinicOpsLoginUrl, isClinicOpsRole } from '@/lib/appBoundaries';
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const { signIn } = useAuth();
+    const { signIn, logout } = useAuth();
+    const { displayName } = useBrand();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { showToast } = useToast();
+    const clinicOpsLoginUrl = getClinicOpsLoginUrl();
 
     const features = [
-        { icon: 'calendar_month', text: 'Smart appointment scheduling & auto-reminders' },
-        { icon: 'patient_list',   text: 'Secure cloud-based electronic health records'  },
-        { icon: 'payments',       text: 'Automated billing & insurance processing'      },
-        { icon: 'bar_chart',      text: 'Real-time dashboards & analytics'              },
-        { icon: 'security',       text: 'HIPAA compliant · 256-bit SSL encryption'      },
+        { icon: 'calendar_month', text: 'Book and review your appointments' },
+        { icon: 'assignment',     text: 'Complete required intake before visits' },
+        { icon: 'description',    text: 'View shared medical documents and forms' },
+        { icon: 'notifications',  text: 'Receive clinic reminders in one place' },
+        { icon: 'security',       text: 'Private access protected by clinic permissions' },
     ];
 
     return (
@@ -45,15 +48,15 @@ const LoginPage = () => {
                         <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
                             <span className="material-symbols-outlined text-xl">health_metrics</span>
                         </div>
-                        <span className="text-white font-black text-2xl tracking-tight">DoctoLeb</span>
+                        <span className="text-white font-black text-2xl tracking-tight">{displayName}</span>
                     </Link>
 
                     <div className="mb-10">
                         <h1 className="text-white font-black text-4xl leading-tight mb-4">
-                            Your clinic, <span className="text-primary">intelligently</span> managed
+                            Your care, <span className="text-primary">clearly</span> organized
                         </h1>
                         <p className="text-slate-400 text-base leading-relaxed">
-                            Sign in to access your personalized dashboard and everything your team needs to deliver exceptional care.
+                            Access appointments, intake forms, and medical records shared by your clinic.
                         </p>
                     </div>
 
@@ -78,7 +81,7 @@ const LoginPage = () => {
                         <div className="flex items-center gap-8 mb-5">
                             <div className="flex items-center gap-2 opacity-50">
                                 <span className="material-symbols-outlined text-sm text-slate-400">verified_user</span>
-                                <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">HIPAA Compliant</span>
+                                <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">Private Portal</span>
                             </div>
                             <div className="flex items-center gap-2 opacity-50">
                                 <span className="material-symbols-outlined text-sm text-slate-400">security</span>
@@ -102,7 +105,7 @@ const LoginPage = () => {
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
                             <span className="material-symbols-outlined text-base">health_metrics</span>
                         </div>
-                        <span className="text-slate-900 font-black text-lg">DoctoLeb</span>
+                        <span className="text-slate-900 font-black text-lg">{displayName}</span>
                     </Link>
                     <div className="hidden lg:block" />
                     <div className="flex items-center gap-4">
@@ -124,14 +127,14 @@ const LoginPage = () => {
                             <span className="material-symbols-outlined text-primary text-3xl">health_metrics</span>
                         </div>
                         <h2 className="text-4xl font-black text-slate-900 mb-2">Welcome back</h2>
-                        <p className="text-slate-500 text-base">Sign in to your DoctoLeb account to continue</p>
+                        <p className="text-slate-500 text-base">Sign in to your patient account to continue</p>
                     </motion.div>
 
                     {/* Staff nudge banner */}
                     <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5">
                         <span className="material-symbols-outlined text-slate-400 text-lg mt-0.5">shield_person</span>
                         <p className="text-xs text-slate-500 leading-relaxed">
-                            Clinic staff? Use the <Link to="/ops/login" className="text-primary font-semibold hover:underline">Operations Portal</Link> for faster access.
+                            Clinic staff? Use the <a href={clinicOpsLoginUrl} className="text-primary font-semibold hover:underline">Operations Portal</a> instead.
                         </p>
                     </div>
 
@@ -162,7 +165,10 @@ const LoginPage = () => {
 
                             if (user) {
                                 if (isClinicOpsRole(user.role)) {
-                                    showToast('Tip: Use the Operations Portal for staff login.', 'info');
+                                    showToast('Staff accounts belong in the Operations Portal.', 'info');
+                                    await logout();
+                                    window.location.assign(clinicOpsLoginUrl);
+                                    return;
                                 } else {
                                     showToast(`Welcome, ${user.first_name}!`, 'success');
                                 }

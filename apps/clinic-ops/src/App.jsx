@@ -35,6 +35,7 @@ const PreDoctorCheckPage = lazy(() => import('./pages/PreDoctorCheckPage'));
 const PreDoctorNotificationsPage = lazy(() => import('./pages/PreDoctorNotificationsPage'));
 const PreDoctorSuccessPage = lazy(() => import('./pages/PreDoctorSuccessPage'));
 const PreDoctorSchedulePage = lazy(() => import('./pages/PreDoctorSchedulePage'));
+const PatientProfilePage = lazy(() => import('./pages/PatientProfilePage'));
 
 // Doctor
 const DoctorDashboardPage = lazy(() => import('./pages/DoctorDashboardPage'));
@@ -95,6 +96,7 @@ function App() {
                       <Route path="/predoctor-notifications" element={<ProtectedRoute requiredRole="predoctor" appSurface="clinic-ops"><PreDoctorNotificationsPage /></ProtectedRoute>} />
                       <Route path="/predoctor-success" element={<ProtectedRoute requiredRole="predoctor" appSurface="clinic-ops"><PreDoctorSuccessPage /></ProtectedRoute>} />
                       <Route path="/predoctor-schedule" element={<ProtectedRoute requiredRole="predoctor" appSurface="clinic-ops"><PreDoctorSchedulePage /></ProtectedRoute>} />
+                      <Route path="/patient-profile/:id" element={<ProtectedRoute allowedRoles={['doctor', 'predoctor', 'secretary']} appSurface="clinic-ops"><PatientProfilePage /></ProtectedRoute>} />
 
                       {/* Doctor */}
                       <Route path="/doctor-dashboard" element={<ProtectedRoute requiredRole="doctor" appSurface="clinic-ops"><DoctorDashboardPage /></ProtectedRoute>} />

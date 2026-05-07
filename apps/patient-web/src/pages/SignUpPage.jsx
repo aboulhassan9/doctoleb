@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBrand } from '@/contexts/BrandContext';
 import { getHomeRouteForRole } from '@/lib/routes';
 
 const SignUpPage = () => {
     const navigate = useNavigate();
     const { signUp } = useAuth();
+    const { displayName } = useBrand();
 
     const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirm: '' });
     const [showPassword, setShowPassword] = useState(false);
@@ -59,11 +61,11 @@ const SignUpPage = () => {
     };
 
     const benefits = [
-        { icon: 'calendar_month', text: 'Smart appointment scheduling & auto-reminders'  },
-        { icon: 'patient_list',   text: 'Secure cloud-based electronic health records'   },
-        { icon: 'payments',       text: 'Automated billing & insurance processing'       },
-        { icon: 'bar_chart',      text: 'Real-time dashboards & performance insights'    },
-        { icon: 'security',       text: 'HIPAA compliant · 256-bit SSL encryption'       },
+        { icon: 'calendar_month', text: 'Request and manage appointments' },
+        { icon: 'assignment',     text: 'Complete intake details before your visit' },
+        { icon: 'description',    text: 'Access documents your clinic shares with you' },
+        { icon: 'notifications',  text: 'Keep reminders and updates in one place' },
+        { icon: 'security',       text: 'Private patient access for your clinic record' },
     ];
 
     return (
@@ -86,14 +88,14 @@ const SignUpPage = () => {
                         <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
                             <span className="material-symbols-outlined text-xl">health_metrics</span>
                         </div>
-                        <span className="text-white font-black text-2xl tracking-tight">DoctoLeb</span>
+                        <span className="text-white font-black text-2xl tracking-tight">{displayName}</span>
                     </Link>
                     <div className="mb-10">
                         <h1 className="text-white font-black text-4xl leading-tight mb-4">
-                            The smarter way to <span className="text-primary">run your clinic</span>
+                            Start your <span className="text-primary">patient account</span>
                         </h1>
                         <p className="text-slate-400 text-base leading-relaxed">
-                            Join over 500 healthcare professionals who trust DoctoLeb for daily operations.
+                            Create a secure account to request appointments and prepare for visits with your clinic.
                         </p>
                     </div>
                     <div className="flex-1 flex flex-col gap-5">
@@ -107,7 +109,7 @@ const SignUpPage = () => {
                         ))}
                     </div>
                     <div className="mt-10 pt-8 border-t border-slate-800 grid grid-cols-3 gap-4">
-                        {[{ num: '10K+', label: 'Patients' }, { num: '500+', label: 'Clinicians' }, { num: '99.9%', label: 'Uptime' }].map((s, i) => (
+                        {[{ num: '1', label: 'Patient Profile' }, { num: '24/7', label: 'Portal Access' }, { num: '3', label: 'Core Steps' }].map((s, i) => (
                             <div key={i} className="text-center">
                                 <p className="text-primary text-xl font-black">{s.num}</p>
                                 <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{s.label}</p>
@@ -124,7 +126,7 @@ const SignUpPage = () => {
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
                             <span className="material-symbols-outlined text-base">health_metrics</span>
                         </div>
-                        <span className="text-slate-900 font-black text-lg">DoctoLeb</span>
+                        <span className="text-slate-900 font-black text-lg">{displayName}</span>
                     </Link>
                     <div className="hidden lg:block" />
                     <div className="flex items-center gap-4">
@@ -141,7 +143,7 @@ const SignUpPage = () => {
                             <span className="material-symbols-outlined text-primary text-3xl">person_add</span>
                         </div>
                         <h2 className="text-4xl font-black text-slate-900 mb-2">Create your account</h2>
-                        <p className="text-slate-500 text-base">Join DoctoLeb and streamline your clinic today</p>
+                        <p className="text-slate-500 text-base">Create a patient account for appointments, intake, and follow-up</p>
                     </motion.div>
 
                     {error && (
@@ -169,7 +171,7 @@ const SignUpPage = () => {
                             <div className="flex flex-col gap-2 flex-1">
                                 <label className="text-slate-700 text-sm font-bold px-1">Last Name</label>
                                 <input
-                                    type="text" required value={form.lastName} onChange={set('lastName')} placeholder="Smith"
+                                    type="text" required value={form.lastName} onChange={set('lastName')} placeholder="Family name"
                                     className="w-full px-4 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 text-sm shadow-sm"
                                 />
                             </div>
@@ -223,7 +225,7 @@ const SignUpPage = () => {
                             <span className="text-sm text-slate-600 leading-relaxed">
                                 I agree to the{' '}<a href="#" className="text-primary font-semibold hover:underline">Terms of Service</a>{' '}and{' '}
                                 <a href="#" className="text-primary font-semibold hover:underline">Privacy Policy</a>.
-                                My data is protected under HIPAA compliance standards.
+                                My information will be handled according to the clinic privacy policy.
                             </span>
                         </label>
 

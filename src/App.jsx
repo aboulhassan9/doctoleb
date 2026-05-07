@@ -26,7 +26,6 @@ const ForgotPasswordPage = lazy(() => import('@patient-web/pages/ForgotPasswordP
 const ResetPasswordPage = lazy(() => import('@patient-web/pages/ResetPasswordPage'));
 const NotFoundPage = lazy(() => import('@patient-web/pages/NotFoundPage'));
 
-const PatientProfilePage = lazy(() => import('@patient-web/pages/PatientProfilePage'));
 const PatientOwnProfilePage = lazy(() => import('@patient-web/pages/PatientOwnProfilePage'));
 const PatientAppointmentsPage = lazy(() => import('@patient-web/pages/PatientAppointmentsPage'));
 const PatientMedicalHistoryPage = lazy(() => import('@patient-web/pages/PatientMedicalHistoryPage'));
@@ -52,6 +51,7 @@ const PreDoctorCheckPage = lazy(() => import('@clinic-ops/pages/PreDoctorCheckPa
 const PreDoctorNotificationsPage = lazy(() => import('@clinic-ops/pages/PreDoctorNotificationsPage'));
 const PreDoctorSuccessPage = lazy(() => import('@clinic-ops/pages/PreDoctorSuccessPage'));
 const PreDoctorSchedulePage = lazy(() => import('@clinic-ops/pages/PreDoctorSchedulePage'));
+const PatientProfilePage = lazy(() => import('@clinic-ops/pages/PatientProfilePage'));
 
 // Clinic-Ops: Doctor
 const DoctorDashboardPage = lazy(() => import('@clinic-ops/pages/DoctorDashboardPage'));
@@ -106,9 +106,9 @@ function App() {
                     <Route path="/predoctor-notifications" element={<ProtectedRoute requiredRole="predoctor" appSurface="clinic-ops"><PreDoctorNotificationsPage /></ProtectedRoute>} />
                     <Route path="/predoctor-success" element={<ProtectedRoute requiredRole="predoctor" appSurface="clinic-ops"><PreDoctorSuccessPage /></ProtectedRoute>} />
                     <Route path="/predoctor-schedule" element={<ProtectedRoute requiredRole="predoctor" appSurface="clinic-ops"><PreDoctorSchedulePage /></ProtectedRoute>} />
+                    <Route path="/patient-profile/:id" element={<ProtectedRoute allowedRoles={['doctor', 'predoctor', 'secretary']} appSurface="clinic-ops"><PatientProfilePage /></ProtectedRoute>} />
 
                     {/* ── Patient (patient-web) ── */}
-                    <Route path="/patient-profile/:id" element={<ProtectedRoute><PatientProfilePage /></ProtectedRoute>} />
                     <Route path="/patient-profile" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientOwnProfilePage /></ProtectedRoute>} />
                     <Route path="/patient-appointments" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientAppointmentsPage /></ProtectedRoute>} />
                     <Route path="/patient-dashboard" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientDashboardPage /></ProtectedRoute>} />

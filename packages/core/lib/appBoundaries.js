@@ -66,6 +66,17 @@ export function getLoginPathForRole(role) {
   return '/login';
 }
 
+/**
+ * Returns the clinic operations login URL for links rendered from patient-web.
+ * In production this should be configured as VITE_CLINIC_OPS_URL.
+ */
+export function getClinicOpsLoginUrl() {
+  const configuredUrl = import.meta.env?.VITE_CLINIC_OPS_URL;
+  if (configuredUrl) return configuredUrl.replace(/\/$/, '') + '/login';
+  if (import.meta.env?.DEV) return 'http://127.0.0.1:3002/login';
+  return '/login';
+}
+
 // ── Route Ownership Lists ──
 // Used for future app-boundary enforcement and code-split verification.
 
@@ -100,6 +111,7 @@ export const CLINIC_OPS_ROUTES = Object.freeze([
   '/predoctor-notifications',
   '/predoctor-success',
   '/predoctor-schedule',
+  '/patient-profile', // shared staff patient record prefix — includes /:id
   // Doctor
   '/doctor-dashboard',
   '/doctor-patients',

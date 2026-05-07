@@ -3,7 +3,7 @@ import { tenantConfigService } from '@/services/tenantConfig';
 
 const DEFAULT_BRAND = {
   display_name: 'DoctoLeb',
-  tagline: 'Doctor-branded care, scheduling, and patient follow-up.',
+  tagline: 'Clinic care, scheduling, and patient follow-up.',
   logo_url: null,
   favicon_url: null,
   primary_color: '#0891b2',
@@ -17,6 +17,20 @@ const DEFAULT_BRAND = {
 
 const BrandContext = createContext(null);
 
+const SEED_BRAND_PLACEHOLDERS = new Set([
+  'doctor practice',
+  'dr. smith',
+]);
+
+function isSeedPlaceholder(value) {
+  if (!value || typeof value !== 'string') return true;
+  return SEED_BRAND_PLACEHOLDERS.has(value.trim().toLowerCase());
+}
+
+function firstConfiguredValue(...values) {
+  return values.find((value) => !isSeedPlaceholder(value));
+}
+
 function normalizeBrand(row) {
   const config = Array.isArray(row) ? row[0] : row;
   const appConfig = config?.app || config?.app_config || config;
@@ -24,8 +38,8 @@ function normalizeBrand(row) {
 
   return {
     ...DEFAULT_BRAND,
-    display_name: profile?.display_name || appConfig?.app_name || config?.display_name || DEFAULT_BRAND.display_name,
-    tagline: appConfig?.app_tagline || config?.tagline || DEFAULT_BRAND.tagline,
+    display_name: firstConfiguredValue(appConfig?.app_name, profile?.display_name, config?.display_name) || DEFAULT_BRAND.display_name,
+    tagline: firstConfiguredValue(appConfig?.app_tagline, config?.tagline) || DEFAULT_BRAND.tagline,
     logo_url: appConfig?.splash_logo_url || config?.logo_url || null,
     favicon_url: appConfig?.icon_url || config?.favicon_url || null,
     primary_color: appConfig?.primary_color || config?.primary_color || DEFAULT_BRAND.primary_color,

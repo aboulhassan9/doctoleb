@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { getClinicOpsLoginUrl, isClinicOpsRole } from '@/lib/appBoundaries';
 
 /**
  * NotFoundPage — 404 catch-all page.
@@ -9,16 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function NotFoundPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  const dashboardMap = {
-    doctor: '/doctor-dashboard',
-    pre_doctor: '/predoctor-dashboard',
-    secretary: '/dashboard',
-    patient: '/patient-dashboard',
-    admin: '/dashboard',
-  };
-
-  const homePath = dashboardMap[user?.role] || '/';
+  const isOpsUser = isClinicOpsRole(user?.role);
 
   return (
     <div className="min-h-screen bg-[var(--bg-base)] flex items-center justify-center px-6">
@@ -39,10 +31,16 @@ export default function NotFoundPage() {
             Go back
           </button>
           <button
-            onClick={() => navigate(homePath)}
+            onClick={() => {
+              if (isOpsUser) {
+                window.location.assign(getClinicOpsLoginUrl());
+                return;
+              }
+              navigate(user?.role === 'patient' ? '/patient-dashboard' : '/');
+            }}
             className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-medium transition-all"
           >
-            Go to Dashboard
+            {isOpsUser ? 'Open Operations Portal' : 'Go to Portal'}
           </button>
         </div>
       </div>
