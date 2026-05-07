@@ -8,7 +8,7 @@
 > - `20260506170000_backend_contract_advisor_cleanup.sql`
 > - `20260506190000_legacy_compatibility_burndown.sql`
 > Also: surface any new findings observed while verifying closure.
-> **Verdict**: **all P1 closed. Original P2 items are closed after Block F follow-up. 1 of 5 P3 closed.** Remaining work is defense-in-depth/ops: branch/local execution of the RLS test suite, purge orchestration, and the deferred document-type role matrix.
+> **Verdict**: **all P1 closed. Original P2 items are closed after Block F follow-up. 1 of 5 P3 closed.** Remaining work is defense-in-depth/ops: branch/local SQL audit + pgTAP execution, purge orchestration, and the deferred document-type role matrix. Live anon RPC exposure diagnostics now run from local env.
 
 ---
 
@@ -60,7 +60,7 @@ Legend: ✅ closed · ⚠️ partial · ❌ open · ⏸ deferred (intentional).
 | H4 | Messages redact-only | ✅ closed (= P2-4; scrub model documented) |
 | H5 | `notification_events.created_by` nullable | ✅ closed (= P2-5) |
 | H6 | `patient_consents` tightening | ✅ closed (= P2-6) |
-| H7 | RLS pgTAP test suite | 🟡 **scaffolded** (`supabase/tests/pgtap_rls.sql`; branch/local execution pending) |
+| H7 | RLS pgTAP test suite | 🟡 **scaffolded** (`supabase/tests/pgtap_rls.sql`; live anon RPC diagnostics active; branch/local SQL audit + pgTAP execution pending) |
 | H8 | "Purge a patient" Edge Function | ❌ **open** (admin DELETE policy exists; orchestration does not) |
 | H9 | Storage bucket policies + signed-URL discipline | ✅ closed (`20260507092121_storage_rls_and_private_buckets.sql` + `storageService` signed URL helpers) |
 
@@ -171,7 +171,7 @@ Policy SQL was transaction-validated through Supabase MCP on the development pro
 
 ### C-2 · H7 — RLS automated tests · **defense-in-depth gap**
 
-72 RLS policies now have a pgTAP scaffold in `supabase/tests/pgtap_rls.sql`, wired into `npm run test:backend-db-contract` when `BACKEND_TEST_DATABASE_URL` is set. It seeds synthetic patient A / patient B / doctor / admin identities in a transaction and asserts "patient B can't read patient A's encounter / clinical_note / diagnosis / prescription / lab_order / imaging_order / clinical_document / care_task / message / notification / consent / device", plus spoof/bypass write checks.
+72 RLS policies now have a pgTAP scaffold in `supabase/tests/pgtap_rls.sql`, wired into `npm run test:backend-db-contract` when `BACKEND_TEST_DATABASE_URL` is set. It seeds synthetic patient A / patient B / doctor / admin identities in a transaction and asserts "patient B can't read patient A's encounter / clinical_note / diagnosis / prescription / lab_order / imaging_order / clinical_document / care_task / message / notification / consent / device", plus spoof/bypass write checks. The same runner also performs live anon RPC exposure diagnostics from `.env.test.local` / `.env.local` without needing `BACKEND_TEST_DATABASE_URL`.
 
 Remaining work: run it on a Supabase branch/local DB and wire that database URL into CI so the scaffold becomes a hard merge gate.
 

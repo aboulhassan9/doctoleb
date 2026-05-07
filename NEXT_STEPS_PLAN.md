@@ -1,7 +1,7 @@
 # DoctoLeb · Next Steps Plan
 
 > **Date**: 2026-05-07.
-> **Companion docs**: `CLAUDE.md`, `TIER2_REVIEW.md`, `TIER2_REVIEW_ADDENDUM.md`, `TIER2_INDEX_AND_PERF_PLAN.md`, `BLOCK_E_AGENT_HANDOFF_PROMPT.md`.
+> **Companion docs**: `CLAUDE.md`, `TIER2_REVIEW.md`, `TIER2_REVIEW_ADDENDUM.md`, `TIER2_INDEX_AND_PERF_PLAN.md`, `BLOCK_F_AGENT_HANDOFF_PROMPT.md`.
 > **Purpose**: forward roadmap covering ERD export readiness, UX flows, business logic, and API contracts. Consumes the open items already cataloged in the review docs; does not re-litigate them.
 
 ---
@@ -20,12 +20,12 @@
 | Feature flags | Added/applied `20260507092109_feature_flags_audience.sql` and exposed `audience` in `tenantConfigService.getFeatureFlags()` | Feature flags are audience-gated (`public`, `patient`, `staff`, `admin`) instead of visible to every authenticated user |
 | Storage security | Added/applied `20260507092121_storage_rls_and_private_buckets.sql` plus `storageService` signed URL helpers | Clinical and message attachments use private buckets and short-lived signed URLs, not public file URLs |
 | Redaction model | Documented message redaction in `CLAUDE.md` | Current behavior is scrub: `messages.body` is overwritten with `[redacted]`, original content unrecoverable |
-| RLS tests | Added `supabase/tests/pgtap_rls.sql` and wired it into `test:backend-db-contract` | Branch/local DBs now run synthetic patient/staff RLS checks when `BACKEND_TEST_DATABASE_URL` is set |
+| RLS tests | Added `supabase/tests/pgtap_rls.sql` and wired it into `test:backend-db-contract`; runner now loads `.env.test.local` / `.env.local` / `.env` | Live anon RPC exposure diagnostics run from existing Supabase URL/key; branch/local SQL audit + pgTAP still require `BACKEND_TEST_DATABASE_URL` |
 | ERD inventory | Added `docs/erd/README.md` and `docs/erd/tables.txt` | Active public table inventory is captured; full `schema_dump.sql`/`erd.png` still need branch/local DB export |
 | Advisor cleanup | Added/applied `20260507090455_revoke_anon_notify_role_event.sql` | Live `notify_role_event` is no longer executable by `anon`; authenticated/service-role access remains |
 | Legacy DB cleanup | Added/applied `20260507091235_drop_legacy_helpers_and_views.sql` | Dropped unused old views (`doctor_dashboard_summary`, `doctor_patients`, `upcoming_appointments`) and old helper RPCs (`get_user_full_name`, `get_next_appointment`, `get_doctor_info`) |
 | Edge source burn-down | Removed local source for retired V1 Edge Functions and added `supabase/functions/README.md` | No canonical Edge Functions remain in repo; future functions must be designed as workers/proxies, not duplicate wrappers |
-| Edge deploy cleanup | Attempted live deletion for `auth`, `appointments`, `patients`, `process-payment`, `consultations`, `referrals` | Supabase returned `403` for current CLI profile; MCP defensive overwrite also failed with Supabase internal deploy error. Project owner must delete from Dashboard/owner CLI |
+| Edge deploy cleanup | Deleted live retired Edge Functions: `auth`, `appointments`, `patients`, `process-payment`, `consultations`, `referrals` | Supabase CLI and MCP both now show zero deployed Edge Functions |
 | Verify | `npm run verify` after cleanup | exit 0; lint + build + 2 contract audits + npm audit all green |
 
 **No legacy tables remained to drop.** The legacy-compatibility burndown migration (`20260506190000`) had already removed `consultations`, `notifications`, `doctor_brand`, `clinic_settings`, `medical_reports`, `certificates`, `referrals`. Every code reference cross-checks against canonical surfaces only.
@@ -138,7 +138,7 @@ This is the working backlog for the next 4–6 weeks. Each row points back to it
 |---|---|---|---|
 | A1 | `feature_flags.audience` column + audience-gated SELECT (P2-2 / H3) | Addendum §C-3 | ✅ Done |
 | A2 | Storage RLS migration + signed-URL helpers in `clinicalService` and `messagingService` (H9) | Addendum §C-1 | ✅ Done |
-| A3 | pgTAP RLS test suite (H7) | Review §10 Block G | ✅ Scaffolded; branch/local execution pending |
+| A3 | pgTAP RLS test suite (H7) | Review §10 Block G | ✅ Scaffolded; live anon RPC diagnostics active; branch/local SQL audit + pgTAP execution pending |
 | A4 | Document message-redaction model (scrub vs compliance — B-2) | Addendum §B-2 | ✅ Done |
 | A5 | Fresh-replay baseline migration for pre-history core tables and temporary legacy shells | This doc §B | ✅ Done |
 
@@ -348,7 +348,7 @@ The current 19 services already follow this. New services must too. Audit: `npm 
 
 ### G-2 · Edge Function parity (Slice 5 + per-tier additions)
 
-Today **no Edge Function source is canonical in the repo**. The old deployed V1 functions (`auth`, `appointments`, `patients`, `process-payment`, `consultations`, `referrals`) are retired and unsupported; deletion from Supabase still requires a project-owner session because the current CLI profile returns `403`. **Mobile clients can call Supabase JS directly with the anon key**, so parity is not blocking — but Phase 4 (white-label) and Phase 5 (mobile branded apps) may want a proxy/worker layer.
+Today **no Edge Function source is canonical in the repo**. The old deployed V1 functions (`auth`, `appointments`, `patients`, `process-payment`, `consultations`, `referrals`) are retired, unsupported, and now deleted from the live Supabase project. Supabase CLI and MCP both show zero deployed Edge Functions. **Mobile clients can call Supabase JS directly with the anon key**, so parity is not blocking — but Phase 4 (white-label) and Phase 5 (mobile branded apps) may want a proxy/worker layer.
 
 Plan when needed:
 

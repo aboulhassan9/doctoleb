@@ -4,7 +4,7 @@
 > **Date**: 2026-05-07.
 > **Author**: prior session after writing the index plan, security review addendum, next-steps roadmap, runtime-bug fix, repo-hygiene cleanup, RLS test scaffold, ERD inventory, and final legacy DB/source burn-down.
 > **Predecessor**: `BLOCK_E_AGENT_HANDOFF_PROMPT.md` (Block E was a clean foundation; Block F now executes the residual hardening + first feature slice).
-> **Verdict on inherited state**: stable. All P1/P2 review findings are closed. Build is green. Schema drift baseline work is implemented in-repo. Legacy DB tables, views, helper RPCs, and local retired Edge Function source are removed. The next biggest risks are branch/local RLS test execution and project-owner deletion of retired deployed Edge Functions.
+> **Verdict on inherited state**: stable. All P1/P2 review findings are closed. Build is green. Schema drift baseline work is implemented in-repo. Legacy DB tables, views, helper RPCs, local retired Edge Function source, and live retired Edge Functions are removed. The next biggest risk is branch/local SQL audit + pgTAP execution with a disposable `BACKEND_TEST_DATABASE_URL`.
 
 ---
 
@@ -114,8 +114,8 @@ These are committed-or-ready-to-commit changes you should expect to see in `git 
 ### 4.4 What did NOT land (and why)
 
 - **Full branch/local replay proof**: baseline SQL parsed cleanly through Supabase MCP inside `BEGIN … ROLLBACK`, but a full fresh branch/local replay is still recommended before ERD export. See §6.
-- **Branch/local pgTAP execution**, **full ERD export**, and **full branch/local replay proof** remain queued. **See §7.**
-- **Live Edge Function deletion** remains queued for a project-owner-authenticated Supabase session. Current CLI profile returns `403`; MCP deploy fallback returned a Supabase internal error. Local source is already gone.
+- **Branch/local SQL audit + pgTAP execution**, **full ERD export**, and **full branch/local replay proof** remain queued. **See §7.**
+- **Live Edge Function deletion is complete.** Supabase CLI and MCP both show zero deployed Edge Functions after deleting `auth`, `appointments`, `patients`, `process-payment`, `consultations`, and `referrals`. Local source is already gone.
 - **Slice 1 — Doctor encounter MVP**: blocked behind Block A residue. **Do not start until §7 closes.**
 
 ### 4.5 MCP connectivity confirmed
@@ -180,12 +180,12 @@ Current status after the latest execution pass:
 - A2 Storage RLS + signed URLs: implemented/applied in `20260507092121_storage_rls_and_private_buckets.sql`, `storageService`, `clinicalService`, `messagingService`, and `documentService`.
 - A4 redaction model: documented in `CLAUDE.md` as scrub mode.
 - `npm run verify`: green after A1/A2/A4.
-- A3 pgTAP/RLS test suite: scaffolded in `supabase/tests/pgtap_rls.sql` and wired into `scripts/backend-db-contract-tests.mjs`; branch/local execution still pending.
+- A3 pgTAP/RLS test suite: scaffolded in `supabase/tests/pgtap_rls.sql` and wired into `scripts/backend-db-contract-tests.mjs`; live anon RPC diagnostics run from `.env.test.local`/`.env.local`, while branch/local SQL audit + pgTAP execution still require `BACKEND_TEST_DATABASE_URL`.
 - A5 ERD export: `docs/erd/README.md` and `docs/erd/tables.txt` are committed; full `schema_dump.sql` and `erd.png` still need branch/local DB export.
 - Advisor cleanup: `20260507090455_revoke_anon_notify_role_event.sql` was added and applied to live; `notify_role_event` is no longer executable by `anon`.
 - Legacy DB cleanup: `20260507091235_drop_legacy_helpers_and_views.sql` was added and applied to live; old summary views and display helper RPCs are gone.
 - Edge source cleanup: local retired V1 Edge Function directories are removed; `supabase/functions/README.md` documents the future-only function contract.
-- Remaining: branch/local execution of the pgTAP suite, full fresh-replay proof, final `schema_dump.sql`/`erd.png`, and project-owner deletion of deployed retired Edge Functions.
+- Remaining: branch/local SQL audit + pgTAP execution, full fresh-replay proof, and final `schema_dump.sql`/`erd.png`.
 
 ### 7.1 A1 · `feature_flags.audience` column + audience-gated SELECT · ✅ done
 
@@ -307,7 +307,7 @@ npm run verify
 Tracked warnings to expect (these are normal):
 
 - `WARN Public function names appear in multiple migrations` for `book_slot`, `is_staff`, `get_public_tenant_app_config`, etc. — this is the create-or-replace pattern across migration history; not drift.
-- `SKIP: BACKEND_TEST_DATABASE_URL is not set` — DB contract tests want a side branch DB; not blocking unless you provision one.
+- `SKIP: BACKEND_TEST_DATABASE_URL is not set` — only SQL audit + pgTAP skip. Live anon RPC exposure diagnostics still run when `.env.test.local` enables `BACKEND_TEST_ALLOW_LIVE=true`.
 - The `Test-Path` line should print only `False` values. Any `True` means a retired V1 Edge Function source directory came back.
 
 Anything else is a regression. Stop and diagnose.
