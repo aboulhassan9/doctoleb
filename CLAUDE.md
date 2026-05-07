@@ -17,19 +17,82 @@ A React + Supabase clinic management SPA with five user roles: `doctor`, `predoc
 
 ---
 
-## Architecture — the three-layer rule
+## Architecture — Phase 3 Monorepo (apps/ + packages/)
 
 ```
-src/lib/selects.js   ← Single Source of Truth (DNA) — Postgres SELECT-field constants
-        ↓
-src/services/*.js    ← All DB ops via supabase + apiCall/apiPaged + SELECT constants
-        ↓
-src/pages/*.jsx      ← Consume services. NEVER import `supabase` directly.
-        ↓
-supabase/functions/  ← currently no canonical functions; future workers/proxies only
+doctoleb/                   ← Monorepo root
+  apps/
+    patient-web/            ← Standalone patient-facing app (port 3001)
+      src/
+        App.jsx             ← Patient-only router
+        main.jsx            ← Entry point
+        pages/              ← Landing, Login, Signup, PatientDashboard, etc.
+      index.html
+      vite.config.js        ← Independent Vite config (envDir → root)
+
+    clinic-ops/             ← Standalone staff app (port 3002)
+      src/
+        App.jsx             ← Staff-only router (secretary, doctor, predoctor)
+        main.jsx            ← Entry point
+        pages/              ← Dashboard, Doctor*, PreDoctor*, Secretary*, etc.
+        components/         ← Encounter tab components
+        hooks/              ← useEncounter*, useDoctorEncounterTimeline
+      index.html
+      vite.config.js        ← Independent Vite config (envDir → root)
+
+  packages/
+    core/                   ← Shared business logic (@doctoleb/core)
+      services/*.js         ← All DB ops via supabase + apiCall/apiPaged
+      schemas/              ← Zod validation schemas
+      lib/                  ← selects.js (DNA), stateMachines, supabase client
+      hooks/                ← Shared utility + feature hooks
+      hooks/features/       ← useAppointments, useBilling, usePatients, etc.
+
+    ui/                     ← Shared UI components (@doctoleb/ui)
+      components/ui/        ← DataTable, Modal, FormField, StatusBadge, etc.
+      components/           ← AppSidebar, ProtectedRoute, ErrorBoundary
+      contexts/             ← AuthContext, ToastContext, ThemeContext, etc.
+      styles/               ← animations.js, styles.js
+
+  src/
+    App.jsx                 ← Unified dev-mode router (all routes)
+    main.jsx                ← Root entry point
+    index.css               ← Global Tailwind + custom styles
 ```
+
+### Dev scripts
+| Command | Port | Description |
+|---|---|---|
+| `npm run dev` | 5173 | Unified dev server (all routes) |
+| `npm run dev:patient` | 3001 | Patient-web standalone |
+| `npm run dev:ops` | 3002 | Clinic-ops standalone |
+| `npm run build:patient` | — | Patient-web production build |
+| `npm run build:ops` | — | Clinic-ops production build |
+
+### Vite path aliases (`vite.config.js`)
+| Alias | Resolves to | Purpose |
+|---|---|---|
+| `@core` | `packages/core` | Canonical: shared business logic |
+| `@ui` | `packages/ui` | Canonical: shared UI components |
+| `@patient-web` | `apps/patient-web/src` | Canonical: patient app pages |
+| `@clinic-ops` | `apps/clinic-ops/src` | Canonical: staff app pages |
+| `@/services` | `packages/core/services` | **Backward compat** — DO NOT use in new code |
+| `@/schemas` | `packages/core/schemas` | **Backward compat** |
+| `@/lib` | `packages/core/lib` | **Backward compat** |
+| `@/contexts` | `packages/ui/contexts` | **Backward compat** |
+| `@/components` | `packages/ui/components` | **Backward compat** |
+| `@/hooks` | `packages/core/hooks` | **Backward compat** |
+| `@` | `src` | Root catch-all (must be LAST) |
+
+### App boundary enforcement
+- `src/core/lib/appBoundaries.js` — single source of truth for role-to-surface mapping
+- `ProtectedRoute` accepts `appSurface` prop to prevent cross-surface access
+- `AuthRedirect` controls public page behavior for authenticated users:
+  - `redirectAll` mode (login/signup): ALL authenticated users → their dashboard
+  - Default mode (landing/marketing): only wrong-surface users are redirected
 
 **If `selects.js` is wrong → services 400 → pages break silently.** It's the file most likely to cause invisible failures and the most important to verify.
+
 
 ---
 
@@ -47,7 +110,7 @@ There is no production data yet. The system is still under development, so dead 
 
 ### 1. Every service query uses `apiCall()` or `apiPaged()`
 
-`src/services/api.js` is the error contract for the entire service layer:
+`src/core/services/api.js` is the error contract for the entire service layer:
 
 ```js
 export const apiCall = async (fn) => {
@@ -67,11 +130,11 @@ export const apiCall = async (fn) => {
 - **Never `console.error()` in services.** The wrapper returns `error` as a string; pages decide how to render. Service-layer console logs are a production leak.
 - Pages may `console.error` in catch blocks (currently ~24 instances) — that's tolerated for now.
 
-### 2. Every query uses a SELECT constant from `src/lib/selects.js`
+### 2. Every query uses a SELECT constant from `src/core/lib/selects.js`
 
 - **Never `.select('*')` or bare `.select()`** in services. Use the typed constant for that table.
 - If a constant doesn't exist for a table you need, **add one to `selects.js` first**, then import it. Don't inline column lists.
-- After editing `selects.js`, **diff against the live DB** before shipping. Use `mcp__supabase__list_tables` on project `gezmfmskhmjgnquoyosq`, schema `public`, `verbose=true`. Past audits found 16 ghost columns silently 400-ing 4 services. See `docs/archive/legacy-tier-plans/TIER0_V2_PLAN.md` for the historical example.
+- After editing `selects.js`, **diff against the live DB** before shipping. Use `mcp__supabase__list_tables` on project `gezmfmskhmjgnquoyosq`, schema `public`, `verbose=true`.
 
 ### 3. Clinical and financial data is soft-deleted, never hard-deleted
 
@@ -151,7 +214,7 @@ Current status: these routes still live in one Vite app during migration. Target
 
 ---
 
-## Service layer (`src/services/`)
+## Service layer (`src/core/services/`)
 
 **Rule**: Pages NEVER import `supabase` directly. All database operations go through a service.
 
@@ -180,7 +243,7 @@ Current status: these routes still live in one Vite app during migration. Target
 
 ---
 
-## Context providers (`src/contexts/`)
+## Context providers (`src/shared-ui/contexts/`)
 
 | Context | Hook | Provides |
 |---|---|---|
@@ -221,7 +284,7 @@ Current status: these routes still live in one Vite app during migration. Target
 
 ---
 
-## Shared components (`src/components/`)
+## Shared components (`src/shared-ui/components/`)
 
 | Component | Purpose |
 |---|---|
@@ -237,7 +300,7 @@ Current status: these routes still live in one Vite app during migration. Target
 
 ---
 
-## Shared utilities (`src/lib/`)
+## Shared utilities (`src/core/lib/`)
 
 | File | Exports | Notes |
 |---|---|---|
@@ -254,7 +317,7 @@ Current status: these routes still live in one Vite app during migration. Target
 
 ---
 
-## Shared hooks (`src/hooks/`)
+## Shared hooks (`src/core/hooks/`)
 
 | Hook | File | Purpose |
 |---|---|---|
@@ -262,7 +325,7 @@ Current status: these routes still live in one Vite app during migration. Target
 
 ---
 
-## Validation (`src/schemas/index.js`)
+## Validation (`src/core/schemas/index.js`)
 
 All Zod schemas live in **one file**. Don't scatter validation logic across services or pages. Use `parseWithSchema(schema, payload)` — it returns `{ data, error }` matching the service-layer contract, so service methods can short-circuit on validation failure with one line.
 

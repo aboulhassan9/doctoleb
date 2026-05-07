@@ -1,0 +1,14 @@
+{
+  "name": "@doctoleb/ui",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared UI components, contexts, and styles for DoctoLeb apps",
+  "type": "module",
+  "exports": {
+    "./components/*": "./components/*.jsx",
+    "./components/ui": "./components/ui/index.js",
+    "./components/ui/*": "./components/ui/*.jsx",
+    "./contexts/*": "./contexts/*.jsx",
+    "./styles/*": "./styles/*.js"
+  }
+}

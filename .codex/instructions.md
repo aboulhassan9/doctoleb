@@ -33,7 +33,9 @@ Design and implementation must fit the current repo unless the user explicitly a
 - Tailwind CSS `3`
 - Framer Motion `12`
 - Supabase JS `2`
-- Existing shared UI in `src/components/ui`, `src/components/layouts`, and `src/lib/styles.js`
+- Existing shared UI in `packages/ui/components/ui`, `packages/ui/components/layouts`, and `packages/ui/styles/styles.js`
+- Shared business logic in `packages/core/services`, `packages/core/schemas`, `packages/core/hooks`
+- Patient pages in `apps/patient-web/src/pages`, staff pages in `apps/clinic-ops/src/pages`
 
 Do not assume:
 
@@ -119,8 +121,8 @@ The UI should feel doctor-owned and operationally serious, not playful, crypto, 
 
 Prefer this order:
 
-1. Existing shared primitives in `src/components/ui`
-2. Existing layout shells in `src/components/layouts`
+1. Existing shared primitives in `src/shared-ui/components/ui`
+2. Existing layout shells in `src/shared-ui/components/layouts`
 3. Small repo-local abstractions extracted from repetition
 4. New custom components only when reuse would force a bad fit
 

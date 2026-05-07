@@ -1,0 +1,33 @@
+import AppSidebar from '@/components/AppSidebar';
+import MobileTopBar from '@/components/MobileTopBar';
+import { useBrand } from '@/contexts/BrandContext';
+
+/**
+ * DashboardLayout — Shared page shell for all staff dashboards.
+ *
+ * Eliminates the layout boilerplate from every dashboard page:
+ *   <div className="flex h-screen ..."><Sidebar /><main>...</main></div>
+ *
+ * Usage:
+ *   <DashboardLayout role="doctor">
+ *     <TopBar ... />
+ *     <div className="p-8">...page content...</div>
+ *   </DashboardLayout>
+ *
+ * @param {{ role: 'doctor' | 'predoctor' | 'secretary', title?: string, children: React.ReactNode }} props
+ */
+export default function DashboardLayout({ role = 'secretary', title = null, children }) {
+  const { displayName } = useBrand();
+  const normalizedRole = role === 'pre_doctor' ? 'predoctor' : role;
+  const mobileTitle = title || displayName;
+
+  return (
+    <div className="flex h-screen w-full bg-[var(--bg-base)] text-[var(--text-base)] overflow-hidden">
+      <AppSidebar role={normalizedRole} />
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <MobileTopBar title={mobileTitle} />
+        {children}
+      </main>
+    </div>
+  );
+}

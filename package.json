@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:patient": "vite --config apps/patient-web/vite.config.js",
+    "dev:ops": "vite --config apps/clinic-ops/vite.config.js",
     "build": "vite build",
+    "build:patient": "vite build --config apps/patient-web/vite.config.js",
+    "build:ops": "vite build --config apps/clinic-ops/vite.config.js",
     "lint": "eslint .",
     "audit:backend-contract": "node scripts/backend-contract-audit.mjs",
     "test:backend-db-contract": "node scripts/backend-db-contract-tests.mjs",

@@ -1,0 +1,114 @@
+/**
+ * appBoundaries.js — Route ownership constants and role classification helpers.
+ *
+ * Central source of truth for which routes belong to the patient-web surface
+ * and which belong to the clinic-ops surface. Used during the migration period
+ * while both surfaces live in the same Vite app.
+ *
+ * @see FRONTEND_APP_SPLIT_PLAN.md
+ * @see APP_SPLIT_AGENT_HANDOFF_PROMPT.md §8
+ */
+
+// ── App Surface Identifiers ──
+
+export const APP_SURFACES = Object.freeze({
+  patientWeb: 'patient-web',
+  clinicOps: 'clinic-ops',
+});
+
+// ── Role Classification ──
+
+export const PATIENT_WEB_ROLES = Object.freeze(['patient']);
+
+export const CLINIC_OPS_ROLES = Object.freeze([
+  'doctor',
+  'secretary',
+  'predoctor',
+  'admin',
+]);
+
+/**
+ * Returns true if the role belongs to the patient-web surface.
+ * @param {string} role
+ * @returns {boolean}
+ */
+export function isPatientRole(role) {
+  return PATIENT_WEB_ROLES.includes(role);
+}
+
+/**
+ * Returns true if the role belongs to the clinic-ops surface.
+ * @param {string} role
+ * @returns {boolean}
+ */
+export function isClinicOpsRole(role) {
+  return CLINIC_OPS_ROLES.includes(role);
+}
+
+/**
+ * Returns which app surface a role belongs to.
+ * @param {string} role
+ * @returns {'patient-web'|'clinic-ops'|null}
+ */
+export function getAppSurfaceForRole(role) {
+  if (isPatientRole(role)) return APP_SURFACES.patientWeb;
+  if (isClinicOpsRole(role)) return APP_SURFACES.clinicOps;
+  return null;
+}
+
+/**
+ * Returns the appropriate login path for a role.
+ * @param {string} role
+ * @returns {string}
+ */
+export function getLoginPathForRole(role) {
+  if (isClinicOpsRole(role)) return '/ops/login';
+  return '/login';
+}
+
+// ── Route Ownership Lists ──
+// Used for future app-boundary enforcement and code-split verification.
+
+export const PATIENT_WEB_ROUTES = Object.freeze([
+  '/',
+  '/login',
+  '/signup',
+  '/marketing',
+  '/forgot-password',
+  '/reset-password',
+  '/patient-dashboard',
+  '/patient-profile',
+  '/patient-appointments',
+  '/patient-history',
+]);
+
+export const CLINIC_OPS_ROUTES = Object.freeze([
+  '/ops/login',
+  // Secretary
+  '/dashboard',
+  '/patients',
+  '/appointments',
+  '/billing',
+  '/billing/new',
+  '/secretary-slots',
+  '/secretary-booking',
+  // Pre-doctor
+  '/predoctor-dashboard',
+  '/predoctor-patients',
+  '/predoctor-appointments',
+  '/predoctor-new-check',
+  '/predoctor-notifications',
+  '/predoctor-success',
+  '/predoctor-schedule',
+  // Doctor
+  '/doctor-dashboard',
+  '/doctor-patients',
+  '/doctor-appointments',
+  '/doctor-encounter', // prefix — includes /:appointmentId and -id/:encounterId
+  '/doctor-lab-request',
+  '/doctor-patient',   // prefix — includes /:id
+  '/doctor-patient-history', // prefix — includes /:id
+  '/doctor-reports',
+  '/doctor-referrals',
+  '/doctor-certificates',
+]);

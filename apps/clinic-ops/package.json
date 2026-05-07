@@ -1,0 +1,12 @@
+{
+  "name": "@doctoleb/clinic-ops",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint src --ext .js,.jsx",
+    "preview": "vite preview"
+  }
+}

@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+﻿import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
@@ -123,18 +123,20 @@ function serviceFileFromImport(importPath) {
   if (!serviceName) return null;
 
   const normalizedServiceName = serviceName.replace(/\.js$/, '');
-  const file = path.join(root, 'src', 'services', `${normalizedServiceName}.js`);
+  const file = path.join(root, 'packages', 'core', 'services', `${normalizedServiceName}.js`);
   return fs.existsSync(file) ? file : null;
 }
 
 function assertReferencedServiceMethodsExist() {
   const consumers = [
-    ...walk(path.join(root, 'src', 'components'), ['.js', '.jsx']),
-    ...walk(path.join(root, 'src', 'contexts'), ['.js', '.jsx']),
-    ...walk(path.join(root, 'src', 'hooks'), ['.js', '.jsx']),
-    ...walk(path.join(root, 'src', 'lib'), ['.js', '.jsx']),
-    ...walk(path.join(root, 'src', 'pages'), ['.js', '.jsx']),
-    ...walk(path.join(root, 'src', 'services'), ['.js']),
+    ...walk(path.join(root, 'packages', 'ui', 'components'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'packages', 'ui', 'contexts'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'packages', 'core', 'hooks'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'apps', 'clinic-ops', 'src', 'hooks'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'packages', 'core', 'lib'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'apps', 'patient-web', 'src', 'pages'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'apps', 'clinic-ops', 'src', 'pages'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'packages', 'core', 'services'), ['.js']),
   ].filter((file) => fs.existsSync(file));
 
   const serviceMethodCache = new Map();
@@ -188,12 +190,13 @@ function assertReferencedServiceMethodsExist() {
 }
 
 function assertClinicalReferencesExist() {
-  const clinicalFile = path.join(root, 'src', 'services', 'clinical.js');
+  const clinicalFile = path.join(root, 'packages', 'core', 'services', 'clinical.js');
   const methodNames = new Set(extractServiceMethods(clinicalFile));
   const consumers = [
-    ...walk(path.join(root, 'src', 'components', 'encounter'), ['.js', '.jsx']),
-    ...walk(path.join(root, 'src', 'hooks', 'features'), ['.js', '.jsx']),
-    path.join(root, 'src', 'pages', 'DoctorEncounterPage.jsx'),
+    ...walk(path.join(root, 'apps', 'clinic-ops', 'src', 'components', 'encounter'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'apps', 'clinic-ops', 'src', 'hooks'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'packages', 'core', 'hooks', 'features'), ['.js', '.jsx']),
+    path.join(root, 'apps', 'clinic-ops', 'src', 'pages', 'DoctorEncounterPage.jsx'),
   ].filter((file) => fs.existsSync(file));
 
   const missing = [];
@@ -217,7 +220,7 @@ function assertClinicalReferencesExist() {
 }
 
 function assertLifecycleRpcsUsed() {
-  const clinical = read(path.join(root, 'src', 'services', 'clinical.js'));
+  const clinical = read(path.join(root, 'packages', 'core', 'services', 'clinical.js'));
   const required = ['start_encounter', 'complete_encounter', 'cancel_encounter', 'finalize_clinical_document', 'void_clinical_document'];
   const missing = required.filter((rpc) => !clinical.includes(`rpc('${rpc}'`) && !clinical.includes(`rpc("${rpc}"`));
 
@@ -308,8 +311,11 @@ function assertDuplicatePublicFunctionNames() {
 }
 
 function assertKnownLegacyRisksAreTracked() {
-  const pageFiles = walk(path.join(root, 'src', 'pages'), ['.js', '.jsx']);
-  const directAppointmentCreates = findMatches(pageFiles, /appointmentService\.create\s*\(/);
+  const allPages = [
+    ...walk(path.join(root, 'apps', 'patient-web', 'src', 'pages'), ['.js', '.jsx']),
+    ...walk(path.join(root, 'apps', 'clinic-ops', 'src', 'pages'), ['.js', '.jsx']),
+  ];
+  const directAppointmentCreates = findMatches(allPages, /appointmentService\.create\s*\(/);
   if (directAppointmentCreates.length) {
     warn(
       'Legacy appointmentService.create() callers remain; allowed only as compatibility while direct DB inserts stay blocked by service/RLS',
@@ -317,15 +323,18 @@ function assertKnownLegacyRisksAreTracked() {
     );
   }
 
-  const legacyConsultationRoutes = findMatches(pageFiles, /doctor-consultation/);
+  const legacyConsultationRoutes = findMatches(allPages, /doctor-consultation/);
   if (legacyConsultationRoutes.length) {
     warn('Legacy doctor-consultation route references remain; migrate consumers to encounter flow before UI release', legacyConsultationRoutes);
   }
 }
 
 const srcFiles = walk(path.join(root, 'src'), ['.js', '.jsx']);
-const pageFiles = walk(path.join(root, 'src', 'pages'), ['.js', '.jsx']);
-const serviceFiles = walk(path.join(root, 'src', 'services'), ['.js']);
+const pageFiles = [
+  ...walk(path.join(root, 'apps', 'patient-web', 'src', 'pages'), ['.js', '.jsx']),
+  ...walk(path.join(root, 'apps', 'clinic-ops', 'src', 'pages'), ['.js', '.jsx']),
+];
+const serviceFiles = walk(path.join(root, 'packages', 'core', 'services'), ['.js']);
 const functionFiles = walk(path.join(root, 'supabase', 'functions'), ['.ts', '.js']);
 
 assertNoMatches('Pages must not import or call raw Supabase clients', pageFiles, /\bsupabase\.(from|rpc|auth|storage)\b/);
