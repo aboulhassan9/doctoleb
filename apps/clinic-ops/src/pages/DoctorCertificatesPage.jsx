@@ -8,7 +8,7 @@ import { doctorService } from '@/services/doctors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useBrand } from '@/contexts/BrandContext';
-import { escapeHtml } from '@/lib/html';
+import { escapeHtml, openPrintableHtml } from '@/lib/html';
 import { getUserDisplayName, getUserInitials } from '@/lib/userDisplay';
 import { useSignaturePad } from '@/hooks/useSignaturePad';
 import { useCertificates } from '@/hooks/features/useCertificates';
@@ -82,11 +82,19 @@ export default function DoctorCertificatesPage() {
 
     const handlePrint = () => {
         const printableBrandName = escapeHtml(displayName).toUpperCase();
+        const printablePatientName = escapeHtml(patientName || '[Patient Name]');
+        const printableDiagnosis = escapeHtml(diagnosis || '[Diagnosis Input]');
+        const printableTreatment = escapeHtml(treatment || '[Treatment Details]');
+        const printableRecommendations = escapeHtml(recommendations || '[Recommendations]');
+        const printableStartDate = escapeHtml(startDate || 'Start Date');
+        const printableEndDate = escapeHtml(endDate || 'End Date');
+        const printableDoctorName = escapeHtml(`${user?.first_name || ''} ${user?.last_name || ''}`.trim());
+        const printableDoctorRole = escapeHtml(user?.role || 'Physician');
         const printContent = `
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Medical Certificate - ${patientName}</title>
+                <title>Medical Certificate - ${printablePatientName}</title>
                 <style>
                     body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
                     .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
@@ -107,18 +115,18 @@ export default function DoctorCertificatesPage() {
                     <p>Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                 </div>
                 <div class="patient">
-                    <strong>${selectedPatient ? `${selectedPatient.users?.first_name || ''} ${selectedPatient.users?.last_name || ''}`.trim() : '[Patient Name]'}</strong>
+                    <strong>${printablePatientName}</strong>
                 </div>
                 <div class="content">
-                    <p>Was examined on this date and found to be suffering from <strong>${diagnosis || '[Diagnosis Input]'}</strong>.</p>
-                    <p>For which the following treatment was administered: <em>${treatment || '[Treatment Details]'}</em>.</p>
-                    <p>The patient is advised <strong>${recommendations || '[Recommendations]'}</strong> and is deemed unfit for work/duty for a period of <span class="duration">${getDurationDays()} days</span>, from ${startDate || 'Start Date'} to ${endDate || 'End Date'}.</p>
+                    <p>Was examined on this date and found to be suffering from <strong>${printableDiagnosis}</strong>.</p>
+                    <p>For which the following treatment was administered: <em>${printableTreatment}</em>.</p>
+                    <p>The patient is advised <strong>${printableRecommendations}</strong> and is deemed unfit for work/duty for a period of <span class="duration">${getDurationDays()} days</span>, from ${printableStartDate} to ${printableEndDate}.</p>
                 </div>
                 <div class="footer">
                     <div>
                         <div class="signature"></div>
-                        <p><strong>${user?.first_name || ''} ${user?.last_name || ''}</strong></p>
-                        <p style="font-size: 12px; text-transform: capitalize;">${user?.role || 'Physician'}</p>
+                        <p><strong>${printableDoctorName}</strong></p>
+                        <p style="font-size: 12px; text-transform: capitalize;">${printableDoctorRole}</p>
                     </div>
                     <div>
                         <div style="width: 80px; height: 80px; border: 1px solid #ccc;"></div>
@@ -130,14 +138,9 @@ export default function DoctorCertificatesPage() {
             </html>
         `;
 
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-
-        setTimeout(() => {
-            printWindow.focus();
-            printWindow.print();
-        }, 250);
+        if (!openPrintableHtml(printContent, { printDelayMs: 250 })) {
+            showToast('Unable to open print preview. Please allow popups for this site.', 'error');
+        }
     };
 
     const handleSaveCertificate = async () => {

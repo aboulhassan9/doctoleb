@@ -16,18 +16,23 @@ brand_personality:
 
 # Product Summary
 
-DoctoLeb V1 is the operating system for one specific clinic with multiple doctors. It is not a marketplace, not a multi-tenant SaaS, and not a doctor-discovery product. Patients can self-register from the public website, while staff accounts are created through trusted internal clinic workflows.
+DoctoLeb V1 is the operating system for one specific clinic with multiple doctors. From any single tenant's perspective it is not a marketplace and not a doctor-discovery product. Patients can self-register from the public website, while staff accounts are created through trusted internal clinic workflows.
+
+The product is delivered as a multi-tenant SaaS using the **database-per-tenant** topology: each clinic gets its own Supabase project, its own subdomain or custom domain, and its own isolated PHI store. The user-facing experience is per-clinic; the platform underneath is multi-tenant. See `docs/decisions/ADR-003-tenant-branding-and-control-plane-config.md` and `docs/decisions/ADR-004-domain-routing-and-control-plane-contract.md`.
 
 The product should be split into separate deployable user surfaces:
 
-- **Patient Web**: the public clinic website plus patient portal.
-- **Clinic Operations**: the internal doctor, secretary, predoctor, assistant/nurse, and clinic-admin app.
-- **Flutter Patient App**: later mobile client using the same patient-facing backend contracts.
-- **SaaS Control Plane**: later DoctoLeb-owner/super-admin app with no PHI.
+- **Patient Web**: the public clinic website plus patient portal. Reached at `{tenant}.doctoleb.com` or a custom domain.
+- **Clinic Operations**: the internal doctor, secretary, predoctor, assistant/nurse, and clinic-admin app. Reached at `{tenant}.ops.doctoleb.com` or `ops.{custom-domain}`.
+- **Flutter Patient App**: later mobile client using the same patient-facing backend contracts and the same tenant resolver.
+- **DoctoLeb Marketing Site**: `doctoleb.com` — sells DoctoLeb to doctors and clinic owners. Not a tenant surface.
+- **SaaS Control Plane**: `console.doctoleb.com` — DoctoLeb-owner/super-admin app with no PHI. Owns the tenant registry, domain mapping, billing, and provisioning.
 
 The clinic-admin role is internal to the clinic tenant. It is not the SaaS super-admin.
 
-Tenant branding is configuration, not code. Doctor/clinic name, logo, favicon, colors, public copy, mobile app labels, feature flags, and consent/content surfaces must come from `tenant_profile`, `tenant_app_config`, and related tenant config tables. The future SaaS super-admin provisions those values when creating a tenant; tenant-facing web/mobile clients consume them at runtime.
+Tenant branding is configuration, not code. Doctor/clinic name, logo, favicon, colors, public copy, mobile app labels, feature flags, and consent/content surfaces come from `tenant_profile`, `tenant_app_config`, and related tenant config tables inside each tenant DB. The SaaS super-admin provisions those values when creating a tenant; tenant-facing web/mobile clients consume them at runtime via `get_public_tenant_app_config`.
+
+Tenant **routing** — which Supabase project a hostname belongs to — lives in the control plane, not in tenant DBs and not in build-time env vars. The browser resolves `hostname → tenant connection` through a public-safe resolver endpoint backed by the control-plane registry. PHI never flows through that resolver.
 
 The product exists to reduce friction across the full visit lifecycle: patient signup, scheduling, pre-check, consultation, documentation, billing, and follow-up. The interface has to support both patient confidence and staff speed, with most day-to-day complexity living in doctor, predoctor, and secretary workflows.
 
@@ -95,12 +100,14 @@ The product should feel:
 ## Non-Goals
 
 - No public doctor onboarding marketplace
-- No multi-clinic switching UX
+- No multi-clinic switching UX inside a tenant surface (one tenant per hostname)
 - No exaggerated AI-first positioning unless the feature is truly implemented
 - No consumer-social tone or decorative novelty that weakens trust
 - No staff/admin login flow as part of the patient landing-page journey
 - No SaaS super-admin PHI access inside the clinic operations app
 - No hardcoded tenant identity, doctor names, logos, palettes, or mobile app theme constants inside frontend pages
+- No `tenant_id` columns inside any tenant database (tenant isolation is at the project level, not the row level)
+- No PHI inside the SaaS control plane
 
 ## Design Implications
 

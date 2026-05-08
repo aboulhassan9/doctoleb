@@ -7,7 +7,120 @@ import { clinicalService } from '@/services/clinical';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBrand } from '@/contexts/BrandContext';
-import { escapeHtml } from '@/lib/html';
+import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { escapeHtml, openPrintableHtml, safeFilenamePart } from '@/lib/html';
+
+function buildPatientHistoryPrintHtml({ patient, visits, brandName }) {
+    const printableBrandName = escapeHtml(brandName);
+    const generatedDate = escapeHtml(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
+    const generatedDateTime = escapeHtml(new Date().toLocaleString());
+    const visitHtml = visits.map((visit) => {
+        const typeClass = String(visit.type || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        const isCompleted = visit.status === 'Completed';
+
+        return `
+            <div class="visit">
+                <div class="visit-header">
+                    <span class="visit-date">${escapeHtml(visit.date)} ${escapeHtml(visit.year)}</span>
+                    <span class="visit-type ${escapeHtml(typeClass)}">${escapeHtml(visit.type)}</span>
+                </div>
+                <div class="visit-reason">${escapeHtml(visit.reason)}</div>
+                <div class="visit-doctor">Attending: ${escapeHtml(visit.physician)} &bull; ${escapeHtml(visit.department)}</div>
+                <div class="visit-status ${isCompleted ? 'status-complete' : 'status-pending'}">
+                    <span>${isCompleted ? '&#10003;' : '&#9888;'}</span> ${escapeHtml(visit.status)}
+                </div>
+                <div class="visit-diagnosis">${escapeHtml(visit.diagnosis)}</div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Patient Medical History - ${escapeHtml(patient.name)}</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: 'Inter', Arial, sans-serif; padding: 40px; color: #1e293b; }
+                .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #0d6cf2; }
+                .logo { display: flex; align-items: center; gap: 12px; }
+                .logo-icon { width: 40px; height: 40px; background: #0d6cf2; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+                .logo-text h1 { font-size: 18px; font-weight: 800; color: #0f172a; }
+                .logo-text p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+                .patient-info { display: flex; gap: 24px; margin-bottom: 30px; }
+                .patient-avatar { width: 80px; height: 80px; background: #dbeafe; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #0d6cf2; }
+                .patient-details h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+                .patient-details .id { font-size: 14px; color: #64748b; }
+                .badges { display: flex; gap: 8px; margin-top: 12px; }
+                .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+                .badge.red { background: #fee2e2; color: #dc2626; }
+                .badge.blue { background: #dbeafe; color: #0d6cf2; }
+                .section { margin-bottom: 24px; }
+                .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+                .visit { background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+                .visit-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+                .visit-date { font-size: 14px; font-weight: 700; }
+                .visit-type { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+                .visit-type.urgent { background: #fee2e2; color: #dc2626; }
+                .visit-type.annual { background: #dbeafe; color: #0d6cf2; }
+                .visit-type.followup { background: #f1f5f9; color: #64748b; }
+                .visit-reason { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+                .visit-doctor { font-size: 12px; color: #64748b; margin-bottom: 8px; }
+                .visit-status { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+                .status-complete { color: #059669; }
+                .status-pending { color: #d97706; }
+                .visit-diagnosis { font-size: 12px; color: #475569; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+                .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #64748b; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="logo">
+                    <div class="logo-icon">+</div>
+                    <div class="logo-text">
+                        <h1>${printableBrandName}</h1>
+                        <p>Medical Records</p>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Generated</div>
+                    <div style="font-size: 14px; font-weight: 600;">${generatedDate}</div>
+                </div>
+            </div>
+            <div class="patient-info">
+                <div class="patient-avatar">${escapeHtml(patient.initials)}</div>
+                <div class="patient-details">
+                    <h2>${escapeHtml(patient.name)}</h2>
+                    <div class="id">Patient ID: ${escapeHtml(patient.id)}</div>
+                    <div class="badges">
+                        <span class="badge red">Blood Type: ${escapeHtml(patient.bloodType)}</span>
+                        <span class="badge blue">${escapeHtml(patient.allergies)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Clinical Visit History</div>
+                ${visitHtml || '<div class="visit">No clinical visits recorded.</div>'}
+            </div>
+            <div class="footer">
+                <p>This is a computer-generated medical record. ${printableBrandName} &bull; Generated on ${generatedDateTime}</p>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+function downloadHtmlDocument(html, filename) {
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
 
 export default function DoctorMedicalHistoryPage() {
     const navigate = useNavigate();
@@ -15,7 +128,6 @@ export default function DoctorMedicalHistoryPage() {
     const { showToast } = useToast();
     const { user } = useAuth();
     const { displayName } = useBrand();
-    const printableBrandName = escapeHtml(displayName);
     const [searchQuery, setSearchQuery] = useState('');
     const [timeFilter, setTimeFilter] = useState('all');
     const [patient, setPatient] = useState(null);
@@ -178,196 +290,18 @@ export default function DoctorMedicalHistoryPage() {
                         </div>
                         <div className="flex gap-3">
                             <button onClick={() => {
-                                const printContent = `
-                                    <html>
-                                    <head>
-                                        <title>Patient Medical History - ${patient.name}</title>
-                                        <style>
-                                            * { margin: 0; padding: 0; box-sizing: border-box; }
-                                            body { font-family: 'Inter', Arial, sans-serif; padding: 40px; color: #1e293b; }
-                                            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #0d6cf2; }
-                                            .logo { display: flex; align-items: center; gap: 12px; }
-                                            .logo-icon { width: 40px; height: 40px; background: #0d6cf2; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
-                                            .logo-text h1 { font-size: 18px; font-weight: 800; color: #0f172a; }
-                                            .logo-text p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-                                            .patient-info { display: flex; gap: 24px; margin-bottom: 30px; }
-                                            .patient-avatar { width: 80px; height: 80px; background: #dbeafe; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #0d6cf2; }
-                                            .patient-details h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-                                            .patient-details .id { font-size: 14px; color: #64748b; }
-                                            .badges { display: flex; gap: 8px; margin-top: 12px; }
-                                            .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-                                            .badge.red { background: #fee2e2; color: #dc2626; }
-                                            .badge.blue { background: #dbeafe; color: #0d6cf2; }
-                                            .section { margin-bottom: 24px; }
-                                            .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
-                                            .visit { background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
-                                            .visit-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
-                                            .visit-date { font-size: 14px; font-weight: 700; }
-                                            .visit-type { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-                                            .visit-type.urgent { background: #fee2e2; color: #dc2626; }
-                                            .visit-type.annual { background: #dbeafe; color: #0d6cf2; }
-                                            .visit-type.followup { background: #f1f5f9; color: #64748b; }
-                                            .visit-reason { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-                                            .visit-doctor { font-size: 12px; color: #64748b; margin-bottom: 8px; }
-                                            .visit-status { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-                                            .status-complete { color: #059669; }
-                                            .status-pending { color: #d97706; }
-                                            .visit-diagnosis { font-size: 12px; color: #475569; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
-                                            .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #64748b; }
-                                        </style>
-                                    </head>
-                                    <body>
-                                        <div class="header">
-                                            <div class="logo">
-                                                <div class="logo-icon">⚕</div>
-                                                <div class="logo-text">
-                                                    <h1>${printableBrandName}</h1>
-                                                    <p>Medical Records</p>
-                                                </div>
-                                            </div>
-                                            <div style="text-align: right;">
-                                                <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Generated</div>
-                                                <div style="font-size: 14px; font-weight: 600;">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-                                            </div>
-                                        </div>
-                                        <div class="patient-info">
-                                            <div class="patient-avatar">${patient.initials}</div>
-                                            <div class="patient-details">
-                                                <h2>${patient.name}</h2>
-                                                <div class="id">Patient ID: ${patient.id}</div>
-                                                <div class="badges">
-                                                    <span class="badge red">Blood Type: ${patient.bloodType}</span>
-                                                    <span class="badge blue">${patient.allergies}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="section">
-                                            <div class="section-title">Clinical Visit History</div>
-                                            ${visits.map(visit => `
-                                                <div class="visit">
-                                                    <div class="visit-header">
-                                                        <span class="visit-date">${visit.date} ${visit.year}</span>
-                                                        <span class="visit-type ${visit.type.toLowerCase().replace(' ', '')}">${visit.type}</span>
-                                                    </div>
-                                                    <div class="visit-reason">${visit.reason}</div>
-                                                    <div class="visit-doctor">Attending: ${visit.physician} • ${visit.department}</div>
-                                                    <div class="visit-status ${visit.status === 'Completed' ? 'status-complete' : 'status-pending'}">
-                                                        <span>${visit.status === 'Completed' ? '✓' : '⚠'}</span> ${visit.status}
-                                                    </div>
-                                                    <div class="visit-diagnosis">${visit.diagnosis}</div>
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                        <div class="footer">
-                                            <p>This is a computer-generated medical record. ${printableBrandName} • Generated on ${new Date().toLocaleString()}</p>
-                                        </div>
-                                    </body>
-                                    </html>
-                                `;
-                                const printWindow = window.open('', '_blank');
-                                printWindow.document.write(printContent);
-                                printWindow.document.close();
-                                printWindow.print();
+                                const printContent = buildPatientHistoryPrintHtml({ patient, visits, brandName: displayName });
+                                if (!openPrintableHtml(printContent)) {
+                                    showToast('Unable to open print preview. Please allow popups for this site.', 'error');
+                                }
                             }} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-sm rounded-xl transition-all shadow-sm">
                                 <span className="material-symbols-outlined text-[18px]">print</span>
                                 Print View
                             </button>
                             <button onClick={() => {
-                                const printContent = `
-                                    <html>
-                                    <head>
-                                        <title>Patient Medical History - ${patient.name}</title>
-                                        <style>
-                                            * { margin: 0; padding: 0; box-sizing: border-box; }
-                                            body { font-family: 'Inter', Arial, sans-serif; padding: 40px; color: #1e293b; }
-                                            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #0d6cf2; }
-                                            .logo { display: flex; align-items: center; gap: 12px; }
-                                            .logo-icon { width: 40px; height: 40px; background: #0d6cf2; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
-                                            .logo-text h1 { font-size: 18px; font-weight: 800; color: #0f172a; }
-                                            .logo-text p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-                                            .patient-info { display: flex; gap: 24px; margin-bottom: 30px; }
-                                            .patient-avatar { width: 80px; height: 80px; background: #dbeafe; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #0d6cf2; }
-                                            .patient-details h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-                                            .patient-details .id { font-size: 14px; color: #64748b; }
-                                            .badges { display: flex; gap: 8px; margin-top: 12px; }
-                                            .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-                                            .badge.red { background: #fee2e2; color: #dc2626; }
-                                            .badge.blue { background: #dbeafe; color: #0d6cf2; }
-                                            .section { margin-bottom: 24px; }
-                                            .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
-                                            .visit { background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
-                                            .visit-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
-                                            .visit-date { font-size: 14px; font-weight: 700; }
-                                            .visit-type { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-                                            .visit-type.urgent { background: #fee2e2; color: #dc2626; }
-                                            .visit-type.annual { background: #dbeafe; color: #0d6cf2; }
-                                            .visit-type.followup { background: #f1f5f9; color: #64748b; }
-                                            .visit-reason { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-                                            .visit-doctor { font-size: 12px; color: #64748b; margin-bottom: 8px; }
-                                            .visit-status { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-                                            .status-complete { color: #059669; }
-                                            .status-pending { color: #d97706; }
-                                            .visit-diagnosis { font-size: 12px; color: #475569; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
-                                            .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #64748b; }
-                                        </style>
-                                    </head>
-                                    <body>
-                                        <div class="header">
-                                            <div class="logo">
-                                                <div class="logo-icon">⚕</div>
-                                                <div class="logo-text">
-                                                    <h1>${printableBrandName}</h1>
-                                                    <p>Medical Records</p>
-                                                </div>
-                                            </div>
-                                            <div style="text-align: right;">
-                                                <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Generated</div>
-                                                <div style="font-size: 14px; font-weight: 600;">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-                                            </div>
-                                        </div>
-                                        <div class="patient-info">
-                                            <div class="patient-avatar">${patient.initials}</div>
-                                            <div class="patient-details">
-                                                <h2>${patient.name}</h2>
-                                                <div class="id">Patient ID: ${patient.id}</div>
-                                                <div class="badges">
-                                                    <span class="badge red">Blood Type: ${patient.bloodType}</span>
-                                                    <span class="badge blue">${patient.allergies}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="section">
-                                            <div class="section-title">Clinical Visit History</div>
-                                            ${visits.map(visit => `
-                                                <div class="visit">
-                                                    <div class="visit-header">
-                                                        <span class="visit-date">${visit.date} ${visit.year}</span>
-                                                        <span class="visit-type ${visit.type.toLowerCase().replace(' ', '')}">${visit.type}</span>
-                                                    </div>
-                                                    <div class="visit-reason">${visit.reason}</div>
-                                                    <div class="visit-doctor">Attending: ${visit.physician} • ${visit.department}</div>
-                                                    <div class="visit-status ${visit.status === 'Completed' ? 'status-complete' : 'status-pending'}">
-                                                        <span>${visit.status === 'Completed' ? '✓' : '⚠'}</span> ${visit.status}
-                                                    </div>
-                                                    <div class="visit-diagnosis">${visit.diagnosis}</div>
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                        <div class="footer">
-                                            <p>This is a computer-generated medical record. ${printableBrandName} • Generated on ${new Date().toLocaleString()}</p>
-                                        </div>
-                                    </body>
-                                    </html>
-                                `;
-                                const blob = new Blob([printContent], { type: 'text/html' });
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.href = url;
-                                a.download = `Patient_History_${patient.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.html`;
-                                document.body.appendChild(a);
-                                a.click();
-                                document.body.removeChild(a);
-                                URL.revokeObjectURL(url);
+                                const printContent = buildPatientHistoryPrintHtml({ patient, visits, brandName: displayName });
+                                const filename = `Patient_History_${safeFilenamePart(patient.name, 'patient')}_${new Date().toISOString().split('T')[0]}.html`;
+                                downloadHtmlDocument(printContent, filename);
                             }} className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white hover:text-primary font-bold text-sm rounded-xl transition-all shadow-lg">
                                 <span className="material-symbols-outlined text-[18px]">download</span>
                                 Download All Records

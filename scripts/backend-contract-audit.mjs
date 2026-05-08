@@ -329,17 +329,88 @@ function assertKnownLegacyRisksAreTracked() {
   }
 }
 
+// ── ADR-004 guards: hostname routing + control-plane boundary ──
+
+function frontendCodeFiles() {
+  return [
+    ...walk(path.join(root, 'apps'), ['.js', '.jsx', '.ts', '.tsx']),
+    ...walk(path.join(root, 'packages'), ['.js', '.jsx', '.ts', '.tsx']),
+    ...walk(path.join(root, 'src'), ['.js', '.jsx', '.ts', '.tsx']),
+  ];
+}
+
+function assertNoHardcodedTenantSupabaseUrls() {
+  // Real Supabase URLs look like https://<20-char-project-ref>.supabase.co
+  // Embedding one in executable code defeats the runtime tenant resolver
+  // (ADR-004 Slice D/E). Env vars in `.env*` and references in /docs/ are
+  // allowed; this check only scans executable code.
+  const matches = findMatches(frontendCodeFiles(), /https:\/\/[a-z0-9]{20}\.supabase\.co/);
+
+  if (matches.length) {
+    fail(
+      'No hardcoded tenant Supabase URLs in executable code (use configureSupabaseClient via TenantBootstrap)',
+      matches
+    );
+  } else {
+    pass('No hardcoded tenant Supabase URLs in executable code');
+  }
+}
+
+function assertNoServiceRoleKeyReferencesInFrontend() {
+  // Service-role keys must never reach a browser response. The literal
+  // identifier `service_role` should only appear in:
+  //   - supabase/migrations/  (GRANT/REVOKE statements)
+  //   - scripts/              (server-side automation)
+  //   - docs/                 (documentation)
+  // It must not appear in apps/, packages/, or src/.
+  const files = frontendCodeFiles();
+  const matches = findMatches(files, /\bservice_role\b/);
+
+  if (matches.length) {
+    fail(
+      'Service-role key references must not appear in frontend packages/apps (anon keys only — ADR-004)',
+      matches
+    );
+  } else {
+    pass('No service-role references in frontend packages/apps');
+  }
+}
+
+function assertNoTenantIdColumnInMigrations() {
+  // ADR-004 + ADR-002 + ADR-003: database-per-tenant. A tenant_id column
+  // declaration (with a Postgres column type) inside any tenant DB migration
+  // is a contract violation. Mentions in comments and grants are fine
+  // because they don't match the column-type pattern.
+  const migrationFiles = walk(path.join(root, 'supabase', 'migrations'), ['.sql']);
+  const matches = findMatches(
+    migrationFiles,
+    /\btenant_id\s+(?:uuid|text|integer|int|bigint|smallint|varchar|character)/i
+  );
+
+  if (matches.length) {
+    fail(
+      'No tenant_id columns in tenant DB migrations (database-per-tenant per ADR-004)',
+      matches
+    );
+  } else {
+    pass('No tenant_id columns in tenant DB migrations');
+  }
+}
+
 const srcFiles = walk(path.join(root, 'src'), ['.js', '.jsx']);
 const pageFiles = [
   ...walk(path.join(root, 'apps', 'patient-web', 'src', 'pages'), ['.js', '.jsx']),
   ...walk(path.join(root, 'apps', 'clinic-ops', 'src', 'pages'), ['.js', '.jsx']),
 ];
 const serviceFiles = walk(path.join(root, 'packages', 'core', 'services'), ['.js']);
-const functionFiles = walk(path.join(root, 'supabase', 'functions'), ['.ts', '.js']);
+const functionFiles = [
+  ...walk(path.join(root, 'supabase', 'functions'), ['.ts', '.js']),
+  ...walk(path.join(root, 'supabase-control-plane', 'functions'), ['.ts', '.js']),
+];
 
 assertNoMatches('Pages must not import or call raw Supabase clients', pageFiles, /\bsupabase\.(from|rpc|auth|storage)\b/);
 assertNoMatches('Frontend source must not reference password_hash', srcFiles, /password_hash/);
-assertNoMatches('Services and Edge Functions must not use wildcard selects', [...serviceFiles, ...functionFiles], /\.select\s*\(\s*['"`]\*['"`]/);
+assertNoMatches('Services and Edge Functions must use explicit select lists', [...serviceFiles, ...functionFiles], /\.select\s*\(\s*(?:['"`]\*['"`]\s*)?\)/);
 assertNoMatches('Services must use apiPaged() instead of legacy paginateQuery()', serviceFiles, /\bpaginateQuery\b/);
 assertNoMatches('Single-read/write service paths must not return legacy count fields', serviceFiles, /\bcount:\s*null\b|return\s+\{\s*data\s*,\s*count\b/);
 assertNoDuplicateMethods(serviceFiles);
@@ -350,6 +421,11 @@ assertLegacyCompatibilitySurfacesRemoved();
 assertRetiredEdgeFunctionSourceRemoved();
 assertDuplicatePublicFunctionNames();
 assertKnownLegacyRisksAreTracked();
+
+// ADR-004 guards
+assertNoHardcodedTenantSupabaseUrls();
+assertNoServiceRoleKeyReferencesInFrontend();
+assertNoTenantIdColumnInMigrations();
 
 const failed = CHECKS.filter((check) => !check.passed);
 

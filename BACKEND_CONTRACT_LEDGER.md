@@ -2,8 +2,9 @@
 
 > Status: contract-freeze working ledger.
 > Scope: backend/API only; no large frontend implementation in this phase.
-> Live source of truth: Supabase project `gezmfmskhmjgnquoyosq`.
+> Live source of truth: Supabase project `gezmfmskhmjgnquoyosq` (currently the development tenant; will become tenant 1 in the control-plane registry).
 > Tenancy model: one Supabase project/database per doctor tenant; no `tenant_id` inside tenant DB.
+> Runtime routing: `hostname → tenant resolver → tenant Supabase client → existing canonical services`. See `docs/decisions/ADR-004-domain-routing-and-control-plane-contract.md`.
 
 ## Contract Rules
 
@@ -17,6 +18,26 @@
 - There are currently no canonical repo Edge Functions. Future Edge Functions must not duplicate business logic; they validate/authenticate and call canonical RPC/service paths.
 - Old duplicate tables are removed once replacement consumers are migrated. There is no production data yet, so dead/duplicate surfaces should not be preserved by default.
 - New work must not recreate or build on the removed legacy surfaces: `consultations`, `notifications`, `doctor_brand`, `clinic_settings`, `medical_reports`, `certificates`, or `referrals`.
+- **No `tenant_id` columns inside any tenant DB table.** Tenant isolation is at the Supabase project level. Adding `tenant_id` to a tenant table is a contract violation, blocked by `npm run audit:backend-contract` (Slice F of ADR-004).
+- **No service-role keys may be returned by any frontend-reachable response.** Anon keys are public (resolver may return them); service-role keys live only in server-side env vars or a secret manager.
+
+## Runtime Tenant Connection
+
+Per ADR-004, the Supabase client a service talks to is no longer a static singleton built from `import.meta.env.VITE_SUPABASE_URL`. It is configured at runtime by the app bootstrap, after the resolver returns the tenant connection blob.
+
+```txt
+window.location.hostname
+        -> classifyHostname(hostname)            (packages/core, pure function)
+        -> tenantResolverService.resolve({...})  ({ data, error } envelope)
+        -> configureSupabaseClient({ url, anonKey })
+        -> services in packages/core call supabase.from(...) / supabase.rpc(...) as before
+```
+
+Service contracts are unchanged. Every existing `import { supabase } from '@/lib/supabase'` continues to work via a Proxy compatibility shim. What changed is when the underlying client is constructed and against which tenant.
+
+The resolver endpoint itself is **public** but returns only routing metadata. PHI never flows through it. The control-plane database backing it stores only tenant routing/provisioning rows (`tenants`, `tenant_domains`, etc.) — see ADR-004 for the schema.
+
+Local development fallback: setting `VITE_DEV_TENANT_SLUG` plus the existing `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` lets `npm run dev:patient` / `npm run dev:ops` boot without a control plane.
 
 ## Legacy Removal Reminder
 

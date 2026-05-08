@@ -133,6 +133,7 @@ export const tenantConfigService = {
   async acceptConsent(payload) {
     const parsed = parse(patientConsentSchema, {
       accepted_at: new Date().toISOString(),
+      revoked_at: null,
       ...payload,
     });
     if (parsed.error) return validationError(parsed.error);

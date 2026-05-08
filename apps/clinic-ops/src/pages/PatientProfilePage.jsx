@@ -9,13 +9,130 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { stagger, fadeUp } from '@/lib/animations';
-import { escapeHtml } from '@/lib/html';
+import { escapeHtml, openPrintableHtml } from '@/lib/html';
+
+function buildPatientProfilePrintHtml({ patient, vitals, allergiesText, medicalHistory, medications, brandName }) {
+    const printableBrandName = escapeHtml(brandName);
+    const generatedDate = escapeHtml(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
+    const generatedDateTime = escapeHtml(new Date().toLocaleString());
+    const vitalsHtml = vitals.map((vital) => (
+        `<div class="vital-card"><div class="label">${escapeHtml(vital.label)}</div><div class="value">${escapeHtml(vital.value)} ${escapeHtml(vital.unit)}</div></div>`
+    )).join('') || '<div class="vital-card"><div class="value">No vitals recorded</div></div>';
+    const medicationsHtml = medications.map((med) => `
+        <div class="med-row">
+            <div>
+                <div class="med-name">${escapeHtml(med.name)}</div>
+                <div class="med-dose">${escapeHtml(med.dose)}</div>
+            </div>
+            <div style="text-align:right;font-size:12px;color:#64748b;">${escapeHtml(med.prescribed)}</div>
+        </div>
+    `).join('');
+
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Patient Record - ${escapeHtml(patient.name)}</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: 'Inter', Arial, sans-serif; padding: 40px; color: #1e293b; }
+                .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #0d6cf2; }
+                .logo { display: flex; align-items: center; gap: 12px; }
+                .logo-icon { width: 40px; height: 40px; background: #0d6cf2; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
+                .logo-text h1 { font-size: 18px; font-weight: 800; color: #0f172a; }
+                .logo-text p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+                .record-info { text-align: right; }
+                .record-info .label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+                .record-info .value { font-size: 14px; font-weight: 600; }
+                .patient-header { display: flex; gap: 24px; margin-bottom: 30px; }
+                .patient-avatar { width: 80px; height: 80px; background: #dbeafe; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #0d6cf2; }
+                .patient-details { flex: 1; }
+                .patient-name { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+                .status-badge { display: inline-block; padding: 4px 8px; background: #dbeafe; color: #0d6cf2; font-size: 10px; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+                .patient-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
+                .patient-grid div { background: #f8fafc; padding: 12px; border-radius: 8px; }
+                .patient-grid .label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+                .patient-grid .value { font-size: 14px; font-weight: 600; }
+                .section { margin-bottom: 24px; }
+                .section-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+                .vitals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+                .vital-card { background: #f8fafc; padding: 16px; border-radius: 8px; text-align: center; }
+                .vital-card .label { font-size: 10px; color: #64748b; text-transform: uppercase; }
+                .vital-card .value { font-size: 18px; font-weight: 700; }
+                .history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+                .history-card { background: #f8fafc; padding: 16px; border-radius: 8px; }
+                .history-card h4 { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+                .history-card .item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+                .history-card .item:last-child { border: none; }
+                .allergy { background: #fef2f2; border: 1px solid #fecaca; }
+                .allergy h4 { color: #dc2626 !important; }
+                .medications { margin-top: 24px; }
+                .med-row { display: flex; justify-content: space-between; padding: 12px; background: #f8fafc; margin-bottom: 8px; border-radius: 8px; }
+                .med-name { font-weight: 600; }
+                .med-dose { font-size: 12px; color: #64748b; }
+                .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #64748b; }
+                @media print { body { padding: 20px; } }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="logo">
+                    <div class="logo-icon">+</div>
+                    <div class="logo-text">
+                        <h1>${printableBrandName}</h1>
+                        <p>Medical Records</p>
+                    </div>
+                </div>
+                <div class="record-info">
+                    <div class="label">Date</div>
+                    <div class="value">${generatedDate}</div>
+                </div>
+            </div>
+            <div class="patient-header">
+                <div class="patient-avatar">${escapeHtml(patient.initials)}</div>
+                <div class="patient-details">
+                    <div class="patient-name">${escapeHtml(patient.name)}</div>
+                    <span class="status-badge">Active</span>
+                </div>
+            </div>
+            <div class="patient-grid">
+                <div><div class="label">Patient ID</div><div class="value">#${escapeHtml(String(patient.id).slice(0, 8))}</div></div>
+                <div><div class="label">Age / Sex</div><div class="value">${escapeHtml(patient.age)} / ${escapeHtml(patient.sex)}</div></div>
+                <div><div class="label">Blood Type</div><div class="value" style="color: #dc2626;">${escapeHtml(patient.bloodType)}</div></div>
+            </div>
+            <div class="section">
+                <div class="section-title">Current Vitals</div>
+                <div class="vitals-grid">${vitalsHtml}</div>
+            </div>
+            <div class="section">
+                <div class="section-title">Medical History</div>
+                <div class="history-grid">
+                    <div class="history-card allergy">
+                        <h4>Allergies</h4>
+                        <div class="item"><span>${escapeHtml(allergiesText || 'None recorded')}</span></div>
+                    </div>
+                    <div class="history-card">
+                        <h4>Medical History</h4>
+                        <div class="item"><span>${escapeHtml(medicalHistory || 'None recorded')}</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="section medications">
+                <div class="section-title">Current Medications</div>
+                ${medicationsHtml || '<div class="med-row">No medications recorded</div>'}
+            </div>
+            <div class="footer">
+                <p>This is a computer-generated medical record. ${printableBrandName} &bull; Generated on ${generatedDateTime}</p>
+            </div>
+        </body>
+        </html>
+    `;
+}
 
 export default function PatientProfilePage() {
     const navigate = useNavigate();
     const { id } = useParams();
     const { displayName } = useBrand();
-    const printableBrandName = escapeHtml(displayName);
     const [searchQuery, setSearchQuery] = useState('');
     const [showNotifications, setShowNotifications] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
@@ -176,114 +293,14 @@ export default function PatientProfilePage() {
                         <div className="flex gap-2">
                             <button onClick={() => navigate('/predoctor-new-check')} className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all">Start Pre-Check</button>
                             <button onClick={() => {
-                            const printContent = `
-                                <!DOCTYPE html>
-                                <html>
-                                <head>
-                                    <title>Patient Record - ${patient.name}</title>
-                                    <style>
-                                        * { margin: 0; padding: 0; box-sizing: border-box; }
-                                        body { font-family: 'Inter', Arial, sans-serif; padding: 40px; color: #1e293b; }
-                                        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #0d6cf2; }
-                                        .logo { display: flex; align-items: center; gap: 12px; }
-                                        .logo-icon { width: 40px; height: 40px; background: #0d6cf2; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
-                                        .logo-text h1 { font-size: 18px; font-weight: 800; color: #0f172a; }
-                                        .logo-text p { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-                                        .record-info { text-align: right; }
-                                        .record-info .label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-                                        .record-info .value { font-size: 14px; font-weight: 600; }
-                                        .patient-header { display: flex; gap: 24px; margin-bottom: 30px; }
-                                        .patient-avatar { width: 80px; height: 80px; background: #dbeafe; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #0d6cf2; }
-                                        .patient-details { flex: 1; }
-                                        .patient-name { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-                                        .status-badge { display: inline-block; padding: 4px 8px; background: #dbeafe; color: #0d6cf2; font-size: 10px; font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
-                                        .patient-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
-                                        .patient-grid div { background: #f8fafc; padding: 12px; border-radius: 8px; }
-                                        .patient-grid .label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-                                        .patient-grid .value { font-size: 14px; font-weight: 600; }
-                                        .section { margin-bottom: 24px; }
-                                        .section-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
-                                        .vitals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-                                        .vital-card { background: #f8fafc; padding: 16px; border-radius: 8px; text-align: center; }
-                                        .vital-card .icon { font-size: 20px; margin-bottom: 8px; }
-                                        .vital-card .label { font-size: 10px; color: #64748b; text-transform: uppercase; }
-                                        .vital-card .value { font-size: 18px; font-weight: 700; }
-                                        .history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-                                        .history-card { background: #f8fafc; padding: 16px; border-radius: 8px; }
-                                        .history-card h4 { font-size: 10px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
-                                        .history-card .item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-                                        .history-card .item:last-child { border: none; }
-                                        .allergy { background: #fef2f2; border: 1px solid #fecaca; }
-                                        .allergy h4 { color: #dc2626 !important; }
-                                        .condition { background: #dbeafe; border: 1px solid #bfdbfe; }
-                                        .condition h4 { color: #0d6cf2 !important; }
-                                        .medications { margin-top: 24px; }
-                                        .med-row { display: flex; justify-content: space-between; padding: 12px; background: #f8fafc; margin-bottom: 8px; border-radius: 8px; }
-                                        .med-name { font-weight: 600; }
-                                        .med-dose { font-size: 12px; color: #64748b; }
-                                        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #64748b; }
-                                        @media print { body { padding: 20px; } }
-                                    </style>
-                                </head>
-                                <body>
-                                    <div class="header">
-                                        <div class="logo">
-                                            <div class="logo-icon">⚕</div>
-                                            <div class="logo-text">
-                                                <h1>${printableBrandName}</h1>
-                                                <p>Medical Records</p>
-                                            </div>
-                                        </div>
-                                        <div class="record-info">
-                                            <div class="label">Date</div>
-                                            <div class="value">${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-                                        </div>
-                                    </div>
-                                    <div class="patient-header">
-                                        <div class="patient-avatar">${patient.initials}</div>
-                                        <div class="patient-details">
-                                            <div class="patient-name">${patient.name}</div>
-                                            <span class="status-badge">Active</span>
-                                        </div>
-                                    </div>
-                                    <div class="patient-grid">
-                                        <div><div class="label">Patient ID</div><div class="value">#${String(patient.id).slice(0,8)}</div></div>
-                                        <div><div class="label">Age / Sex</div><div class="value">${patient.age} / ${patient.sex}</div></div>
-                                        <div><div class="label">Blood Type</div><div class="value" style="color: #dc2626;">${patient.bloodType}</div></div>
-                                    </div>
-                                    <div class="section">
-                                        <div class="section-title">Current Vitals</div>
-                                        <div class="vitals-grid">
-                                            ${vitals.map(v => `<div class="vital-card"><div class="label">${v.label}</div><div class="value">${v.value} ${v.unit}</div></div>`).join('') || '<div class="vital-card"><div class="value">No vitals recorded</div></div>'}
-                                        </div>
-                                    </div>
-                                    <div class="section">
-                                        <div class="section-title">Medical History</div>
-                                        <div class="history-grid">
-                                            <div class="history-card allergy">
-                                                <h4>⚠️ Allergies</h4>
-                                                <div class="item"><span>${allergiesText || 'None recorded'}</span></div>
-                                            </div>
-                                            <div class="history-card">
-                                                <h4>🏥 Medical History</h4>
-                                                <div class="item"><span>${medicalHistory || 'None recorded'}</span></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="section medications">
-                                        <div class="section-title">Current Medications</div>
-                                        ${medications.map(med => `<div class="med-row"><div><div class="med-name">${med.name}</div><div class="med-dose">${med.dose}</div></div><div style="text-align:right;font-size:12px;color:#64748b;">${med.prescribed}</div></div>`).join('')}
-                                    </div>
-                                    <div class="footer">
-                                        <p>This is a computer-generated medical record. ${printableBrandName} • Generated on ${new Date().toLocaleString()}</p>
-                                    </div>
-                                </body>
-                                </html>
-                            `;
-                            const printWindow = window.open('', '_blank');
-                            printWindow.document.write(printContent);
-                            printWindow.document.close();
-                            printWindow.print();
+                            openPrintableHtml(buildPatientProfilePrintHtml({
+                                patient,
+                                vitals,
+                                allergiesText,
+                                medicalHistory,
+                                medications,
+                                brandName: displayName,
+                            }));
                         }} className="px-6 py-2.5 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50">Print Records</button>
                         </div>
                     </motion.div>

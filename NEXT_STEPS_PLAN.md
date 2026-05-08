@@ -1,9 +1,10 @@
 # DoctoLeb · Next Steps Plan
 
 > **Date**: 2026-05-07.
-> **Companion docs**: `CLAUDE.md`, `TIER2_REVIEW.md`, `TIER2_REVIEW_ADDENDUM.md`, `TIER2_INDEX_AND_PERF_PLAN.md`, `BLOCK_F_AGENT_HANDOFF_PROMPT.md`.
+> **Companion docs**: `CLAUDE.md`, `TIER2_REVIEW.md`, `TIER2_REVIEW_ADDENDUM.md`, `TIER2_INDEX_AND_PERF_PLAN.md`, `BLOCK_F_AGENT_HANDOFF_PROMPT.md`, `NEXT_TIER_AGENT_HANDOFF_PROMPT.md`.
 > **Purpose**: forward roadmap covering ERD export readiness, UX flows, business logic, and API contracts. Consumes the open items already cataloged in the review docs; does not re-litigate them.
 > **Frontend boundary update**: patient web and clinic operations must split into separate deployable apps. See `docs/decisions/ADR-002-separate-patient-and-clinic-ops-apps.md` and `FRONTEND_APP_SPLIT_PLAN.md`.
+> **Runtime tenancy update**: hostname-based tenant routing is the next platform tier. See `docs/decisions/ADR-004-domain-routing-and-control-plane-contract.md` and **Block G** below.
 
 ---
 
@@ -178,6 +179,38 @@ None block first launch. Each is its own sub-tier when product validates the nee
 ### Block E — Tier 3 control plane
 
 Per `TIER2_PRODUCT_ARCHITECTURE_PLAN.md` §15 / `TIER3_PLAN.md`. Out of scope for the next 6 weeks.
+
+### Block G — Runtime tenant routing (ADR-004)
+
+The structural blocker to multi-tenant hostnames was `packages/core/lib/supabase.js` building a static client from build-time env vars. ADR-004 shipped the runtime resolution layer in six small slices:
+
+| # | Slice | Output | Effort | Status |
+|---|---|---|---|---|
+| G1 | A — Documentation and ADR | `docs/decisions/ADR-004-...` + cross-doc updates | ½ day | ✅ Done |
+| G2 | B — Hostname/surface parser | `packages/core/lib/hostnameSurface.js` (pure function, fully unit-testable) | ½ day | ✅ Done |
+| G3 | C — Tenant resolver client | `packages/core/services/tenantResolver.js` with `{ data, error }` envelope, 5-min cache, DEV fallback | 1 day | ✅ Done |
+| G4 | D — Runtime Supabase client factory | Refactor `packages/core/lib/supabase.js`: `configureSupabaseClient` + `getSupabaseClient` + Proxy compat shim so existing `import { supabase }` keeps working | 1–2 days | ✅ Done |
+| G5 | E — Tenant bootstrap provider | `<TenantBootstrap>` wraps each app's shell; resolves tenant before `AuthProvider`/`BrandProvider` mount; renders loading/not-found/inactive states | 1–2 days | ✅ Done |
+| G6 | F — Verification and guardrails | Three new audit rules in `scripts/backend-contract-audit.mjs`: (1) no hardcoded tenant Supabase URLs, (2) no service-role key patterns in frontend packages, (3) no `tenant_id` columns in tenant DB migrations | ½ day | ✅ Done |
+
+**Hard rails inherited from ADR-002 / ADR-003 / the next-tier handoff:** database-per-tenant only; no `tenant_id` in tenant DB; no PHI in control plane; resolver returns `{ data, error }`; anon keys are public, service-role keys never reach a browser; `.env` fallback is DEV-only.
+
+### Block H — Control plane v1 (separate Supabase project)
+
+Block G is the runtime layer; Block H is the actual second Supabase project that backs the resolver in production. Detailed runbook lives in `CONTROL_PLANE_SETUP.md`. As of 2026-05-08 the control-plane project is activated as `xouqxgwccewvbtkqming`; public domain rows remain placeholders until `doctoleb.com` is purchased and DNS/SSL are verified.
+
+| # | Step | Output | Effort | Status |
+|---|---|---|---|---|
+| H1 | Create SaaS/control-plane Supabase project | `xouqxgwccewvbtkqming` selected as permanent zero-PHI control plane | 5 min | Done |
+| H2 | Apply control-plane baseline migration | `tenants`, `tenant_domains`, `super_admins`, `tenant_events` tables + `is_super_admin()` + `resolve_tenant(text, text)` RPC, all with RLS | ½ day | Done |
+| H3 | Seed dev tenant as row #1 | `gezmfmskhmjgnquoyosq` is tenant slug `dev`; localhost rows active; future domain rows pending | 10 min | Done |
+| H4 | Make first super-admin | Deferred; no super-admin UI in this phase and `super_admins` currently has 0 rows | 10 min | Deferred |
+| H5 | Deploy `tenant-resolve` Edge Function | Public HTTP endpoint matching the resolver client contract; version 2; `verify_jwt=false` | 1 day | Done |
+| H6 | Set resolver app envs | `.env.local` and `.env.example` include resolver URL, timeout, and cross-app URLs | 5 min | Done |
+
+After Block H, onboarding tenant #2 is a manual sequence (~1 hour per tenant) documented in §7 of the runbook. Auto-provisioning via Supabase Management API is Block I (future).
+
+**Out of scope for Block H:** Stripe billing wiring, custom-domain DNS verification UX, super-admin React UI (`apps/control-plane/`), auto-provisioning, cross-tenant analytics. Each is its own follow-up tier.
 
 ---
 
@@ -450,12 +483,15 @@ After Week 4: Slices 4 (consent) + 6 (tenant config) in parallel; Slice 5 (notif
 
 ## §J · Anti-goals (do not do these next)
 
-- **Don't start the control plane (Tier 3).** Tier 2.5 closing first; control plane is premature without a second tenant in production.
-- **Don't build mobile apps yet.** Slice 5 + envelope adoption come first.
+- **Don't start the control-plane Supabase project + super-admin UI yet.** Block G (ADR-004 runtime layer) ships first against the existing dev tenant. The control-plane DB is a separate downstream tier.
+- **Don't build mobile apps yet.** Slice 5 + envelope adoption + Block G come first; Flutter reuses the same resolver contract.
 - **Don't add new clinical workflows beyond `clinical_documents` types.** The current surface is enough; ship UI before extending DB.
 - **Don't unify `predoctors` and `staff_members` tables.** They model different things (application/onboarding vs. employed staff hierarchy). Document the distinction in `CLAUDE.md` if confusion arises.
 - **Don't accept `dist/` back into git.** `.gitignore` is now authoritative.
 - **Don't skip the §B baseline migration.** Without it, multi-tenant onboarding is impossible.
+- **Don't add `tenant_id` columns to tenant DB tables.** Database-per-tenant is the isolation model; row-level tenancy would invalidate ADR-002, ADR-003, and ADR-004.
+- **Don't return service-role keys from any frontend-reachable response.** Anon keys are public and may flow through the resolver; service-role keys must stay server-side only.
+- **Don't hardcode tenant Supabase URLs in executable code.** Production uses the resolver; dev uses `.env`. The audit script (Slice F of Block G) will block this.
 
 ---
 

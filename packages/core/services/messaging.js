@@ -28,6 +28,19 @@ function parse(schema, payload) {
   return { data: result.data };
 }
 
+function isDuplicateClientRequestIdError(error) {
+  if (!error) return false;
+  const message = error.message || '';
+  return (
+    error.code === '23505'
+    && (
+      message.includes('idx_messages_client_request_id_unique')
+      || message.includes('messages_client_request_id')
+      || message.includes('client_request_id')
+    )
+  );
+}
+
 export const messagingService = {
   async getConversations({ patientId = null, status = null, limit = null, page = 1, pageSize = 25 } = {}) {
     let query = supabase
@@ -91,13 +104,31 @@ export const messagingService = {
     const parsed = parse(messageCreateSchema, payload);
     if (parsed.error) return validationError(parsed.error);
 
-    return apiCall(
-      supabase
-        .from('messages')
-        .insert([parsed.data])
-        .select(MESSAGE_SELECT_FIELDS)
-        .single()
-    );
+    const insertResult = await supabase
+      .from('messages')
+      .insert([parsed.data])
+      .select(MESSAGE_SELECT_FIELDS)
+      .single();
+
+    if (!insertResult.error) {
+      return { data: insertResult.data, error: null };
+    }
+
+    if (parsed.data.client_request_id && isDuplicateClientRequestIdError(insertResult.error)) {
+      const existingResult = await apiCall(
+        supabase
+          .from('messages')
+          .select(MESSAGE_SELECT_FIELDS)
+          .eq('client_request_id', parsed.data.client_request_id)
+          .maybeSingle()
+      );
+
+      if (existingResult.data || existingResult.error) {
+        return existingResult;
+      }
+    }
+
+    return { data: null, error: insertResult.error?.message || 'An unexpected error occurred' };
   },
 
   async getMessages(conversationId, { limit = null, page = 1, pageSize = 50 } = {}) {
@@ -180,5 +211,68 @@ export const messagingService = {
         callback
       )
       .subscribe();
+  },
+
+  /**
+   * Patient-initiated conversation: creates the conversation row, registers the
+   * patient as a participant, and (optionally) sends the first message — the
+   * three-step flow that pages used to wire up by hand. Returns the canonical
+   * `{ data: conversation, error }` envelope. Page-level callers stay in the
+   * service-layer contract instead of orchestrating multi-call sequences.
+   *
+   * @param {{
+   *   patientId: string,
+   *   userId: string,
+   *   subject?: string|null,
+   *   body?: string|null,
+   *   clientRequestId?: string,
+   * }} input
+   */
+  async startPatientConversation({ patientId, userId, subject = null, body = null, clientRequestId } = {}) {
+    if (!patientId || !userId) {
+      return validationError('startPatientConversation requires both patientId and userId.');
+    }
+
+    const conversationResult = await this.createConversation({
+      patient_id: patientId,
+      subject: subject?.trim() || null,
+      conversation_type: 'patient_staff',
+      created_by: userId,
+    });
+    if (conversationResult.error || !conversationResult.data) {
+      return conversationResult;
+    }
+    const conversation = conversationResult.data;
+
+    // Participant + first message can race — they only depend on conversation.id.
+    const trimmedBody = body?.trim();
+    const followUps = [
+      this.addParticipant({
+        conversation_id: conversation.id,
+        user_id: userId,
+        patient_id: patientId,
+        role: 'patient',
+      }),
+    ];
+    if (trimmedBody) {
+      followUps.push(this.sendMessage({
+        conversation_id: conversation.id,
+        sender_user_id: userId,
+        sender_patient_id: patientId,
+        body: trimmedBody,
+        message_type: 'text',
+        is_internal: false,
+        client_request_id: clientRequestId ?? crypto.randomUUID(),
+      }));
+    }
+
+    const settled = await Promise.all(followUps);
+    const firstError = settled.find((r) => r?.error)?.error;
+    if (firstError) {
+      // Surface the failure but return the conversation so the caller can
+      // recover (e.g. retry the send) rather than silently losing context.
+      return { data: conversation, error: firstError };
+    }
+    return { data: conversation, error: null };
   },
 };

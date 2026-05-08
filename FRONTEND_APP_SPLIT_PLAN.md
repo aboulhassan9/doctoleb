@@ -1,8 +1,12 @@
 # DoctoLeb Frontend App Split Plan
 
-> **Status**: accepted direction, not fully implemented yet.
-> **Companion decision**: `docs/decisions/ADR-002-separate-patient-and-clinic-ops-apps.md`.
-> **Goal**: split the current all-in-one Vite app into patient web and clinic operations apps without duplicating DB/API/business logic.
+> **Status**: app split substantially shipped (Phases 0–4); runtime tenant resolution is the next layer.
+> **Companion decisions**:
+> - `docs/decisions/ADR-002-separate-patient-and-clinic-ops-apps.md` — patient-web vs clinic-ops boundary
+> - `docs/decisions/ADR-003-tenant-branding-and-control-plane-config.md` — branding from tenant config
+> - `docs/decisions/ADR-004-domain-routing-and-control-plane-contract.md` — hostname → tenant resolver → tenant Supabase client
+>
+> **Goal**: split the current all-in-one Vite app into patient web and clinic operations apps without duplicating DB/API/business logic, and wire each app to resolve its tenant connection at runtime from the hostname.
 
 ---
 
@@ -298,3 +302,35 @@ Before moving files:
 4. Keep all existing DB/API work unchanged.
 
 After that bridge is verified, start the physical app split.
+
+---
+
+## 11. Runtime Tenant Resolution Layer (ADR-004)
+
+The app split assumes each tenant has its own hostname. That assumption requires a runtime layer **above** the existing app shells: the browser must resolve `hostname → tenant Supabase connection` before any service call runs.
+
+ADR-004 defines this layer in six slices. Summary:
+
+| Slice | Owner | Output |
+|---|---|---|
+| A — Documentation | this repo | ADR-004 + cross-doc updates (this addition) |
+| B — Hostname/surface parser | `packages/core/lib/hostnameSurface.js` | pure function classifying every supported hostname |
+| C — Tenant resolver client | `packages/core/services/tenantResolver.js` | `{ data, error }` envelope client + DEV fallback via `VITE_DEV_TENANT_SLUG` |
+| D — Runtime Supabase client factory | `packages/core/lib/supabase.js` | `configureSupabaseClient` + `getSupabaseClient` + Proxy compat shim |
+| E — Tenant bootstrap provider | `packages/ui/contexts/TenantBootstrap.jsx` (new) | resolve → configure → render `AuthProvider`/`BrandProvider` |
+| F — Verification and guardrails | `scripts/backend-contract-audit.mjs` | three new audit rules: no hardcoded tenant URLs, no service-role keys in frontend, no `tenant_id` in tenant DB migrations |
+
+The `BrandContext` and `tenantConfigService` already in repo continue to work unchanged — they read from whichever Supabase client `configureSupabaseClient` last installed. The split between patient-web and clinic-ops, the role-based guards in `appBoundaries.js`, and the existing service contracts are unaffected.
+
+### What this layer is NOT
+
+- Not the control-plane database itself (that lives in a separate Supabase project; its schema is sketched in ADR-004 and is a follow-up build).
+- Not the resolver HTTP endpoint (a serverless function that backs `tenantResolverService.resolve` — built once the control-plane DB exists).
+- Not the SaaS super-admin UI (`apps/control-plane`, future).
+- Not custom-domain DNS automation.
+
+### Local development
+
+Static one-tenant `.env` config remains the development fallback. Setting `VITE_DEV_TENANT_SLUG=dr-test` plus the existing `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` lets `localhost:3001` and `localhost:3002` boot without a control plane present.
+
+Production builds must never use the env fallback — `tenantResolverService.resolve` throws if the network call fails and `import.meta.env.PROD` is true.

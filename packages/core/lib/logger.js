@@ -1,48 +1,96 @@
-/**
- * Structured logging utility — replaces raw console.error() in pages.
- *
- * DEV:  Logs to console with context tags.
- * PROD: Silent (future hook for Sentry/LogRocket/Datadog).
- *
- * USAGE:
- *   import { logError, logWarn, logInfo } from '@/lib/logger';
- *   catch (err) { logError('AppointmentsPage.fetch', err); }
- */
+import { isRuntimeDev } from './env.js';
 
-const isDev = import.meta.env.DEV;
+const SAFE_TAG_KEYS = Object.freeze(new Set([
+  'tenantId',
+  'tenantSlug',
+  'surface',
+  'route',
+  'featureCode',
+  'appVersion',
+]));
 
-/**
- * Log an error with context tag.
- * @param {string} context - Where the error happened, e.g. 'usePatients.fetch'
- * @param {Error|string} error - The error object or message
- * @param {Record<string, unknown>} [meta] - Optional metadata for monitoring
- */
+const SENSITIVE_KEY_PATTERN = /(password|token|secret|key|email|phone|name|diagnosis|message|note|document|content|reason|address|birth|medical|patient)/i;
+
+let monitoringSink = null;
+
+function safeTags(meta = {}) {
+  const tags = {};
+  for (const key of SAFE_TAG_KEYS) {
+    if (meta[key] !== undefined && meta[key] !== null) {
+      tags[key] = String(meta[key]).slice(0, 160);
+    }
+  }
+  return tags;
+}
+
+function safeExtra(meta = {}) {
+  const extra = {};
+  for (const [key, value] of Object.entries(meta)) {
+    if (SAFE_TAG_KEYS.has(key)) continue;
+    if (SENSITIVE_KEY_PATTERN.test(key)) {
+      extra[key] = '[redacted]';
+      continue;
+    }
+    if (value === null || value === undefined) {
+      extra[key] = value;
+    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      extra[key] = value;
+    } else {
+      extra[key] = '[object]';
+    }
+  }
+  return extra;
+}
+
+function normalizeError(error) {
+  if (error instanceof Error) return error;
+  return new Error(typeof error === 'string' ? error : 'Unknown error');
+}
+
+export function buildSafeMonitoringContext(meta = {}) {
+  return {
+    tags: safeTags(meta),
+    extra: safeExtra(meta),
+  };
+}
+
+export function configureMonitoringSink(sink) {
+  monitoringSink = typeof sink === 'function' ? sink : null;
+}
+
 export function logError(context, error, meta = {}) {
-  if (isDev) {
-    console.error(`[ERROR][${context}]`, error, meta);
-  }
-  // Future: Sentry.captureException(error, { tags: { context }, extra: meta });
-}
+  const safeContext = buildSafeMonitoringContext({ ...meta, context });
+  const normalizedError = normalizeError(error);
 
-/**
- * Log a warning (non-fatal issues).
- * @param {string} context
- * @param {string} message
- */
-export function logWarn(context, message) {
-  if (isDev) {
-    console.warn(`[WARN][${context}]`, message);
+  if (isRuntimeDev()) {
+    console.error(`[ERROR][${context}]`, normalizedError, safeContext);
+  }
+
+  if (monitoringSink) {
+    monitoringSink('error', context, normalizedError, safeContext);
   }
 }
 
-/**
- * Log info for debugging (dev only, never in prod).
- * @param {string} context
- * @param {string} message
- * @param {Record<string, unknown>} [data]
- */
-export function logInfo(context, message, data) {
-  if (isDev) {
-    console.info(`[INFO][${context}]`, message, data ?? '');
+export function logWarn(context, message, meta = {}) {
+  const safeContext = buildSafeMonitoringContext({ ...meta, context });
+
+  if (isRuntimeDev()) {
+    console.warn(`[WARN][${context}]`, message, safeContext);
+  }
+
+  if (monitoringSink) {
+    monitoringSink('warn', context, message, safeContext);
+  }
+}
+
+export function logInfo(context, message, data = {}) {
+  const safeContext = buildSafeMonitoringContext({ ...data, context });
+
+  if (isRuntimeDev()) {
+    console.info(`[INFO][${context}]`, message, safeContext);
+  }
+
+  if (monitoringSink) {
+    monitoringSink('info', context, message, safeContext);
   }
 }

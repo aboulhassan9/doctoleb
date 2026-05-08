@@ -1,0 +1,75 @@
+/**
+ * Regression checks for the SaaS control-plane activation slice.
+ *
+ * These are source-contract tests rather than runtime service tests because
+ * the affected modules rely on Vite aliases and Supabase clients. They guard
+ * the safety-critical contracts that must hold before applying the live
+ * control-plane migration.
+ */
+
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root = path.resolve(import.meta.dirname, '../..');
+
+function read(relativePath) {
+  return fs.readFileSync(path.join(root, relativePath), 'utf8');
+}
+
+describe('SaaS activation contracts', () => {
+  it('patient consent gate has a fail-closed retry state', () => {
+    const source = read('packages/ui/components/consent/PatientConsentGate.jsx');
+
+    assert.match(source, /const \[loadError, setLoadError\]/);
+    assert.match(source, /<ConsentErrorOverlay[\s\S]*onRetry=/);
+    assert.match(source, /if \(loadError\)/);
+    assert.match(source, /setReloadNonce/);
+  });
+
+  it('accepting consent clears any previous revocation marker', () => {
+    const source = read('packages/core/services/tenantConfig.js');
+
+    assert.match(source, /accepted_at:\s*new Date\(\)\.toISOString\(\),[\s\S]*revoked_at:\s*null/);
+    assert.match(source, /upsert\(parsed\.data,\s*\{\s*onConflict:\s*'patient_id,consent_document_id'/);
+  });
+
+  it('message send retries collapse by client_request_id', () => {
+    const source = read('packages/core/services/messaging.js');
+
+    assert.match(source, /isDuplicateClientRequestIdError/);
+    assert.match(source, /\.eq\('client_request_id', parsed\.data\.client_request_id\)/);
+    assert.match(source, /\.maybeSingle\(\)/);
+  });
+
+  it('control-plane SQL treats maintenance as inactive and hostnames case-insensitively', () => {
+    const source = read('supabase-control-plane/migrations/00010000000000_control_plane_baseline.sql');
+
+    assert.match(source, /tenant_domains_hostname_lower_unique_idx/);
+    assert.match(source, /normalize_tenant_domain_hostname/);
+    assert.match(source, /tenant_domains_hostname_normalized_chk/);
+    assert.match(source, /lower\(hostname\)/);
+    assert.match(source, /v_row\.tenant_status <> 'active'/);
+    assert.doesNotMatch(source, /not in \('active','maintenance'\)/);
+  });
+
+  it('control-plane SQL revokes direct public execute from rls_auto_enable when present', () => {
+    const source = read('supabase-control-plane/migrations/00010000000000_control_plane_baseline.sql');
+
+    assert.match(source, /revoke execute on function public\.rls_auto_enable\(\) from public, anon, authenticated/i);
+    assert.match(source, /revoke execute on function public\.normalize_tenant_domain_hostname\(\) from public, anon, authenticated/i);
+    assert.match(source, /revoke execute on function public\.touch_updated_at\(\) from public, anon, authenticated/i);
+  });
+
+  it('tenant resolver edge function validates host and sets production headers', () => {
+    const source = read('supabase-control-plane/functions/tenant-resolve/index.ts');
+
+    assert.match(source, /function normalizeHost/);
+    assert.match(source, /MAX_HOST_LENGTH/);
+    assert.match(source, /X-Content-Type-Options/);
+    assert.match(source, /Referrer-Policy/);
+    assert.match(source, /stale-while-revalidate/);
+    assert.match(source, /normalizePayload/);
+  });
+});

@@ -9,6 +9,8 @@
  * @see APP_SPLIT_AGENT_HANDOFF_PROMPT.md §8
  */
 
+import { isRuntimeDev, readRuntimeEnv } from './env.js';
+
 // ── App Surface Identifiers ──
 
 export const APP_SURFACES = Object.freeze({
@@ -26,6 +28,12 @@ export const CLINIC_OPS_ROLES = Object.freeze([
   'predoctor',
   'admin',
 ]);
+
+function appendPath(baseUrl, path) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  if (!baseUrl) return normalizedPath;
+  return `${baseUrl.replace(/\/$/, '')}${normalizedPath}`;
+}
 
 /**
  * Returns true if the role belongs to the patient-web surface.
@@ -71,10 +79,31 @@ export function getLoginPathForRole(role) {
  * In production this should be configured as VITE_CLINIC_OPS_URL.
  */
 export function getClinicOpsLoginUrl() {
-  const configuredUrl = import.meta.env?.VITE_CLINIC_OPS_URL;
-  if (configuredUrl) return configuredUrl.replace(/\/$/, '') + '/login';
-  if (import.meta.env?.DEV) return 'http://127.0.0.1:3002/login';
+  const configuredUrl = readRuntimeEnv('VITE_CLINIC_OPS_URL');
+  if (configuredUrl) return appendPath(configuredUrl, '/login');
+  if (isRuntimeDev()) return 'http://127.0.0.1:3002/login';
   return '/login';
+}
+
+/**
+ * Returns the patient-web login URL for links rendered from clinic-ops.
+ * In production this should be configured as VITE_PATIENT_WEB_URL.
+ */
+export function getPatientWebLoginUrl() {
+  const configuredUrl = readRuntimeEnv('VITE_PATIENT_WEB_URL');
+  if (configuredUrl) return appendPath(configuredUrl, '/login');
+  if (isRuntimeDev()) return 'http://127.0.0.1:3001/login';
+  return '/login';
+}
+
+/**
+ * Returns the patient-web dashboard URL for controlled cross-surface handoffs.
+ */
+export function getPatientWebHomeUrl() {
+  const configuredUrl = readRuntimeEnv('VITE_PATIENT_WEB_URL');
+  if (configuredUrl) return appendPath(configuredUrl, '/patient-dashboard');
+  if (isRuntimeDev()) return 'http://127.0.0.1:3001/patient-dashboard';
+  return '/patient-dashboard';
 }
 
 // ── Route Ownership Lists ──
@@ -91,6 +120,7 @@ export const PATIENT_WEB_ROUTES = Object.freeze([
   '/patient-profile',
   '/patient-appointments',
   '/patient-history',
+  '/patient-messages',
 ]);
 
 export const CLINIC_OPS_ROUTES = Object.freeze([
@@ -123,4 +153,5 @@ export const CLINIC_OPS_ROUTES = Object.freeze([
   '/doctor-reports',
   '/doctor-referrals',
   '/doctor-certificates',
+  '/staff-messages',
 ]);

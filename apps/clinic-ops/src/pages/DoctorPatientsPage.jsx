@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { PageHeader, DataTable, TopBar, StatusBadge } from '@/components/ui';
+import { useBrand } from '@/contexts/BrandContext';
 import { usePatients, useSearch, useDocumentTitle } from '@/hooks';
 
 /**
@@ -10,7 +11,8 @@ import { usePatients, useSearch, useDocumentTitle } from '@/hooks';
  */
 export default function DoctorPatientsPage() {
   const navigate = useNavigate();
-  useDocumentTitle('Patients');
+  const { displayName } = useBrand();
+  useDocumentTitle('Patients', displayName);
 
   const { patients, loading, error, refresh } = usePatients();
   const { query, setQuery } = useSearch(200);

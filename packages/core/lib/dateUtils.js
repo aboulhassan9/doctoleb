@@ -17,3 +17,28 @@ export function timeAgo(dateStr) {
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
 }
+
+/**
+ * Returns a chat/inbox-friendly timestamp:
+ *   - same calendar day  → "14:32"
+ *   - earlier this year  → "Mar 5 14:32"
+ *   - empty / invalid    → ""
+ *
+ * Use this for message bubbles, conversation rows, and any feed where
+ * "time of day" suffices for today's events but a date is needed otherwise.
+ *
+ * @param {string|Date|null|undefined} value - ISO string or Date
+ * @returns {string}
+ */
+export function smartTimestamp(value) {
+    if (!value) return '';
+    const parsed = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+
+    const time = parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const sameDay = parsed.toDateString() === new Date().toDateString();
+    if (sameDay) return time;
+
+    const date = parsed.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return `${date} ${time}`;
+}

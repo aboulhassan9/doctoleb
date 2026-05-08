@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { getHomeRouteForRole } from '@/lib/routes';
-import { isPatientRole } from '@/lib/appBoundaries';
+import { getPatientWebLoginUrl, isPatientRole } from '@/lib/appBoundaries';
 import { useBrand } from '@/contexts/BrandContext';
 
 /**
@@ -26,6 +26,7 @@ export default function OpsLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const patientWebLoginUrl = getPatientWebLoginUrl();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,7 +45,7 @@ export default function OpsLoginPage() {
       // Patient tried to log in through ops portal
       if (isPatientRole(user.role)) {
         showToast('This portal is for clinic staff. Redirecting to patient portal.', 'info');
-        navigate('/patient-dashboard', { replace: true });
+        window.location.assign(patientWebLoginUrl);
         return;
       }
 
@@ -67,12 +68,12 @@ export default function OpsLoginPage() {
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2">Operations</span>
           </div>
         </div>
-        <Link
-          to="/login"
+        <a
+          href={patientWebLoginUrl}
           className="text-xs font-medium text-slate-400 hover:text-primary transition-colors"
         >
           Patient Portal →
-        </Link>
+        </a>
       </div>
 
       {/* Login form */}
@@ -90,7 +91,7 @@ export default function OpsLoginPage() {
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-1">Clinic Operations Portal</h1>
             <p className="text-sm text-slate-500">
-              Sign in with your staff credentials. Patient accounts should use the <Link to="/login" className="text-primary hover:underline font-medium">patient portal</Link>.
+              Sign in with your staff credentials. Patient accounts should use the <a href={patientWebLoginUrl} className="text-primary hover:underline font-medium">patient portal</a>.
             </p>
           </div>
 

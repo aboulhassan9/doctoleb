@@ -359,14 +359,42 @@ cd apps/patient-web && npx vite build  # ✓ built in 1.37s
 | File | Purpose |
 |------|---------|
 | `CLAUDE.md` | Mandatory coding conventions and rules |
+| `PRODUCT.md` | Product model and audiences |
+| `DESIGN.md` | Visual design system |
+| `docs/decisions/ADR-001-...` | Single-clinic multi-doctor product model |
+| `docs/decisions/ADR-002-...` | Patient-web vs clinic-ops app split |
+| `docs/decisions/ADR-003-...` | Tenant branding from configuration |
+| `docs/decisions/ADR-004-...` | **Hostname-based tenant routing + control-plane contract (next tier)** |
 | `TIER1_DOCTOR_PIVOT_PLAN.md` | Original SaaS pivot architecture plan |
 | `TIER2_REVIEW.md` | Security review findings (all P1/P2 closed) |
 | `TIER2_REVIEW_ADDENDUM.md` | Post-review reconciliation |
 | `NEXT_STEPS_PLAN.md` | Current execution roadmap (slices 1-7) |
 | `BLOCK_C_PLAN.md` / `BLOCK_D_PLAN.md` | Encounter MVP and runtime verification plans |
 | `BLOCK_F_AGENT_HANDOFF_PROMPT.md` | Previous agent handoff (Block F) |
+| `NEXT_TIER_AGENT_HANDOFF_PROMPT.md` | Operating context for the runtime/control-plane tier (ADR-004) |
 | `APP_SPLIT_AGENT_HANDOFF_PROMPT.md` | Monorepo split documentation |
 | This file | Current state of everything |
+
+---
+
+## 12. Next Tier — Hostname-Based Tenant Routing (ADR-004)
+
+After Tier 2.5 hardening lands, the next platform tier is the **runtime tenant resolution** layer. Today `packages/core/lib/supabase.js` builds one Supabase client at module load from build-time env vars — that is the structural blocker to subdomain/custom-domain routing.
+
+ADR-004 defines six implementation slices (A–F):
+
+| Slice | Output | Status |
+|---|---|---|
+| A — Documentation | `docs/decisions/ADR-004-domain-routing-and-control-plane-contract.md` + cross-doc updates | ✅ Done |
+| B — Hostname/surface parser | `packages/core/lib/hostnameSurface.js` (or extend `appBoundaries.js`) | Pending |
+| C — Tenant resolver client | `packages/core/services/tenantResolver.js` with `{ data, error }` envelope + DEV fallback | Pending |
+| D — Runtime Supabase client factory | Refactor `packages/core/lib/supabase.js`: `configureSupabaseClient` + `getSupabaseClient` + Proxy compat shim | Pending |
+| E — Tenant bootstrap provider | `<TenantBootstrap surface="patient"\|"ops">` wrapping each app shell | Pending |
+| F — Verification and guardrails | `scripts/backend-contract-audit.mjs` + 3 new audit rules (no hardcoded URLs, no service-role keys, no `tenant_id` in tenant DB) | Pending |
+
+Hard rails (inherited from ADR-002, ADR-003, and the next-tier handoff): no `tenant_id` in tenant DB; no PHI in control plane; resolver returns `{ data, error }`; service-role keys never in frontend; `.env` fallback is DEV-only.
+
+The control-plane Supabase project itself, the resolver HTTP endpoint, the SaaS super-admin UI, and Flutter client are follow-up work — not in scope for ADR-004.
 
 ---
 

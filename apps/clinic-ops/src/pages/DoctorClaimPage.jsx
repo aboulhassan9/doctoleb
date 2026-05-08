@@ -4,6 +4,7 @@ import { insuranceService } from '@core/services/insurance';
 import { patientService } from '@core/services/patients';
 import { useToast } from '@ui/contexts/ToastContext';
 import { useBrand } from '@ui/contexts/BrandContext';
+import { openPrintableHtml, replaceHtmlTokens } from '@core/lib/html';
 
 /**
  * DoctorClaimPage — Generate, preview, and print insurance claims.
@@ -70,8 +71,7 @@ export default function DoctorClaimPage() {
   const generatePreview = useCallback(() => {
     if (!selectedTemplate || !selectedPatient) return;
 
-    let html = selectedTemplate.template_body || '';
-    const replacements = {
+    const html = replaceHtmlTokens(selectedTemplate.template_body || '', {
       '{{patient_name}}': `${selectedPatient.first_name} ${selectedPatient.last_name}`,
       '{{doctor_name}}': brand.displayName || 'Doctor',
       '{{clinic_name}}': brand.displayName || 'Clinic',
@@ -80,10 +80,6 @@ export default function DoctorClaimPage() {
       '{{diagnosis}}': form.diagnosis || 'N/A',
       '{{amount}}': form.amount || '0.00',
       '{{date}}': new Date().toLocaleDateString('en-GB'),
-    };
-
-    Object.entries(replacements).forEach(([key, val]) => {
-      html = html.replaceAll(key, val);
     });
 
     setPreviewHtml(html);
@@ -116,12 +112,8 @@ export default function DoctorClaimPage() {
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(previewHtml);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
+    if (!openPrintableHtml(previewHtml)) {
+      showToast('Unable to open print preview. Please allow popups for this site.', 'error');
     }
   };
 

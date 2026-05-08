@@ -6,6 +6,10 @@ import { ThemeProvider } from '@ui/contexts/ThemeContext';
 import { SidebarProvider } from '@ui/contexts/SidebarContext';
 import { AuthProvider } from '@ui/contexts/AuthContext';
 import { BrandProvider } from '@ui/contexts/BrandContext';
+import { TenantBootstrap } from '@ui/contexts/TenantBootstrap';
+import { PatientConsentGate } from '@ui/components/consent/PatientConsentGate';
+import { APP_SURFACES } from '@/lib/appBoundaries';
+import { classifyCurrentLocation, SURFACES } from '@/lib/hostnameSurface';
 import ErrorBoundary from '@ui/components/ErrorBoundary';
 import { LoadingSkeleton } from '@ui/components/ui';
 
@@ -29,20 +33,41 @@ const PatientOwnProfilePage = lazy(() => import('./pages/PatientOwnProfilePage')
 const PatientAppointmentsPage = lazy(() => import('./pages/PatientAppointmentsPage'));
 const PatientMedicalHistoryPage = lazy(() => import('./pages/PatientMedicalHistoryPage'));
 const PatientDashboardPage = lazy(() => import('./pages/PatientDashboardPage'));
+const PatientMessagesPage = lazy(() => import('./pages/PatientMessagesPage'));
 
-function App() {
+function MarketingShell() {
+  return (
+    <ThemeProvider>
+      <ErrorBoundary>
+        <Router>
+          <Suspense fallback={<LoadingSkeleton rows={8} />}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/marketing" element={<LandingPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </ErrorBoundary>
+    </ThemeProvider>
+  );
+}
+
+function TenantPortalShell() {
   return (
     <ThemeProvider>
       <SidebarProvider>
         <ToastProvider>
+          <TenantBootstrap appSurface={APP_SURFACES.patientWeb}>
           <AuthProvider>
-            <BrandProvider appSurface="patient-web">
+            <BrandProvider appSurface={APP_SURFACES.patientWeb}>
+              <PatientConsentGate>
               <ErrorBoundary>
                 <Router>
                   <Suspense fallback={<LoadingSkeleton rows={8} />}>
                     <Routes>
                       {/* Public */}
-                      <Route path="/" element={<AuthRedirect intendedSurface="patient-web"><LandingPage /></AuthRedirect>} />
+                      <Route path="/" element={<AuthRedirect intendedSurface="patient-web"><MarketingPage /></AuthRedirect>} />
                       <Route path="/marketing" element={<AuthRedirect intendedSurface="patient-web"><MarketingPage /></AuthRedirect>} />
 
                       {/* Auth */}
@@ -52,22 +77,35 @@ function App() {
                       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                       {/* Patient Portal */}
-                      <Route path="/patient-profile" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientOwnProfilePage /></ProtectedRoute>} />
-                      <Route path="/patient-appointments" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientAppointmentsPage /></ProtectedRoute>} />
-                      <Route path="/patient-dashboard" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientDashboardPage /></ProtectedRoute>} />
-                      <Route path="/patient-history" element={<ProtectedRoute requiredRole="patient" appSurface="patient-web"><PatientMedicalHistoryPage /></ProtectedRoute>} />
+                      <Route path="/patient-profile" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientOwnProfilePage /></ProtectedRoute>} />
+                      <Route path="/patient-appointments" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientAppointmentsPage /></ProtectedRoute>} />
+                      <Route path="/patient-dashboard" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientDashboardPage /></ProtectedRoute>} />
+                      <Route path="/patient-history" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientMedicalHistoryPage /></ProtectedRoute>} />
+                      <Route path="/patient-messages" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientMessagesPage /></ProtectedRoute>} />
 
                       <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                   </Suspense>
                 </Router>
               </ErrorBoundary>
+              </PatientConsentGate>
             </BrandProvider>
           </AuthProvider>
+          </TenantBootstrap>
         </ToastProvider>
       </SidebarProvider>
     </ThemeProvider>
   );
+}
+
+function App() {
+  const classification = classifyCurrentLocation();
+
+  if (classification.surface === SURFACES.marketing) {
+    return <MarketingShell />;
+  }
+
+  return <TenantPortalShell />;
 }
 
 export default App;

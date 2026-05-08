@@ -1,0 +1,12 @@
+:root {
+  --control-plane-ink: #071317;
+}
+
+body {
+  background: #eef5f2;
+}
+
+::selection {
+  background: #67e8f9;
+  color: var(--control-plane-ink);
+}

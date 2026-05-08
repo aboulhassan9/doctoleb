@@ -17,6 +17,18 @@ A React + Supabase clinic management SPA with five user roles: `doctor`, `predoc
 
 ---
 
+## Engineering discipline
+
+Follow the canonical workspace rules in `G:\project\AGENTS.md`. In this repo, those rules mean:
+
+- Pages/components do not own business logic or raw external calls. Use `packages/core` services/hooks and shared contracts.
+- No duplicate backend or frontend surfaces. Check `BACKEND_DUPLICATION_AUDIT.md`, `BACKEND_CONTRACT_LEDGER.md`, ADRs, and `rg` before adding tables/services/components.
+- No prototype/mock/dead-code paths in production code. Incomplete work must be safe, gated, documented, and tested.
+- Small, reviewable changes only. Keep files categorized by layer and avoid large catch-all files.
+- Use `npm run verify` or a documented targeted verification path before considering work complete.
+
+---
+
 ## Architecture — Phase 3 Monorepo (apps/ + packages/)
 
 ```

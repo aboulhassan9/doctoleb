@@ -5,7 +5,13 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'apps/*/dist', 'supabase/.temp']),
+  globalIgnores([
+    'dist',
+    'apps/*/dist',
+    'supabase/.temp',
+    'tests/unit',                 // node:test files use process/globalThis (Node, not browser)
+    'supabase-control-plane',     // separate Supabase project; Deno + SQL, not browser JS
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

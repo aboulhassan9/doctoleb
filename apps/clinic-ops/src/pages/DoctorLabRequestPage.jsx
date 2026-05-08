@@ -8,6 +8,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { usePatients } from '@/hooks/features/usePatients';
 import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { escapeHtml, openPrintableHtml } from '@/lib/html';
 
 
 const CATEGORIES = ['Hematology', 'Biochemistry', 'Immunology', 'Toxicology'];
@@ -66,12 +67,19 @@ export default function DoctorLabRequestPage() {
         const patientId = pt.id.split('-')[0];
         const age = pt.date_of_birth ? new Date().getFullYear() - new Date(pt.date_of_birth).getFullYear() : 'N/A';
         const sex = pt.sex || 'N/A';
+        const printablePatientName = escapeHtml(patientName);
+        const printablePatientId = escapeHtml(patientId);
+        const printableAge = escapeHtml(age);
+        const printableSex = escapeHtml(sex);
+        const printableUrgency = escapeHtml(urgency.toUpperCase());
+        const printableSpecimenType = escapeHtml(specimenType);
+        const printableTests = tests.map((test) => `&bull; ${escapeHtml(test.name)}`).join('<br/>');
 
         const printContent = `
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Lab Test Label - ${patientName}</title>
+                <title>Lab Test Label - ${printablePatientName}</title>
                 <style>
                     body { font-family: Arial, sans-serif; padding: 20px; }
                     .label { border: 2px solid #000; padding: 20px; max-width: 300px; }
@@ -85,28 +93,27 @@ export default function DoctorLabRequestPage() {
                 <div class="label">
                     <div class="header">MEDCORE LABORATORY</div>
                     <div class="patient">
-                        <strong>Patient:</strong> ${patientName}<br/>
-                        <strong>ID:</strong> ${patientId}<br/>
-                        <strong>Age:</strong> ${age} years<br/>
-                        <strong>Sex:</strong> ${sex}
+                        <strong>Patient:</strong> ${printablePatientName}<br/>
+                        <strong>ID:</strong> ${printablePatientId}<br/>
+                        <strong>Age:</strong> ${printableAge} years<br/>
+                        <strong>Sex:</strong> ${printableSex}
                     </div>
                     <div class="tests">
                         <strong>Tests:</strong><br/>
-                        ${tests.map(t => `• ${t.name}`).join('<br/>')}
+                        ${printableTests}
                     </div>
                     <div class="footer">
-                        <strong>Priority:</strong> ${urgency.toUpperCase()}<br/>
-                        <strong>Specimen:</strong> ${specimenType}<br/>
+                        <strong>Priority:</strong> ${printableUrgency}<br/>
+                        <strong>Specimen:</strong> ${printableSpecimenType}<br/>
                         <strong>Date:</strong> ${new Date().toLocaleDateString()}
                     </div>
                 </div>
             </body>
             </html>
         `;
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-        printWindow.print();
+        if (!openPrintableHtml(printContent)) {
+            showToast('Unable to open print preview. Please allow popups for this site.', 'error');
+        }
     };
 
     const handleSubmit = async () => {
