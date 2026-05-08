@@ -64,7 +64,9 @@ export function AuthProvider({ children }) {
           if (event === 'SIGNED_IN' && session) {
             const { data, error: currentUserError } = await authService.getCurrentUser();
             if (currentUserError) {
-              setError(currentUserError);
+              const { error: logoutError } = await authService.logout();
+              setUser(null);
+              setError(logoutError || currentUserError);
               return;
             }
 

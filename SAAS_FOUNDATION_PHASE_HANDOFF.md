@@ -907,3 +907,27 @@ tests/unit/controlPlaneActivation.test.mjs
 Operational note:
 
 - This is intentionally conservative. Hostnames can identify clinics before custom-domain privacy rules are finalized, so resolver error logs should not include raw hostnames unless a future runbook explicitly approves and hashes them.
+
+---
+
+## 20. Auth Fail-Closed Hardening Update — 2026-05-08
+
+Completed a small senior security-review slice for tenant app authentication:
+
+- Removed the legacy staff identity fallback that assigned `secretary`, `predoctor`, or `admin` users to the first doctor when no active `staff_members` assignment existed.
+- Staff-like clinic roles now require an explicit active `staff_members.user_id -> doctor_id` assignment before the session user is built.
+- Missing or broken staff-assignment reads now return an auth error instead of silently granting an unrelated clinic scope.
+- `authService.signIn` and session-backed sign-up cleanup now sign out when app identity construction fails after Supabase Auth has already issued a session.
+- Tightened the `SIGNED_IN` auth-state listener so a failed linked-profile load signs out, clears local user state, and fails closed instead of leaving the Supabase session alive.
+- Normalized `authIdentity.js` to an explicit `.js` import so the auth identity module can be executed directly by Node unit tests.
+
+Verification added:
+
+```txt
+tests/unit/authIdentity.test.mjs
+tests/unit/authSecurityContracts.test.mjs
+```
+
+Operational note:
+
+- This is an intentional security behavior change. A clinic staff account without an active assignment should be repaired through staff provisioning/invitation, not allowed into the app with guessed doctor scope.

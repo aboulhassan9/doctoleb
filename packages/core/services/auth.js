@@ -17,6 +17,14 @@ async function waitForProvisionedProfile(authUser, requireActive = false) {
   return { data: null, error: 'Account created, but profile provisioning is still pending. Please try again in a moment.' };
 }
 
+async function buildSessionUserOrSignOut(profile) {
+  const result = await buildSessionUser(supabase, profile);
+  if (result.error || !result.data) {
+    await supabase.auth.signOut();
+  }
+  return result;
+}
+
 export const authService = {
   setUserSession() {
     // Compatibility no-op. Supabase Auth is the only session source of truth.
@@ -41,7 +49,7 @@ export const authService = {
       return { data: null, error: 'User profile not found or account is inactive' };
     }
 
-    return buildSessionUser(supabase, profile);
+    return buildSessionUserOrSignOut(profile);
   },
 
   async signUp(email, password, firstName, lastName) {
@@ -77,13 +85,15 @@ export const authService = {
 
     const { data: existingProfile, error: existingProfileError } = await waitForProvisionedProfile(authUser, false);
     if (existingProfileError) {
+      await supabase.auth.signOut();
       return { data: null, error: existingProfileError };
     }
 
     if (existingProfile) {
-      return buildSessionUser(supabase, existingProfile);
+      return buildSessionUserOrSignOut(existingProfile);
     }
 
+    await supabase.auth.signOut();
     return { data: null, error: 'Account created, but profile provisioning did not complete.' };
   },
 

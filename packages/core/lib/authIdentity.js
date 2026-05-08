@@ -1,6 +1,9 @@
-import { USER_PUBLIC_FIELDS } from './selects';
+import { USER_PUBLIC_FIELDS } from './selects.js';
 
 const AUTH_LINK_COLUMN = 'auth_user_id';
+const STAFF_DOCTOR_ROLES = new Set(['secretary', 'predoctor', 'admin']);
+
+export const STAFF_ASSIGNMENT_REQUIRED_ERROR = 'Active staff assignment not found for this account.';
 
 export function buildInitials(firstName, lastName) {
   return `${firstName?.trim()?.[0] || ''}${lastName?.trim()?.[0] || ''}`.toUpperCase();
@@ -84,27 +87,12 @@ async function getStaffDoctorIdForUser(supabase, userId) {
     .maybeSingle();
 
   if (error) {
-    const isMissingStaffTable = error.code === '42P01' || error.message?.includes('staff_members');
-    return { data: null, error: isMissingStaffTable ? null : error.message };
+    return { data: null, error: error.message || 'Failed to load active staff assignment.' };
   }
 
   return {
     data: data?.doctor_id || null,
     error: null,
-  };
-}
-
-async function getFirstDoctorId(supabase) {
-  const { data, error } = await supabase
-    .from('doctors')
-    .select('id')
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  return {
-    data: data?.id || null,
-    error: error?.message || null,
   };
 }
 
@@ -130,20 +118,15 @@ export async function buildSessionUser(supabase, profile) {
     doctorId = data;
   }
 
-  if (['secretary', 'predoctor', 'admin'].includes(profile.role)) {
+  if (STAFF_DOCTOR_ROLES.has(profile.role)) {
     const { data, error } = await getStaffDoctorIdForUser(supabase, profile.id);
     if (error) {
       return { data: null, error };
     }
-    doctorId = data;
-
-    if (!doctorId) {
-      const fallback = await getFirstDoctorId(supabase);
-      if (fallback.error) {
-        return { data: null, error: fallback.error };
-      }
-      doctorId = fallback.data;
+    if (!data) {
+      return { data: null, error: STAFF_ASSIGNMENT_REQUIRED_ERROR };
     }
+    doctorId = data;
   }
 
   return {
