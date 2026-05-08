@@ -1009,3 +1009,31 @@ Operational notes:
 - This does not yet call the Supabase Management API to create a brand-new tenant project. That remains deferred until the manual tenant DB checklist is stable and a management token can be stored server-side only.
 - The forward design is reversible: tenant drafts can move to `inactive` or `archived`, pending domains can be disabled, runtime config can be overwritten, and every creation writes an audit event plus a provisioning checklist.
 - The apps already support runtime resolver-backed tenants, so adding another tenant does not require copying apps, creating a new Vercel project, or deploying a tenant-specific frontend.
+
+---
+
+## 24. Vercel Alias Landing Correction — 2026-05-08
+
+Corrected the no-domain Vercel alias behavior after production screenshots showed the three app aliases crossing responsibilities:
+
+- `doctoleb-patient-web.vercel.app` is the doctor/clinic-owner SaaS marketing landing. It must be configured through `VITE_MARKETING_HOSTS`, not `VITE_PATIENT_TENANT_HOSTS`.
+- `doctoleb-clinic-ops.vercel.app` is the seeded tenant's staff/ops surface. It must stay in `VITE_OPS_TENANT_HOSTS` and resolve through the control-plane resolver with `surface='ops'`.
+- `doctoleb-control-plane.vercel.app` is the zero-PHI SaaS admin console. It uses only control-plane Supabase Auth/RBAC and should never load clinical tenant data.
+- Added the missing `apps/control-plane/postcss.config.js` so Tailwind is compiled for the console the same way it is compiled for patient-web and clinic-ops.
+- Hardened `packages/core/lib/hostnameSurface.js` so deployment host allowlists tolerate accidental escaped `\r` / `\n` suffixes without silently falling back to the wrong surface.
+- Re-saved the Vercel production host envs so patient-web is marketing and clinic-ops has a clean ops host value.
+
+Verification:
+
+```txt
+npm run verify
+npm run build:patient
+npm run build:ops
+npm run build:control-plane
+tests/unit/hostnameSurface.test.mjs covers escaped CR/LF host env values.
+tests/unit/saasFoundationContracts.test.mjs covers shared Tailwind PostCSS config across all standalone apps.
+```
+
+Operational note:
+
+- If a pre-domain patient tenant portal is needed, do not reuse the marketing alias. Create a separate Vercel alias, add it to `VITE_PATIENT_TENANT_HOSTS`, and add a matching active `tenant_domains` row with `surface='patient'`. When `doctoleb.com` is purchased, migrate those temporary aliases to real verified domain rows.

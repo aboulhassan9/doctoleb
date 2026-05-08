@@ -19,9 +19,9 @@
 - Domain readiness: **not ready for public DNS/production traffic yet** because `doctoleb.com` has not been purchased/verified. Keep the future domain rows `pending` until the domain is owned and DNS/SSL are verified.
 - No-domain deployment mode is supported: Vercel-provided hosts can be categorized with `VITE_MARKETING_HOSTS`, `VITE_CONTROL_PLANE_HOSTS`, `VITE_PATIENT_TENANT_HOSTS`, and `VITE_OPS_TENANT_HOSTS` so the app can run before `doctoleb.com` exists.
 - Current Vercel projects live under `aboulhassan-salehs-projects` and deploy from the GitHub repo `aboulhassan9/doctoleb` through GitHub Actions:
-  - `doctoleb-patient-web` → `https://doctoleb-patient-web.vercel.app`
-  - `doctoleb-clinic-ops` → `https://doctoleb-clinic-ops.vercel.app`
-  - `doctoleb-control-plane` → `https://doctoleb-control-plane.vercel.app`
+  - `doctoleb-patient-web` → `https://doctoleb-patient-web.vercel.app` — doctor/clinic-owner SaaS marketing landing, no tenant resolver call.
+  - `doctoleb-clinic-ops` → `https://doctoleb-clinic-ops.vercel.app` — staff/ops tenant surface for the seeded `dev` tenant.
+  - `doctoleb-control-plane` → `https://doctoleb-control-plane.vercel.app` — zero-PHI SaaS super-admin console.
 - Deployment automation lives in `.github/workflows/ci.yml`. Pushes to `main` run `npm run verify`, build each Vercel project with production Vercel env, block patient/ops bundles that contain tenant fallback key material, deploy all three projects, and smoke-test the stable Vercel aliases.
 - Current scope intentionally excludes super-admin UI, billing, domain self-service, and automated tenant provisioning.
 
@@ -81,6 +81,8 @@ No-domain production/preview deployment:
 - Put the exact Vercel marketing deployment hostname in `VITE_MARKETING_HOSTS`; that host renders the doctor-facing marketing site and never calls the tenant resolver.
 - Put the exact Vercel SaaS console deployment hostname in `VITE_CONTROL_PLANE_HOSTS`; that host renders the zero-PHI control-plane console.
 - Put tenant patient/ops Vercel deployment hostnames in `VITE_PATIENT_TENANT_HOSTS` / `VITE_OPS_TENANT_HOSTS` only when those hosts should resolve through `tenant-resolve`.
+- Do not put the same hostname in both `VITE_MARKETING_HOSTS` and `VITE_PATIENT_TENANT_HOSTS`. If a pre-domain patient tenant portal is needed, create a separate Vercel alias for that tenant and add that alias to `tenant_domains` with `surface='patient'`.
+- Keep Vercel host env values raw, with no quotes, literal `\r`, literal `\n`, or surrounding whitespace. Runtime host normalization tolerates escaped CR/LF defensively, but production envs should still be clean.
 - For tenant Vercel hostnames, insert matching `tenant_domains` rows in the control plane with the correct `surface`. The real `dev.doctoleb.com` rows still stay `pending` until ownership, DNS, and SSL are verified.
 - The SaaS console domain panel can update existing `tenant_domains.status`, `dns_status`, and `ssl_status` rows. It will keep a non-local domain pending unless DNS is `verified` and SSL is `issued`; the `admin_update_tenant_atomic` RPC enforces the same rule server-side.
 - When `doctoleb.com` is purchased later, set DNS/SSL, activate the real domain rows, set `VITE_PUBLIC_PRIMARY_DOMAIN=doctoleb.com`, and remove the temporary Vercel hostnames after traffic is migrated.

@@ -213,6 +213,15 @@ describe('classifyHostname — configured deployment hosts', () => {
     assert.equal(resolverSurfaceFor(r.surface), 'ops');
   });
 
+  it('normalizes configured hosts with escaped CR/LF suffixes from deployment env values', () => {
+    const r = classifyHostname('doctoleb-clinic-ops.vercel.app', {
+      opsTenantHosts: 'doctoleb-clinic-ops.vercel.app\\r\\n',
+    });
+
+    assert.equal(r.surface, SURFACES.customDomainOps);
+    assert.equal(resolverSurfaceFor(r.surface), 'ops');
+  });
+
   it('normalizes configured hosts from comma-separated full URLs', () => {
     const r = classifyHostname('doctoleb-marketing.vercel.app', {
       marketingHosts: 'https://ignored.vercel.app, https://doctoleb-marketing.vercel.app/path?x=1',

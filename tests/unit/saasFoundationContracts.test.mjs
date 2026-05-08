@@ -107,6 +107,15 @@ describe('SaaS foundation contracts', () => {
     ]);
   });
 
+  it('all standalone Vite apps use the shared Tailwind PostCSS config', () => {
+    for (const app of ['patient-web', 'clinic-ops', 'control-plane']) {
+      const source = read(`apps/${app}/postcss.config.js`);
+
+      assert.match(source, /tailwind\.config\.js/);
+      assert.match(source, /autoprefixer/);
+    }
+  });
+
   it('Vercel production deploys queue and wait explicitly inside GitHub Actions', () => {
     const workflow = read('.github/workflows/ci.yml');
 

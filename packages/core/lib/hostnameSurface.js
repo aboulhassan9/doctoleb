@@ -101,7 +101,9 @@ function splitHostnameAndPort(input) {
 }
 
 function normalizeConfiguredHost(input) {
-  const value = String(input || '').trim();
+  const value = String(input || '')
+    .replace(/\\[rn]/g, '')
+    .trim();
   if (!value) return '';
 
   const { hostname, port } = splitHostnameAndPort(value);
