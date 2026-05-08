@@ -81,6 +81,20 @@ describe('SaaS foundation contracts', () => {
     assert.match(source, /classifyCurrentLocation/);
   });
 
+  it('patient-web root landing page is doctor-facing SaaS marketing, not patient-buying copy', () => {
+    const app = read('apps/patient-web/src/App.jsx');
+    const landing = read('apps/patient-web/src/pages/LandingPage.jsx');
+    const tenantMarketing = read('apps/patient-web/src/pages/MarketingPage.jsx');
+
+    assert.match(app, /classification\.surface === SURFACES\.marketing/);
+    assert.match(app, /<Route path="\/" element=\{<LandingPage \/>/);
+    assert.match(landing, /Clinic SaaS for doctors/);
+    assert.match(landing, /For doctors who want the clinic app/);
+    assert.match(landing, /Book a demo/);
+    assert.doesNotMatch(landing, /Patient Registration/);
+    assert.match(tenantMarketing, /Patient Portal/);
+  });
+
   it('Vercel serves direct SPA routes through the app shell', () => {
     const config = JSON.parse(read('vercel.json'));
 
