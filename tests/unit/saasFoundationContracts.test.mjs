@@ -93,12 +93,17 @@ describe('SaaS foundation contracts', () => {
     ]);
   });
 
-  it('Vercel production deploys stay non-interactive inside GitHub Actions', () => {
+  it('Vercel production deploys queue and wait explicitly inside GitHub Actions', () => {
     const workflow = read('.github/workflows/ci.yml');
 
+    assert.match(workflow, /timeout-minutes: 45/);
     assert.match(
       workflow,
-      /vercel@\$\{VERCEL_CLI_VERSION\} deploy --prebuilt --prod --yes --token="\$VERCEL_TOKEN"/,
+      /vercel@\$\{VERCEL_CLI_VERSION\} deploy --prebuilt --prod --yes --no-wait --token="\$VERCEL_TOKEN"/,
+    );
+    assert.match(
+      workflow,
+      /vercel@\$\{VERCEL_CLI_VERSION\} inspect "\$deployment_url" --wait --timeout 35m --token="\$VERCEL_TOKEN"/,
     );
   });
 

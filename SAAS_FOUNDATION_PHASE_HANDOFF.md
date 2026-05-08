@@ -971,6 +971,7 @@ Kept GitHub Actions as the deployment owner:
 - Kept the Git connection for project/repo visibility, deployment metadata, and future dashboard workflows.
 - Added `.vercel` and `.env*.local` to `.gitignore` because the Vercel CLI writes local project metadata and downloaded env files during linking.
 - Kept `vercel deploy --prebuilt --prod` non-interactive with the Vercel CLI `--yes` flag. `npx --yes` only confirms package execution; the deploy command itself must also skip prompts in CI.
+- Updated the deploy job to queue the Vercel deployment with `--no-wait`, capture the returned deployment URL, then wait on that exact deployment with `vercel inspect --wait --timeout 35m`. This keeps queued Vercel builds observable and prevents the GitHub job from timing out at the old 20-minute limit.
 
 Verification:
 

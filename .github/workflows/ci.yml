@@ -72,7 +72,7 @@ jobs:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -137,7 +137,23 @@ jobs:
           fi
 
       - name: Deploy production artifact
-        run: npx --yes vercel@${VERCEL_CLI_VERSION} deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN"
+        id: deploy
+        run: |
+          set -euo pipefail
+
+          deploy_output="$(npx --yes vercel@${VERCEL_CLI_VERSION} deploy --prebuilt --prod --yes --no-wait --token="$VERCEL_TOKEN" 2>&1)"
+          printf '%s\n' "$deploy_output"
+
+          deployment_url="$(printf '%s\n' "$deploy_output" | grep -Eo 'https://[^[:space:]]+|[a-z0-9.-]+\.vercel\.app' | tail -n 1)"
+          deployment_url="${deployment_url#https://}"
+          if [ -z "$deployment_url" ]; then
+            echo "::error::Vercel deploy did not return a deployment URL."
+            exit 1
+          fi
+
+          echo "deployment_url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "Queued Vercel deployment: https://$deployment_url" >> "$GITHUB_STEP_SUMMARY"
+          npx --yes vercel@${VERCEL_CLI_VERSION} inspect "$deployment_url" --wait --timeout 35m --token="$VERCEL_TOKEN"
 
   smoke-vercel:
     name: Smoke Vercel alias (${{ matrix.app }})
