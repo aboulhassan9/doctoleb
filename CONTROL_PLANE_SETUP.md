@@ -92,6 +92,7 @@ GitHub-to-Vercel deployment automation:
 - GitHub variable required: `VERCEL_ORG_ID=team_7UDdQ1lrRxxkah4dh5Jw95RE`.
 - The workflow writes `.vercel/project.json` inside the ephemeral GitHub runner for each matrix project. This avoids committing `.vercel/` metadata and keeps the three Vercel project IDs controlled in one workflow.
 - Keep `package-lock.json` compatible with the workflow's Node/npm runner before changing deployment dependencies; Vite/Rolldown optional native packages must pass `npm ci` on GitHub's Linux runner.
+- Root `vercel.json` owns the shared Vite SPA fallback, rewriting direct app routes such as `/login` to `/index.html` after static assets are considered.
 - Vercel project settings still own app-specific build commands and public runtime env values. Do not add service-role keys to Vite env variables.
 - Undo path: disable or delete `.github/workflows/ci.yml` deployment jobs, remove the GitHub secret/variable, and continue using manual `vercel deploy --prebuilt --prod` until a replacement deploy path exists.
 

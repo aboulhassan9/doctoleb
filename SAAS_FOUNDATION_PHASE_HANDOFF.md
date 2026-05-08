@@ -819,6 +819,7 @@ Completed the GitHub-to-Vercel deployment slice after the initial manual Vercel 
 - Added deployment automation to `.github/workflows/ci.yml` so pushes to `main` from `aboulhassan9/doctoleb` run the release gate, build each project from the GitHub checkout, and deploy to Vercel production.
 - Added a patient/ops production bundle guard in CI that fails deployment if tenant fallback key material is present in `.vercel/output/static`.
 - Normalized `package-lock.json` with npm 11.11 optional dependency metadata so GitHub's Linux `npm ci` can install Vite/Rolldown consistently under the Node 24 deployment runner.
+- Added root `vercel.json` SPA fallback routing so direct app routes like `/login` resolve to the built Vite app shell on all three Vercel projects.
 - Added post-deploy alias smoke checks for:
   - `https://doctoleb-patient-web.vercel.app/login`
   - `https://doctoleb-clinic-ops.vercel.app/login`

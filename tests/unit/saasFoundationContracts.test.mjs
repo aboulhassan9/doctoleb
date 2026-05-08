@@ -80,6 +80,17 @@ describe('SaaS foundation contracts', () => {
     assert.match(source, /classifyCurrentLocation/);
   });
 
+  it('Vercel serves direct SPA routes through the app shell', () => {
+    const config = JSON.parse(read('vercel.json'));
+
+    assert.deepEqual(config.rewrites, [
+      {
+        source: '/(.*)',
+        destination: '/index.html',
+      },
+    ]);
+  });
+
   it('control-plane edge functions use explicit select lists', () => {
     const source = readControlPlaneFunctionSources();
 
