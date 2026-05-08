@@ -887,3 +887,23 @@ tests/unit/saasFoundationContracts.test.mjs
 Operational note:
 
 - Archiving is intentionally soft and idempotent. Re-running archive on an already archived clinic returns the existing row instead of changing the first archive timestamp. A future restore action can safely clear `is_archived`, `archived_at`, and `archived_by` with the same service/RLS pattern.
+
+---
+
+## 19. Resolver Safe Logging Update — 2026-05-08
+
+Completed a small Phase 6 observability hardening slice:
+
+- Updated public Edge Function `tenant-resolve` so RPC failures no longer log the raw request host or raw Supabase error object.
+- Added `safeRpcErrorMetadata(surface, error)` to keep resolver failure logs limited to safe tags: `surface` and a bounded `errorCode`.
+- Kept public API behavior unchanged: resolver failures still return `{ data: null, error: 'TENANT_RESOLVER_DOWN' }` with HTTP 503.
+
+Verification added:
+
+```txt
+tests/unit/controlPlaneActivation.test.mjs
+```
+
+Operational note:
+
+- This is intentionally conservative. Hostnames can identify clinics before custom-domain privacy rules are finalized, so resolver error logs should not include raw hostnames unless a future runbook explicitly approves and hashes them.

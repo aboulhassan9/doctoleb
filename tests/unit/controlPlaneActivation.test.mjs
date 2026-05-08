@@ -72,4 +72,13 @@ describe('SaaS activation contracts', () => {
     assert.match(source, /stale-while-revalidate/);
     assert.match(source, /normalizePayload/);
   });
+
+  it('tenant resolver logs only safe RPC failure metadata', () => {
+    const source = read('supabase-control-plane/functions/tenant-resolve/index.ts');
+
+    assert.match(source, /function safeRpcErrorMetadata/);
+    assert.match(source, /errorCode/);
+    assert.doesNotMatch(source, /console\.error\('resolve_tenant RPC failed', \{ host, surface, error \}\)/);
+    assert.doesNotMatch(source, /\{ host, surface, error \}/);
+  });
 });

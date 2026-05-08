@@ -131,6 +131,19 @@ function normalizePayload(data: unknown): ResolverEnvelope {
   return { data: payload.data, error: null }
 }
 
+function safeRpcErrorMetadata(surface: string, error: unknown): Record<string, string> {
+  const candidate = error && typeof error === 'object'
+    ? (error as { code?: unknown }).code
+    : null
+
+  return {
+    surface,
+    errorCode: typeof candidate === 'string' && candidate.trim()
+      ? candidate.trim().slice(0, 80)
+      : 'UNKNOWN',
+  }
+}
+
 function jsonResponse(
   body: unknown,
   status: number,
@@ -220,7 +233,7 @@ Deno.serve(async (req) => {
   })
 
   if (error) {
-    console.error('resolve_tenant RPC failed', { host, surface, error })
+    console.error('resolve_tenant RPC failed', safeRpcErrorMetadata(surface, error))
     return jsonResponse(
       { data: null, error: 'TENANT_RESOLVER_DOWN' },
       503,
