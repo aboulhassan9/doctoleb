@@ -18,6 +18,11 @@
 - Future domain placeholders: `dev.doctoleb.com`, `dev.ops.doctoleb.com`.
 - Domain readiness: **not ready for public DNS/production traffic yet** because `doctoleb.com` has not been purchased/verified. Keep the future domain rows `pending` until the domain is owned and DNS/SSL are verified.
 - No-domain deployment mode is supported: Vercel-provided hosts can be categorized with `VITE_MARKETING_HOSTS`, `VITE_CONTROL_PLANE_HOSTS`, `VITE_PATIENT_TENANT_HOSTS`, and `VITE_OPS_TENANT_HOSTS` so the app can run before `doctoleb.com` exists.
+- Current Vercel projects live under `aboulhassan-salehs-projects` and deploy from the GitHub repo `aboulhassan9/doctoleb` through GitHub Actions:
+  - `doctoleb-patient-web` → `https://doctoleb-patient-web.vercel.app`
+  - `doctoleb-clinic-ops` → `https://doctoleb-clinic-ops.vercel.app`
+  - `doctoleb-control-plane` → `https://doctoleb-control-plane.vercel.app`
+- Deployment automation lives in `.github/workflows/ci.yml`. Pushes to `main` run `npm run verify`, build each Vercel project with production Vercel env, block patient/ops bundles that contain tenant fallback key material, deploy all three projects, and smoke-test the stable Vercel aliases.
 - Current scope intentionally excludes super-admin UI, billing, domain self-service, and automated tenant provisioning.
 
 The migration source of truth starts at `supabase-control-plane/migrations/00010000000000_control_plane_baseline.sql`. It treats `maintenance` tenants as `TENANT_INACTIVE`, normalizes hostnames with `lower(trim(hostname))`, enforces case-insensitive hostname uniqueness, and revokes direct public execution of internal helper functions.
@@ -79,6 +84,15 @@ No-domain production/preview deployment:
 - For tenant Vercel hostnames, insert matching `tenant_domains` rows in the control plane with the correct `surface`. The real `dev.doctoleb.com` rows still stay `pending` until ownership, DNS, and SSL are verified.
 - The SaaS console domain panel can update existing `tenant_domains.status`, `dns_status`, and `ssl_status` rows. It will keep a non-local domain pending unless DNS is `verified` and SSL is `issued`; the `admin_update_tenant_atomic` RPC enforces the same rule server-side.
 - When `doctoleb.com` is purchased later, set DNS/SSL, activate the real domain rows, set `VITE_PUBLIC_PRIMARY_DOMAIN=doctoleb.com`, and remove the temporary Vercel hostnames after traffic is migrated.
+
+GitHub-to-Vercel deployment automation:
+
+- GitHub repo: `aboulhassan9/doctoleb`.
+- GitHub secret required: `VERCEL_TOKEN` (do not print or commit it).
+- GitHub variable required: `VERCEL_ORG_ID=team_7UDdQ1lrRxxkah4dh5Jw95RE`.
+- The workflow writes `.vercel/project.json` inside the ephemeral GitHub runner for each matrix project. This avoids committing `.vercel/` metadata and keeps the three Vercel project IDs controlled in one workflow.
+- Vercel project settings still own app-specific build commands and public runtime env values. Do not add service-role keys to Vite env variables.
+- Undo path: disable or delete `.github/workflows/ci.yml` deployment jobs, remove the GitHub secret/variable, and continue using manual `vercel deploy --prebuilt --prod` until a replacement deploy path exists.
 
 Tier choice:
 - **Free tier**: fine for development and the first few weeks. Auto-pauses after a week of inactivity, which is unsafe for production. 2 projects free per org.

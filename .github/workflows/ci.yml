@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -32,3 +33,87 @@ jobs:
 
       - name: Run release gate
         run: npm run verify
+
+  deploy-vercel:
+    name: Deploy Vercel (${{ matrix.app }})
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: patient-web
+            project_id: prj_2MK3W0zlvtVXwHxrKi036CbXwwuQ
+          - app: clinic-ops
+            project_id: prj_sTzoaIuPiwD0zR1kFJi82Gy6Oozg
+          - app: control-plane
+            project_id: prj_PIuy6wTSTvhMsef7dfTg5rOOWXll
+
+    env:
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ matrix.project_id }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Select Vercel project
+        run: |
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::Missing VERCEL_TOKEN repository secret."
+            exit 1
+          fi
+          if [ -z "${VERCEL_ORG_ID:-}" ]; then
+            echo "::error::Missing VERCEL_ORG_ID repository variable."
+            exit 1
+          fi
+          mkdir -p .vercel
+          node -e "const fs = require('fs'); fs.writeFileSync('.vercel/project.json', JSON.stringify({ orgId: process.env.VERCEL_ORG_ID, projectId: process.env.VERCEL_PROJECT_ID }, null, 2));"
+
+      - name: Pull production Vercel environment
+        run: npx vercel@50.1.3 pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build production artifact
+        run: npx vercel@50.1.3 build --prod --token="$VERCEL_TOKEN"
+
+      - name: Guard patient/ops bundles against local tenant fallback leakage
+        if: matrix.app != 'control-plane'
+        run: |
+          if grep -R -q -E 'gezmfmskhmjgnquoyosq|eyJhbGciOiJIUzI1Ni' .vercel/output/static; then
+            echo "::error::Production bundle contains tenant fallback URL/key material."
+            exit 1
+          fi
+
+      - name: Deploy production artifact
+        run: npx vercel@50.1.3 deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+  smoke-vercel:
+    name: Smoke Vercel aliases
+    needs: deploy-vercel
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check production aliases
+        run: |
+          set -euo pipefail
+          for url in \
+            "https://doctoleb-patient-web.vercel.app/login" \
+            "https://doctoleb-clinic-ops.vercel.app/login" \
+            "https://doctoleb-control-plane.vercel.app/"
+          do
+            curl --fail --silent --show-error --location --max-time 30 "$url" > /dev/null
+          done

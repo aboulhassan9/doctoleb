@@ -808,3 +808,32 @@ Remaining Phase 2 risk:
 
 - The documented tenant/domain update atomicity risk is closed for `admin-update-tenant`.
 - Future compound admin mutations should follow this same pattern: Edge Function owns auth/RBAC/request validation; service-role RPC owns transactionality, DB invariants, and audit insert.
+
+---
+
+## 16. Deployment Automation Update — 2026-05-08
+
+Completed the GitHub-to-Vercel deployment slice after the initial manual Vercel deploy:
+
+- Confirmed the three Vercel projects were created under `aboulhassan-salehs-projects`, but were not Git-linked through Vercel's native Git integration.
+- Added deployment automation to `.github/workflows/ci.yml` so pushes to `main` from `aboulhassan9/doctoleb` run the release gate, build each project from the GitHub checkout, and deploy to Vercel production.
+- Added a patient/ops production bundle guard in CI that fails deployment if tenant fallback key material is present in `.vercel/output/static`.
+- Added post-deploy alias smoke checks for:
+  - `https://doctoleb-patient-web.vercel.app/login`
+  - `https://doctoleb-clinic-ops.vercel.app/login`
+  - `https://doctoleb-control-plane.vercel.app/`
+- Stored the Vercel token as the GitHub Actions secret `VERCEL_TOKEN`.
+- Stored the Vercel team id as the GitHub Actions variable `VERCEL_ORG_ID`.
+- Kept `.vercel/` metadata out of the repository; the workflow writes `.vercel/project.json` in the runner for each Vercel matrix project.
+
+Verification:
+
+```txt
+git diff --check                  PASS
+npx --yes yaml-lint .github/workflows/ci.yml PASS
+npm run verify                    PASS
+```
+
+Operational note:
+
+- If native Vercel Git integration is connected later through the dashboard/import flow, avoid double-deploying from both Vercel Git and GitHub Actions. Keep one production deploy owner active at a time.
