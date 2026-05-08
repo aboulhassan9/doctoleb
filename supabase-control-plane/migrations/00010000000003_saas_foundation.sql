@@ -258,6 +258,7 @@ values
   ('starter', 'staff_accounts', true, '{"maxStaff": 2}'::jsonb),
   ('starter', 'custom_branding', false, '{}'::jsonb),
   ('starter', 'custom_domain', false, '{}'::jsonb),
+  ('starter', 'insurance_billing', false, '{}'::jsonb),
   ('starter', 'ai_clinical_summary', false, '{}'::jsonb),
   ('starter', 'bi_dashboard', false, '{}'::jsonb),
   ('starter', 'advanced_reports', false, '{}'::jsonb),
@@ -265,6 +266,7 @@ values
   ('growth', 'staff_accounts', true, '{"maxStaff": 8}'::jsonb),
   ('growth', 'custom_branding', true, '{}'::jsonb),
   ('growth', 'custom_domain', false, '{}'::jsonb),
+  ('growth', 'insurance_billing', false, '{}'::jsonb),
   ('growth', 'ai_clinical_summary', false, '{}'::jsonb),
   ('growth', 'bi_dashboard', false, '{}'::jsonb),
   ('growth', 'advanced_reports', true, '{"savedReports": 10}'::jsonb),
@@ -272,6 +274,7 @@ values
   ('scale', 'staff_accounts', true, '{"maxStaff": 50}'::jsonb),
   ('scale', 'custom_branding', true, '{}'::jsonb),
   ('scale', 'custom_domain', true, '{"maxDomains": 3}'::jsonb),
+  ('scale', 'insurance_billing', false, '{}'::jsonb),
   ('scale', 'ai_clinical_summary', true, '{"monthlyRuns": 250}'::jsonb),
   ('scale', 'bi_dashboard', true, '{"dashboards": 5}'::jsonb),
   ('scale', 'advanced_reports', true, '{"savedReports": 50}'::jsonb)

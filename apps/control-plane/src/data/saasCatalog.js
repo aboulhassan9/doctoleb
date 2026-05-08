@@ -36,6 +36,11 @@ export const FEATURE_CATALOG = Object.freeze([
     description: 'Clinic-owned domain and SSL readiness.',
   },
   {
+    code: 'insurance_billing',
+    label: 'Insurance billing',
+    description: 'Plan-gated insurance payment and claim workflow access.',
+  },
+  {
     code: 'advanced_reports',
     label: 'Advanced reports',
     description: 'Operational reporting beyond the base dashboards.',

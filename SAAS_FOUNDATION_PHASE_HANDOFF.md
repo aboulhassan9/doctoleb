@@ -839,3 +839,29 @@ npm run verify                    PASS
 Operational note:
 
 - If native Vercel Git integration is connected later through the dashboard/import flow, avoid double-deploying from both Vercel Git and GitHub Actions. Keep one production deploy owner active at a time.
+
+---
+
+## 17. Billing Entitlement Gate Update — 2026-05-08
+
+Completed the `FINDING-3` risk-reduction slice:
+
+- Added canonical entitlement code `insurance_billing`.
+- Registered `insurance_billing` in the SaaS console feature catalog and `admin-sync-entitlements` tenant feature-flag projection.
+- Added control-plane migration `00010000000010_control_plane_insurance_billing_entitlement.sql`; all plans default this feature to disabled until the real insurance claims workflow is approved.
+- Added shared billing entitlement helpers in `packages/core/lib/billingEntitlements.js`.
+- Added `useEntitlements` in `packages/core/hooks/features/useEntitlements.js` so app UI reads tenant `feature_flags` through the existing service boundary.
+- Updated `paymentService.create` to enforce payment-method entitlements before inserting payments.
+- Updated `CreateBillPage` to hide insurance payments unless entitled and removed the fake coverage/copay calculation path.
+
+Verification added:
+
+```txt
+tests/unit/billingEntitlements.test.mjs
+tests/unit/entitlements.test.mjs
+tests/unit/saasFoundationContracts.test.mjs
+```
+
+Operational note:
+
+- This does not implement the real insurance claims engine. It makes the current billing page safe-by-default and reversible: disable `insurance_billing` to remove the UI path and block backend payment creation for insurance method.

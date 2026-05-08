@@ -3,6 +3,7 @@ export const ENTITLEMENT_FEATURES = Object.freeze({
   customBranding: 'custom_branding',
   customDomain: 'custom_domain',
   staffAccounts: 'staff_accounts',
+  insuranceBilling: 'insurance_billing',
   aiClinicalSummary: 'ai_clinical_summary',
   biDashboard: 'bi_dashboard',
   advancedReports: 'advanced_reports',

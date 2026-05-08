@@ -36,6 +36,12 @@ const FEATURE_META: Record<string, { name: string; description: string; audience
     audience: 'admin',
     targetRoles: ['admin', 'doctor'],
   },
+  insurance_billing: {
+    name: 'Insurance billing',
+    description: 'Plan-gated insurance payment and claim workflow access.',
+    audience: 'staff',
+    targetRoles: ['doctor', 'secretary'],
+  },
   ai_clinical_summary: {
     name: 'AI clinical summary',
     description: 'Server-side AI clinical summarization entitlement.',

@@ -59,6 +59,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(entitlementSync, /TENANT_SERVICE_ROLE_KEY_/);
     assert.match(entitlementSync, /feature_flags/);
     assert.match(entitlementSync, /tenant_entitlements\.sync/);
+    assert.match(entitlementSync, /insurance_billing/);
   });
 
   it('control-plane browser app uses control-plane env names and never references service-role keys', () => {
@@ -168,5 +169,20 @@ describe('SaaS foundation contracts', () => {
     assert.match(adminUpdate, /TENANT_ACTIVATION_BLOCKED/);
     assert.match(catalog, /code: 'draft'/);
     assert.match(catalog, /code: 'archived'/);
+  });
+
+  it('insurance payments are entitlement-gated and do not use mock coverage math', () => {
+    const page = read('apps/clinic-ops/src/pages/CreateBillPage.jsx');
+    const payments = read('packages/core/services/payments.js');
+    const billingEntitlements = read('packages/core/lib/billingEntitlements.js');
+    const catalog = read('apps/control-plane/src/data/saasCatalog.js');
+
+    assert.match(page, /useEntitlements/);
+    assert.match(page, /hasPaymentMethodAccess/);
+    assert.match(page, /paymentService\.create\(invoiceData, \{ entitlements \}\)/);
+    assert.doesNotMatch(page, /Mock coverage|Eligibility Active|copay|insuranceCoverage/);
+    assert.match(payments, /requirePaymentMethodAccess\(options\.entitlements, data\.payment_method\)/);
+    assert.match(billingEntitlements, /ENTITLEMENT_FEATURES\.insuranceBilling/);
+    assert.match(catalog, /code: 'insurance_billing'/);
   });
 });

@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { apiCall, apiPaged } from './api';
 import { BILLABLE_SERVICE_FIELDS, PAYMENT_SELECT_FIELDS, USER_CONTACT_FIELDS } from '@/lib/selects';
+import { EntitlementError } from '@/lib/entitlements';
+import { requirePaymentMethodAccess } from '@/lib/billingEntitlements';
 import { assertTransition } from '@/lib/stateMachines';
 import { parseWithSchema, paymentCreateSchema, paymentUpdateSchema } from '@/schemas';
 
@@ -34,9 +36,16 @@ export const paymentService = {
     );
   },
 
-  async create(rawData) {
+  async create(rawData, options = {}) {
     const { data, error: validationError } = parseWithSchema(paymentCreateSchema, rawData);
     if (validationError) return { data: null, error: validationError };
+
+    try {
+      requirePaymentMethodAccess(options.entitlements, data.payment_method);
+    } catch (error) {
+      if (error instanceof EntitlementError) return { data: null, error };
+      throw error;
+    }
 
     return apiCall(
       supabase

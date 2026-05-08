@@ -97,4 +97,8 @@ describe('entitlements', () => {
     assert.equal(entitlements[ENTITLEMENT_FEATURES.customBranding].source, 'tenant_feature_flags');
     assert.deepEqual(entitlements[ENTITLEMENT_FEATURES.customBranding].limits, { logoUploads: true });
   });
+
+  it('defines insurance billing as a plan-gated entitlement code', () => {
+    assert.equal(ENTITLEMENT_FEATURES.insuranceBilling, 'insurance_billing');
+  });
 });

@@ -5,14 +5,22 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBrand } from '@/contexts/BrandContext';
-import { patientService } from '@/services/patients';
 import { paymentService } from '@/services/payments';
+import { hasPaymentMethodAccess } from '@/lib/billingEntitlements';
 import { usePatients } from '@/hooks/features/usePatients';
 import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
+import { useEntitlements } from '@/hooks/features/useEntitlements';
 
 /* ─────────────────────────────────────────────────────────
    Create Bill Page
 ───────────────────────────────────────────────────────── */
+
+const BASE_PAYMENT_METHODS = Object.freeze([
+    { id: 'cash', label: 'Cash', sub: 'Physical payment', icon: 'payments' },
+    { id: 'whish', label: 'Whish', sub: 'Mobile wallet', icon: 'phone_iphone' },
+    { id: 'visa', label: 'Visa / Card', sub: 'Credit or debit card', icon: 'credit_card' },
+    { id: 'insurance', label: 'Insurance Claim', sub: 'Plan-gated claim workflow', icon: 'verified_user' },
+]);
 
 export default function CreateBillPage() {
     const navigate = useNavigate();
@@ -32,6 +40,22 @@ export default function CreateBillPage() {
 
     const { patients, loading: loadingPatients } = usePatients();
     const { doctorId: loadedDoctorId, loading: loadingProfile } = useDoctorProfile();
+    const {
+        entitlements,
+        loading: loadingEntitlements,
+        error: entitlementError,
+    } = useEntitlements({ audience: 'staff' });
+
+    const canUseInsuranceBilling = hasPaymentMethodAccess(entitlements, 'insurance');
+    const paymentMethods = useMemo(() => {
+        return BASE_PAYMENT_METHODS.filter((method) => method.id !== 'insurance' || canUseInsuranceBilling);
+    }, [canUseInsuranceBilling]);
+
+    React.useEffect(() => {
+        if (paymentMethod === 'insurance' && !canUseInsuranceBilling) {
+            setPaymentMethod('cash');
+        }
+    }, [canUseInsuranceBilling, paymentMethod]);
 
     React.useEffect(() => {
         if (patients && patients.length > 0 && !selectedPatientId) {
@@ -61,13 +85,6 @@ export default function CreateBillPage() {
         return patientsList.find(p => p.id === selectedPatientId);
     }, [patientsList, selectedPatientId]);
     
-    // Insurance specific fields
-    const [insurance, setInsurance] = useState({
-        provider: 'BlueCross BlueShield',
-        policyId: 'BCBS-99887766',
-        copay: 20
-    });
-
     // Cash specific fields
     const [tenderedAmount, setTenderedAmount] = useState(150);
 
@@ -76,21 +93,15 @@ export default function CreateBillPage() {
         return services.reduce((sum, s) => sum + (s.price * s.quantity), 0);
     }, [services]);
 
-    const insuranceCoverage = useMemo(() => {
-        if (paymentMethod !== 'insurance') return 0;
-        // Mock coverage: Total - copay (simplified for demo)
-        return Math.max(0, subtotal - insurance.copay);
-    }, [subtotal, paymentMethod, insurance.copay]);
-
     const totalDue = useMemo(() => {
-        if (paymentMethod === 'insurance') return insurance.copay;
         return subtotal;
-    }, [subtotal, paymentMethod, insurance.copay]);
+    }, [subtotal]);
 
     const changeDue = useMemo(() => {
         if (paymentMethod !== 'cash') return 0;
         return Math.max(0, tenderedAmount - totalDue);
     }, [tenderedAmount, totalDue, paymentMethod]);
+    const invoiceStatus = paymentMethod === 'insurance' ? 'pending' : 'completed';
 
     // ─── BILL SUBMISSION STATE ────────────────────────────────
     const [submitState, setSubmitState] = useState('idle'); // 'idle' | 'processing' | 'success'
@@ -123,11 +134,11 @@ export default function CreateBillPage() {
             patient_id: selectedPatientId,
             doctor_id: billingDoctorId,
             amount: totalDue,
-            status: ['cash', 'whish', 'visa'].includes(paymentMethod) ? 'completed' : 'pending',
+            status: invoiceStatus,
             payment_method: paymentMethod,
         };
         
-        const { error } = await paymentService.create(invoiceData);
+        const { error } = await paymentService.create(invoiceData, { entitlements });
         
         if (error) {
             setSubmitState('idle');
@@ -383,12 +394,7 @@ export default function CreateBillPage() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-10">
-                                {[
-                                    { id: 'cash', label: 'Cash', sub: 'Physical payment', icon: 'payments' },
-                                    { id: 'whish', label: 'Whish', sub: 'Mobile wallet', icon: 'phone_iphone' },
-                                    { id: 'visa', label: 'Visa / Card', sub: 'Credit or debit card', icon: 'credit_card' },
-                                    { id: 'insurance', label: 'Insurance Claim', sub: 'Third-party coverage', icon: 'verified_user' },
-                                ].map(opt => (
+                                {paymentMethods.map(opt => (
                                     <button
                                         key={opt.id}
                                         onClick={() => setPaymentMethod(opt.id)}
@@ -411,6 +417,14 @@ export default function CreateBillPage() {
                                 ))}
                             </div>
 
+                            {!canUseInsuranceBilling ? (
+                                <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-900">
+                                    Insurance claim billing is disabled for this tenant plan. Cash, Whish, and card payments remain available.
+                                    {loadingEntitlements ? ' Checking plan features...' : ''}
+                                    {entitlementError ? ' Feature access could not be loaded, so insurance billing is fail-closed.' : ''}
+                                </div>
+                            ) : null}
+
                             {/* Contextual Fields */}
                             <AnimatePresence mode="wait">
                                 {paymentMethod === 'whish' || paymentMethod === 'visa' ? (
@@ -429,45 +443,14 @@ export default function CreateBillPage() {
                                     <motion.div 
                                         key="insurance-fields"
                                         initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-                                        className="grid grid-cols-2 gap-8 p-8 rounded-3xl bg-slate-50/50 border border-slate-100"
+                                        className="p-8 rounded-3xl bg-slate-50/50 border border-slate-100 flex items-start gap-6"
                                     >
-                                        <div className="space-y-6">
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-[0.1em] mb-2 block">Insurance Provider</label>
-                                                <input 
-                                                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none" 
-                                                    type="text" value={insurance.provider}
-                                                    onChange={e => setInsurance({...insurance, provider: e.target.value})}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-[0.1em] mb-2 block">Policy / Member ID</label>
-                                                <input 
-                                                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-black focus:ring-4 focus:ring-primary/10 transition-all outline-none" 
-                                                    type="text" value={insurance.policyId}
-                                                    onChange={e => setInsurance({...insurance, policyId: e.target.value})}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-6">
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-[0.1em] mb-2 block">Verification Status</label>
-                                                <div className="flex items-center gap-3 px-4 py-3 bg-success/10 border border-success/20 rounded-xl">
-                                                    <span className="material-symbols-outlined text-success text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                                                    <span className="text-sm font-black text-success tracking-tight">Eligibility Active</span>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-[0.1em] mb-2 block">Patient Co-pay (USD)</label>
-                                                <div className="relative">
-                                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black">$</span>
-                                                    <input 
-                                                        className="w-full pl-8 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-black text-slate-900 focus:ring-4 focus:ring-primary/10 transition-all outline-none" 
-                                                        type="number" value={insurance.copay}
-                                                        onChange={e => setInsurance({...insurance, copay: parseFloat(e.target.value) || 0})}
-                                                    />
-                                                </div>
-                                            </div>
+                                        <span className="material-symbols-outlined text-4xl text-amber-600">verified_user</span>
+                                        <div>
+                                            <p className="text-sm font-black text-slate-900">Insurance claim payment</p>
+                                            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                                                This posts a pending bill for the full service subtotal. Payer coverage, eligibility, and claim settlement must be handled in the dedicated insurance workflow before any balance adjustment is made.
+                                            </p>
                                         </div>
                                     </motion.div>
                                 ) : (
@@ -525,8 +508,8 @@ export default function CreateBillPage() {
                                     
                                     {paymentMethod === 'insurance' ? (
                                         <div className="flex justify-between items-center text-sm">
-                                            <span className="text-success font-bold uppercase tracking-widest text-[10px]">Insurance Coverage</span>
-                                            <span className="font-black text-success tabular-nums">-${insuranceCoverage.toFixed(2)}</span>
+                                            <span className="text-amber-600 font-bold uppercase tracking-widest text-[10px]">Claim Status</span>
+                                            <span className="font-black text-amber-700 tabular-nums">Pending payer review</span>
                                         </div>
                                     ) : (
                                         <div className="flex justify-between items-center text-sm">
@@ -561,7 +544,7 @@ export default function CreateBillPage() {
                                     </div>
                                     <p className="text-[11px] text-slate-600 font-bold leading-relaxed">
                                         {paymentMethod === 'insurance' 
-                                            ? "Patient is responsible for co-payment. Remaining balance will be processed directly with the provider."
+                                            ? "No automated coverage is applied here. Use the insurance workflow to verify payer responsibility before settlement."
                                             : "Verify physical cash or electronic proof of payment before finalizing this transaction."}
                                     </p>
                                 </div>
@@ -643,7 +626,11 @@ export default function CreateBillPage() {
                                 </div>
                                 <div className="flex justify-between items-center pt-4">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Status</span>
-                                    <span className="px-2.5 py-1 bg-success/10 text-success rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm">Paid In Full</span>
+                                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm ${
+                                        invoiceStatus === 'completed' ? 'bg-success/10 text-success' : 'bg-amber-100 text-amber-700'
+                                    }`}>
+                                        {invoiceStatus === 'completed' ? 'Paid In Full' : 'Pending Claim'}
+                                    </span>
                                 </div>
                             </div>
 

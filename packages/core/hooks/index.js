@@ -14,6 +14,7 @@ export { useReferrals } from './features/useReferrals';
 export { useDoctorProfile } from './features/useDoctorProfile';
 export { useBilling } from './features/useBilling';
 export { useCertificates } from './features/useCertificates';
+export { useEntitlements } from './features/useEntitlements';
 
 // Encounter hooks (clinic-ops — re-exported here for backward compat)
 export { useEncounter } from '@clinic-ops/hooks/useEncounter';
