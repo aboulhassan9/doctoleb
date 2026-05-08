@@ -132,6 +132,25 @@ describe('SaaS foundation contracts', () => {
     );
   });
 
+  it('GitHub Actions runs real Chromium browser smoke checks after Vercel deploys', () => {
+    const workflow = read('.github/workflows/ci.yml');
+    const pkg = JSON.parse(read('package.json'));
+    const smoke = read('scripts/browser-smoke.mjs');
+
+    assert.equal(pkg.scripts['smoke:browser:deployed'], 'node scripts/browser-smoke.mjs');
+    assert.match(workflow, /browser-smoke-vercel:/);
+    assert.match(workflow, /needs:\s*\n\s*- deploy-vercel\s*\n\s*- smoke-vercel/);
+    assert.match(workflow, /npx playwright install --with-deps chromium/);
+    assert.match(workflow, /npm run smoke:browser:deployed/);
+    assert.match(workflow, /path: output\/playwright\//);
+    assert.match(smoke, /chromium\.launch/);
+    assert.match(smoke, /doctoleb-patient-web\.vercel\.app/);
+    assert.match(smoke, /doctoleb-clinic-ops\.vercel\.app/);
+    assert.match(smoke, /doctoleb-control-plane\.vercel\.app/);
+    assert.match(smoke, /Wrong portal/);
+    assert.match(smoke, /SURFACE_MISMATCH/);
+  });
+
   it('control-plane edge functions use explicit select lists', () => {
     const source = readControlPlaneFunctionSources();
 

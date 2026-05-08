@@ -538,6 +538,7 @@ npm run build:control-plane
 npm run audit:backend-contract
 npm run test:unit
 npm run test:backend-db-contract
+npm run smoke:browser:deployed
 ```
 
 Expected caveat:
@@ -551,6 +552,12 @@ http://localhost:3001
 http://localhost:3002
 control-plane dev server from npm run dev:control-plane
 ```
+
+Deployed browser QA:
+
+- `npm run smoke:browser:deployed` runs real Chromium against the current Vercel aliases for patient-web, clinic-ops, and control-plane.
+- The smoke checks run desktop and mobile viewports, verify expected app text, fail on wrong-portal resolver errors, fail on critical console/network/page errors, and save review artifacts under `output/playwright/`.
+- GitHub Actions runs this after all three Vercel deploys and after the curl-based alias smoke checks. The artifact folder is intentionally git-ignored.
 
 ---
 
