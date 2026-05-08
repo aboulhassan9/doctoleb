@@ -120,6 +120,9 @@ export const CLINIC_SELECT_FIELDS = [
   'map_url',
   'floor',
   'room',
+  'is_archived',
+  'archived_at',
+  'archived_by',
   'created_at',
 ].join(', ');
 

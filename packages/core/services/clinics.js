@@ -4,17 +4,21 @@ import {
   APPOINTMENT_SELECT_FIELDS,
   CLINIC_SELECT_FIELDS,
 } from '@/lib/selects';
-import { clinicSchema, parseWithSchema } from '@/schemas';
+import { archiveMutationSchema, clinicSchema, parseWithSchema } from '@/schemas';
+
+const clinicArchiveSchema = archiveMutationSchema.partial();
 
 // Unified practice-location service. Branding/config belongs to tenantConfigService.
 export const clinicService = {
   // ─── Multi-clinic CRUD ───────────────────────────────────────────────────────
 
-  async getAll({ page = 1, pageSize = 100 } = {}) {
-    const query = supabase
+  async getAll({ page = 1, pageSize = 100, includeArchived = false } = {}) {
+    let query = supabase
       .from('clinics')
-      .select(CLINIC_SELECT_FIELDS, { count: 'exact' })
-      .order('name', { ascending: true });
+      .select(CLINIC_SELECT_FIELDS, { count: 'exact' });
+
+    if (!includeArchived) query = query.eq('is_archived', false);
+    query = query.order('name', { ascending: true });
 
     return apiPaged(query, { page, pageSize });
   },
@@ -43,10 +47,34 @@ export const clinicService = {
     );
   },
 
-  async delete(id) {
-    return apiCall(
-      supabase.from('clinics').delete().eq('id', id)
+  async archive(id, archivedBy = null) {
+    const { data: archivePayload, error: validationError } = parseWithSchema(
+      clinicArchiveSchema,
+      archivedBy === null || archivedBy === undefined ? {} : { archivedBy }
     );
+    if (validationError) return { data: null, error: validationError };
+
+    const result = await apiCall(
+      supabase
+        .from('clinics')
+        .update({
+          is_archived: true,
+          archived_at: new Date().toISOString(),
+          archived_by: archivePayload.archivedBy ?? null,
+        })
+        .eq('id', id)
+        .eq('is_archived', false)
+        .select(CLINIC_SELECT_FIELDS)
+        .maybeSingle()
+    );
+
+    if (result.error || result.data) return result;
+
+    return clinicService.getById(id);
+  },
+
+  async delete(id, archivedBy = null) {
+    return clinicService.archive(id, archivedBy);
   },
 
   // Get today's scheduled appointments

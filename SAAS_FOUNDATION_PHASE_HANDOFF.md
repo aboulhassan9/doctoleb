@@ -736,7 +736,7 @@ Recommend **(a) first** — it's reversible, ships in one slice, and stops the b
 | `.select('*')` in tenant services | ✅ Clean |
 | `console.error` in services | ✅ Clean |
 | Raw `supabase.from/rpc/auth/storage/channel` in pages | ✅ Clean |
-| Hard delete in clinical/financial services | ⚠️ See FINDING-2 |
+| Hard delete in clinical/financial services | ✅ FINDING-2 closed in §18 |
 | Hard delete elsewhere | ✅ All operational (slots/templates), gated on no-active-references |
 
 ### 14.6 Recommended next slice
@@ -749,7 +749,7 @@ Three other small-but-valuable fixes to fold into Phase 1, in this order:
 
 1. **FINDING-3 (entitlement gate on insurance payment method)** — ~30 min. Reversible. Stops billing risk immediately.
 2. **FINDING-1 (`.select('*')` in admin-get-tenant)** — ~10 min. NIT. Bundle with the control-plane refactor since you're touching that area anyway.
-3. **FINDING-2 (`clinicService.delete` → `archive`)** — schema-dependent. Verify `clinics.is_archived` column exists via Supabase MCP first; if missing, write a migration before touching the service.
+3. **FINDING-2 (`clinicService.delete` → `archive`)** — closed in §18. Live schema was missing archive columns, so the fix shipped migration-first, then service changes.
 
 Each is a separate commit, each independently reversible.
 
@@ -865,3 +865,25 @@ tests/unit/saasFoundationContracts.test.mjs
 Operational note:
 
 - This does not implement the real insurance claims engine. It makes the current billing page safe-by-default and reversible: disable `insurance_billing` to remove the UI path and block backend payment creation for insurance method.
+
+---
+
+## 18. Clinic Soft Archive Update — 2026-05-08
+
+Completed the `FINDING-2` risk-reduction slice:
+
+- Verified the live tenant project `gezmfmskhmjgnquoyosq` did not have `clinics.is_archived`, `clinics.archived_at`, or `clinics.archived_by`.
+- Added tenant migration `20260508145542_clinic_soft_archive.sql` to store reversible archive state on `public.clinics`, index active clinic lists, and remove the browser-exposed `clinics_staff_delete` RLS policy.
+- Updated `clinicService.getAll` to hide archived clinics by default while allowing explicit `includeArchived` reads for future admin recovery workflows.
+- Replaced `clinicService.delete` with a compatibility alias that delegates to `clinicService.archive`; no browser service path hard-deletes clinics now.
+- Added archive fields to `CLINIC_SELECT_FIELDS` so mutations return the canonical updated state needed for future undo/recovery UI.
+
+Verification added:
+
+```txt
+tests/unit/saasFoundationContracts.test.mjs
+```
+
+Operational note:
+
+- Archiving is intentionally soft and idempotent. Re-running archive on an already archived clinic returns the existing row instead of changing the first archive timestamp. A future restore action can safely clear `is_archived`, `archived_at`, and `archived_by` with the same service/RLS pattern.

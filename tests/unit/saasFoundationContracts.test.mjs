@@ -185,4 +185,26 @@ describe('SaaS foundation contracts', () => {
     assert.match(billingEntitlements, /ENTITLEMENT_FEATURES\.insuranceBilling/);
     assert.match(catalog, /code: 'insurance_billing'/);
   });
+
+  it('clinics use reversible archive semantics instead of browser hard delete', () => {
+    const service = read('packages/core/services/clinics.js');
+    const selects = read('packages/core/lib/selects.js');
+    const migration = read('supabase/migrations/20260508145542_clinic_soft_archive.sql');
+
+    assert.doesNotMatch(service, /from\('clinics'\)\.delete\(/);
+    assert.match(service, /async archive\(id, archivedBy = null\)/);
+    assert.match(service, /is_archived: true/);
+    assert.match(service, /archived_at: new Date\(\)\.toISOString\(\)/);
+    assert.match(service, /archived_by: archivePayload\.archivedBy \?\? null/);
+    assert.match(service, /async delete\(id, archivedBy = null\)[\s\S]*return clinicService\.archive\(id, archivedBy\)/);
+    assert.match(service, /\.eq\('is_archived', false\)/);
+    assert.match(selects, /'is_archived'/);
+    assert.match(selects, /'archived_at'/);
+    assert.match(selects, /'archived_by'/);
+    assert.match(migration, /add column if not exists is_archived boolean not null default false/);
+    assert.match(migration, /add column if not exists archived_at timestamptz/);
+    assert.match(migration, /add column if not exists archived_by uuid references public\.users\(id\)/);
+    assert.match(migration, /create index if not exists idx_clinics_active_name/);
+    assert.match(migration, /drop policy if exists clinics_staff_delete on public\.clinics/);
+  });
 });
