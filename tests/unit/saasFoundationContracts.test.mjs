@@ -93,6 +93,15 @@ describe('SaaS foundation contracts', () => {
     ]);
   });
 
+  it('Vercel production deploys stay non-interactive inside GitHub Actions', () => {
+    const workflow = read('.github/workflows/ci.yml');
+
+    assert.match(
+      workflow,
+      /vercel@\$\{VERCEL_CLI_VERSION\} deploy --prebuilt --prod --yes --token="\$VERCEL_TOKEN"/,
+    );
+  });
+
   it('control-plane edge functions use explicit select lists', () => {
     const source = readControlPlaneFunctionSources();
 

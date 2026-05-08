@@ -970,6 +970,7 @@ Kept GitHub Actions as the deployment owner:
 - Added `git.deploymentEnabled: false` to root `vercel.json` so native Vercel Git auto-deployments do not bypass the GitHub quality gate.
 - Kept the Git connection for project/repo visibility, deployment metadata, and future dashboard workflows.
 - Added `.vercel` and `.env*.local` to `.gitignore` because the Vercel CLI writes local project metadata and downloaded env files during linking.
+- Kept `vercel deploy --prebuilt --prod` non-interactive with the Vercel CLI `--yes` flag. `npx --yes` only confirms package execution; the deploy command itself must also skip prompts in CI.
 
 Verification:
 

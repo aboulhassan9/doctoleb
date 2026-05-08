@@ -137,7 +137,7 @@ jobs:
           fi
 
       - name: Deploy production artifact
-        run: npx --yes vercel@${VERCEL_CLI_VERSION} deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        run: npx --yes vercel@${VERCEL_CLI_VERSION} deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN"
 
   smoke-vercel:
     name: Smoke Vercel alias (${{ matrix.app }})
