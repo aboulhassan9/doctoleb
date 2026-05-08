@@ -88,7 +88,7 @@ No-domain production/preview deployment:
 GitHub-to-Vercel deployment automation:
 
 - GitHub repo: `aboulhassan9/doctoleb`.
-- GitHub secret required: `VERCEL_TOKEN` (do not print or commit it).
+- GitHub secret required: `VERCEL_TOKEN` (do not print or commit it; store the raw token only, with no BOM or surrounding whitespace).
 - GitHub variable required: `VERCEL_ORG_ID=team_7UDdQ1lrRxxkah4dh5Jw95RE`.
 - The workflow writes `.vercel/project.json` inside the ephemeral GitHub runner for each matrix project. This avoids committing `.vercel/` metadata and keeps the three Vercel project IDs controlled in one workflow.
 - Keep `package-lock.json` compatible with the workflow's Node/npm runner before changing deployment dependencies; Vite/Rolldown optional native packages must pass `npm ci` on GitHub's Linux runner.
