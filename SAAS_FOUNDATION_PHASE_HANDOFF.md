@@ -931,3 +931,26 @@ tests/unit/authSecurityContracts.test.mjs
 Operational note:
 
 - This is an intentional security behavior change. A clinic staff account without an active assignment should be repaired through staff provisioning/invitation, not allowed into the app with guessed doctor scope.
+
+---
+
+## 21. Deployment Workflow Quality-Gate Update — 2026-05-08
+
+Completed a CI/CD workflow consolidation slice:
+
+- Renamed the workflow to `DoctoLeb CI/CD` while preserving the existing `verify` job id and `Lint, Build, Audit` check name to avoid surprising branch-protection rules.
+- Expanded the verification job into explicit quality-gate steps: lint, unified build, unit tests, backend contract audit, backend DB contract checks, high-severity dependency audit, and all three app-specific builds.
+- Kept production deployment in the same GitHub Actions workflow, gated by `needs: verify` and limited to pushes on `main`.
+- Added workflow-level concurrency so newer pushes cancel older in-flight runs on the same ref; this prevents an older production deployment from finishing after a newer one.
+- Centralized `NODE_VERSION` and `VERCEL_CLI_VERSION` as workflow env values and switched Vercel CLI calls to `npx --yes` for non-interactive CI behavior.
+- Split Vercel alias smoke checks into a matrix so patient, ops, and control-plane production checks are visible independently in GitHub Actions.
+
+Verification:
+
+```txt
+npx --yes yaml-lint .github/workflows/ci.yml PASS
+```
+
+Operational note:
+
+- PRs run the full quality gate but do not deploy. Pushes to `main` run the same quality gate, deploy all three Vercel projects, then smoke the three Vercel free-domain aliases. This remains domain-ready without requiring purchased `doctoleb.com` yet.
