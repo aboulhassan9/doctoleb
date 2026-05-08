@@ -84,6 +84,7 @@ describe('SaaS foundation contracts', () => {
   it('Vercel serves direct SPA routes through the app shell', () => {
     const config = JSON.parse(read('vercel.json'));
 
+    assert.equal(config.git.deploymentEnabled, false);
     assert.deepEqual(config.rewrites, [
       {
         source: '/(.*)',

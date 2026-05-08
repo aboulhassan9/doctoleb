@@ -27,3 +27,5 @@ temp_services_diff.txt
 *.njsproj
 *.sln
 *.sw?
+.vercel
+.env*.local

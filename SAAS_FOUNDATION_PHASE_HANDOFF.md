@@ -954,3 +954,30 @@ npx --yes yaml-lint .github/workflows/ci.yml PASS
 Operational note:
 
 - PRs run the full quality gate but do not deploy. Pushes to `main` run the same quality gate, deploy all three Vercel projects, then smoke the three Vercel free-domain aliases. This remains domain-ready without requiring purchased `doctoleb.com` yet.
+
+---
+
+## 22. Vercel Git Connection Update — 2026-05-08
+
+Connected the three Vercel projects to the GitHub repository `aboulhassan9/doctoleb`:
+
+- `doctoleb-patient-web` -> GitHub repo `aboulhassan9/doctoleb`, production branch `main`.
+- `doctoleb-clinic-ops` -> GitHub repo `aboulhassan9/doctoleb`, production branch `main`.
+- `doctoleb-control-plane` -> GitHub repo `aboulhassan9/doctoleb`, production branch `main`.
+
+Kept GitHub Actions as the deployment owner:
+
+- Added `git.deploymentEnabled: false` to root `vercel.json` so native Vercel Git auto-deployments do not bypass the GitHub quality gate.
+- Kept the Git connection for project/repo visibility, deployment metadata, and future dashboard workflows.
+- Added `.vercel` and `.env*.local` to `.gitignore` because the Vercel CLI writes local project metadata and downloaded env files during linking.
+
+Verification:
+
+```txt
+Vercel API project reads confirm all three projects link to GitHub repo doctoleb, repoId 1225596513, org aboulhassan9, productionBranch main.
+tests/unit/saasFoundationContracts.test.mjs asserts Vercel Git auto-deploys stay disabled in vercel.json.
+```
+
+Operational note:
+
+- Do not enable Vercel native Git auto-deployments while `.github/workflows/ci.yml` is the release owner. If native Vercel deploys are enabled later, remove or pause the GitHub Actions deploy job first to avoid duplicate production deploys.
