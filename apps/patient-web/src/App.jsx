@@ -9,7 +9,6 @@ import { BrandProvider } from '@ui/contexts/BrandContext';
 import { TenantBootstrap } from '@ui/contexts/TenantBootstrap';
 import { PatientConsentGate } from '@ui/components/consent/PatientConsentGate';
 import { APP_SURFACES } from '@/lib/appBoundaries';
-import { classifyCurrentLocation, SURFACES } from '@/lib/hostnameSurface';
 import ErrorBoundary from '@ui/components/ErrorBoundary';
 import { LoadingSkeleton } from '@ui/components/ui';
 
@@ -23,7 +22,6 @@ import { LoadingSkeleton } from '@ui/components/ui';
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
-const MarketingPage = lazy(() => import('./pages/MarketingPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -34,24 +32,6 @@ const PatientAppointmentsPage = lazy(() => import('./pages/PatientAppointmentsPa
 const PatientMedicalHistoryPage = lazy(() => import('./pages/PatientMedicalHistoryPage'));
 const PatientDashboardPage = lazy(() => import('./pages/PatientDashboardPage'));
 const PatientMessagesPage = lazy(() => import('./pages/PatientMessagesPage'));
-
-function MarketingShell() {
-  return (
-    <ThemeProvider>
-      <ErrorBoundary>
-        <Router>
-          <Suspense fallback={<LoadingSkeleton rows={8} />}>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/marketing" element={<LandingPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
-        </Router>
-      </ErrorBoundary>
-    </ThemeProvider>
-  );
-}
 
 function TenantPortalShell() {
   return (
@@ -67,8 +47,8 @@ function TenantPortalShell() {
                   <Suspense fallback={<LoadingSkeleton rows={8} />}>
                     <Routes>
                       {/* Public */}
-                      <Route path="/" element={<AuthRedirect intendedSurface="patient-web"><MarketingPage /></AuthRedirect>} />
-                      <Route path="/marketing" element={<AuthRedirect intendedSurface="patient-web"><MarketingPage /></AuthRedirect>} />
+                      <Route path="/" element={<AuthRedirect intendedSurface="patient-web"><LandingPage /></AuthRedirect>} />
+                      <Route path="/marketing" element={<AuthRedirect intendedSurface="patient-web"><LandingPage /></AuthRedirect>} />
 
                       {/* Auth */}
                       <Route path="/login" element={<AuthRedirect intendedSurface="patient-web" redirectAll><LoginPage /></AuthRedirect>} />
@@ -99,12 +79,6 @@ function TenantPortalShell() {
 }
 
 function App() {
-  const classification = classifyCurrentLocation();
-
-  if (classification.surface === SURFACES.marketing) {
-    return <MarketingShell />;
-  }
-
   return <TenantPortalShell />;
 }
 

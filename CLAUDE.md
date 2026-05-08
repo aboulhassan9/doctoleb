@@ -166,10 +166,10 @@ Current status: these routes still live in one Vite app during migration. Target
 
 | Route | Page | Notes |
 |---|---|---|
-| `/` | `LandingPage` | Marketing landing |
+| `/` | `LandingPage` | Clinic-branded patient public landing |
 | `/login` | `LoginPage` | Auth entry |
 | `/signup` | `SignUpPage` | Registration |
-| `/marketing` | `MarketingPage` | Feature showcase |
+| `/marketing` | `LandingPage` | Same clinic-branded patient public landing |
 | `/demo` | `DemoPage` | ⚠️ **REMOVE OR GATE FOR PRODUCTION** |
 | `/forgot-password` | `ForgotPasswordPage` | |
 | `/reset-password` | `ResetPasswordPage` | |

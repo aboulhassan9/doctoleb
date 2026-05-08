@@ -100,7 +100,7 @@ Known implemented foundation:
 - Control-plane tables include SaaS/control-plane metadata only.
 - New `apps/control-plane` exists as the super-admin app foundation.
 - Entitlement helpers exist in `packages/core/lib/entitlements.js`.
-- Doctor-facing landing page direction exists in `apps/patient-web/src/pages/LandingPage.jsx`.
+- Patient-web tenant landing exists in `apps/patient-web/src/pages/LandingPage.jsx`; it is the clinic/doctor-branded patient surface, not DoctoLeb SaaS buyer marketing.
 - Admin Edge Functions exist under `supabase-control-plane/functions`.
 - ADR-005 records the SaaS admin, entitlements, and manual provisioning direction.
 
@@ -1021,14 +1021,14 @@ Operational notes:
 
 ## 24. Vercel Alias Landing Correction — 2026-05-08
 
-Corrected the no-domain Vercel alias behavior after production screenshots showed the three app aliases crossing responsibilities:
+Corrected the no-domain Vercel alias behavior after production screenshots showed the three app aliases crossing responsibilities. This section was later corrected again: patient-web must not serve DoctoLeb SaaS buyer marketing.
 
-- `doctoleb-patient-web.vercel.app` is the doctor/clinic-owner SaaS marketing landing. It must be configured through `VITE_MARKETING_HOSTS`, not `VITE_PATIENT_TENANT_HOSTS`.
+- `doctoleb-patient-web.vercel.app` is the seeded tenant's clinic-branded patient/public surface. It must resolve through the control-plane resolver with `surface='patient'`, even before a purchased custom domain exists.
 - `doctoleb-clinic-ops.vercel.app` is the seeded tenant's staff/ops surface. It must stay in `VITE_OPS_TENANT_HOSTS` and resolve through the control-plane resolver with `surface='ops'`.
 - `doctoleb-control-plane.vercel.app` is the zero-PHI SaaS admin console. It uses only control-plane Supabase Auth/RBAC and should never load clinical tenant data.
 - Added the missing `apps/control-plane/postcss.config.js` so Tailwind is compiled for the console the same way it is compiled for patient-web and clinic-ops.
 - Hardened `packages/core/lib/hostnameSurface.js` so deployment host allowlists tolerate accidental escaped `\r` / `\n` suffixes without silently falling back to the wrong surface.
-- Re-saved the Vercel production host envs so patient-web is marketing and clinic-ops has a clean ops host value.
+- Patient-web and clinic-ops should both remain resolver-backed tenant app surfaces; DoctoLeb SaaS buyer marketing should be implemented as a separate marketing/root surface later.
 - Updated `.github/workflows/ci.yml` so manual `workflow_dispatch` runs on `main` deploy through the same verified Vercel workflow instead of stopping after verification.
 
 Verification:

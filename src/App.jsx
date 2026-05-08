@@ -24,7 +24,6 @@ import { LoadingSkeleton } from '@ui/components/ui';
 const LandingPage = lazy(() => import('@patient-web/pages/LandingPage'));
 const LoginPage = lazy(() => import('@patient-web/pages/LoginPage'));
 const SignUpPage = lazy(() => import('@patient-web/pages/SignUpPage'));
-const MarketingPage = lazy(() => import('@patient-web/pages/MarketingPage'));
 const ForgotPasswordPage = lazy(() => import('@patient-web/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@patient-web/pages/ResetPasswordPage'));
 const NotFoundPage = lazy(() => import('@patient-web/pages/NotFoundPage'));
@@ -86,7 +85,7 @@ function App() {
 
                     {/* ── Public / Patient-Web ── */}
                     <Route path="/" element={<AuthRedirect intendedSurface={APP_SURFACES.patientWeb}><LandingPage /></AuthRedirect>} />
-                    <Route path="/marketing" element={<AuthRedirect intendedSurface={APP_SURFACES.patientWeb}><MarketingPage /></AuthRedirect>} />
+                    <Route path="/marketing" element={<AuthRedirect intendedSurface={APP_SURFACES.patientWeb}><LandingPage /></AuthRedirect>} />
 
                     {/* Auth pages */}
                     <Route path="/login" element={<AuthRedirect intendedSurface={APP_SURFACES.patientWeb} redirectAll><LoginPage /></AuthRedirect>} />

@@ -72,27 +72,30 @@ describe('SaaS foundation contracts', () => {
     assert.doesNotMatch(api, /SERVICE_ROLE/i);
   });
 
-  it('patient app bypasses tenant bootstrap for marketing hostnames', () => {
+  it('patient app always boots the tenant-branded patient surface', () => {
     const source = read('apps/patient-web/src/App.jsx');
 
-    assert.match(source, /MarketingShell/);
-    assert.match(source, /SURFACES\.marketing/);
     assert.match(source, /TenantPortalShell/);
-    assert.match(source, /classifyCurrentLocation/);
+    assert.match(source, /TenantBootstrap appSurface=\{APP_SURFACES\.patientWeb\}/);
+    assert.doesNotMatch(source, /MarketingShell/);
+    assert.doesNotMatch(source, /classifyCurrentLocation/);
+    assert.doesNotMatch(source, /SURFACES\.marketing/);
   });
 
-  it('patient-web root landing page is doctor-facing SaaS marketing, not patient-buying copy', () => {
+  it('patient-web root landing page is the clinic-branded patient surface, not DoctoLeb SaaS marketing', () => {
     const app = read('apps/patient-web/src/App.jsx');
     const landing = read('apps/patient-web/src/pages/LandingPage.jsx');
-    const tenantMarketing = read('apps/patient-web/src/pages/MarketingPage.jsx');
 
-    assert.match(app, /classification\.surface === SURFACES\.marketing/);
-    assert.match(app, /<Route path="\/" element=\{<LandingPage \/>/);
-    assert.match(landing, /Clinic SaaS for doctors/);
-    assert.match(landing, /For doctors who want the clinic app/);
-    assert.match(landing, /Book a demo/);
-    assert.doesNotMatch(landing, /Patient Registration/);
-    assert.match(tenantMarketing, /Patient Portal/);
+    assert.match(app, /<Route path="\/" element=\{<AuthRedirect intendedSurface="patient-web"><LandingPage \/><\/AuthRedirect>\}/);
+    assert.match(app, /<Route path="\/marketing" element=\{<AuthRedirect intendedSurface="patient-web"><LandingPage \/><\/AuthRedirect>\}/);
+    assert.match(landing, /useBrand/);
+    assert.match(landing, /Patient Portal/);
+    assert.match(landing, /What patients can do/);
+    assert.match(landing, /Patient Registration/);
+    assert.match(landing, /formatWebsiteHref/);
+    assert.match(landing, /\['http:', 'https:'\]\.includes\(parsed\.protocol\)/);
+    assert.doesNotMatch(landing, /Clinic SaaS for doctors/);
+    assert.doesNotMatch(landing, /DoctoLeb gives doctors/);
   });
 
   it('Vercel serves direct SPA routes through the app shell', () => {
@@ -149,6 +152,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(smoke, /doctoleb-control-plane\.vercel\.app/);
     assert.match(smoke, /Wrong portal/);
     assert.match(smoke, /SURFACE_MISMATCH/);
+    assert.match(smoke, /net::ERR_ABORTED/);
   });
 
   it('control-plane edge functions use explicit select lists', () => {

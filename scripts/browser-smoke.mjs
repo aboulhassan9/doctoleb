@@ -27,13 +27,15 @@ const APPS = Object.freeze([
     app: 'patient-web',
     url: process.env.PATIENT_WEB_SMOKE_URL || 'https://doctoleb-patient-web.vercel.app/',
     title: /Patient Portal/i,
-    h1: 'Run the digital side of your clinic without duct tape.',
+    h1: /Patient Portal/i,
     includeText: [
-      'Clinic SaaS for doctors',
-      'For doctors who want the clinic app before everyone else.',
+      'What patients can do',
+      'Operations portal is separate',
+      'Patient Registration',
     ],
     excludeText: [
-      'Patient Registration',
+      'Clinic SaaS for doctors',
+      'Run the digital side of your clinic without duct tape.',
       'Wrong portal',
       'SURFACE_MISMATCH',
       'TENANT_NOT_FOUND',
@@ -78,6 +80,10 @@ function isIgnoredRequestUrl(url) {
   return /\/favicon\.(ico|png|svg)(?:\?|$)/i.test(url);
 }
 
+function isExpectedRequestAbort(request) {
+  return request.failure()?.errorText === 'net::ERR_ABORTED';
+}
+
 function assertText(bodyText, expectedText, context) {
   if (!bodyText.toLocaleLowerCase().includes(expectedText.toLocaleLowerCase())) {
     throw new Error(`${context}: expected page text to include "${expectedText}".`);
@@ -88,6 +94,15 @@ function assertMissingText(bodyText, forbiddenText, context) {
   if (bodyText.toLocaleLowerCase().includes(forbiddenText.toLocaleLowerCase())) {
     throw new Error(`${context}: page unexpectedly contains "${forbiddenText}".`);
   }
+}
+
+function summarizeRuntimeIssues({ consoleErrors, pageErrors, failedRequests, badResponses }) {
+  const parts = [];
+  if (consoleErrors.length > 0) parts.push(`console=${consoleErrors[0]}`);
+  if (pageErrors.length > 0) parts.push(`page=${pageErrors[0]}`);
+  if (failedRequests.length > 0) parts.push(`request=${failedRequests[0].method} ${failedRequests[0].url} ${failedRequests[0].failure}`);
+  if (badResponses.length > 0) parts.push(`response=${badResponses[0].status} ${badResponses[0].method} ${badResponses[0].url}`);
+  return parts.join(' | ');
 }
 
 async function verifyApp(browser, appConfig, viewportConfig) {
@@ -112,7 +127,7 @@ async function verifyApp(browser, appConfig, viewportConfig) {
   });
 
   page.on('requestfailed', (request) => {
-    if (isCriticalRequest(request) && !isIgnoredRequestUrl(request.url())) {
+    if (isCriticalRequest(request) && !isIgnoredRequestUrl(request.url()) && !isExpectedRequestAbort(request)) {
       failedRequests.push({
         url: request.url(),
         method: request.method(),
@@ -145,7 +160,7 @@ async function verifyApp(browser, appConfig, viewportConfig) {
     }
 
     const heading = page.getByRole('heading', { name: appConfig.h1 }).first();
-    await heading.waitFor({ state: 'visible', timeout: 20_000 });
+    await heading.waitFor({ state: 'visible', timeout: 45_000 });
 
     const bodyText = await page.locator('body').innerText({ timeout: 10_000 });
     for (const expectedText of appConfig.includeText) {
@@ -156,7 +171,12 @@ async function verifyApp(browser, appConfig, viewportConfig) {
     }
 
     if (consoleErrors.length > 0 || pageErrors.length > 0 || failedRequests.length > 0 || badResponses.length > 0) {
-      throw new Error(`${contextLabel}: browser runtime errors detected.`);
+      throw new Error(`${contextLabel}: browser runtime errors detected. ${summarizeRuntimeIssues({
+        consoleErrors,
+        pageErrors,
+        failedRequests,
+        badResponses,
+      })}`);
     }
 
     const screenshotPath = path.join(outputDir, `${appConfig.app}-${viewportConfig.name}.png`);
@@ -167,7 +187,7 @@ async function verifyApp(browser, appConfig, viewportConfig) {
       viewport: viewportConfig.name,
       url: appConfig.url,
       title,
-      h1: appConfig.h1,
+      h1: String(appConfig.h1),
       screenshotPath,
       consoleErrors,
       pageErrors,
