@@ -23,7 +23,7 @@
   - `doctoleb-clinic-ops` → `https://doctoleb-clinic-ops.vercel.app` — staff/ops tenant surface for the seeded `dev` tenant.
   - `doctoleb-control-plane` → `https://doctoleb-control-plane.vercel.app` — zero-PHI SaaS super-admin console.
 - Deployment automation lives in `.github/workflows/ci.yml`. Pushes to `main` run `npm run verify`, build each Vercel project with production Vercel env, block patient/ops bundles that contain tenant fallback key material, deploy all three projects, and smoke-test the stable Vercel aliases.
-- Current scope intentionally excludes super-admin UI, billing, domain self-service, and automated tenant provisioning.
+- Current scope intentionally excludes billing checkout, domain self-service, and fully automated tenant provisioning. The provider-connected provisioning schema is now in place so future automation can use DoctoLeb-owned, customer-owned, or partner-owned Supabase/Vercel accounts without changing the tenant model.
 
 The migration source of truth starts at `supabase-control-plane/migrations/00010000000000_control_plane_baseline.sql`. It treats `maintenance` tenants as `TENANT_INACTIVE`, normalizes hostnames with `lower(trim(hostname))`, enforces case-insensitive hostname uniqueness, and revokes direct public execution of internal helper functions.
 
@@ -553,6 +553,14 @@ Preferred flow:
 6. Sync branding and entitlements only after runtime config exists.
 7. Activate the tenant only after it has runtime config and at least one active domain row for the target surface.
 
+Provider-connected automation direction:
+
+- A provider connection represents an authorized Supabase or Vercel account/team. It can be DoctoLeb-owned, customer-owned, or partner-owned.
+- The control plane stores connection metadata, capabilities, status, and a server-side `secret_ref` only. Do not put raw Supabase access tokens, Vercel tokens, service-role keys, or management credentials in control-plane rows.
+- A provisioning job can reference the selected Supabase and Vercel provider connections and record each automation action in `tenant_provisioning_steps`.
+- Every automation step must record preconditions, postconditions, idempotency key, external resource ids, and an undo strategy before it is allowed to mutate provider infrastructure.
+- Until provider auth Edge Functions exist, keep automation mode manual or assisted. Do not enable a browser-only automatic flow.
+
 Legacy SQL playbook, for emergency repair only:
 
 ```bash
@@ -644,7 +652,7 @@ After steps 1–6, check each item:
 
 - **Custom domain DNS verification UX**. For now, `tenant_domains.dns_status` is set manually. A future step automates the TXT/CNAME verification handshake.
 - **Stripe billing integration**. `tenants.plan` and `tenants.status` are the contract; the billing webhook can flip `status` to `'suspended'` on payment failure. Out of scope for v1.
-- **Auto-provisioning via Supabase Management API**. Step 7 is manual today. Eventually replace it with a `provision-tenant` Edge Function that calls `POST https://api.supabase.com/v1/projects` and runs `supabase db push --project-ref <new>` programmatically. Requires a Management API token, stored as a control-plane Edge Function secret only.
+- **Auto-provisioning via provider connections**. Step 7 is manual today. The schema now supports provider account connections and undoable provisioning steps. Next, build authenticated Edge Functions to connect Supabase/Vercel accounts, verify capabilities, call the Supabase Management API to create tenant projects, configure Vercel domains/env where required, run tenant migrations, seed runtime config, and record every step in `tenant_provisioning_steps`.
 - **Full automated super-admin provisioning**. `apps/control-plane/` now covers tenant list/detail, status/domain controls, runtime config, branding sync, entitlement sync, and draft creation. Supabase project creation, tenant DB migration execution, first doctor invite automation, and custom-domain verification automation are still follow-up work.
 - **Cross-tenant analytics**. Counts/MRR/dashboards that aggregate across tenants need a service-role aggregator Edge Function in the control plane that fans out to each tenant DB. Out of scope.
 
@@ -658,7 +666,7 @@ After steps 1–6, check each item:
 | **ADR-004 runtime layer** | Hostname parser, resolver client, runtime Supabase factory, TenantBootstrap, audit guards | Done (Slices A–F) |
 | **This runbook (control plane v1)** | Second Supabase project, schema, dev tenant in registry, resolver endpoint | Pending — execute when you onboard tenant #2 |
 | **Control plane v2** | Super-admin React UI, manual provisioning workflow surfaced as a button | In progress — console-assisted draft/runtime workflow exists |
-| **Control plane v3** | Auto-provisioning via Supabase Management API, custom domain verification flows | Pending |
+| **Control plane v3** | Provider-connected Supabase/Vercel automation, custom domain verification flows | Pending |
 | **Phase 5** | Flutter app reuses the same resolver | Pending |
 
 ---

@@ -1038,3 +1038,38 @@ tests/unit/saasFoundationContracts.test.mjs covers shared Tailwind PostCSS confi
 Operational note:
 
 - If a pre-domain patient tenant portal is needed, do not reuse the marketing alias. Create a separate Vercel alias, add it to `VITE_PATIENT_TENANT_HOSTS`, and add a matching active `tenant_domains` row with `surface='patient'`. When `doctoleb.com` is purchased, migrate those temporary aliases to real verified domain rows.
+
+---
+
+## 25. Provider-Connected Tenant Provisioning Backbone — 2026-05-08
+
+Added the next foundation slice for fast tenant creation without forcing every tenant into only DoctoLeb-owned infrastructure:
+
+- Added ADR-006 to define provider-connected provisioning for DoctoLeb-owned, customer-owned, or partner-owned Supabase/Vercel accounts.
+- Added control-plane migration `00010000000013_control_plane_provider_provisioning_backbone.sql`.
+- Added control-plane migration `00010000000014_control_plane_provider_provisioning_advisor_fixes.sql` after live Supabase advisors flagged missing FK indexes and existing trigger-function `search_path` warnings.
+- New table `provisioning_provider_connections` stores provider account metadata, capabilities, ownership scope, status, and server-side `secret_ref` values only.
+- New table `tenant_provisioning_steps` records step-level idempotency keys, preconditions, postconditions, external resource ids, and undo strategy/payload for every future automation action.
+- Extended `tenant_provisioning_jobs` with selected Supabase/Vercel provider connection ids, automation mode/status, provider state, and cancellation metadata.
+- Added explicit select constants for provider connections and provisioning steps.
+- Updated the control-plane runbook and README so future agents know tenant automation must be provider-flexible and secret-reference-only.
+- Applied both migrations to live control-plane project `xouqxgwccewvbtkqming`.
+
+Why this matters:
+
+- A future super-admin flow can let us connect any approved Supabase/Vercel account, then automate project creation/configuration from that account.
+- No browser-visible table stores raw provider tokens, Supabase service-role keys, Vercel bearer tokens, or management credentials.
+- Every create/configure action now has a place to store retry and undo/compensation metadata before automation is enabled.
+
+Verification added:
+
+```txt
+tests/unit/saasFoundationContracts.test.mjs
+```
+
+Next implementation slices:
+
+- Build provider connection Edge Functions: create/update/archive connection metadata, verify capabilities, and store/rotate secrets in a server-side secret store.
+- Build provider authorization UX in the control-plane console. The UI should support OAuth/install first where possible, and manual token entry only through an Edge Function that never returns the token.
+- Build `admin-run-provisioning-step` to execute one idempotent step at a time: create Supabase project, apply tenant migrations, seed tenant runtime config, configure Vercel env/domains if needed, smoke test resolver, then activate.
+- Add cancel/compensate actions that read `tenant_provisioning_steps.undo_strategy` and never hard-delete business records without explicit manual approval.

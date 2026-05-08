@@ -181,6 +181,37 @@ describe('SaaS foundation contracts', () => {
     assert.match(helpers, /cryptoSource\?\.randomUUID/);
   });
 
+  it('provider-connected provisioning stores secret references and undoable steps, not raw tokens', () => {
+    const migration = read('supabase-control-plane/migrations/00010000000013_control_plane_provider_provisioning_backbone.sql');
+    const advisorFix = read('supabase-control-plane/migrations/00010000000014_control_plane_provider_provisioning_advisor_fixes.sql');
+    const selects = read('supabase-control-plane/functions/_shared/selects.ts');
+    const adr = read('docs/decisions/ADR-006-provider-connected-tenant-provisioning.md');
+
+    assert.match(migration, /create table if not exists public\.provisioning_provider_connections/);
+    assert.match(migration, /provider in \('supabase','vercel'\)/);
+    assert.match(migration, /owner_scope in \('doctoleb','customer','partner'\)/);
+    assert.match(migration, /secret_ref is null[\s\S]*or secret_ref !~\*/);
+    assert.match(migration, /is_automation_enabled = false[\s\S]*secret_storage <> 'none'/);
+    assert.match(migration, /add column if not exists supabase_connection_id/);
+    assert.match(migration, /add column if not exists vercel_connection_id/);
+    assert.match(migration, /automation_mode in \('manual','assisted','automatic'\)/);
+    assert.match(migration, /create table if not exists public\.tenant_provisioning_steps/);
+    assert.match(migration, /idempotency_key text not null/);
+    assert.match(migration, /undo_strategy/);
+    assert.match(migration, /undo_payload jsonb not null default '\{\}'::jsonb/);
+    assert.match(migration, /alter table public\.provisioning_provider_connections enable row level security/);
+    assert.match(migration, /alter table public\.tenant_provisioning_steps enable row level security/);
+    assert.doesNotMatch(migration, /default\s+'(eyJ|sbp_|vcp_|sk_live_|sk_test_)/i);
+    assert.match(advisorFix, /provisioning_provider_connections_created_by_idx/);
+    assert.match(advisorFix, /provisioning_provider_connections_updated_by_idx/);
+    assert.match(advisorFix, /alter function public\.enforce_tenant_provisioning_job_transition\(\)[\s\S]*set search_path = public/);
+    assert.match(advisorFix, /alter function public\.enforce_tenant_status_transition\(\)[\s\S]*set search_path = public/);
+    assert.match(selects, /CONTROL_PLANE_PROVIDER_CONNECTION_SELECT/);
+    assert.match(selects, /CONTROL_PLANE_PROVISIONING_STEP_SELECT/);
+    assert.match(adr, /customer-owned or partner-owned Supabase\/Vercel account/);
+    assert.match(adr, /Browser code never receives provider tokens/);
+  });
+
   it('tenant runtime config is saved through an authenticated service-role RPC only', () => {
     const migration = read('supabase-control-plane/migrations/00010000000012_control_plane_tenant_runtime_config.sql');
     const source = read('supabase-control-plane/functions/admin-set-tenant-runtime-config/index.ts');

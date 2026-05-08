@@ -7,7 +7,8 @@
 > **Do not** add patient/clinical/billing/messaging tables here.
 >
 > Setup runbook: see `../CONTROL_PLANE_SETUP.md` in the repo root.
-> Architecture: see `../docs/decisions/ADR-004-domain-routing-and-control-plane-contract.md`.
+> Architecture: see `../docs/decisions/ADR-004-domain-routing-and-control-plane-contract.md`
+> and `../docs/decisions/ADR-006-provider-connected-tenant-provisioning.md`.
 
 ## Activated Projects
 
@@ -54,6 +55,8 @@ supabase-control-plane/
 | `tenant_domains` | Hostname → tenant + surface mapping (patient vs ops) |
 | `super_admins` | DoctoLeb owners/operators (linked to control-plane `auth.users`) |
 | `tenant_events` | Audit log for control-plane actions |
+| `provisioning_provider_connections` | Authorized Supabase/Vercel account handles for future tenant automation. Secret references only, no raw tokens |
+| `tenant_provisioning_steps` | Step-level provisioning ledger with idempotency, external resource ids, and undo metadata |
 | `control_plane_private.is_super_admin()` | RLS helper for authenticated super-admin reads |
 | `resolve_tenant(text, text)` | Public-safe RPC. Returns `{ data, error }` jsonb |
 | `admin_update_tenant_atomic(uuid, uuid, jsonb, jsonb)` | Private service-role RPC for atomic admin tenant/domain updates |
@@ -113,3 +116,12 @@ VITE_CLINIC_OPS_URL=https://<clinic-ops-origin>
 ```
 
 The runbook (`../CONTROL_PLANE_SETUP.md`) has the full sequence including seeding the dev tenant as row #1, smoke tests, and the manual playbook for onboarding tenant #2.
+
+## Provider-connected provisioning direction
+
+The control plane now has schema support for provider-flexible provisioning:
+
+- Supabase and Vercel accounts can be represented as provider connections owned by DoctoLeb, a customer, or a partner.
+- These rows store metadata and secret references only. Raw provider tokens, management API credentials, and tenant service-role keys stay server-side.
+- Provisioning jobs can link to selected provider connections and record step-level idempotency plus undo metadata.
+- The current UI remains manual-assisted until dedicated authorization and automation Edge Functions are built.
