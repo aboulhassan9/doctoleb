@@ -89,11 +89,14 @@ describe('SaaS foundation contracts', () => {
     assert.match(app, /<Route path="\/" element=\{<AuthRedirect intendedSurface="patient-web"><LandingPage \/><\/AuthRedirect>\}/);
     assert.match(app, /<Route path="\/marketing" element=\{<AuthRedirect intendedSurface="patient-web"><LandingPage \/><\/AuthRedirect>\}/);
     assert.match(landing, /useBrand/);
-    assert.match(landing, /Patient Portal/);
-    assert.match(landing, /What patients can do/);
+    assert.match(landing, /Doctor-led clinic access/);
+    assert.match(landing, /Patient care starts here\./);
+    assert.match(landing, /Available patient services/);
+    assert.match(landing, /Private patient access/);
     assert.match(landing, /Patient Registration/);
     assert.match(landing, /formatWebsiteHref/);
     assert.match(landing, /\['http:', 'https:'\]\.includes\(parsed\.protocol\)/);
+    assert.match(read('packages/ui/contexts/BrandContext.jsx'), /doctor_display_name/);
     assert.doesNotMatch(landing, /Clinic SaaS for doctors/);
     assert.doesNotMatch(landing, /DoctoLeb gives doctors/);
   });
@@ -153,6 +156,23 @@ describe('SaaS foundation contracts', () => {
     assert.match(smoke, /Wrong portal/);
     assert.match(smoke, /SURFACE_MISMATCH/);
     assert.match(smoke, /net::ERR_ABORTED/);
+  });
+
+  it('GitHub Actions runs secret-backed auth smoke checks after Vercel deploys', () => {
+    const workflow = read('.github/workflows/ci.yml');
+    const pkg = JSON.parse(read('package.json'));
+    const smoke = read('scripts/auth-login-smoke.mjs');
+
+    assert.equal(pkg.scripts['smoke:auth:deployed'], 'node scripts/auth-login-smoke.mjs');
+    assert.match(workflow, /auth-smoke-vercel:/);
+    assert.match(workflow, /npm run smoke:auth:deployed/);
+    assert.match(workflow, /AUTH_SMOKE_REQUIRED: 'true'/);
+    assert.match(workflow, /AUTH_SMOKE_PATIENT_PASSWORD: \$\{\{ secrets\.AUTH_SMOKE_PATIENT_PASSWORD \}\}/);
+    assert.match(workflow, /AUTH_SMOKE_CONTROL_OWNER_PASSWORD: \$\{\{ secrets\.AUTH_SMOKE_CONTROL_OWNER_PASSWORD \}\}/);
+    assert.match(smoke, /getByLabel\(\/email\/i\)/);
+    assert.match(smoke, /getByLabel\(\/\^password\$\/i\)/);
+    assert.match(smoke, /deployed-auth-login-qa-report\.json/);
+    assert.doesNotMatch(smoke, /DEV_LOGIN_CREDENTIALS/);
   });
 
   it('control-plane edge functions use explicit select lists', () => {

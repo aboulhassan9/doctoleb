@@ -27,10 +27,11 @@ const APPS = Object.freeze([
     app: 'patient-web',
     url: process.env.PATIENT_WEB_SMOKE_URL || 'https://doctoleb-patient-web.vercel.app/',
     title: /Patient Portal/i,
-    h1: /Patient Portal/i,
+    h1: 'Patient care starts here.',
     includeText: [
-      'What patients can do',
-      'Operations portal is separate',
+      'Doctor-led clinic access',
+      'Available patient services',
+      'Private patient access',
       'Patient Registration',
     ],
     excludeText: [

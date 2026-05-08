@@ -22,7 +22,7 @@
   - `doctoleb-patient-web` → `https://doctoleb-patient-web.vercel.app` — seeded tenant patient surface and clinic-branded public landing; resolves through the control-plane resolver with `surface='patient'`.
   - `doctoleb-clinic-ops` → `https://doctoleb-clinic-ops.vercel.app` — staff/ops tenant surface for the seeded `dev` tenant.
   - `doctoleb-control-plane` → `https://doctoleb-control-plane.vercel.app` — zero-PHI SaaS super-admin console.
-- Deployment automation lives in `.github/workflows/ci.yml`. Pushes to `main` run `npm run verify`, build each Vercel project with production Vercel env, block patient/ops bundles that contain tenant fallback key material, deploy all three projects, and smoke-test the stable Vercel aliases.
+- Deployment automation lives in `.github/workflows/ci.yml`. Pushes to `main` run `npm run verify`, build each Vercel project with production Vercel env, block patient/ops bundles that contain tenant fallback key material, deploy all three projects, smoke-test the stable Vercel aliases, and run secret-backed authenticated login smoke tests.
 - Current scope intentionally excludes billing checkout, domain self-service, and fully automated tenant provisioning. The provider-connected provisioning schema is now in place so future automation can use DoctoLeb-owned, customer-owned, or partner-owned Supabase/Vercel accounts without changing the tenant model.
 
 The migration source of truth starts at `supabase-control-plane/migrations/00010000000000_control_plane_baseline.sql`. It treats `maintenance` tenants as `TENANT_INACTIVE`, normalizes hostnames with `lower(trim(hostname))`, enforces case-insensitive hostname uniqueness, and revokes direct public execution of internal helper functions.
@@ -92,6 +92,7 @@ GitHub-to-Vercel deployment automation:
 - GitHub repo: `aboulhassan9/doctoleb`.
 - GitHub secret required: `VERCEL_TOKEN` (do not print or commit it; store the raw token only, with no BOM or surrounding whitespace).
 - GitHub variable required: `VERCEL_ORG_ID=team_7UDdQ1lrRxxkah4dh5Jw95RE`.
+- GitHub auth-smoke secrets required before promoting production deploys: `AUTH_SMOKE_PATIENT_EMAIL`, `AUTH_SMOKE_PATIENT_PASSWORD`, `AUTH_SMOKE_DOCTOR_EMAIL`, `AUTH_SMOKE_DOCTOR_PASSWORD`, `AUTH_SMOKE_SECRETARY_EMAIL`, `AUTH_SMOKE_SECRETARY_PASSWORD`, `AUTH_SMOKE_PREDOCTOR_EMAIL`, `AUTH_SMOKE_PREDOCTOR_PASSWORD`, `AUTH_SMOKE_CONTROL_OWNER_EMAIL`, and `AUTH_SMOKE_CONTROL_OWNER_PASSWORD`. Store only dev/staging smoke accounts here, never real patient or staff passwords.
 - The workflow writes `.vercel/project.json` inside the ephemeral GitHub runner for each matrix project. This avoids committing `.vercel/` metadata and keeps the three Vercel project IDs controlled in one workflow.
 - Keep `package-lock.json` compatible with the workflow's Node/npm runner before changing deployment dependencies; Vite/Rolldown optional native packages must pass `npm ci` on GitHub's Linux runner.
 - Root `vercel.json` owns the shared Vite SPA fallback, rewriting direct app routes such as `/login` to `/index.html` after static assets are considered.
@@ -623,7 +624,7 @@ Each step takes a few minutes. End-to-end: ~1 hour for the first tenant, ~30 min
 
 After steps 1–6, check each item:
 
-- [ ] Control-plane project shows only zero-PHI SaaS/control-plane tables (`tenants`, `tenant_domains`, `super_admins`, `tenant_events`, `plans`, `plan_entitlements`, `tenant_entitlements`, `tenant_provisioning_jobs`) with RLS enabled.
+- [ ] Control-plane project shows only zero-PHI SaaS/control-plane tables (`tenants`, `tenant_domains`, `super_admins`, `tenant_events`, `plans`, `plan_entitlements`, `tenant_entitlements`, `tenant_provisioning_jobs`, `provisioning_provider_connections`, `tenant_provisioning_steps`) with RLS enabled.
 - [ ] `select public.resolve_tenant('localhost:3001', 'patient')` returns `{ data: { tenantId, slug:'dev', supabaseUrl, ... }, error: null }`.
 - [ ] While the domain is not purchased, `select public.resolve_tenant('dev.doctoleb.com', 'patient')` returns `{ data: null, error: 'TENANT_INACTIVE' }`.
 - [ ] `select public.resolve_tenant('nope', 'patient')` returns `{ data: null, error: 'TENANT_NOT_FOUND' }`.

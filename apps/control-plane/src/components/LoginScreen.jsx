@@ -13,15 +13,21 @@ export default function LoginScreen({ onSignedIn }) {
     event.preventDefault();
     setSubmitting(true);
     setError('');
-    const result = await controlPlaneApi.signIn(email, password);
-    setSubmitting(false);
 
-    if (result.error) {
-      setError(result.error);
-      return;
+    try {
+      const result = await controlPlaneApi.signIn(email, password);
+
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      onSignedIn(result.data);
+    } catch (_error) {
+      setError('Unable to sign in right now. Please retry.');
+    } finally {
+      setSubmitting(false);
     }
-
-    onSignedIn(result.data);
   }
 
   return (

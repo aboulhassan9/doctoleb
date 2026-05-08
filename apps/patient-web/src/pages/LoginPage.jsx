@@ -178,10 +178,11 @@ const LoginPage = () => {
                     >
                         {/* Email */}
                         <div className="flex flex-col gap-2">
-                            <label className="text-slate-700 text-sm font-bold px-1">Email Address</label>
+                            <label htmlFor="patient-login-email" className="text-slate-700 text-sm font-bold px-1">Email Address</label>
                             <div className="relative group">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-xl">mail</span>
                                 <input
+                                    id="patient-login-email"
                                     type="email"
                                     required
                                     value={email}
@@ -196,7 +197,7 @@ const LoginPage = () => {
                         {/* Password */}
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center justify-between px-1">
-                                <label className="text-slate-700 text-sm font-bold">Password</label>
+                                <label htmlFor="patient-login-password" className="text-slate-700 text-sm font-bold">Password</label>
                                 <Link
                                     to="/forgot-password"
                                     className="text-primary hover:underline text-xs font-bold"
@@ -207,6 +208,7 @@ const LoginPage = () => {
                             <div className="relative group">
                                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-xl">lock</span>
                                 <input
+                                    id="patient-login-password"
                                     type={showPassword ? 'text' : 'password'}
                                     required
                                     value={password}
@@ -218,6 +220,7 @@ const LoginPage = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                     disabled={loading}
                                 >

@@ -1105,3 +1105,32 @@ Verification added:
 ```txt
 tests/unit/saasFoundationContracts.test.mjs
 ```
+
+---
+
+## 27. Review Fix Slice — Auth Smoke, Patient Landing, and Runbook Drift — 2026-05-08
+
+Fixed the senior review items that could be handled in code/docs:
+
+- Control-plane sign-in now uses `try/catch/finally` so a thrown auth/client error cannot leave the submit button stuck in the loading state.
+- Patient-web and clinic-ops login fields now have programmatic labels, and password visibility buttons have accessible names.
+- Added `scripts/auth-login-smoke.mjs` and `npm run smoke:auth:deployed` for secret-backed deployed login QA across patient, doctor, secretary, predoctor, and control-plane owner accounts.
+- Added the GitHub Actions `auth-smoke-vercel` job after deployment and alias smoke. It requires GitHub secrets named `AUTH_SMOKE_*` and never prints passwords.
+- Reworked the patient-web public landing copy to be the clinic/doctor's patient website, not DoctoLeb SaaS buyer marketing. It uses the existing tenant brand contract and doctor-brand fields from `get_public_tenant_app_config`.
+- Updated the control-plane runbook table checklist to include `provisioning_provider_connections` and `tenant_provisioning_steps`.
+
+Still external/manual:
+
+- Supabase leaked-password protection remains a Dashboard/Auth setting, not a repo code change. It must be enabled for both `xouqxgwccewvbtkqming` and `gezmfmskhmjgnquoyosq` before real users.
+
+Verification:
+
+```txt
+npm run lint
+npm run test:unit
+npm run verify
+npm run build:patient
+npm run build:ops
+npm run build:control-plane
+Playwright MCP local browser snapshots for patient landing, patient login labels, and ops login labels
+```

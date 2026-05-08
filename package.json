@@ -17,6 +17,7 @@
     "test:backend-db-contract": "node scripts/backend-db-contract-tests.mjs",
     "test:unit": "node --test \"tests/unit/**/*.test.mjs\"",
     "smoke:browser:deployed": "node scripts/browser-smoke.mjs",
+    "smoke:auth:deployed": "node scripts/auth-login-smoke.mjs",
     "audit:high": "npm audit --audit-level=high",
     "verify": "npm run lint && npm run build && npm run test:unit && npm run audit:backend-contract && npm run test:backend-db-contract && npm run audit:high",
     "test": "npm run verify",

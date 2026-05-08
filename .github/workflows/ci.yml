@@ -222,3 +222,51 @@ jobs:
           name: browser-smoke-artifacts
           path: output/playwright/
           if-no-files-found: ignore
+
+  auth-smoke-vercel:
+    name: Auth smoke Vercel aliases
+    needs:
+      - deploy-vercel
+      - smoke-vercel
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run authenticated login smoke checks
+        run: npm run smoke:auth:deployed
+        env:
+          AUTH_SMOKE_REQUIRED: 'true'
+          AUTH_SMOKE_PATIENT_EMAIL: ${{ secrets.AUTH_SMOKE_PATIENT_EMAIL }}
+          AUTH_SMOKE_PATIENT_PASSWORD: ${{ secrets.AUTH_SMOKE_PATIENT_PASSWORD }}
+          AUTH_SMOKE_DOCTOR_EMAIL: ${{ secrets.AUTH_SMOKE_DOCTOR_EMAIL }}
+          AUTH_SMOKE_DOCTOR_PASSWORD: ${{ secrets.AUTH_SMOKE_DOCTOR_PASSWORD }}
+          AUTH_SMOKE_SECRETARY_EMAIL: ${{ secrets.AUTH_SMOKE_SECRETARY_EMAIL }}
+          AUTH_SMOKE_SECRETARY_PASSWORD: ${{ secrets.AUTH_SMOKE_SECRETARY_PASSWORD }}
+          AUTH_SMOKE_PREDOCTOR_EMAIL: ${{ secrets.AUTH_SMOKE_PREDOCTOR_EMAIL }}
+          AUTH_SMOKE_PREDOCTOR_PASSWORD: ${{ secrets.AUTH_SMOKE_PREDOCTOR_PASSWORD }}
+          AUTH_SMOKE_CONTROL_OWNER_EMAIL: ${{ secrets.AUTH_SMOKE_CONTROL_OWNER_EMAIL }}
+          AUTH_SMOKE_CONTROL_OWNER_PASSWORD: ${{ secrets.AUTH_SMOKE_CONTROL_OWNER_PASSWORD }}
+
+      - name: Upload auth smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auth-smoke-artifacts
+          path: output/playwright/
+          if-no-files-found: ignore

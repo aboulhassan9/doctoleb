@@ -109,8 +109,9 @@ export default function OpsLoginPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Email</label>
+              <label htmlFor="ops-login-email" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Email</label>
               <input
+                id="ops-login-email"
                 type="email"
                 required
                 value={email}
@@ -123,9 +124,10 @@ export default function OpsLoginPage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Password</label>
+              <label htmlFor="ops-login-password" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Password</label>
               <div className="relative">
                 <input
+                  id="ops-login-password"
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
@@ -137,9 +139,9 @@ export default function OpsLoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   disabled={loading}
-                  tabIndex={-1}
                 >
                   <span className="material-symbols-outlined text-lg">{showPassword ? 'visibility_off' : 'visibility'}</span>
                 </button>

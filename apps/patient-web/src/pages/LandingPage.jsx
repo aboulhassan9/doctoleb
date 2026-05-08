@@ -3,17 +3,17 @@ import { Link } from 'react-router-dom';
 import { useBrand } from '@/contexts/BrandContext';
 
 const patientActions = [
-  'Register a patient account connected to this clinic.',
-  'Request appointments and review upcoming or past visits.',
-  'Complete intake information before the clinical team reviews it.',
-  'View medical records and documents shared by the clinic.',
-  'Message the clinic from the private patient portal.',
+  'Request appointments and review visits shared by the clinic.',
+  'Complete intake information before the doctor reviews it.',
+  'Receive clinic reminders and follow-up instructions in one place.',
+  'Open medical documents and forms that the clinic shares with you.',
+  'Message the clinic securely from your private patient account.',
 ];
 
 const staffBoundaryNotes = [
-  'Doctor, secretary, and pre-doctor staff use the separate clinic operations portal.',
-  'Patient accounts stay on this public patient surface.',
-  'Clinical workflows remain permissioned behind staff authentication.',
+  'Patients use this website for registration, appointments, records, and clinic messages.',
+  'Doctors and staff use a separate operations portal that is never exposed here.',
+  'Clinical workflows remain protected behind staff authentication and role permissions.',
 ];
 
 function ContactLink({ href, children }) {
@@ -52,10 +52,16 @@ function formatWebsiteHref(websiteUrl) {
 
 function LandingPage() {
   const { brand, displayName, tagline } = useBrand();
-  const logoUrl = brand.logo_url || brand.favicon_url;
-  const phoneHref = formatPhoneHref(brand.contact_phone);
-  const emailHref = formatEmailHref(brand.contact_email);
-  const websiteHref = formatWebsiteHref(brand.website_url);
+  const doctorName = brand.doctor_display_name && brand.doctor_display_name !== displayName ? brand.doctor_display_name : null;
+  const doctorTagline = brand.doctor_tagline || tagline;
+  const aboutText = typeof brand.about_md === 'string' ? brand.about_md.trim() : '';
+  const logoUrl = brand.doctor_logo_url || brand.logo_url || brand.favicon_url;
+  const phone = brand.doctor_contact_phone || brand.contact_phone;
+  const email = brand.doctor_contact_email || brand.contact_email;
+  const websiteUrl = brand.doctor_website_url || brand.website_url;
+  const phoneHref = formatPhoneHref(phone);
+  const emailHref = formatEmailHref(email);
+  const websiteHref = formatWebsiteHref(websiteUrl);
   const hasContact = phoneHref || emailHref || websiteHref;
 
   return (
@@ -72,7 +78,7 @@ function LandingPage() {
             )}
             <div>
               <p className="text-base font-black">{displayName}</p>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Patient portal</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Clinic website</p>
             </div>
           </div>
           <nav className="hidden items-center gap-5 text-sm font-bold text-slate-500 sm:flex">
@@ -90,13 +96,18 @@ function LandingPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,rgb(var(--color-primary-rgb)_/_0.18),transparent_32%),radial-gradient(circle_at_18%_82%,rgb(var(--color-secondary-rgb)_/_0.10),transparent_30%)]" />
           <div className="relative mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.28em] text-primary">Clinic patient access</p>
+              <p className="text-sm font-black uppercase tracking-[0.28em] text-primary">Doctor-led clinic access</p>
               <h1 className="mt-5 text-5xl font-black leading-tight tracking-[-0.04em] sm:text-6xl">
-                {displayName} Patient Portal
+                Patient care starts here.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-                {tagline}
+                This is the official patient website for {displayName}. {doctorTagline}
               </p>
+              {doctorName ? (
+                <p className="mt-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800">
+                  Led by {doctorName}
+                </p>
+              ) : null}
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link className="rounded-2xl bg-primary px-6 py-3 text-center font-black text-white shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary-hover" to="/signup">
                   Patient Registration
@@ -108,7 +119,7 @@ function LandingPage() {
             </div>
 
             <aside className="rounded-[2rem] bg-white p-6 shadow-xl shadow-slate-950/5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-              <p className="text-sm font-black uppercase tracking-[0.22em] text-primary">What patients can do</p>
+              <p className="text-sm font-black uppercase tracking-[0.22em] text-primary">Available patient services</p>
               <ul className="mt-5 grid gap-3">
                 {patientActions.map((action) => (
                   <li key={action} className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold leading-6 text-slate-700 dark:bg-slate-950 dark:text-slate-300">
@@ -123,15 +134,14 @@ function LandingPage() {
         <section id="services" className="px-6 pb-20">
           <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-2">
             <section className="rounded-[2rem] bg-white p-7 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-              <h2 className="text-2xl font-black">Care starts with the clinic</h2>
+              <h2 className="text-2xl font-black">About this clinic</h2>
               <p className="mt-4 leading-7 text-slate-600 dark:text-slate-300">
-                This page belongs to the clinic. Patients use it to start registration, sign in,
-                and follow the care process configured by the doctor and clinical team.
+                {aboutText || `${displayName} uses this website to help patients start registration, request care, and stay aligned with the doctor and clinical team.`}
               </p>
             </section>
 
             <section className="rounded-[2rem] bg-white p-7 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-              <h2 className="text-2xl font-black">Operations portal is separate</h2>
+              <h2 className="text-2xl font-black">Private patient access</h2>
               <ul className="mt-4 grid gap-3">
                 {staffBoundaryNotes.map((note) => (
                   <li key={note} className="text-sm font-semibold leading-6 text-slate-600 dark:text-slate-300">
@@ -147,9 +157,9 @@ function LandingPage() {
           <div className="mx-auto max-w-6xl rounded-[2rem] bg-slate-950 p-7 text-white dark:bg-white dark:text-slate-950">
             <p className="text-sm font-black uppercase tracking-[0.22em] text-primary">Contact the clinic</p>
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-sm">
-              <ContactLink href={phoneHref}>{brand.contact_phone}</ContactLink>
-              <ContactLink href={emailHref}>{brand.contact_email}</ContactLink>
-              <ContactLink href={websiteHref}>{brand.website_url}</ContactLink>
+              <ContactLink href={phoneHref}>{phone}</ContactLink>
+              <ContactLink href={emailHref}>{email}</ContactLink>
+              <ContactLink href={websiteHref}>{websiteUrl}</ContactLink>
               {!hasContact ? (
                 <span className="text-slate-300 dark:text-slate-600">Contact details will appear here when the clinic adds them.</span>
               ) : null}

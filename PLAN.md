@@ -47,7 +47,7 @@ All 9 migration batches applied successfully to live DB:
 - [ ] Booking, pre-check, notifications, patient profile work against real data
 - [ ] No page renders fake medical data on failure
 - [x] `npm run build` clean
-- [ ] Role-based smoke test passes
+- [x] Role-based smoke test passes locally; GitHub Actions now has a secret-backed deployed auth smoke gate
 - [ ] Leaked password protection enabled in Supabase Auth
 
 ---
