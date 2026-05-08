@@ -557,6 +557,7 @@ Provider-connected automation direction:
 
 - A provider connection represents an authorized Supabase or Vercel account/team. It can be DoctoLeb-owned, customer-owned, or partner-owned.
 - The control plane stores connection metadata, capabilities, status, and a server-side `secret_ref` only. Do not put raw Supabase access tokens, Vercel tokens, service-role keys, or management credentials in control-plane rows.
+- Provider connection metadata is managed through authenticated Edge Functions: `admin-list-provider-connections`, `admin-upsert-provider-connection`, and `admin-archive-provider-connection`. These APIs sanitize `secret_ref` out of browser responses and reject raw token-shaped request fields.
 - A provisioning job can reference the selected Supabase and Vercel provider connections and record each automation action in `tenant_provisioning_steps`.
 - Every automation step must record preconditions, postconditions, idempotency key, external resource ids, and an undo strategy before it is allowed to mutate provider infrastructure.
 - Until provider auth Edge Functions exist, keep automation mode manual or assisted. Do not enable a browser-only automatic flow.

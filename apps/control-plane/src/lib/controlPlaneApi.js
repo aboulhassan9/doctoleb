@@ -80,4 +80,16 @@ export const controlPlaneApi = {
   createProvisioningJob(payload) {
     return invokeAdminFunction('admin-create-provisioning-job', payload)
   },
+
+  listProviderConnections(payload = {}) {
+    return invokeAdminFunction('admin-list-provider-connections', payload)
+  },
+
+  upsertProviderConnection(payload) {
+    return invokeAdminFunction('admin-upsert-provider-connection', payload)
+  },
+
+  archiveProviderConnection(payload) {
+    return invokeAdminFunction('admin-archive-provider-connection', payload)
+  },
 }

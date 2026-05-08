@@ -212,6 +212,40 @@ describe('SaaS foundation contracts', () => {
     assert.match(adr, /Browser code never receives provider tokens/);
   });
 
+  it('provider connection admin APIs reject raw secrets and use reversible archive semantics', () => {
+    const shared = read('supabase-control-plane/functions/_shared/providerConnections.ts');
+    const list = read('supabase-control-plane/functions/admin-list-provider-connections/index.ts');
+    const upsert = read('supabase-control-plane/functions/admin-upsert-provider-connection/index.ts');
+    const archive = read('supabase-control-plane/functions/admin-archive-provider-connection/index.ts');
+    const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
+    const handoff = read('SAAS_FOUNDATION_PHASE_HANDOFF.md');
+
+    assert.match(shared, /TOKENISH_SECRET = \/\(eyJ\|sbp_\|vcp_\|sk_live_\|sk_test_\)/);
+    assert.match(shared, /SECRET_INPUT_NOT_ALLOWED/);
+    assert.match(shared, /containsForbiddenSecretValue/);
+    assert.match(shared, /TOKENISH_SECRET\.test\(value\)/);
+    assert.match(shared, /delete copy\.secret_ref/);
+    assert.match(shared, /has_secret_ref/);
+    assert.match(shared, /PROVIDER_IMMUTABLE/);
+    assert.match(shared, /USE_ARCHIVE_ENDPOINT/);
+    assert.match(list, /requireSuperAdmin\(req\)/);
+    assert.match(list, /CONTROL_PLANE_PROVIDER_CONNECTION_SELECT/);
+    assert.match(list, /sanitizeProviderConnections/);
+    assert.match(upsert, /requireSuperAdmin\(req, \['operator'\]\)/);
+    assert.match(upsert, /normalizeProviderConnectionPatch/);
+    assert.match(upsert, /provider_connection\.created/);
+    assert.match(upsert, /provider_connection\.updated/);
+    assert.match(archive, /requireSuperAdmin\(req, \['operator'\]\)/);
+    assert.match(archive, /CONNECTION_IN_USE/);
+    assert.match(archive, /status: 'archived'/);
+    assert.match(archive, /is_automation_enabled: false/);
+    assert.match(archive, /provider_connection\.archived/);
+    assert.match(api, /admin-list-provider-connections/);
+    assert.match(api, /admin-upsert-provider-connection/);
+    assert.match(api, /admin-archive-provider-connection/);
+    assert.match(handoff, /Provider Connection Metadata APIs/);
+  });
+
   it('tenant runtime config is saved through an authenticated service-role RPC only', () => {
     const migration = read('supabase-control-plane/migrations/00010000000012_control_plane_tenant_runtime_config.sql');
     const source = read('supabase-control-plane/functions/admin-set-tenant-runtime-config/index.ts');

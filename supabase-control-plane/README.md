@@ -43,8 +43,12 @@ supabase-control-plane/
 │   ├── 00010000000001_control_plane_hostname_normalization.sql
 │   └── 00010000000002_control_plane_internal_function_execute_revoke.sql
 └── functions/
-    └── tenant-resolve/
-        └── index.ts                   ← public-safe HTTP resolver
+    ├── tenant-resolve/
+    │   └── index.ts                   ← public-safe HTTP resolver
+    ├── admin-*-tenant/
+    │   └── index.ts                   ← authenticated super-admin APIs
+    └── admin-*-provider-connection/
+        └── index.ts                   ← provider connection metadata APIs
 ```
 
 ## What lives here
@@ -61,6 +65,9 @@ supabase-control-plane/
 | `resolve_tenant(text, text)` | Public-safe RPC. Returns `{ data, error }` jsonb |
 | `admin_update_tenant_atomic(uuid, uuid, jsonb, jsonb)` | Private service-role RPC for atomic admin tenant/domain updates |
 | `tenant-resolve` Edge Function | HTTP wrapper around `resolve_tenant`. Public; no JWT verification |
+| `admin-list-provider-connections` Edge Function | Authenticated metadata list. Returns secret-reference booleans, never raw provider tokens |
+| `admin-upsert-provider-connection` Edge Function | Operator-only create/update for safe provider connection metadata |
+| `admin-archive-provider-connection` Edge Function | Operator-only reversible archive path that blocks active provisioning jobs |
 
 ## What MUST NOT live here
 
@@ -102,6 +109,11 @@ supabase db push
 # endpoint is intentionally public.
 supabase functions deploy tenant-resolve --no-verify-jwt
 
+# Deploy authenticated admin functions with JWT verification enabled.
+supabase functions deploy admin-list-provider-connections
+supabase functions deploy admin-upsert-provider-connection
+supabase functions deploy admin-archive-provider-connection
+
 # (Optional) tighten CORS to exact production origins once domains are live.
 supabase secrets set TENANT_RESOLVE_ALLOWED_ORIGINS="https://dev.doctoleb.com,https://dev.ops.doctoleb.com"
 ```
@@ -124,4 +136,5 @@ The control plane now has schema support for provider-flexible provisioning:
 - Supabase and Vercel accounts can be represented as provider connections owned by DoctoLeb, a customer, or a partner.
 - These rows store metadata and secret references only. Raw provider tokens, management API credentials, and tenant service-role keys stay server-side.
 - Provisioning jobs can link to selected provider connections and record step-level idempotency plus undo metadata.
-- The current UI remains manual-assisted until dedicated authorization and automation Edge Functions are built.
+- Dedicated provider metadata Edge Functions now exist for list/upsert/archive. They reject raw token-shaped input, sanitize `secret_ref` out of responses, and use reversible archive semantics.
+- The current UI remains manual-assisted until dedicated provider authorization and automation-runner Edge Functions are built.

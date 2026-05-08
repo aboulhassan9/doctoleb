@@ -1069,7 +1069,32 @@ tests/unit/saasFoundationContracts.test.mjs
 
 Next implementation slices:
 
-- Build provider connection Edge Functions: create/update/archive connection metadata, verify capabilities, and store/rotate secrets in a server-side secret store.
+- Build provider connection verification and secret-storage Edge Functions: verify capabilities, store/rotate secrets in a server-side secret store, and never return the token.
 - Build provider authorization UX in the control-plane console. The UI should support OAuth/install first where possible, and manual token entry only through an Edge Function that never returns the token.
 - Build `admin-run-provisioning-step` to execute one idempotent step at a time: create Supabase project, apply tenant migrations, seed tenant runtime config, configure Vercel env/domains if needed, smoke test resolver, then activate.
 - Add cancel/compensate actions that read `tenant_provisioning_steps.undo_strategy` and never hard-delete business records without explicit manual approval.
+
+---
+
+## 26. Provider Connection Metadata APIs — 2026-05-08
+
+Added the first server-side API slice for provider-flexible tenant provisioning:
+
+- Added `supabase-control-plane/functions/_shared/providerConnections.ts` as the canonical validation/sanitization boundary for provider connections.
+- Added `admin-list-provider-connections` for authenticated super-admin metadata reads.
+- Added `admin-upsert-provider-connection` for operator-only create/update of Supabase/Vercel provider connection metadata.
+- Added `admin-archive-provider-connection` for operator-only reversible archive. It disables automation, sets `archived_at`, writes an audit event, and refuses to archive a connection while active provisioning jobs still reference it.
+- Updated `apps/control-plane/src/lib/controlPlaneApi.js` with the new function contracts, but did not add UI secret entry in this slice.
+- Updated docs so future agents know provider APIs return `has_secret_ref` and never return raw provider tokens or browser-visible credential material.
+
+Current boundary:
+
+- These APIs support connection metadata and safe secret references only.
+- They do not yet perform OAuth/install authorization, token storage, Supabase Management API calls, Vercel project/env calls, or tenant DB migration automation.
+- The next automation step must add a separate server-side authorization/verification function that stores secrets in Supabase Vault, Edge Function secrets, or an external secret manager and then records capability checks.
+
+Verification added:
+
+```txt
+tests/unit/saasFoundationContracts.test.mjs
+```
