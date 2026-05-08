@@ -7,6 +7,7 @@ export default function BrandingPanel({ tenant }) {
   const [branding, setBranding] = useState(DEFAULT_BRANDING);
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const hasRuntimeConfig = Boolean(tenant.supabase_project_ref && tenant.supabase_url);
 
   useEffect(() => {
     setBranding({
@@ -22,6 +23,11 @@ export default function BrandingPanel({ tenant }) {
   }
 
   async function sync() {
+    if (!hasRuntimeConfig) {
+      setMessage('Save the tenant runtime connection before syncing branding.');
+      return;
+    }
+
     setSaving(true);
     const result = await controlPlaneApi.syncTenantConfig({ tenantId: tenant.id, branding });
     setSaving(false);
@@ -53,7 +59,8 @@ export default function BrandingPanel({ tenant }) {
         </Field>
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <PrimaryButton onClick={sync} disabled={saving}>{saving ? 'Syncing...' : 'Sync branding'}</PrimaryButton>
+        <PrimaryButton onClick={sync} disabled={saving || !hasRuntimeConfig}>{saving ? 'Syncing...' : 'Sync branding'}</PrimaryButton>
+        {!hasRuntimeConfig ? <p className="text-sm font-semibold text-slate-500">Runtime connection required first.</p> : null}
         {message ? <p className="text-sm font-semibold text-slate-500">{message}</p> : null}
       </div>
     </section>

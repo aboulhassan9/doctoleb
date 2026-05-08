@@ -132,21 +132,66 @@ describe('SaaS foundation contracts', () => {
   });
 
   it('provisioning job creation is idempotent by client request id', () => {
-    const migration = read('supabase-control-plane/migrations/00010000000007_control_plane_provisioning_job_idempotency.sql');
+    const idempotencyMigration = read('supabase-control-plane/migrations/00010000000007_control_plane_provisioning_job_idempotency.sql');
+    const draftMigration = read('supabase-control-plane/migrations/00010000000011_control_plane_tenant_draft_creation.sql');
     const source = read('supabase-control-plane/functions/admin-create-provisioning-job/index.ts');
     const panel = read('apps/control-plane/src/components/ProvisioningPanel.jsx');
+    const helpers = read('apps/control-plane/src/lib/provisioningDrafts.js');
 
-    assert.match(migration, /add column if not exists client_request_id text/);
-    assert.match(migration, /tenant_provisioning_jobs_client_request_id_check/);
-    assert.match(migration, /create unique index if not exists tenant_provisioning_jobs_client_request_id_key/);
+    assert.match(idempotencyMigration, /add column if not exists client_request_id text/);
+    assert.match(idempotencyMigration, /tenant_provisioning_jobs_client_request_id_check/);
+    assert.match(idempotencyMigration, /create unique index if not exists tenant_provisioning_jobs_client_request_id_key/);
+    assert.match(draftMigration, /admin_create_tenant_draft_atomic/);
+    assert.match(draftMigration, /alter column supabase_project_ref drop not null/);
+    assert.match(draftMigration, /tenants_active_runtime_config_required/);
+    assert.match(draftMigration, /tenant\.draft_created/);
+    assert.match(draftMigration, /grant execute on function public\.admin_create_tenant_draft_atomic[\s\S]*to service_role/);
     assert.match(source, /normalizeClientRequestId/);
-    assert.match(source, /client_request_id/);
-    assert.match(source, /findJobByClientRequestId/);
-    assert.match(source, /error\.code === '23505'/);
-    assert.match(source, /return jsonResponse\(\{ data: existingJob, error: null \}, 200, cors\)/);
+    assert.match(source, /\.rpc\('admin_create_tenant_draft_atomic'/);
+    assert.match(source, /TENANT_SLUG_TAKEN/);
+    assert.match(source, /DOMAIN_TAKEN/);
+    assert.doesNotMatch(source, /from\('tenant_provisioning_jobs'\)[\s\S]*\.insert/);
     assert.match(panel, /createClientRequestId/);
-    assert.match(panel, /crypto\.randomUUID/);
+    assert.match(panel, /buildPendingTenantDomains/);
     assert.match(panel, /clientRequestId/);
+    assert.match(helpers, /cryptoSource\?\.randomUUID/);
+  });
+
+  it('tenant runtime config is saved through an authenticated service-role RPC only', () => {
+    const migration = read('supabase-control-plane/migrations/00010000000012_control_plane_tenant_runtime_config.sql');
+    const source = read('supabase-control-plane/functions/admin-set-tenant-runtime-config/index.ts');
+    const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
+    const panel = read('apps/control-plane/src/components/RuntimeConfigPanel.jsx');
+
+    assert.match(migration, /admin_set_tenant_runtime_config_atomic/);
+    assert.match(migration, /supabase_project_ref = v_project_ref/);
+    assert.match(migration, /supabase_anon_key = v_anon_key/);
+    assert.match(migration, /storeTenantRuntimeConfig/);
+    assert.match(migration, /tenant\.runtime_config_set/);
+    assert.match(migration, /storesServiceRoleKey', false/);
+    assert.match(migration, /grant execute on function public\.admin_set_tenant_runtime_config_atomic[\s\S]*to service_role/);
+    assert.match(source, /requireSuperAdmin\(req, \['operator'\]\)/);
+    assert.match(source, /\.rpc\('admin_set_tenant_runtime_config_atomic'/);
+    assert.match(source, /normalizeAnonKey/);
+    assert.doesNotMatch(source, /SERVICE_ROLE_KEY_/);
+    assert.match(api, /admin-set-tenant-runtime-config/);
+    assert.match(panel, /Tenant service-role keys stay/);
+  });
+
+  it('draft tenants cannot sync runtime branding or feature flags before runtime config exists', () => {
+    const admin = read('supabase-control-plane/functions/_shared/admin.ts');
+    const configSync = read('supabase-control-plane/functions/admin-sync-tenant-config/index.ts');
+    const entitlementSync = read('supabase-control-plane/functions/admin-sync-entitlements/index.ts');
+    const brandingPanel = read('apps/control-plane/src/components/BrandingPanel.jsx');
+    const entitlementsPanel = read('apps/control-plane/src/components/EntitlementsPanel.jsx');
+
+    assert.match(admin, /TENANT_SERVICE_ROLE_KEY_UNCONFIGURED/);
+    assert.match(configSync, /TENANT_RUNTIME_NOT_CONFIGURED/);
+    assert.match(configSync, /tenant_runtime_not_configured/);
+    assert.match(entitlementSync, /TENANT_RUNTIME_NOT_CONFIGURED/);
+    assert.match(entitlementSync, /tenant_runtime_not_configured/);
+    assert.match(brandingPanel, /Runtime connection required first/);
+    assert.match(entitlementsPanel, /Runtime connection required first/);
   });
 
   it('admin tenant updates validate activation and domain ownership before mutation', () => {

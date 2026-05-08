@@ -73,6 +73,10 @@ export const controlPlaneApi = {
     return invokeAdminFunction('admin-sync-entitlements', { tenantId, entitlements })
   },
 
+  setTenantRuntimeConfig(payload) {
+    return invokeAdminFunction('admin-set-tenant-runtime-config', payload)
+  },
+
   createProvisioningJob(payload) {
     return invokeAdminFunction('admin-create-provisioning-job', payload)
   },

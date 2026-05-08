@@ -38,7 +38,7 @@ export default function TenantControls({ tenant, onSaved }) {
         <div>
           <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">Tenant control</p>
           <h2 className="mt-2 text-2xl font-black">{tenant.display_name}</h2>
-          <p className="text-sm text-slate-500">Project ref: {tenant.supabase_project_ref}</p>
+          <p className="text-sm text-slate-500">Project ref: {tenant.supabase_project_ref || 'Not configured yet'}</p>
         </div>
         <StatusPill value={tenant.status} />
       </div>

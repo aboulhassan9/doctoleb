@@ -9,6 +9,7 @@ import TenantControls from './TenantControls'
 import BrandingPanel from './BrandingPanel'
 import EntitlementsPanel from './EntitlementsPanel'
 import ProvisioningPanel from './ProvisioningPanel'
+import RuntimeConfigPanel from './RuntimeConfigPanel'
 
 export default function ConsoleScreen({ session, onSignOut }) {
   const [selectedTenant, setSelectedTenant] = useState(null)
@@ -31,6 +32,13 @@ export default function ConsoleScreen({ session, onSignOut }) {
   const tenant = tenantDetail?.tenant || selectedTenant
   const error = listError || detailError
 
+  async function handleProvisioningCreated(result) {
+    const nextTenants = await reloadTenants()
+    const tenantId = result?.tenant?.id || result?.provisioningJob?.tenant_id
+    const createdTenant = tenantId ? nextTenants.find((item) => item.id === tenantId) : null
+    if (createdTenant) setSelectedTenant(createdTenant)
+  }
+
   return (
     <main className="min-h-screen bg-[#eef5f2] text-slate-950">
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-[#eef5f2]/85 backdrop-blur-xl">
@@ -51,11 +59,12 @@ export default function ConsoleScreen({ session, onSignOut }) {
         <section className="grid gap-5">
           {loading ? <p className="rounded-[2rem] bg-white p-6 text-sm font-semibold text-slate-500">Loading tenants...</p> : null}
           {error ? <p className="rounded-[2rem] bg-rose-50 p-6 text-sm font-bold text-rose-700">{error}</p> : null}
-          <ProvisioningPanel onCreated={reloadTenants} />
+          <ProvisioningPanel onCreated={handleProvisioningCreated} />
           {tenant ? (
             <>
               <TenantControls tenant={tenant} onSaved={() => { void reloadTenants(); void reloadTenantDetail() }} />
               <DomainsPanel tenant={tenant} onSaved={() => { void reloadTenants(); void reloadTenantDetail() }} />
+              <RuntimeConfigPanel tenant={tenant} onSaved={() => { void reloadTenants(); void reloadTenantDetail() }} />
               <BrandingPanel tenant={tenant} />
               <EntitlementsPanel tenant={tenant} onSaved={() => { void reloadTenants(); void reloadTenantDetail() }} />
               <AuditPanel events={tenantDetail?.events || []} />

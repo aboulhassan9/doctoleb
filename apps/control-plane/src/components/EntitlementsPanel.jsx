@@ -8,6 +8,7 @@ export default function EntitlementsPanel({ tenant, onSaved }) {
   const [enabled, setEnabled] = useState({});
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const hasRuntimeConfig = Boolean(tenant.supabase_project_ref && tenant.supabase_url);
 
   useEffect(() => {
     const state = {};
@@ -20,6 +21,11 @@ export default function EntitlementsPanel({ tenant, onSaved }) {
   }, [tenant.id]);
 
   async function sync() {
+    if (!hasRuntimeConfig) {
+      setMessage('Save the tenant runtime connection before projecting feature flags.');
+      return;
+    }
+
     setSaving(true);
     const entitlements = FEATURE_CATALOG.map((feature) => ({
       feature_code: feature.code,
@@ -55,7 +61,8 @@ export default function EntitlementsPanel({ tenant, onSaved }) {
         ))}
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <PrimaryButton onClick={sync} disabled={saving}>{saving ? 'Syncing...' : 'Sync entitlements'}</PrimaryButton>
+        <PrimaryButton onClick={sync} disabled={saving || !hasRuntimeConfig}>{saving ? 'Syncing...' : 'Sync entitlements'}</PrimaryButton>
+        {!hasRuntimeConfig ? <p className="text-sm font-semibold text-slate-500">Runtime connection required first.</p> : null}
         {message ? <p className="text-sm font-semibold text-slate-500">{message}</p> : null}
       </div>
     </section>

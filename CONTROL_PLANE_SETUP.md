@@ -537,9 +537,21 @@ Restart `npm run dev:patient` / `npm run dev:ops`. The browser now calls the rea
 
 ---
 
-## 7. Onboarding tenant #2 (manual playbook)
+## 7. Onboarding tenant #2 (console-assisted playbook)
 
-Until you build the super-admin UI and provisioning automation, onboarding a new tenant is a manual sequence:
+The control-plane console now owns the SaaS metadata workflow. Use raw SQL only for emergency repair.
+
+Preferred flow:
+
+1. Sign in to `apps/control-plane` as an active `owner` or `operator`.
+2. In **New doctor tenant**, enter clinic name, slug, and plan, then create the tenant draft. This creates the control-plane `tenants`, pending `tenant_domains`, `tenant_provisioning_jobs`, and audit event in one idempotent transaction.
+3. Create the tenant Supabase project and apply tenant DB migrations. This remains manual until Management API automation is approved.
+4. In **Runtime connection**, save the tenant project ref, tenant Supabase URL, and tenant anon key. Never paste a service-role key into the browser.
+5. In **Domains**, keep `doctoleb.com` rows pending until the domain is purchased and verified. Before domain purchase, add the Vercel free-domain aliases for the current tenant if you need hosted smoke tests.
+6. Sync branding and entitlements only after runtime config exists.
+7. Activate the tenant only after it has runtime config and at least one active domain row for the target surface.
+
+Legacy SQL playbook, for emergency repair only:
 
 ```bash
 # Step 1 — Create a fresh Supabase project for tenant 2.
@@ -600,7 +612,7 @@ Each step takes a few minutes. End-to-end: ~1 hour for the first tenant, ~30 min
 
 After steps 1–6, check each item:
 
-- [ ] Control-plane project shows 4 tables (`tenants`, `tenant_domains`, `super_admins`, `tenant_events`) with RLS enabled.
+- [ ] Control-plane project shows only zero-PHI SaaS/control-plane tables (`tenants`, `tenant_domains`, `super_admins`, `tenant_events`, `plans`, `plan_entitlements`, `tenant_entitlements`, `tenant_provisioning_jobs`) with RLS enabled.
 - [ ] `select public.resolve_tenant('localhost:3001', 'patient')` returns `{ data: { tenantId, slug:'dev', supabaseUrl, ... }, error: null }`.
 - [ ] While the domain is not purchased, `select public.resolve_tenant('dev.doctoleb.com', 'patient')` returns `{ data: null, error: 'TENANT_INACTIVE' }`.
 - [ ] `select public.resolve_tenant('nope', 'patient')` returns `{ data: null, error: 'TENANT_NOT_FOUND' }`.
@@ -631,7 +643,7 @@ After steps 1–6, check each item:
 - **Custom domain DNS verification UX**. For now, `tenant_domains.dns_status` is set manually. A future step automates the TXT/CNAME verification handshake.
 - **Stripe billing integration**. `tenants.plan` and `tenants.status` are the contract; the billing webhook can flip `status` to `'suspended'` on payment failure. Out of scope for v1.
 - **Auto-provisioning via Supabase Management API**. Step 7 is manual today. Eventually replace it with a `provision-tenant` Edge Function that calls `POST https://api.supabase.com/v1/projects` and runs `supabase db push --project-ref <new>` programmatically. Requires a Management API token, stored as a control-plane Edge Function secret only.
-- **Super-admin React UI**. Eventually `apps/control-plane/` becomes a small React app at `console.doctoleb.com` that lets you list tenants, see audit events, suspend/activate, and manage domains. Until then, the Supabase Studio for the control-plane project is the admin UI.
+- **Full automated super-admin provisioning**. `apps/control-plane/` now covers tenant list/detail, status/domain controls, runtime config, branding sync, entitlement sync, and draft creation. Supabase project creation, tenant DB migration execution, first doctor invite automation, and custom-domain verification automation are still follow-up work.
 - **Cross-tenant analytics**. Counts/MRR/dashboards that aggregate across tenants need a service-role aggregator Edge Function in the control plane that fans out to each tenant DB. Out of scope.
 
 ---
@@ -643,7 +655,7 @@ After steps 1–6, check each item:
 | **Tier 2.5 hardening** | Encounter MVP, Storage RLS, redaction, baseline migration | Largely done |
 | **ADR-004 runtime layer** | Hostname parser, resolver client, runtime Supabase factory, TenantBootstrap, audit guards | Done (Slices A–F) |
 | **This runbook (control plane v1)** | Second Supabase project, schema, dev tenant in registry, resolver endpoint | Pending — execute when you onboard tenant #2 |
-| **Control plane v2** | Super-admin React UI, manual provisioning workflow surfaced as a button | Pending |
+| **Control plane v2** | Super-admin React UI, manual provisioning workflow surfaced as a button | In progress — console-assisted draft/runtime workflow exists |
 | **Control plane v3** | Auto-provisioning via Supabase Management API, custom domain verification flows | Pending |
 | **Phase 5** | Flutter app reuses the same resolver | Pending |
 

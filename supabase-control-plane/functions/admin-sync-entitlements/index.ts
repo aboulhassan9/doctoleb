@@ -141,6 +141,19 @@ Deno.serve(async (req) => {
     ? body.entitlements.map((row) => normalizeEntitlement(row, tenantId)).filter(Boolean)
     : []
 
+  if (!tenant.supabase_project_ref || !tenant.supabase_url) {
+    await auditEvent(context.client, {
+      tenantId,
+      eventType: 'tenant_entitlements.sync_blocked',
+      actorId: context.admin.id,
+      metadata: {
+        reason: 'tenant_runtime_not_configured',
+        changedCount: entitlementRows.length,
+      },
+    })
+    return errorResponse('TENANT_RUNTIME_NOT_CONFIGURED', 409, cors)
+  }
+
   if (entitlementRows.length > 0) {
     const { error } = await context.client
       .from('tenant_entitlements')

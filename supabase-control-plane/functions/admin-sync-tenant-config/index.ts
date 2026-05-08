@@ -83,6 +83,19 @@ Deno.serve(async (req) => {
 
   if (tenantError || !tenant) return errorResponse('TENANT_NOT_FOUND', 404, cors)
 
+  if (!tenant.supabase_project_ref || !tenant.supabase_url) {
+    await auditEvent(context.client, {
+      tenantId,
+      eventType: 'tenant_config.sync_blocked',
+      actorId: context.admin.id,
+      metadata: {
+        reason: 'tenant_runtime_not_configured',
+        requestedKeys: Object.keys(body.branding && typeof body.branding === 'object' ? body.branding : {}),
+      },
+    })
+    return errorResponse('TENANT_RUNTIME_NOT_CONFIGURED', 409, cors)
+  }
+
   const { key, secretName } = getTenantServiceRoleKey(tenant.supabase_project_ref)
   const branding = normalizeBranding(body.branding)
 

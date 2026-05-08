@@ -176,11 +176,12 @@ export async function auditEvent(
   })
 }
 
-export function tenantServiceRoleSecretName(projectRef: string): string {
-  return `TENANT_SERVICE_ROLE_KEY_${projectRef.toUpperCase()}`
+export function tenantServiceRoleSecretName(projectRef: unknown): string {
+  const normalized = typeof projectRef === 'string' ? projectRef.trim().toUpperCase() : ''
+  return normalized ? `TENANT_SERVICE_ROLE_KEY_${normalized}` : 'TENANT_SERVICE_ROLE_KEY_UNCONFIGURED'
 }
 
-export function getTenantServiceRoleKey(projectRef: string): { key: string | null; secretName: string } {
+export function getTenantServiceRoleKey(projectRef: unknown): { key: string | null; secretName: string } {
   const secretName = tenantServiceRoleSecretName(projectRef)
   return {
     key: Deno.env.get(secretName) ?? null,

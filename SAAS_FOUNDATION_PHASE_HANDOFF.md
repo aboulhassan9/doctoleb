@@ -983,3 +983,29 @@ tests/unit/saasFoundationContracts.test.mjs asserts Vercel Git auto-deploys stay
 Operational note:
 
 - Do not enable Vercel native Git auto-deployments while `.github/workflows/ci.yml` is the release owner. If native Vercel deploys are enabled later, remove or pause the GitHub Actions deploy job first to avoid duplicate production deploys.
+
+---
+
+## 23. Console-Assisted Tenant Creation Update — 2026-05-08
+
+Completed the next safe slice for fast tenant onboarding without per-tenant app deploys:
+
+- Added a console-first tenant draft workflow in `apps/control-plane`: the super-admin enters clinic name, slug, and plan; the UI derives placeholder pending routing rows and sends one idempotent request.
+- Moved tenant draft creation into `public.admin_create_tenant_draft_atomic(...)`, a service-role-only control-plane RPC that creates the `tenants` row, `tenant_domains` rows, `tenant_provisioning_jobs` row, and `tenant.draft_created` audit event together.
+- New tenants start as `status='draft'` with `supabase_project_ref`, `supabase_url`, and `supabase_anon_key` intentionally empty. The new `tenants_active_runtime_config_required` constraint prevents activation until public runtime resolver metadata is configured.
+- Added `admin-set-tenant-runtime-config`, backed by `public.admin_set_tenant_runtime_config_atomic(...)`, so a super-admin can store the tenant Supabase project ref, URL, and anon key through the console after the tenant DB exists. Service-role keys are still never accepted by the browser and stay in Edge Function secrets or Vault.
+- Added a runtime connection panel to the console and blocked branding/feature projection until runtime config exists. This prevents draft tenants from accidentally calling tenant DB sync functions with null runtime settings.
+- Kept the no-domain path clean: generated `doctoleb.com` rows remain `pending` placeholders until the domain is bought and verified. For pre-domain production smoke, add the Vercel free-domain aliases as explicit domain rows for the current tenant, mark DNS/SSL verified, and activate them. No app rebuild or per-tenant deploy is required.
+
+Verification added:
+
+```txt
+tests/unit/controlPlaneDraftHelpers.test.mjs
+tests/unit/saasFoundationContracts.test.mjs
+```
+
+Operational notes:
+
+- This does not yet call the Supabase Management API to create a brand-new tenant project. That remains deferred until the manual tenant DB checklist is stable and a management token can be stored server-side only.
+- The forward design is reversible: tenant drafts can move to `inactive` or `archived`, pending domains can be disabled, runtime config can be overwritten, and every creation writes an audit event plus a provisioning checklist.
+- The apps already support runtime resolver-backed tenants, so adding another tenant does not require copying apps, creating a new Vercel project, or deploying a tenant-specific frontend.

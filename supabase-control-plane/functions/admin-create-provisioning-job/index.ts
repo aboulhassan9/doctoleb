@@ -1,5 +1,4 @@
 import {
-  auditEvent,
   corsHeaders,
   errorResponse,
   jsonResponse,
@@ -7,10 +6,15 @@ import {
   readJsonBody,
   requireSuperAdmin,
 } from '../_shared/admin.ts'
-import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { CONTROL_PLANE_PROVISIONING_JOB_SELECT } from '../_shared/selects.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const RPC_ERROR_STATUS: Record<string, number> = {
+  INVALID_REQUEST: 400,
+  INVALID_PLAN: 422,
+  TENANT_SLUG_TAKEN: 409,
+  DOMAIN_TAKEN: 409,
+  TENANT_DRAFT_CREATE_FAILED: 500,
+}
 
 function normalizeSlug(value: unknown) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
@@ -53,15 +57,8 @@ function normalizeClientRequestId(value: unknown) {
   return UUID.test(id) ? id : null
 }
 
-async function findJobByClientRequestId(
-  client: SupabaseClient,
-  clientRequestId: string,
-) {
-  return await client
-    .from('tenant_provisioning_jobs')
-    .select(CONTROL_PLANE_PROVISIONING_JOB_SELECT)
-    .eq('client_request_id', clientRequestId)
-    .maybeSingle()
+function statusForRpcError(code: string) {
+  return RPC_ERROR_STATUS[code] ?? 500
 }
 
 Deno.serve(async (req) => {
@@ -83,14 +80,6 @@ Deno.serve(async (req) => {
     return errorResponse('INVALID_REQUEST', 400, cors)
   }
 
-  if (clientRequestId) {
-    const { data: existingJob, error: lookupError } = await findJobByClientRequestId(context.client, clientRequestId)
-    if (lookupError) return errorResponse('PROVISIONING_JOB_LOOKUP_FAILED', 500, cors)
-    if (existingJob) {
-      return jsonResponse({ data: existingJob, error: null }, 200, cors)
-    }
-  }
-
   const requestedSlug = normalizeSlug(body.requestedSlug)
   const requestedDisplayName = normalizeText(body.requestedDisplayName, 160)
   const requestedPlan = normalizeText(body.requestedPlan, 80) || 'starter'
@@ -99,77 +88,35 @@ Deno.serve(async (req) => {
     return errorResponse('INVALID_REQUEST', 400, cors)
   }
 
-  const { data: existingTenant } = await context.client
-    .from('tenants')
-    .select('id')
-    .eq('slug', requestedSlug)
-    .maybeSingle()
-
-  if (existingTenant) {
-    return errorResponse('TENANT_SLUG_TAKEN', 409, cors)
-  }
-
   const requestedDomains = normalizeDomains(body.requestedDomains)
-  for (const domain of requestedDomains) {
-    const { data: existingDomain } = await context.client
-      .from('tenant_domains')
-      .select('id')
-      .eq('hostname', domain.hostname)
-      .maybeSingle()
 
-    if (existingDomain) {
-      return errorResponse('DOMAIN_TAKEN', 409, cors, { hostname: domain.hostname })
-    }
-  }
-
-  const checklist = {
-    createSupabaseProject: false,
-    applyTenantMigrations: false,
-    seedTenantProfile: false,
-    seedFirstDoctorAdmin: false,
-    configureStorageAndFunctions: false,
-    addTenantResolverRows: false,
-    smokeTestResolver: false,
-    activateTenant: false,
-  }
-
-  const { data: job, error } = await context.client
-    .from('tenant_provisioning_jobs')
-    .insert({
-      client_request_id: clientRequestId,
-      requested_slug: requestedSlug,
-      requested_display_name: requestedDisplayName,
-      requested_plan: requestedPlan,
-      requested_domains: requestedDomains,
-      initial_branding: normalizeBranding(body.initialBranding),
-      status: 'ready_for_manual_provisioning',
-      checklist,
-      assigned_admin_id: context.admin.id,
-    })
-    .select(CONTROL_PLANE_PROVISIONING_JOB_SELECT)
-    .single()
-
-  if (error) {
-    if (clientRequestId && error.code === '23505') {
-      const { data: existingJob, error: lookupError } = await findJobByClientRequestId(context.client, clientRequestId)
-      if (lookupError) return errorResponse('PROVISIONING_JOB_LOOKUP_FAILED', 500, cors)
-      if (existingJob) return jsonResponse({ data: existingJob, error: null }, 200, cors)
-    }
-    return errorResponse('PROVISIONING_JOB_CREATE_FAILED', 500, cors)
-  }
-
-  await auditEvent(context.client, {
-    tenantId: null,
-    eventType: 'tenant_provisioning_job.created',
-    actorId: context.admin.id,
-    metadata: {
-      jobId: job.id,
-      clientRequestId,
-      requestedSlug,
-      requestedPlan,
-      domainCount: requestedDomains.length,
-    },
+  const { data: rpcPayload, error: rpcError } = await context.client.rpc('admin_create_tenant_draft_atomic', {
+    p_actor_id: context.admin.id,
+    p_client_request_id: clientRequestId,
+    p_requested_slug: requestedSlug,
+    p_requested_display_name: requestedDisplayName,
+    p_requested_plan: requestedPlan,
+    p_requested_domains: requestedDomains,
+    p_initial_branding: normalizeBranding(body.initialBranding),
   })
 
-  return jsonResponse({ data: job, error: null }, 201, cors)
+  if (rpcError) return errorResponse('TENANT_DRAFT_CREATE_FAILED', 500, cors)
+
+  const payload = rpcPayload && typeof rpcPayload === 'object'
+    ? rpcPayload as { data?: { created?: boolean }; error?: unknown; details?: Record<string, unknown> }
+    : null
+  const code = typeof payload?.error === 'string' ? payload.error : null
+
+  if (code) {
+    return errorResponse(code, statusForRpcError(code), cors, payload?.details ?? {})
+  }
+
+  return jsonResponse(
+    {
+      data: payload?.data ?? null,
+      error: null,
+    },
+    payload?.data?.created === false ? 200 : 201,
+    cors,
+  )
 })

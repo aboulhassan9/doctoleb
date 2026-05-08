@@ -13,9 +13,11 @@ export function useTenantList() {
     setLoading(false)
     if (result.error) {
       setError(result.error)
-      return
+      return []
     }
-    setTenants(result.data || [])
+    const nextTenants = result.data || []
+    setTenants(nextTenants)
+    return nextTenants
   }, [])
 
   useEffect(() => {
