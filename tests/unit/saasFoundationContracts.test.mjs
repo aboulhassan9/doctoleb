@@ -120,6 +120,7 @@ describe('SaaS foundation contracts', () => {
     const workflow = read('.github/workflows/ci.yml');
 
     assert.match(workflow, /timeout-minutes: 45/);
+    assert.match(workflow, /github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'/);
     assert.match(
       workflow,
       /vercel@\$\{VERCEL_CLI_VERSION\} deploy --prebuilt --prod --yes --no-wait --token="\$VERCEL_TOKEN"/,

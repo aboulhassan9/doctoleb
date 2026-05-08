@@ -70,7 +70,7 @@ jobs:
   deploy-vercel:
     name: Deploy Vercel (${{ matrix.app }})
     needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -157,7 +157,7 @@ jobs:
   smoke-vercel:
     name: Smoke Vercel alias (${{ matrix.app }})
     needs: deploy-vercel
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:

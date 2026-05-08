@@ -953,7 +953,7 @@ npx --yes yaml-lint .github/workflows/ci.yml PASS
 
 Operational note:
 
-- PRs run the full quality gate but do not deploy. Pushes to `main` run the same quality gate, deploy all three Vercel projects, then smoke the three Vercel free-domain aliases. This remains domain-ready without requiring purchased `doctoleb.com` yet.
+- PRs run the full quality gate but do not deploy. Pushes to `main` and manual `workflow_dispatch` runs on `main` run the same quality gate, deploy all three Vercel projects, then smoke the three Vercel free-domain aliases. This remains domain-ready without requiring purchased `doctoleb.com` yet.
 
 ---
 
@@ -1022,6 +1022,7 @@ Corrected the no-domain Vercel alias behavior after production screenshots showe
 - Added the missing `apps/control-plane/postcss.config.js` so Tailwind is compiled for the console the same way it is compiled for patient-web and clinic-ops.
 - Hardened `packages/core/lib/hostnameSurface.js` so deployment host allowlists tolerate accidental escaped `\r` / `\n` suffixes without silently falling back to the wrong surface.
 - Re-saved the Vercel production host envs so patient-web is marketing and clinic-ops has a clean ops host value.
+- Updated `.github/workflows/ci.yml` so manual `workflow_dispatch` runs on `main` deploy through the same verified Vercel workflow instead of stopping after verification.
 
 Verification:
 
