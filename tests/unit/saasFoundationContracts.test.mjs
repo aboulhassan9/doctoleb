@@ -101,6 +101,7 @@ describe('SaaS foundation contracts', () => {
       workflow,
       /vercel@\$\{VERCEL_CLI_VERSION\} deploy --prebuilt --prod --yes --no-wait --token="\$VERCEL_TOKEN"/,
     );
+    assert.match(workflow, /grep -Eo 'https:\/\/\[a-z0-9\.-\]\+\\\.vercel\\\.app'/);
     assert.match(
       workflow,
       /vercel@\$\{VERCEL_CLI_VERSION\} inspect "\$deployment_url" --wait --timeout 35m --token="\$VERCEL_TOKEN"/,
