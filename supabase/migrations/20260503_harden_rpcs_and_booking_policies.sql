@@ -6,6 +6,43 @@
 -- - P1: book_slot now returns appointment UUID and accepts reason/duration
 -- ═══════════════════════════════════════════════════════════════════
 
+-- Fresh disposable databases apply this file before the later secure web
+-- foundation migration. Keep the helper definitions self-contained here so
+-- policies below can be created from an empty branch/local database.
+create or replace function public.current_user_role()
+returns text
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select u.role
+  from public.users as u
+  where u.auth_user_id = auth.uid()
+    and coalesce(u.is_active, true) = true
+  limit 1;
+$$;
+
+create or replace function public.has_role(allowed_roles text[])
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select coalesce(public.current_user_role() = any (allowed_roles), false);
+$$;
+
+create or replace function public.is_staff()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
+  select public.has_role(array['doctor', 'predoctor', 'secretary', 'admin']);
+$$;
+
 -- P0 FIX 1: update_patient_profile — add auth ownership / staff check
 create or replace function public.update_patient_profile(
   p_user_id uuid,
