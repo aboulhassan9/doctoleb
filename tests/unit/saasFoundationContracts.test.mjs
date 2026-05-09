@@ -479,6 +479,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(provisioningWizard, /PROVISIONING_WIZARD_STEPS/);
     assert.match(provisioningWizard, /id: 'clinic'/);
     assert.match(provisioningWizard, /id: 'doctor'/);
+    assert.match(provisioningWizard, /title: 'First doctor setup'/);
     assert.match(provisioningWizard, /id: 'hosting'/);
     assert.match(provisioningWizard, /id: 'review'/);
     assert.match(provisioningWizardNav, /New tenant creation steps/);

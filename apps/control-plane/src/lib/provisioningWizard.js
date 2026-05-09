@@ -10,7 +10,7 @@ export const PROVISIONING_WIZARD_STEPS = Object.freeze([
     id: 'doctor',
     number: 2,
     label: 'Doctor',
-    title: 'First doctor admin',
+    title: 'First doctor setup',
     description: 'Capture the first doctor account that will own the clinic workspace.',
   },
   {
