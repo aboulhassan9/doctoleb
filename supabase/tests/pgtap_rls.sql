@@ -80,22 +80,21 @@ insert into auth.users (
   role,
   email,
   email_confirmed_at,
-  confirmed_at,
   raw_app_meta_data,
   raw_user_meta_data,
   created_at,
   updated_at
 )
-select doctor_auth, 'authenticated', 'authenticated', 'rls-doctor@example.test', now(), now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+select doctor_auth, 'authenticated', 'authenticated', 'rls-doctor@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
 from rls_ids
 union all
-select patient_a_auth, 'authenticated', 'authenticated', 'rls-patient-a@example.test', now(), now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+select patient_a_auth, 'authenticated', 'authenticated', 'rls-patient-a@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
 from rls_ids
 union all
-select patient_b_auth, 'authenticated', 'authenticated', 'rls-patient-b@example.test', now(), now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+select patient_b_auth, 'authenticated', 'authenticated', 'rls-patient-b@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
 from rls_ids
 union all
-select admin_auth, 'authenticated', 'authenticated', 'rls-admin@example.test', now(), now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+select admin_auth, 'authenticated', 'authenticated', 'rls-admin@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
 from rls_ids
 on conflict (id) do nothing;
 
