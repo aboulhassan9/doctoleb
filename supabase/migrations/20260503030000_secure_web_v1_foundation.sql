@@ -510,6 +510,8 @@ begin
 end;
 $$;
 
+drop function if exists public.get_available_slots(uuid, date);
+
 create or replace function public.get_available_slots(p_doctor uuid, p_date date)
 returns table (
   id uuid,
