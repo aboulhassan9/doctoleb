@@ -16,6 +16,7 @@ import {
   validateProvisioningProviderSelection,
 } from '../lib/providerConnectionDrafts'
 import {
+  getProvisioningWizardStepIndex,
   getNextProvisioningWizardStepId,
   getPreviousProvisioningWizardStepId,
   getProvisioningWizardStep,
@@ -30,6 +31,7 @@ import ProvisioningWizardStepNav from './ProvisioningWizardStepNav'
 
 export default function ProvisioningPanel({ providerConnections = [], onCreated }) {
   const [activeWizardStep, setActiveWizardStep] = useState('clinic')
+  const [unlockedWizardStepIndex, setUnlockedWizardStepIndex] = useState(0)
   const [requestedSlug, setRequestedSlug] = useState('')
   const [requestedDisplayName, setRequestedDisplayName] = useState('')
   const [firstDoctorDisplayName, setFirstDoctorDisplayName] = useState('')
@@ -109,12 +111,25 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
     }
 
     setMessage('')
-    setActiveWizardStep(getNextProvisioningWizardStepId(activeWizardStep))
+    const nextStepId = getNextProvisioningWizardStepId(activeWizardStep)
+    setUnlockedWizardStepIndex((current) => Math.max(current, getProvisioningWizardStepIndex(nextStepId)))
+    setActiveWizardStep(nextStepId)
   }
 
   function goBack() {
     setMessage('')
     setActiveWizardStep(getPreviousProvisioningWizardStepId(activeWizardStep))
+  }
+
+  function goToUnlockedStep(stepId) {
+    const requestedIndex = getProvisioningWizardStepIndex(stepId)
+    if (requestedIndex > unlockedWizardStepIndex) {
+      setMessage('Complete previous steps before opening this step.')
+      return
+    }
+
+    setMessage('')
+    setActiveWizardStep(stepId)
   }
 
   async function createJob() {
@@ -162,6 +177,7 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
       setSupabaseConnectionId('')
       setVercelConnectionId('')
       setActiveWizardStep('clinic')
+      setUnlockedWizardStepIndex(0)
       setClientRequestId(createClientRequestId())
       onCreated(result.data)
     }
@@ -181,16 +197,20 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
         </p>
       </div>
 
-      <ProvisioningWizardStepNav activeStepId={activeWizardStep} onStepChange={(stepId) => { setMessage(''); setActiveWizardStep(stepId) }} />
+      <ProvisioningWizardStepNav
+        activeStepId={activeWizardStep}
+        unlockedStepIndex={unlockedWizardStepIndex}
+        onStepChange={goToUnlockedStep}
+      />
 
       <div
-        role="tabpanel"
+        role="region"
         id={`tenant-wizard-step-${activeStep.id}`}
-        aria-labelledby={`tenant-wizard-tab-${activeStep.id}`}
+        aria-labelledby={`tenant-wizard-heading-${activeStep.id}`}
         className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"
       >
         <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Step {activeStep.number}</p>
-        <h3 className="mt-2 text-xl font-black">{activeStep.title}</h3>
+        <h3 id={`tenant-wizard-heading-${activeStep.id}`} className="mt-2 text-xl font-black">{activeStep.title}</h3>
         <p className="mt-1 text-sm text-slate-400">{activeStep.description}</p>
         <div className="mt-5">
           {activeWizardStep === 'clinic' ? (

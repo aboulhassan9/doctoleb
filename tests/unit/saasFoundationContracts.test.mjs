@@ -482,7 +482,16 @@ describe('SaaS foundation contracts', () => {
     assert.match(provisioningWizard, /id: 'hosting'/);
     assert.match(provisioningWizard, /id: 'review'/);
     assert.match(provisioningWizardNav, /New tenant creation steps/);
+    assert.match(provisioningWizardNav, /aria-current=\{isActive \? 'step' : undefined\}/);
+    assert.match(provisioningWizardNav, /Complete previous steps first/);
+    assert.doesNotMatch(provisioningWizardNav, /role="tablist"/);
+    assert.doesNotMatch(provisioningWizardNav, /role="tab"/);
     assert.match(provisioningPanel, /activeWizardStep/);
+    assert.match(provisioningPanel, /unlockedWizardStepIndex/);
+    assert.match(provisioningPanel, /goToUnlockedStep/);
+    assert.match(provisioningPanel, /getProvisioningWizardStepIndex/);
+    assert.match(provisioningPanel, /role="region"/);
+    assert.doesNotMatch(provisioningPanel, /role="tabpanel"/);
     assert.match(provisioningPanel, /Guided tenant launch/);
     assert.match(provisioningPanel, /Separate from current tenant editing/);
     assert.match(provisioningPanel, /ProvisioningClinicStep/);
