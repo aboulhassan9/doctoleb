@@ -346,6 +346,12 @@ async function verifyPredoctorFlow(page) {
 
 async function verifyControlPlaneFlow(page) {
   await page.getByRole('heading', { name: /Control plane/i }).waitFor({ state: 'visible', timeout: 45_000 });
+  if (await page.getByRole('tab', { name: /Setup/i }).count() > 0) {
+    throw new Error('control-plane flow: deprecated Setup tab is still visible.');
+  }
+
+  await page.getByRole('button', { name: /\+ New tenant/i }).click({ timeout: 15_000 });
+  await page.getByRole('heading', { name: /New tenant setup/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByRole('heading', { name: /Guided tenant launch/i }).waitFor({ state: 'visible', timeout: 45_000 });
   await page.getByText(/Separate from current tenant editing/i).waitFor({ state: 'visible', timeout: 15_000 });
 

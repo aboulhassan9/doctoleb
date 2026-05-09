@@ -1410,6 +1410,9 @@ describe('SaaS foundation contracts', () => {
     assert.match(flowSmoke, /doctor-first-band/);
     assert.match(flowSmoke, /secretary-first-band/);
     assert.match(flowSmoke, /control-plane-first-band/);
+    assert.match(flowSmoke, /deprecated Setup tab is still visible/);
+    assert.match(flowSmoke, /getByRole\('button'[\s\S]+New tenant[\s\S]+click\(\{ timeout: 15_000 \}\)/);
+    assert.match(flowSmoke, /getByRole\('heading', \{ name: \/New tenant setup\/i \}\)/);
     assert.match(flowSmoke, /FLOW_SMOKE_MUTATE_STAFF/);
     assert.match(flowSmoke, /assertLogoutAndStorageCleanup/);
     assert.match(flowSmoke, /assertNoClinicalDraftBrowserStorage/);
