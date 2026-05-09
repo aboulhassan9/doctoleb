@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { DEFAULT_BRANDING, PLAN_OPTIONS } from '../data/saasCatalog'
 import { controlPlaneApi } from '../lib/controlPlaneApi'
+import { buildTenantBrandingDraft } from '../lib/tenantBrandingDrafts'
 import {
   buildPendingTenantDomains,
   createClientRequestId,
@@ -21,6 +22,7 @@ import {
   getProvisioningWizardStep,
   isLastProvisioningWizardStep,
 } from '../lib/provisioningWizard'
+import BrandPreviewCard from './BrandPreviewCard'
 import ProvisioningWizardStepNav from './ProvisioningWizardStepNav'
 
 const INPUT_CLASS = 'rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white outline-none focus:border-cyan-300'
@@ -56,6 +58,17 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
   const vercelConnections = filterAutomatableConnections(providerConnections, 'vercel')
   const activeStep = getProvisioningWizardStep(activeWizardStep)
   const isLastStep = isLastProvisioningWizardStep(activeWizardStep)
+  const previewBranding = buildTenantBrandingDraft({
+    tenant: { display_name: requestedDisplayName || DEFAULT_BRANDING.display_name },
+    runtimeBranding: {
+      appConfig: {
+        app_name: requestedDisplayName || DEFAULT_BRANDING.app_name,
+        app_tagline: DEFAULT_BRANDING.app_tagline,
+        primary_color: DEFAULT_BRANDING.primary_color,
+        secondary_color: DEFAULT_BRANDING.secondary_color,
+      },
+    },
+  })
 
   function updateSlug(value) {
     setRequestedSlug(normalizeTenantSlug(value))
@@ -167,18 +180,21 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
 
   function renderClinicStep() {
     return (
-      <div className="grid gap-4 md:grid-cols-3">
-        <WizardField label="Clinic name" help="Shown in the SaaS console and tenant app branding seed.">
-          <input value={requestedDisplayName} onChange={(event) => updateDisplayName(event.target.value)} className={INPUT_CLASS} />
-        </WizardField>
-        <WizardField label="Slug" help="Used for future domains and tenant resolver identity.">
-          <input value={requestedSlug} onChange={(event) => updateSlug(event.target.value)} className={INPUT_CLASS} />
-        </WizardField>
-        <WizardField label="Plan" help="Feature defaults can be adjusted later from the Features tab.">
-          <select value={requestedPlan} onChange={(event) => updatePlan(event.target.value)} className={INPUT_CLASS}>
-            {PLAN_OPTIONS.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
-          </select>
-        </WizardField>
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
+        <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-1">
+          <WizardField label="Clinic name" help="Shown in the SaaS console and tenant app branding seed.">
+            <input value={requestedDisplayName} onChange={(event) => updateDisplayName(event.target.value)} className={INPUT_CLASS} />
+          </WizardField>
+          <WizardField label="Slug" help="Used for future domains and tenant resolver identity.">
+            <input value={requestedSlug} onChange={(event) => updateSlug(event.target.value)} className={INPUT_CLASS} />
+          </WizardField>
+          <WizardField label="Plan" help="Feature defaults can be adjusted later from the Features tab.">
+            <select value={requestedPlan} onChange={(event) => updatePlan(event.target.value)} className={INPUT_CLASS}>
+              {PLAN_OPTIONS.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
+            </select>
+          </WizardField>
+        </div>
+        <BrandPreviewCard branding={previewBranding} doctorName={firstDoctorDisplayName} />
       </div>
     )
   }
@@ -262,6 +278,7 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
             <p className="text-sm text-slate-400">Undoable provisioning ledger will be created.</p>
           </div>
         </div>
+        <BrandPreviewCard branding={previewBranding} doctorName={firstDoctorAdmin.displayName} />
         {domains.length > 0 ? (
           <div className="rounded-2xl bg-white/10 p-4 text-sm text-slate-300">
             <p className="font-black text-white">Pending routing rows</p>

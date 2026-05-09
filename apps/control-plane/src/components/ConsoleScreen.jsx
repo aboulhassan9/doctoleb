@@ -10,12 +10,11 @@ import AuditPanel from './AuditPanel'
 import TenantControls from './TenantControls'
 import BrandingPanel from './BrandingPanel'
 import EntitlementsPanel from './EntitlementsPanel'
-import ProvisioningPanel from './ProvisioningPanel'
 import RuntimeConfigPanel from './RuntimeConfigPanel'
-import ProviderConnectionsPanel from './ProviderConnectionsPanel'
 import ProvisioningStepsPanel from './ProvisioningStepsPanel'
 import ConsoleWorkspaceTabs, { getControlPlaneSection } from './ConsoleWorkspaceTabs'
 import TenantReadinessPanel from './TenantReadinessPanel'
+import SetupWorkspace from './SetupWorkspace'
 
 export default function ConsoleScreen({ session, onSignOut }) {
   const [selectedTenant, setSelectedTenant] = useState(null)
@@ -165,14 +164,12 @@ export default function ConsoleScreen({ session, onSignOut }) {
             </div>
 
             {activeSection === 'setup' ? (
-              <>
-                <ProvisioningPanel providerConnections={providerConnections} onCreated={handleProvisioningCreated} />
-                <ProviderConnectionsPanel
-                  connections={providerConnections}
-                  loading={providerConnectionsLoading}
-                  onChanged={reloadProviderConnections}
-                />
-              </>
+              <SetupWorkspace
+                providerConnections={providerConnections}
+                providerConnectionsLoading={providerConnectionsLoading}
+                onProviderConnectionsChanged={reloadProviderConnections}
+                onProvisioningCreated={handleProvisioningCreated}
+              />
             ) : null}
 
             {tenant && activeSection === 'tenant' ? (

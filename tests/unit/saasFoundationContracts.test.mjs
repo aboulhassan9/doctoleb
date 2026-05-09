@@ -415,8 +415,10 @@ describe('SaaS foundation contracts', () => {
 
   it('control-plane console can select provider connections and render the provisioning step ledger', () => {
     const consoleScreen = read('apps/control-plane/src/components/ConsoleScreen.jsx');
+    const setupWorkspace = read('apps/control-plane/src/components/SetupWorkspace.jsx');
     const workspaceTabs = read('apps/control-plane/src/components/ConsoleWorkspaceTabs.jsx');
     const provisioningPanel = read('apps/control-plane/src/components/ProvisioningPanel.jsx');
+    const brandPreviewCard = read('apps/control-plane/src/components/BrandPreviewCard.jsx');
     const provisioningWizard = read('apps/control-plane/src/lib/provisioningWizard.js');
     const provisioningWizardNav = read('apps/control-plane/src/components/ProvisioningWizardStepNav.jsx');
     const tenantReadinessPanel = read('apps/control-plane/src/components/TenantReadinessPanel.jsx');
@@ -428,8 +430,8 @@ describe('SaaS foundation contracts', () => {
     const getTenant = read('supabase-control-plane/functions/admin-get-tenant/index.ts');
 
     assert.match(consoleScreen, /useProviderConnections/);
-    assert.match(consoleScreen, /ProviderConnectionsPanel/);
     assert.match(consoleScreen, /ProvisioningStepsPanel/);
+    assert.match(consoleScreen, /SetupWorkspace/);
     assert.match(consoleScreen, /ConsoleWorkspaceTabs/);
     assert.match(consoleScreen, /TenantReadinessPanel/);
     assert.match(consoleScreen, /setActiveSection\('provisioning'\)/);
@@ -437,9 +439,16 @@ describe('SaaS foundation contracts', () => {
     assert.match(consoleScreen, /tenantDetailId = activeSection === 'setup' \? null : selectedTenant\?\.id/);
     assert.match(consoleScreen, /useTenantDetail\(tenantDetailId\)/);
     assert.match(consoleScreen, /Creation is separate from the selected tenant/);
+    assert.match(setupWorkspace, /SETUP_WORKSPACE_TABS/);
+    assert.match(setupWorkspace, /Create tenant/);
+    assert.match(setupWorkspace, /Provider accounts/);
+    assert.match(setupWorkspace, /activeSetupTab/);
+    assert.match(setupWorkspace, /New tenant draft/);
+    assert.match(setupWorkspace, /ProviderConnectionsPanel/);
+    assert.match(setupWorkspace, /ProvisioningPanel/);
     assert.ok(
-      consoleScreen.indexOf('<ProvisioningPanel') < consoleScreen.indexOf('<ProviderConnectionsPanel'),
-      'new tenant wizard should render before optional provider-account setup',
+      setupWorkspace.indexOf('<ProvisioningPanel') < setupWorkspace.indexOf('<ProviderConnectionsPanel'),
+      'new tenant wizard should remain the default setup experience before optional provider-account setup',
     );
     assert.match(workspaceTabs, /CONTROL_PLANE_SECTIONS/);
     assert.match(workspaceTabs, /role="tablist"/);
@@ -458,6 +467,13 @@ describe('SaaS foundation contracts', () => {
     assert.match(provisioningPanel, /Guided tenant launch/);
     assert.match(provisioningPanel, /Separate from current tenant editing/);
     assert.match(provisioningPanel, /No purchased domain required now/);
+    assert.match(provisioningPanel, /BrandPreviewCard/);
+    assert.match(provisioningPanel, /buildTenantBrandingDraft/);
+    assert.match(brandPreviewCard, /Tenant app preview/);
+    assert.match(brandPreviewCard, /Patient portal preview/);
+    assert.match(brandPreviewCard, /Doctor workspace preview/);
+    assert.match(brandPreviewCard, /branding\.primary_color/);
+    assert.match(brandPreviewCard, /branding\.secondary_color/);
     assert.match(provisioningPanel, /getNextProvisioningWizardStepId/);
     assert.match(tenantReadinessPanel, /Readiness proof/);
     assert.match(tenantReadinessPanel, /Zero-PHI SaaS checks/);
@@ -865,6 +881,16 @@ describe('SaaS foundation contracts', () => {
     assert.match(migration, /add column if not exists archived_by uuid references public\.users\(id\)/);
     assert.match(migration, /create index if not exists idx_clinics_active_name/);
     assert.match(migration, /drop policy if exists clinics_staff_delete on public\.clinics/);
+  });
+
+  it('walk-in patient creation compensates failures without hard-deleting account rows', () => {
+    const service = read('packages/core/services/patients.js');
+
+    assert.match(service, /async createWalkIn/);
+    assert.match(service, /newUserId/);
+    assert.match(service, /is_active:\s*false/);
+    assert.match(service, /walkin_compensation_failed/);
+    assert.doesNotMatch(service, /from\('users'\)[\s\S]{0,120}\.delete\(\)/);
   });
 
   it('staff invite statuses match the database constraint', () => {

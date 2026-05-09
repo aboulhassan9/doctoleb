@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { apiCall, apiPaged } from './api';
 import { buildInitials } from '@/lib/authIdentity';
+import { logWarn } from '@/lib/logger';
 import { PATIENT_SELECT_FIELDS, USER_PUBLIC_FIELDS } from '@/lib/selects';
 import { parseWithSchema, patientCreateSchema, patientProfileUpdateSchema, walkInPatientSchema } from '@/schemas';
 
@@ -242,10 +243,14 @@ export const patientService = {
       return { data: { ...newPatient, users: newUser, full_name: walkIn.full_name }, error: null };
     } catch (error) {
       if (newUserId) {
-        await supabase
+        const { error: compensationError } = await supabase
           .from('users')
-          .delete()
+          .update({ is_active: false })
           .eq('id', newUserId);
+
+        if (compensationError) {
+          logWarn('walkin_compensation_failed', 'Failed to disable orphan walk-in user after patient creation failure');
+        }
       }
 
       return { data: null, error: { message: error.message || 'Database error occurred' } };

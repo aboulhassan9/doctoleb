@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { controlPlaneApi } from '../lib/controlPlaneApi';
 import { buildTenantBrandingDraft, updateTenantBrandingDraft } from '../lib/tenantBrandingDrafts';
 import { Field, TextInput, PrimaryButton } from './ui';
+import BrandPreviewCard from './BrandPreviewCard';
 
 export default function BrandingPanel({ tenant, runtimeBranding = null, runtimeBrandingError = '', onSaved }) {
   const [branding, setBranding] = useState(() => buildTenantBrandingDraft({ tenant, runtimeBranding }));
@@ -42,28 +43,31 @@ export default function BrandingPanel({ tenant, runtimeBranding = null, runtimeB
         {runtimeBranding ? 'Loaded from the tenant runtime database.' : 'Using SaaS fallback values until runtime branding can be read.'}
         {runtimeBrandingError ? <span className="block text-cyan-800">Runtime read status: {runtimeBrandingError}</span> : null}
       </div>
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <Field label="Practice display name">
-          <TextInput value={branding.display_name} onChange={(event) => updateField('display_name', event.target.value)} />
-        </Field>
-        <Field label="App name shown on patient and staff apps">
-          <TextInput value={branding.app_name} onChange={(event) => updateField('app_name', event.target.value)} />
-        </Field>
-        <Field label="Tagline">
-          <TextInput value={branding.app_tagline} onChange={(event) => updateField('app_tagline', event.target.value)} />
-        </Field>
-        <Field label="Primary color">
-          <TextInput value={branding.primary_color} onChange={(event) => updateField('primary_color', event.target.value)} />
-        </Field>
-        <Field label="Secondary color">
-          <TextInput value={branding.secondary_color} onChange={(event) => updateField('secondary_color', event.target.value)} />
-        </Field>
-        <Field label="Logo URL">
-          <TextInput value={branding.splash_logo_url} onChange={(event) => updateField('splash_logo_url', event.target.value)} />
-        </Field>
-        <Field label="Support email">
-          <TextInput value={branding.support_email} onChange={(event) => updateField('support_email', event.target.value)} />
-        </Field>
+      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Practice display name">
+            <TextInput value={branding.display_name} onChange={(event) => updateField('display_name', event.target.value)} />
+          </Field>
+          <Field label="App name shown on patient and staff apps">
+            <TextInput value={branding.app_name} onChange={(event) => updateField('app_name', event.target.value)} />
+          </Field>
+          <Field label="Tagline">
+            <TextInput value={branding.app_tagline} onChange={(event) => updateField('app_tagline', event.target.value)} />
+          </Field>
+          <Field label="Primary color">
+            <TextInput value={branding.primary_color} onChange={(event) => updateField('primary_color', event.target.value)} />
+          </Field>
+          <Field label="Secondary color">
+            <TextInput value={branding.secondary_color} onChange={(event) => updateField('secondary_color', event.target.value)} />
+          </Field>
+          <Field label="Logo URL">
+            <TextInput value={branding.splash_logo_url} onChange={(event) => updateField('splash_logo_url', event.target.value)} />
+          </Field>
+          <Field label="Support email">
+            <TextInput value={branding.support_email} onChange={(event) => updateField('support_email', event.target.value)} />
+          </Field>
+        </div>
+        <BrandPreviewCard branding={branding} />
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <PrimaryButton onClick={sync} disabled={saving || !hasRuntimeConfig}>{saving ? 'Syncing...' : 'Sync branding'}</PrimaryButton>

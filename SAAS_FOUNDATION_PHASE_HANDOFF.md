@@ -1314,3 +1314,34 @@ npm run smoke:tenant-resolver
 Live ACL check: resolve_tenant acl = {postgres=X/postgres,service_role=X/postgres}
 Supabase security advisor: only remaining warning is leaked-password protection disabled, which is plan/manual deferred.
 ```
+
+---
+
+## 32. Tenant Setup UX And Walk-In Compensation Hardening — 2026-05-09
+
+Closed two real follow-up gaps from the full-flow review:
+
+- Split the control-plane setup workspace into explicit `Create tenant` and `Provider accounts` sub-tabs so new tenant creation is visually separate from editing the currently selected tenant.
+- Kept the new tenant flow step-by-step with clinic identity, first doctor/admin, no-domain hosting, and review steps.
+- Added a live brand preview card to the new tenant wizard and the existing tenant branding editor so the operator can see patient/staff app identity changes before saving.
+- Reused the existing `tenantBrandingDrafts` helper so UI preview state follows the same runtime branding shape used by tenant app config sync.
+- Changed walk-in patient creation compensation from hard-deleting a partially-created `users` row to reversible `is_active=false` disablement.
+- Added a safe warning log for compensation failure without PHI, emails, names, phone numbers, medical text, or secrets.
+
+Verification:
+
+```txt
+node --test tests/unit/saasFoundationContracts.test.mjs
+npm run verify
+npm run build:patient
+npm run build:ops
+npm run build:control-plane
+npm run audit:bundle-secrets
+git diff --check
+```
+
+Remaining implementation gaps:
+
+- Authenticated browser proof still needs configured app credentials/env on the executing machine or CI runner.
+- Provider-owned automatic Supabase/Vercel project creation remains intentionally deferred until token storage, cost controls, org/region selection, and rollback are designed.
+- The next UX slice should continue reducing large control-plane and clinical pages after browser baselines protect behavior.
