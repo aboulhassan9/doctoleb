@@ -73,7 +73,8 @@ jobs:
           status="$(supabase status -o env)"
 
           get_env_value() {
-            printf '%s\n' "$status" | awk -F= -v key="$1" '$1 == key { print substr($0, length(key) + 2) }' | tail -n 1
+            raw="$(printf '%s\n' "$status" | awk -F= -v key="$1" '$1 == key { print substr($0, length(key) + 2) }' | tail -n 1)"
+            printf '%s' "$raw" | sed -e 's/^"//' -e 's/"$//'
           }
 
           db_url="$(get_env_value DB_URL)"
