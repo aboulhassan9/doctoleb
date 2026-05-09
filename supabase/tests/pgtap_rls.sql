@@ -74,6 +74,10 @@ insert into rls_ids values (
   '99999999-9999-4999-8999-999999999993'
 );
 
+-- The RLS suite owns fixed synthetic user IDs. The production auth trigger is
+-- tested separately, so disable it only inside this rollback-only seed.
+alter table auth.users disable trigger on_auth_user_created;
+
 insert into auth.users (
   id,
   aud,
@@ -97,6 +101,8 @@ union all
 select admin_auth, 'authenticated', 'authenticated', 'rls-admin@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
 from rls_ids
 on conflict (id) do nothing;
+
+alter table auth.users enable trigger on_auth_user_created;
 
 insert into public.users (id, auth_user_id, email, role, first_name, last_name, is_active)
 select doctor_user, doctor_auth, 'rls-doctor@example.test', 'doctor', 'RLS', 'Doctor', true
