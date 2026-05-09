@@ -434,6 +434,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(consoleScreen, /TenantReadinessPanel/);
     assert.match(consoleScreen, /setActiveSection\('provisioning'\)/);
     assert.match(consoleScreen, /sectionContextLabel = activeSection === 'setup' \? 'New tenant flow' : tenant\?\.slug/);
+    assert.match(consoleScreen, /tenantDetailId = activeSection === 'setup' \? null : selectedTenant\?\.id/);
+    assert.match(consoleScreen, /useTenantDetail\(tenantDetailId\)/);
     assert.match(consoleScreen, /Creation is separate from the selected tenant/);
     assert.ok(
       consoleScreen.indexOf('<ProvisioningPanel') < consoleScreen.indexOf('<ProviderConnectionsPanel'),

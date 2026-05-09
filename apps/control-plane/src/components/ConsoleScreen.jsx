@@ -30,11 +30,12 @@ export default function ConsoleScreen({ session, onSignOut }) {
     error: listError,
     reload: reloadTenants,
   } = useTenantList()
+  const tenantDetailId = activeSection === 'setup' ? null : selectedTenant?.id
   const {
     tenantDetail,
     error: detailError,
     reload: reloadTenantDetail,
-  } = useTenantDetail(selectedTenant?.id)
+  } = useTenantDetail(tenantDetailId)
   const {
     connections: providerConnections,
     loading: providerConnectionsLoading,
