@@ -419,6 +419,11 @@ describe('SaaS foundation contracts', () => {
     const workspaceTabs = read('apps/control-plane/src/components/ConsoleWorkspaceTabs.jsx');
     const provisioningPanel = read('apps/control-plane/src/components/ProvisioningPanel.jsx');
     const brandPreviewCard = read('apps/control-plane/src/components/BrandPreviewCard.jsx');
+    const provisioningClinicStep = read('apps/control-plane/src/components/provisioning/ProvisioningClinicStep.jsx');
+    const provisioningDoctorStep = read('apps/control-plane/src/components/provisioning/ProvisioningDoctorStep.jsx');
+    const provisioningHostingStep = read('apps/control-plane/src/components/provisioning/ProvisioningHostingStep.jsx');
+    const provisioningReviewStep = read('apps/control-plane/src/components/provisioning/ProvisioningReviewStep.jsx');
+    const provisioningWizardField = read('apps/control-plane/src/components/provisioning/WizardField.jsx');
     const provisioningWizard = read('apps/control-plane/src/lib/provisioningWizard.js');
     const provisioningWizardNav = read('apps/control-plane/src/components/ProvisioningWizardStepNav.jsx');
     const tenantReadinessPanel = read('apps/control-plane/src/components/TenantReadinessPanel.jsx');
@@ -466,9 +471,21 @@ describe('SaaS foundation contracts', () => {
     assert.match(provisioningPanel, /activeWizardStep/);
     assert.match(provisioningPanel, /Guided tenant launch/);
     assert.match(provisioningPanel, /Separate from current tenant editing/);
-    assert.match(provisioningPanel, /No purchased domain required now/);
-    assert.match(provisioningPanel, /BrandPreviewCard/);
+    assert.match(provisioningPanel, /ProvisioningClinicStep/);
+    assert.match(provisioningPanel, /ProvisioningDoctorStep/);
+    assert.match(provisioningPanel, /ProvisioningHostingStep/);
+    assert.match(provisioningPanel, /ProvisioningReviewStep/);
+    assert.doesNotMatch(provisioningPanel, /function renderClinicStep/);
+    assert.doesNotMatch(provisioningPanel, /function renderDoctorStep/);
+    assert.doesNotMatch(provisioningPanel, /function renderHostingStep/);
+    assert.doesNotMatch(provisioningPanel, /function renderReviewStep/);
     assert.match(provisioningPanel, /buildTenantBrandingDraft/);
+    assert.match(provisioningClinicStep, /BrandPreviewCard/);
+    assert.match(provisioningClinicStep, /Clinic name/);
+    assert.match(provisioningDoctorStep, /First doctor admin/);
+    assert.match(provisioningHostingStep, /No purchased domain required now/);
+    assert.match(provisioningReviewStep, /Pending routing rows/);
+    assert.match(provisioningWizardField, /grid gap-2/);
     assert.match(brandPreviewCard, /Tenant app preview/);
     assert.match(brandPreviewCard, /Patient portal preview/);
     assert.match(brandPreviewCard, /Doctor workspace preview/);
@@ -663,6 +680,7 @@ describe('SaaS foundation contracts', () => {
     const selects = read('supabase-control-plane/functions/_shared/selects.ts');
     const runner = read('supabase-control-plane/functions/admin-run-provisioning-step/index.ts');
     const panel = read('apps/control-plane/src/components/ProvisioningPanel.jsx');
+    const doctorStep = read('apps/control-plane/src/components/provisioning/ProvisioningDoctorStep.jsx');
 
     assert.match(controlMigration, /first_doctor_email/);
     assert.match(controlMigration, /first_doctor_display_name/);
@@ -693,7 +711,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /deleteUser\(invitedAuthUserId, true\)/);
     assert.match(runner, /firstDoctorAdminInviteCreated: true/);
 
-    assert.match(panel, /First doctor admin/);
+    assert.match(panel, /ProvisioningDoctorStep/);
+    assert.match(doctorStep, /First doctor admin/);
     assert.match(panel, /firstDoctorEmail/);
     assert.match(panel, /firstDoctorDisplayName/);
   });

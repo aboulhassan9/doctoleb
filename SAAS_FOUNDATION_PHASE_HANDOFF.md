@@ -1345,3 +1345,23 @@ Remaining implementation gaps:
 - Authenticated browser proof still needs configured app credentials/env on the executing machine or CI runner.
 - Provider-owned automatic Supabase/Vercel project creation remains intentionally deferred until token storage, cost controls, org/region selection, and rollback are designed.
 - The next UX slice should continue reducing large control-plane and clinical pages after browser baselines protect behavior.
+
+---
+
+## 33. Tenant Creation Wizard Component Split — 2026-05-09
+
+Reduced the new tenant wizard surface area without changing behavior:
+
+- Extracted clinic identity, first doctor/admin, no-domain hosting, and review step views into `apps/control-plane/src/components/provisioning/`.
+- Extracted shared wizard field and style constants so class strings are not duplicated between steps.
+- Kept state, validation, idempotency key refresh, and API submission in `ProvisioningPanel`.
+- Added contract coverage that prevents the step renderers from being collapsed back into the parent wizard file.
+
+Verification:
+
+```txt
+node --test tests/unit/saasFoundationContracts.test.mjs
+npm run lint
+npm run build:control-plane
+git diff --check
+```
