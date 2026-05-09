@@ -71,7 +71,8 @@ insert into rls_ids values (
   'ffffffff-ffff-4fff-8fff-fffffffffff2',
   '99999999-9999-4999-8999-999999999991',
   '99999999-9999-4999-8999-999999999992',
-  '99999999-9999-4999-8999-999999999993'
+  '99999999-9999-4999-8999-999999999993',
+  '99999999-9999-4999-8999-999999999994'
 );
 
 insert into public.users (id, email, role, first_name, last_name, is_active)
