@@ -74,10 +74,21 @@ insert into rls_ids values (
   '99999999-9999-4999-8999-999999999993'
 );
 
--- The RLS suite owns fixed synthetic user IDs. The production auth trigger is
--- tested separately, so disable it only inside this rollback-only seed.
-alter table auth.users disable trigger on_auth_user_created;
+insert into public.users (id, email, role, first_name, last_name, is_active)
+select doctor_user, 'rls-doctor@example.test', 'doctor', 'RLS', 'Doctor', true
+from rls_ids
+union all
+select patient_a_user, 'rls-patient-a@example.test', 'patient', 'Patient', 'A', true
+from rls_ids
+union all
+select patient_b_user, 'rls-patient-b@example.test', 'patient', 'Patient', 'B', true
+from rls_ids
+union all
+select admin_user, 'rls-admin@example.test', 'admin', 'RLS', 'Admin', true
+from rls_ids;
 
+-- Seed auth after deterministic domain users so the production signup trigger
+-- only links auth_user_id by email and does not create extra patient rows.
 insert into auth.users (
   id,
   aud,
@@ -89,33 +100,18 @@ insert into auth.users (
   created_at,
   updated_at
 )
-select doctor_auth, 'authenticated', 'authenticated', 'rls-doctor@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+select doctor_auth, 'authenticated', 'authenticated', 'rls-doctor@example.test', now(), '{}'::jsonb, '{"role":"doctor"}'::jsonb, now(), now()
 from rls_ids
 union all
-select patient_a_auth, 'authenticated', 'authenticated', 'rls-patient-a@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+select patient_a_auth, 'authenticated', 'authenticated', 'rls-patient-a@example.test', now(), '{}'::jsonb, '{"role":"doctor"}'::jsonb, now(), now()
 from rls_ids
 union all
-select patient_b_auth, 'authenticated', 'authenticated', 'rls-patient-b@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+select patient_b_auth, 'authenticated', 'authenticated', 'rls-patient-b@example.test', now(), '{}'::jsonb, '{"role":"doctor"}'::jsonb, now(), now()
 from rls_ids
 union all
-select admin_auth, 'authenticated', 'authenticated', 'rls-admin@example.test', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+select admin_auth, 'authenticated', 'authenticated', 'rls-admin@example.test', now(), '{}'::jsonb, '{"role":"doctor"}'::jsonb, now(), now()
 from rls_ids
 on conflict (id) do nothing;
-
-alter table auth.users enable trigger on_auth_user_created;
-
-insert into public.users (id, auth_user_id, email, role, first_name, last_name, is_active)
-select doctor_user, doctor_auth, 'rls-doctor@example.test', 'doctor', 'RLS', 'Doctor', true
-from rls_ids
-union all
-select patient_a_user, patient_a_auth, 'rls-patient-a@example.test', 'patient', 'Patient', 'A', true
-from rls_ids
-union all
-select patient_b_user, patient_b_auth, 'rls-patient-b@example.test', 'patient', 'Patient', 'B', true
-from rls_ids
-union all
-select admin_user, admin_auth, 'rls-admin@example.test', 'admin', 'RLS', 'Admin', true
-from rls_ids;
 
 insert into public.doctors (id, user_id, department, specialization, license_number)
 select doctor, doctor_user, 'RLS', 'Contract Medicine', 'RLS-DOCTOR-001'
