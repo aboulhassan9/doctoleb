@@ -335,6 +335,8 @@ begin
 end;
 $$;
 
+grant select on rls_ids to authenticated;
+
 set local role authenticated;
 
 select t.*
