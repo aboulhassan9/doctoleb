@@ -38,10 +38,10 @@ export default function TenantCreationWorkspace({
       <div className="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-sm">
         <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.28em] text-cyan-300">New tenant setup</p>
-            <h2 className="mt-3 text-3xl font-black">Create a separate clinic workspace.</h2>
+            <p className="text-sm font-black uppercase tracking-[0.28em] text-cyan-300">New tenant</p>
+            <h2 className="mt-3 text-3xl font-black">New tenant setup</h2>
             <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-slate-300">
-              This installer creates a new tenant draft only. It does not edit {selectedTenant?.display_name || 'the selected tenant'} or any existing tenant configuration.
+              Create a separate clinic workspace. This installer creates a new tenant draft only and does not edit {selectedTenant?.display_name || 'the selected tenant'} or any existing tenant configuration.
             </p>
           </div>
           <SecondaryButton onClick={onCancel}>Back to selected tenant</SecondaryButton>
