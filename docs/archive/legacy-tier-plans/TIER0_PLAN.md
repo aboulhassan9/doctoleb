@@ -24,11 +24,11 @@ The final Tier 0 decision is the opposite:
 
 The historical migration exists:
 
-- `supabase/migrations/20260505_tier0_schema_alignment.sql`
+- `supabase/migrations/20260505010000_tier0_schema_alignment.sql`
 
 It is intentionally superseded/reverted by:
 
-- `supabase/migrations/20260505_tier0_v2_revert_schema_expansion.sql`
+- `supabase/migrations/20260505020000_tier0_v2_revert_schema_expansion.sql`
 
 The authoritative Tier 0 record is now:
 

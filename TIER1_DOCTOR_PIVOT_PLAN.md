@@ -640,7 +640,7 @@ Aggregator across tenants: counts only (no PHI), MRR, support tickets, system he
 - `src/lib/appointments.js` — status state machine reference
 - `src/lib/authIdentity.js` — auth flow being extended
 - `src/services/slots.js` + the live `book_slot` RPC — booking flow being modified
-- `supabase/migrations/20260505_tier0_v2_revert_schema_expansion.sql` — cautionary tale of code-DB drift
+- `supabase/migrations/20260505020000_tier0_v2_revert_schema_expansion.sql` — cautionary tale of code-DB drift
 - `CLAUDE.md` — project conventions; will need rewrites after T1.0
 
 ---

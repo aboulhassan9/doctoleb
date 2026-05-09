@@ -57,8 +57,8 @@ This document records what was actually executed after multiple review passes fr
 | `book_slot` trusted caller-supplied initial status | RPC now forces initial appointment status to `scheduled`. |
 | `book_slot` trusted caller-supplied duration | RPC validates duration bounds and derives from slot when not supplied. |
 | Audit log exposed PHI snapshots to broad staff roles | `audit_log` select policy is admin-only; future staff views must be redacted. |
-| Missing operational indexes caused policy/function performance warnings | Added Tier 1 indexes in `20260505_tier1_operator_hardening.sql`. |
-| RLS helper policies were re-evaluating auth functions per row | Added policy-performance migration `20260505_tier1_rls_policy_performance.sql`. |
+| Missing operational indexes caused policy/function performance warnings | Added Tier 1 indexes in `20260505030000_tier1_operator_hardening.sql`. |
+| RLS helper policies were re-evaluating auth functions per row | Added policy-performance migration `20260505040000_tier1_rls_policy_performance.sql`. |
 
 ### 3.3 System Design Review
 
@@ -97,8 +97,8 @@ This document records what was actually executed after multiple review passes fr
 | `src/services/patients.js` | Search sanitization, walk-in rollback, optional pagination. |
 | `src/lib/authIdentity.js` | `auth_user_id` identity resolution only. |
 | `src/services/auth.js` | No client-side domain fallback after Supabase Auth sign-up. |
-| `supabase/migrations/20260505_tier1_operator_hardening.sql` | Hardened `book_slot`, audit policy, and operational indexes. |
-| `supabase/migrations/20260505_tier1_rls_policy_performance.sql` | RLS policy performance cleanup. |
+| `supabase/migrations/20260505030000_tier1_operator_hardening.sql` | Hardened `book_slot`, audit policy, and operational indexes. |
+| `supabase/migrations/20260505040000_tier1_rls_policy_performance.sql` | RLS policy performance cleanup. |
 | `supabase/functions/_shared/http.ts` | Shared request-aware CORS/auth helper. |
 | `.github/workflows/ci.yml` | CI release gate. |
 

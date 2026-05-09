@@ -84,7 +84,7 @@ Indexes confirmed in-repo migrations as of 2026-05-07. Treat this as the working
 
 **Tier 2.5 idempotency** (`20260506155237`): six UNIQUE `client_request_id` indexes on `messages`, `notification_events`, `notification_deliveries`, `care_tasks`, `clinical_documents`, plus `tenant_profile_doctor_id_unique`.
 
-**Audit log** (`20260505_tier1_operator_hardening.sql`): `(actor_user_id)`, `(table_name, record_id)`, `(created_at DESC)`.
+**Audit log** (`20260505030000_tier1_operator_hardening.sql`): `(actor_user_id)`, `(table_name, record_id)`, `(created_at DESC)`.
 
 ### Real gaps (recommended additions)
 
@@ -479,8 +479,8 @@ Run weekly post-launch. Anything in the bottom of query 1 with `idx_scan = 0` af
 - `supabase/migrations/20260506150820_tier2_product_core_foundation.sql` (Tier 2 indexes, lines 1202–1232; RLS policies that drive index choices, lines 791–1200)
 - `supabase/migrations/20260506171000_backend_contract_query_path_indexes.sql` (encounter-tab path indexes)
 - `supabase/migrations/20260506155237_tier2_5_lifecycle_idempotency_hardening.sql` (UNIQUE idempotency keys)
-- `supabase/migrations/20260505_tier1_operator_hardening.sql` (audit-log indexes, line 153–155)
-- `supabase/migrations/20260503_secure_web_v1_foundation.sql` (audit_log table + write trigger, line 207–276)
+- `supabase/migrations/20260505030000_tier1_operator_hardening.sql` (audit-log indexes, line 153–155)
+- `supabase/migrations/20260503030000_secure_web_v1_foundation.sql` (audit_log table + write trigger, line 207–276)
 - `CLAUDE.md` — soft-delete rule (rule 3), domain status enums.
 - `TIER2_REVIEW.md` — 10-section senior architect review, P1/P2 ledger.
 

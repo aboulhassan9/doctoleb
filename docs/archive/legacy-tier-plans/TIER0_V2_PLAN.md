@@ -48,11 +48,11 @@ This was not only a code cleanup. It was a product and data-model correction. Se
 
 Historical migration:
 
-- `supabase/migrations/20260505_tier0_schema_alignment.sql`
+- `supabase/migrations/20260505010000_tier0_schema_alignment.sql`
 
 Corrective migration:
 
-- `supabase/migrations/20260505_tier0_v2_revert_schema_expansion.sql`
+- `supabase/migrations/20260505020000_tier0_v2_revert_schema_expansion.sql`
 
 The corrective migration removes accidental expansion columns such as:
 
