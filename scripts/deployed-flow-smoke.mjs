@@ -9,6 +9,7 @@ const {
   getMissingSecretNames,
   playwrightOutputDir,
   readSecret,
+  waitForExpectedPostLogin,
   writeJsonReport,
 } = await import('./lib/browser-smoke-helpers.mjs');
 
@@ -160,13 +161,7 @@ async function signIn(page, scenario) {
   await page.getByLabel(/^password$/i).fill(password, { timeout: 15_000 });
   await page.getByRole('button', { name: scenario.submitName }).click({ timeout: 15_000 });
 
-  if (scenario.expectedPath) {
-    await page.waitForURL((url) => url.pathname === scenario.expectedPath, { timeout: 45_000 });
-  }
-
-  if (scenario.expectedHeading) {
-    await page.getByRole('heading', { name: scenario.expectedHeading }).waitFor({ state: 'visible', timeout: 45_000 });
-  }
+  await waitForExpectedPostLogin(page, scenario);
 
   if (scenario.app === 'patient') {
     await clearPatientConsentIfPresent(page);
@@ -188,7 +183,25 @@ async function assertLogoutAndStorageCleanup(page, context) {
   }
 
   await page.waitForLoadState('domcontentloaded', { timeout: 10_000 }).catch(() => undefined);
-  await page.waitForTimeout(1000);
+  await page.waitForFunction(() => {
+    const findings = [];
+    const stores = [
+      ['localStorage', window.localStorage],
+      ['sessionStorage', window.sessionStorage],
+    ];
+
+    for (const [storageName, storage] of stores) {
+      for (let index = 0; index < storage.length; index += 1) {
+        const key = storage.key(index) || '';
+        const value = storage.getItem(key) || '';
+        if (/^sb-|supabase|auth|token/i.test(key) || /access_token|refresh_token|eyJhbGciOi/i.test(value)) {
+          findings.push(`${storageName}:${key}`);
+        }
+      }
+    }
+
+    return findings.length === 0;
+  }, null, { timeout: 10_000 }).catch(() => undefined);
 
   const authStorageKeys = await page.evaluate(() => {
     const findings = [];
@@ -220,7 +233,8 @@ async function verifyPatientFlow(page) {
   await clearPatientConsentIfPresent(page);
   await page.getByRole('heading', { name: /My Profile/i }).waitFor({ state: 'visible', timeout: 45_000 });
   await page.getByRole('button', { name: /Edit Profile/i }).click({ timeout: 15_000 });
-  await page.getByLabel(/First Name/i).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByRole('button', { name: /Save Changes/i }).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByText(/^First Name$/i).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByRole('button', { name: /^Cancel$/i }).click({ timeout: 15_000 });
 
   await page.goto(appUrl(URLS.patientLogin, '/patient-appointments'), { waitUntil: 'domcontentloaded', timeout: 45_000 });
@@ -273,12 +287,12 @@ async function verifyDoctorFlow(page) {
   await page.goto(appUrl(URLS.clinicOpsLogin, '/doctor-staff'), { waitUntil: 'domcontentloaded', timeout: 45_000 });
   await page.getByRole('heading', { name: /Staff Roster/i }).waitFor({ state: 'visible', timeout: 45_000 });
   await page.getByRole('button', { name: /Add Staff Member/i }).first().click({ timeout: 15_000 });
-  await page.getByText(/Add Staff Member/i).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByRole('heading', { name: /^Add Staff Member$/i }).waitFor({ state: 'visible', timeout: 15_000 });
 
   const staffEmail = `${smokeId}+staff@example.invalid`;
-  await page.getByLabel(/Full Name/i).fill(`QA Staff ${smokeId}`);
-  await page.getByLabel(/^Email$/i).fill(staffEmail);
-  await page.getByLabel(/^Phone$/i).fill('+96170000000');
+  await page.getByPlaceholder(/Sarah Johnson/i).fill(`QA Staff ${smokeId}`);
+  await page.getByPlaceholder(/user@example\.com/i).fill(staffEmail);
+  await page.getByPlaceholder(/\+961 70 123 456/i).fill('+96170000000');
 
   if (mutateStaff) {
     await page.getByRole('button', { name: /Send Invite/i }).click({ timeout: 15_000 });
@@ -309,13 +323,13 @@ async function verifySecretaryFlow(page) {
   await page.getByRole('button', { name: /Register New Patient/i }).click({ timeout: 15_000 });
   await page.getByRole('heading', { name: /Register New Patient/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByPlaceholder(/Johnathan Doe/i).fill(`QA Patient ${smokeId}`);
-  await page.getByPlaceholder(/\+1 \(555\) 000-0000/i).fill('+96171000000');
+  await page.getByPlaceholder(/\+1 \(555\) 000-0000/i).first().fill('+96171000000');
   await page.getByRole('button', { name: /^Cancel$/i }).click({ timeout: 15_000 });
 
   await page.goto(appUrl(URLS.clinicOpsLogin, '/secretary-booking'), { waitUntil: 'domcontentloaded', timeout: 45_000 });
   await page.getByRole('heading', { name: /Book Appointment/i }).waitFor({ state: 'visible', timeout: 45_000 });
   await page.getByRole('button', { name: /Create New Patient Profile/i }).click({ timeout: 15_000 });
-  await page.getByLabel(/Full Name/i).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.locator('input').nth(1).waitFor({ state: 'visible', timeout: 15_000 });
   await assertNoSensitiveBrowserText(page, 'secretary flow');
   await assertNoClinicalDraftBrowserStorage(page, 'secretary flow');
   await assertLogoutAndStorageCleanup(page, 'secretary flow');
@@ -332,14 +346,21 @@ async function verifyPredoctorFlow(page) {
 
 async function verifyControlPlaneFlow(page) {
   await page.getByRole('heading', { name: /Control plane/i }).waitFor({ state: 'visible', timeout: 45_000 });
-  await page.getByRole('heading', { name: /One-click tenant draft/i }).waitFor({ state: 'visible', timeout: 45_000 });
+  await page.getByRole('heading', { name: /Guided tenant launch/i }).waitFor({ state: 'visible', timeout: 45_000 });
+  await page.getByText(/Separate from current tenant editing/i).waitFor({ state: 'visible', timeout: 15_000 });
 
   const slug = smokeId.replace(/[^a-z0-9-]/g, '-').slice(0, 40);
-  await page.getByLabel(/^Slug$/i).fill(slug);
   await page.getByLabel(/Clinic name/i).fill(`QA Clinic ${slug}`);
+  await page.getByRole('textbox', { name: /Slug Used for future domains/i }).fill(slug);
+  await page.getByRole('button', { name: /Next step/i }).click({ timeout: 15_000 });
+  await page.getByRole('heading', { name: /First doctor/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByLabel(/First doctor admin/i).fill(`QA Doctor ${slug}`);
   await page.getByLabel(/First doctor email/i).fill(`${slug}+doctor@example.invalid`);
   await page.getByLabel(/First doctor phone/i).fill('+96172000000');
+  await page.getByRole('button', { name: /Next step/i }).click({ timeout: 15_000 });
+  await page.getByRole('heading', { name: /Hosting/i }).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByRole('button', { name: /Next step/i }).click({ timeout: 15_000 });
+  await page.getByRole('heading', { name: /Create tenant draft/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByText(`${slug}.doctoleb.com`).waitFor({ state: 'visible', timeout: 15_000 });
 
   if (mutateControlPlane) {

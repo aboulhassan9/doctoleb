@@ -9,6 +9,7 @@ const {
   getMissingSecretNames,
   playwrightOutputDir,
   readSecret,
+  waitForExpectedPostLogin,
   writeJsonReport,
 } = await import('./lib/browser-smoke-helpers.mjs');
 
@@ -121,13 +122,7 @@ async function verifyScenario(browser, scenario) {
     await page.getByLabel(/^password$/i).fill(password, { timeout: 15_000 });
     await page.getByRole('button', { name: scenario.submitName }).click({ timeout: 15_000 });
 
-    if (scenario.expectedPath) {
-      await page.waitForURL((url) => url.pathname === scenario.expectedPath, { timeout: 45_000 });
-    }
-
-    if (scenario.expectedHeading) {
-      await page.getByRole('heading', { name: scenario.expectedHeading }).waitFor({ state: 'visible', timeout: 45_000 });
-    }
+    await waitForExpectedPostLogin(page, scenario);
 
     if (scenario.name === 'patient-web-patient') {
       await verifyPatientBookingEntry(page);

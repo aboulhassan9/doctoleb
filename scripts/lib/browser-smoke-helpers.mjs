@@ -18,6 +18,56 @@ export function getMissingSecretNames(scenarios) {
     .filter(Boolean);
 }
 
+const loginFailurePattern = /invalid (?:login )?(?:credentials|email or password)|unable to sign in|authentication is already in progress|email not confirmed|user not found|missing configured smoke credentials/i;
+
+function describePostLoginExpectation(scenario) {
+  if (scenario.expectedPath) return `URL path ${scenario.expectedPath}`;
+  if (scenario.expectedHeading) return `heading ${String(scenario.expectedHeading)}`;
+  return 'configured post-login state';
+}
+
+function excerpt(value, maxLength = 600) {
+  const compact = String(value || '').replace(/\s+/g, ' ').trim();
+  if (compact.length <= maxLength) return compact;
+  return `${compact.slice(0, maxLength - 1)}…`;
+}
+
+async function visibleBodyText(page) {
+  return page.locator('body').innerText({ timeout: 3000 }).catch(() => '');
+}
+
+async function assertNoVisibleLoginFailure(page, scenario) {
+  const bodyText = await visibleBodyText(page);
+  const match = bodyText.match(loginFailurePattern);
+  if (match) {
+    throw new Error(`${scenario.name}: login failed before reaching ${describePostLoginExpectation(scenario)}. Visible error: ${excerpt(match[0], 160)}`);
+  }
+}
+
+export async function waitForExpectedPostLogin(page, scenario, { timeout = 45_000 } = {}) {
+  const startedAt = Date.now();
+  const expectation = describePostLoginExpectation(scenario);
+
+  while (Date.now() - startedAt < timeout) {
+    if (scenario.expectedPath) {
+      const currentUrl = new URL(page.url());
+      if (currentUrl.pathname === scenario.expectedPath) return;
+    }
+
+    if (scenario.expectedHeading) {
+      const heading = page.getByRole('heading', { name: scenario.expectedHeading }).first();
+      if (await heading.isVisible({ timeout: 500 }).catch(() => false)) return;
+    }
+
+    await assertNoVisibleLoginFailure(page, scenario);
+    await page.waitForTimeout(500);
+  }
+
+  const currentUrl = new URL(page.url());
+  const bodyText = await visibleBodyText(page);
+  throw new Error(`${scenario.name}: expected ${expectation} after login, but current path is ${currentUrl.pathname}. Visible page excerpt: ${excerpt(bodyText)}`);
+}
+
 export function isCriticalRequest(request) {
   return ['document', 'script', 'xhr', 'fetch'].includes(request.resourceType());
 }

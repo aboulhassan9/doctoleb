@@ -59,7 +59,7 @@ const APPS = Object.freeze([
   {
     app: 'clinic-ops',
     url: process.env.CLINIC_OPS_SMOKE_URL || 'https://doctoleb-clinic-ops.vercel.app/login',
-    title: /Clinic Portal/i,
+    title: /Clinic Operations|Clinic Portal/i,
     h1: 'Clinic Operations Portal',
     includeText: [
       'Sign in with your staff credentials',
