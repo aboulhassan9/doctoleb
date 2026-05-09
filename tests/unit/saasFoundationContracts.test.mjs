@@ -415,7 +415,9 @@ describe('SaaS foundation contracts', () => {
 
   it('control-plane console can select provider connections and render the provisioning step ledger', () => {
     const consoleScreen = read('apps/control-plane/src/components/ConsoleScreen.jsx');
-    const setupWorkspace = read('apps/control-plane/src/components/SetupWorkspace.jsx');
+    const tenantCreationWorkspace = read('apps/control-plane/src/components/TenantCreationWorkspace.jsx');
+    const tenantList = read('apps/control-plane/src/components/TenantList.jsx');
+    const tenantDetailHook = read('apps/control-plane/src/hooks/useTenantDetail.js');
     const workspaceTabs = read('apps/control-plane/src/components/ConsoleWorkspaceTabs.jsx');
     const provisioningPanel = read('apps/control-plane/src/components/ProvisioningPanel.jsx');
     const brandPreviewCard = read('apps/control-plane/src/components/BrandPreviewCard.jsx');
@@ -436,29 +438,41 @@ describe('SaaS foundation contracts', () => {
 
     assert.match(consoleScreen, /useProviderConnections/);
     assert.match(consoleScreen, /ProvisioningStepsPanel/);
-    assert.match(consoleScreen, /SetupWorkspace/);
+    assert.match(consoleScreen, /TenantCreationWorkspace/);
+    assert.match(consoleScreen, /workspaceMode/);
+    assert.match(consoleScreen, /setWorkspaceMode\('create'\)/);
+    assert.match(consoleScreen, /setWorkspaceMode\('tenant'\)/);
     assert.match(consoleScreen, /ConsoleWorkspaceTabs/);
     assert.match(consoleScreen, /TenantReadinessPanel/);
     assert.match(consoleScreen, /setActiveSection\('provisioning'\)/);
-    assert.match(consoleScreen, /sectionContextLabel = activeSection === 'setup' \? 'New tenant flow' : tenant\?\.slug/);
-    assert.match(consoleScreen, /tenantDetailId = activeSection === 'setup' \? null : selectedTenant\?\.id/);
+    assert.match(consoleScreen, /tenantDetailId = workspaceMode === 'tenant' \? selectedTenant\?\.id : null/);
     assert.match(consoleScreen, /useTenantDetail\(tenantDetailId\)/);
-    assert.match(consoleScreen, /Creation is separate from the selected tenant/);
-    assert.match(setupWorkspace, /SETUP_WORKSPACE_TABS/);
-    assert.match(setupWorkspace, /Create tenant/);
-    assert.match(setupWorkspace, /Provider accounts/);
-    assert.match(setupWorkspace, /activeSetupTab/);
-    assert.match(setupWorkspace, /New tenant draft/);
-    assert.match(setupWorkspace, /ProviderConnectionsPanel/);
-    assert.match(setupWorkspace, /ProvisioningPanel/);
+    assert.match(tenantDetailHook, /if \(!tenantId\)/);
+    assert.match(tenantDetailHook, /setTenantDetail\(null\)/);
+    assert.match(tenantDetailHook, /setError\(''\)/);
+    assert.doesNotMatch(consoleScreen, /activeSection === 'setup'/);
+    assert.doesNotMatch(consoleScreen, /sectionContextLabel/);
+    assert.match(tenantList, /\+ New tenant/);
+    assert.match(tenantList, /onCreateTenant/);
+    assert.match(tenantList, /isCreatingTenant/);
+    assert.match(tenantList, /Open tenant/);
+    assert.match(tenantCreationWorkspace, /New tenant setup/);
+    assert.match(tenantCreationWorkspace, /Back to selected tenant/);
+    assert.match(tenantCreationWorkspace, /CREATE_WORKSPACE_PANELS/);
+    assert.match(tenantCreationWorkspace, /Create tenant/);
+    assert.match(tenantCreationWorkspace, /Provider accounts/);
+    assert.match(tenantCreationWorkspace, /activePanel/);
+    assert.match(tenantCreationWorkspace, /ProviderConnectionsPanel/);
+    assert.match(tenantCreationWorkspace, /ProvisioningPanel/);
     assert.ok(
-      setupWorkspace.indexOf('<ProvisioningPanel') < setupWorkspace.indexOf('<ProviderConnectionsPanel'),
+      tenantCreationWorkspace.indexOf('<ProvisioningPanel') < tenantCreationWorkspace.indexOf('<ProviderConnectionsPanel'),
       'new tenant wizard should remain the default setup experience before optional provider-account setup',
     );
     assert.match(workspaceTabs, /CONTROL_PLANE_SECTIONS/);
     assert.match(workspaceTabs, /role="tablist"/);
     assert.match(workspaceTabs, /role="tab"/);
-    for (const section of ['setup', 'tenant', 'domains', 'provisioning', 'branding', 'features', 'audit']) {
+    assert.doesNotMatch(workspaceTabs, /id: 'setup'/);
+    for (const section of ['tenant', 'domains', 'provisioning', 'branding', 'features', 'audit']) {
       assert.match(workspaceTabs, new RegExp(`id: '${section}'`));
       assert.match(consoleScreen, new RegExp(`activeSection === '${section}'`));
     }

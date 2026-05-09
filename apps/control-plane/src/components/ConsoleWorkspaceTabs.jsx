@@ -1,11 +1,5 @@
 export const CONTROL_PLANE_SECTIONS = Object.freeze([
   {
-    id: 'setup',
-    label: 'Setup',
-    eyebrow: 'Create and connect',
-    description: 'Provider accounts and new tenant drafts.',
-  },
-  {
     id: 'tenant',
     label: 'Tenant',
     eyebrow: 'Core controls',
@@ -53,7 +47,7 @@ export default function ConsoleWorkspaceTabs({ activeSection, onSectionChange })
       aria-label="Control plane workspace sections"
       className="sticky top-[73px] z-20 border-b border-slate-200/70 bg-[#eef5f2]/95 py-3 backdrop-blur-xl"
     >
-      <div role="tablist" aria-label="Control plane sections" className="grid gap-2 sm:grid-cols-2 xl:grid-cols-7">
+      <div role="tablist" aria-label="Control plane sections" className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
         {CONTROL_PLANE_SECTIONS.map((section) => {
           const isActive = section.id === activeSection
 

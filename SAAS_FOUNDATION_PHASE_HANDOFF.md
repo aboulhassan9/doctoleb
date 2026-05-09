@@ -1365,3 +1365,31 @@ npm run lint
 npm run build:control-plane
 git diff --check
 ```
+
+---
+
+## 34. Separate New-Tenant Creation Workspace — 2026-05-09
+
+Closed the UX confusion where tenant creation looked like another selected-tenant configuration tab:
+
+- Removed `Setup` from `ConsoleWorkspaceTabs`; selected-tenant tabs are now only `Tenant`, `Domains`, `Provisioning`, `Branding`, `Features`, and `Audit`.
+- Added a primary `+ New tenant` action to the left tenant sidebar. Existing tenant rows remain explicitly labeled as open-tenant actions.
+- Added `workspaceMode='tenant' | 'create'` in `ConsoleScreen`, separate from `activeSection`, so tenant tab state cannot double as creation state.
+- Creation mode passes `tenantDetailId=null`, preventing selected-tenant detail loading while a new tenant draft is being prepared.
+- Added `TenantCreationWorkspace`, a separate creation-only surface with installer-style panels for `Create tenant` and optional `Provider accounts`.
+- Selecting any existing tenant exits creation mode and returns to selected-tenant configuration.
+- Successful tenant draft creation reloads tenants, selects the created tenant when available, returns to tenant mode, and opens the `Provisioning` tab.
+- Deleted the old `SetupWorkspace` component so creation cannot drift back into the tenant tab set.
+
+Design/architecture notes:
+
+- Tenant creation is not a WAI-ARIA tab in the selected-tenant workspace. Tabs represent one layered content set for the selected tenant; creation is a separate workspace mode.
+- React state ownership follows a single-source-of-truth model: `workspaceMode` owns create-vs-edit workspace selection, while `activeSection` owns only selected-tenant panels.
+- Provider account setup remains available, but only as a secondary panel inside the creation workspace, not as the default selected-tenant screen.
+- This is UI/state separation only. It does not add new privileged browser calls, service-role exposure, PHI fields, or DB mutations.
+
+Verification:
+
+```txt
+node --test tests/unit/saasFoundationContracts.test.mjs
+```

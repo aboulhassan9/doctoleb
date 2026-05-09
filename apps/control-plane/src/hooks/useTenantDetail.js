@@ -8,6 +8,7 @@ export function useTenantDetail(tenantId) {
   const reload = useCallback(async () => {
     if (!tenantId) {
       setTenantDetail(null)
+      setError('')
       return
     }
     const result = await controlPlaneApi.getTenant(tenantId)
