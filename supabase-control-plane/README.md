@@ -31,6 +31,7 @@ Domain readiness:
 - The SaaS DB, resolver API, frontend bootstrap, and system design are ready for that moment; public domain traffic is intentionally not ready yet.
 - Hostnames are normalized at the DB boundary (`lower(trim(hostname))`) and protected by a case-insensitive unique index, so mixed-case or whitespace variants cannot become duplicate tenant routes.
 - The live resolver is Edge Function version 2. It normalizes host input, validates the public response envelope, uses short success caching, and sends `no-store` for errors.
+- Browser traffic must use the `tenant-resolve` Edge Function. Direct `public.resolve_tenant(text,text)` RPC execution is revoked from `public`, `anon`, and `authenticated`; the Edge Function calls it with service-role access.
 - The live `admin-update-tenant` function is version 4 and delegates compound tenant/domain writes to `admin_update_tenant_atomic`, a service-role-only RPC that commits metadata updates and audit insertion atomically.
 
 ## Layout
@@ -113,6 +114,9 @@ supabase functions deploy tenant-resolve --no-verify-jwt
 supabase functions deploy admin-list-provider-connections
 supabase functions deploy admin-upsert-provider-connection
 supabase functions deploy admin-archive-provider-connection
+supabase functions deploy admin-run-provisioning-step
+supabase functions deploy admin-cancel-provisioning-job
+supabase functions deploy admin-compensate-provisioning-step
 
 # (Optional) tighten CORS to exact production origins once domains are live.
 supabase secrets set TENANT_RESOLVE_ALLOWED_ORIGINS="https://dev.doctoleb.com,https://dev.ops.doctoleb.com"
@@ -137,4 +141,6 @@ The control plane now has schema support for provider-flexible provisioning:
 - These rows store metadata and secret references only. Raw provider tokens, management API credentials, and tenant service-role keys stay server-side.
 - Provisioning jobs can link to selected provider connections and record step-level idempotency plus undo metadata.
 - Dedicated provider metadata Edge Functions now exist for list/upsert/archive. They reject raw token-shaped input, sanitize `secret_ref` out of responses, and use reversible archive semantics.
-- The current UI remains manual-assisted until dedicated provider authorization and automation-runner Edge Functions are built.
+- `admin-run-provisioning-step` advances the assisted path through provider readiness, operator-linked tenant project verification, migration readiness, tenant profile/app config seed, first doctor/admin seed, Vercel/free-alias routing verification, resolver smoke, and guarded activation.
+- `admin-cancel-provisioning-job` and `admin-compensate-provisioning-step` expose operator undo/cancel paths through service-role RPCs only. Browser code never writes provisioning ledger tables directly.
+- The current UI remains manual-assisted for external provider creation. Supabase Management API project creation and Vercel REST project/env/custom-domain mutation are deferred until provider credentials, cost/region/org selection, external resource IDs, and compensation rules are fully designed.

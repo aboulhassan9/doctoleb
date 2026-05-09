@@ -62,6 +62,17 @@ describe('SaaS activation contracts', () => {
     assert.match(source, /revoke execute on function public\.touch_updated_at\(\) from public, anon, authenticated/i);
   });
 
+  it('resolve_tenant direct RPC is private while tenant-resolve remains the public interface', () => {
+    const source = read('supabase-control-plane/migrations/00010000000019_control_plane_resolve_tenant_rpc_private.sql');
+    const resolver = read('supabase-control-plane/functions/tenant-resolve/index.ts');
+
+    assert.match(source, /revoke execute on function public\.resolve_tenant\(text, text\) from public, anon, authenticated/i);
+    assert.match(source, /grant execute on function public\.resolve_tenant\(text, text\) to service_role/i);
+    assert.match(source, /tenant-resolve edge function/i);
+    assert.match(resolver, /SERVICE-ROLE key to call resolve_tenant/);
+    assert.match(resolver, /verify_jwt=false|--no-verify-jwt/);
+  });
+
   it('tenant resolver edge function validates host and sets production headers', () => {
     const source = read('supabase-control-plane/functions/tenant-resolve/index.ts');
 

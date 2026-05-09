@@ -1,24 +1,34 @@
 import { useEffect, useState } from 'react';
 import { FEATURE_CATALOG } from '../data/saasCatalog';
+import {
+  buildManualEntitlementSyncPayload,
+  resolveEffectiveEntitlementState,
+  resolvePlanEntitlementState,
+} from '../lib/entitlementDrafts';
 import { controlPlaneApi } from '../lib/controlPlaneApi';
 import { PrimaryButton } from './ui';
 
-export default function EntitlementsPanel({ tenant, onSaved }) {
+export default function EntitlementsPanel({ tenant, planEntitlements = [], onSaved }) {
   const existing = tenant.tenant_entitlements || [];
   const [enabled, setEnabled] = useState({});
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const hasRuntimeConfig = Boolean(tenant.supabase_project_ref && tenant.supabase_url);
+  const planState = resolvePlanEntitlementState({
+    planCode: tenant.plan,
+    planEntitlements,
+    features: FEATURE_CATALOG,
+  });
 
   useEffect(() => {
-    const state = {};
-    for (const feature of FEATURE_CATALOG) {
-      const row = existing.find((item) => item.feature_code === feature.code && item.source === 'manual_override');
-      state[feature.code] = row ? row.is_enabled === true : false;
-    }
-    setEnabled(state);
+    setEnabled(resolveEffectiveEntitlementState({
+      planCode: tenant.plan,
+      planEntitlements,
+      tenantEntitlements: existing,
+      features: FEATURE_CATALOG,
+    }));
     setMessage('');
-  }, [tenant.id]);
+  }, [tenant.id, tenant.plan, planEntitlements]);
 
   async function sync() {
     if (!hasRuntimeConfig) {
@@ -27,16 +37,15 @@ export default function EntitlementsPanel({ tenant, onSaved }) {
     }
 
     setSaving(true);
-    const entitlements = FEATURE_CATALOG.map((feature) => ({
-      feature_code: feature.code,
-      source: 'manual_override',
-      is_enabled: enabled[feature.code] === true,
-      limits: {},
-      reason: 'Console toggle',
-    }));
-    const result = await controlPlaneApi.syncEntitlements({ tenantId: tenant.id, entitlements });
+    const payload = buildManualEntitlementSyncPayload({
+      desiredState: enabled,
+      planState,
+      tenantEntitlements: existing,
+      features: FEATURE_CATALOG,
+    });
+    const result = await controlPlaneApi.syncEntitlements({ tenantId: tenant.id, ...payload });
     setSaving(false);
-    setMessage(result.error || 'Entitlements saved and projected to feature flags.');
+    setMessage(result.error || 'Entitlements saved and projected to tenant feature flags.');
     if (!result.error) onSaved();
   }
 
@@ -56,6 +65,9 @@ export default function EntitlementsPanel({ tenant, onSaved }) {
             <span>
               <span className="block font-black">{feature.label}</span>
               <span className="block text-sm text-slate-500">{feature.description}</span>
+              <span className="mt-2 block text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+                {enabled[feature.code] === planState[feature.code] ? 'Plan default' : 'Manual override'}
+              </span>
             </span>
           </label>
         ))}

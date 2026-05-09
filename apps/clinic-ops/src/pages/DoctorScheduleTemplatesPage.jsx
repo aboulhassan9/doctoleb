@@ -59,7 +59,7 @@ export default function DoctorScheduleTemplatesPage() {
   const [form, setForm] = useState({ ...DEFAULT_TEMPLATE });
   const [saving, setSaving] = useState(false);
 
-  // Delete modal
+  // Deactivate modal
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -193,7 +193,7 @@ export default function DoctorScheduleTemplatesPage() {
     if (result.error) {
       showToast(result.error, 'error');
     } else {
-      showToast('Schedule template deleted.', 'success');
+      showToast('Schedule template deactivated.', 'success');
       setDeleteTarget(null);
       loadData();
     }
@@ -410,10 +410,10 @@ export default function DoctorScheduleTemplatesPage() {
                           )}
                           <button
                             onClick={() => setDeleteTarget(template)}
-                            title="Delete"
+                            title="Deactivate"
                             className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                           >
-                            <span className="material-symbols-outlined text-lg">delete</span>
+                            <span className="material-symbols-outlined text-lg">pause_circle</span>
                           </button>
                         </div>
                       </div>
@@ -554,22 +554,22 @@ export default function DoctorScheduleTemplatesPage() {
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation */}
+      {/* Deactivate Confirmation */}
       <AnimatePresence>
         {deleteTarget && (
           <Modal
             isOpen={!!deleteTarget}
             onClose={() => setDeleteTarget(null)}
-            title="Delete Schedule Template"
+            title="Deactivate Schedule Template"
           >
             <div className="p-1 space-y-4">
               <p className="text-sm text-slate-600">
-                Are you sure you want to delete the <strong>{WEEKDAYS[deleteTarget.weekday]}</strong> template
+                Are you sure you want to deactivate the <strong>{WEEKDAYS[deleteTarget.weekday]}</strong> template
                 ({formatTime(deleteTarget.start_time)} — {formatTime(deleteTarget.end_time)})?
               </p>
               <p className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg">
-                Future unbooked slots linked to this template will also be removed.
-                Templates with booked appointments cannot be deleted — deactivate them instead.
+                Future unbooked slots linked to this template will be made unavailable, not deleted.
+                Templates with booked appointments should stay preserved for history.
               </p>
               <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
                 <button
@@ -583,7 +583,7 @@ export default function DoctorScheduleTemplatesPage() {
                   disabled={deleting}
                   className="px-5 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 disabled:opacity-50 transition-all"
                 >
-                  {deleting ? 'Deleting…' : 'Delete Template'}
+                  {deleting ? 'Deactivating…' : 'Deactivate Template'}
                 </button>
               </div>
             </div>

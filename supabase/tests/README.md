@@ -1,14 +1,18 @@
 # Supabase Backend Contract Tests
 
 These tests are for a disposable Supabase branch or local database. They must
-not be run against the live development tenant unless the user explicitly asks
-for live diagnostic reads/writes and accepts the risk.
+not run SQL audit or pgTAP against the live development tenant.
 
 ## How To Run
 
 ```bash
 BACKEND_TEST_DATABASE_URL="postgresql://..." npm run test:backend-db-contract
 ```
+
+In GitHub Actions, the repository uses the free-plan-safe path: it starts a
+disposable local Supabase stack, runs `supabase db reset --local --no-seed`, and
+exports the local `DB_URL`, `API_URL`, and `ANON_KEY` from `supabase status -o
+env` before executing this runner with `BACKEND_DB_CONTRACT_REQUIRED=true`.
 
 The runner loads `.env.test.local` / `.env.local` / `.env` automatically. If
 `BACKEND_TEST_SUPABASE_URL` and `BACKEND_TEST_SUPABASE_ANON_KEY` are not set, it
@@ -22,9 +26,10 @@ The runner executes:
   `BACKEND_TEST_SUPABASE_ANON_KEY` are also set.
 
 If `BACKEND_TEST_DATABASE_URL` is absent, `npm run verify` skips these DB-backed
-checks by design. Set `BACKEND_TEST_ALLOW_LIVE=true` only when intentionally
-running read-only anon RPC exposure diagnostics against the live development
-tenant; SQL audit and pgTAP should still use a disposable branch/local DB URL.
+checks by design unless `BACKEND_DB_CONTRACT_REQUIRED=true`. Set
+`BACKEND_TEST_ALLOW_LIVE_ANON_RPC=true` only when intentionally running read-only
+anon RPC exposure diagnostics against the live development tenant; SQL audit and
+pgTAP must still use a disposable branch/local DB URL.
 
 ## RLS Coverage
 

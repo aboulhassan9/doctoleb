@@ -1,6 +1,14 @@
 import { supabase } from '@/lib/supabase';
 import { STAFF_MEMBER_SELECT_FIELDS } from '@/lib/selects';
-import { parseWithSchema, staffMemberSchema } from '@/schemas';
+import {
+  parseWithSchema,
+  staffInviteReissueSchema,
+  staffInviteSchema,
+  staffInviteResendSchema,
+  staffMemberDisableSchema,
+  staffMemberReactivateSchema,
+  staffMemberUpdateSchema,
+} from '@/schemas';
 import { apiCall, apiPaged } from './api';
 
 function validationError(error) {
@@ -51,21 +59,27 @@ export const staffService = {
     );
   },
 
-  async create(payload) {
-    const parsed = parse(staffMemberSchema, payload);
+  async invite(payload) {
+    const parsed = parse(staffInviteSchema, payload);
     if (parsed.error) return validationError(parsed.error);
 
-    return apiCall(
-      supabase
-        .from('staff_members')
-        .insert([parsed.data])
-        .select(STAFF_MEMBER_SELECT_FIELDS)
-        .single()
-    );
+    const { data, error } = await supabase.functions.invoke('staff-invite', {
+      body: parsed.data,
+    });
+
+    if (error) {
+      return { data: null, error: error.message || 'Failed to invite staff member.' };
+    }
+
+    if (data?.error) {
+      return { data: null, error: data.error };
+    }
+
+    return { data: data?.data || null, error: null };
   },
 
   async update(id, payload) {
-    const parsed = parse(staffMemberSchema.partial(), payload);
+    const parsed = parse(staffMemberUpdateSchema, payload);
     if (parsed.error) return validationError(parsed.error);
 
     return apiCall(
@@ -79,9 +93,88 @@ export const staffService = {
   },
 
   async deactivate(id) {
-    return this.update(id, {
-      is_active: false,
-      invite_status: 'disabled',
+    const parsed = parse(staffMemberDisableSchema, {
+      staff_member_id: id,
     });
+    if (parsed.error) return validationError(parsed.error);
+
+    const { data, error } = await supabase.functions.invoke('staff-member-disable', {
+      body: parsed.data,
+    });
+
+    if (error) {
+      return { data: null, error: error.message || 'Failed to disable staff member.' };
+    }
+
+    if (data?.error) {
+      return { data: null, error: data.error };
+    }
+
+    return { data: data?.data || null, error: null };
+  },
+
+  async resendInvite(id, clientRequestId) {
+    const parsed = parse(staffInviteResendSchema, {
+      staff_member_id: id,
+      client_request_id: clientRequestId,
+    });
+    if (parsed.error) return validationError(parsed.error);
+
+    const { data, error } = await supabase.functions.invoke('staff-invite-resend', {
+      body: parsed.data,
+    });
+
+    if (error) {
+      return { data: null, error: error.message || 'Failed to resend staff invite.' };
+    }
+
+    if (data?.error) {
+      return { data: null, error: data.error };
+    }
+
+    return { data: data?.data || null, error: null };
+  },
+
+  async reissueInvite(id, clientRequestId) {
+    const parsed = parse(staffInviteReissueSchema, {
+      staff_member_id: id,
+      client_request_id: clientRequestId,
+    });
+    if (parsed.error) return validationError(parsed.error);
+
+    const { data, error } = await supabase.functions.invoke('staff-invite-reissue', {
+      body: parsed.data,
+    });
+
+    if (error) {
+      return { data: null, error: error.message || 'Failed to reissue staff invite.' };
+    }
+
+    if (data?.error) {
+      return { data: null, error: data.error };
+    }
+
+    return { data: data?.data || null, error: null };
+  },
+
+  async reactivate(id) {
+    const parsed = parse(staffMemberReactivateSchema, {
+      staff_member_id: id,
+    });
+    if (parsed.error) return validationError(parsed.error);
+
+    const { data, error } = await supabase.functions.invoke('staff-member-reactivate', {
+      body: parsed.data,
+    });
+
+    if (error) {
+      return { data: null, error: error.message || 'Failed to reactivate staff member.' };
+    }
+
+    if (data?.error) {
+      return { data: null, error: data.error };
+    }
+
+    return { data: data?.data || null, error: null };
   },
 };

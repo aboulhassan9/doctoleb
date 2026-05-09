@@ -19,6 +19,7 @@ Create a zero-PHI SaaS control plane with:
 - Role-aware `super_admins` using `owner`, `operator`, `support`, and `billing_admin`.
 - Admin Edge Functions for tenant list/detail/update, branding sync, entitlement sync, and provisioning jobs.
 - A shared entitlement module that can be used by UI and server code to enforce feature access.
+- Tenant web apps use the shared feature-visibility map to hide gated navigation and fail closed on gated routes when a feature flag is missing, disabled, or unreadable.
 - A doctor-facing landing page on the marketing surface, separate from tenant patient portal boot.
 
 The control plane stores SaaS metadata only. Branding and feature state are projected into each tenant database because tenant apps already read `tenant_profile`, `tenant_app_config`, and `feature_flags`. This avoids duplicating runtime app config as a second truth source.
@@ -27,6 +28,7 @@ The control plane stores SaaS metadata only. Branding and feature state are proj
 - Super-admins can manage tenants without seeing PHI.
 - Real `doctoleb.com` and tenant domains stay `pending` until DNS and SSL are verified.
 - Billing can map to Stripe later through feature codes and plan entitlements without changing tenant app feature checks.
+- `messaging` is projected as a `public` feature flag because both patient and staff surfaces must read the same feature code. Staff-only features such as staff accounts, insurance billing, advanced reports, AI, BI, custom branding, and custom domain are projected as `staff` audience flags.
 - Tenant config sync requires server-side tenant credentials in Edge Function secrets named `TENANT_SERVICE_ROLE_KEY_<TENANT_PROJECT_REF>`.
 - V1 provisioning is manual-assisted through checklists; Supabase Management API automation is deferred until the checklist flow is stable.
 

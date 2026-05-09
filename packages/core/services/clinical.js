@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import {
   CARE_TASK_SELECT_FIELDS,
   CLINICAL_DOCUMENT_SELECT_FIELDS,
+  CLINICAL_NOTE_DRAFT_SELECT_FIELDS,
   CLINICAL_NOTE_SELECT_FIELDS,
   DIAGNOSIS_SELECT_FIELDS,
   DOCUMENT_ATTACHMENT_SELECT_FIELDS,
@@ -14,6 +15,9 @@ import {
   careTaskSchema,
   careTaskUpdateSchema,
   clinicalDocumentSchema,
+  clinicalNoteDraftDiscardSchema,
+  clinicalNoteDraftGetSchema,
+  clinicalNoteDraftSaveSchema,
   clinicalNoteSchema,
   clinicalOrderSchema,
   diagnosisSchema,
@@ -216,6 +220,49 @@ export const clinicalService = {
     }
 
     return apiPaged(query, { page, pageSize });
+  },
+
+  async getNoteDraft(encounterId) {
+    const parsed = parse(clinicalNoteDraftGetSchema, { encounter_id: encounterId });
+    if (parsed.error) return validationError(parsed.error);
+
+    return apiCall(
+      supabase
+        .from('clinical_note_drafts')
+        .select(CLINICAL_NOTE_DRAFT_SELECT_FIELDS)
+        .eq('encounter_id', parsed.data.encounter_id)
+        .eq('status', 'active')
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle()
+    );
+  },
+
+  async saveNoteDraft(payload) {
+    const parsed = parse(clinicalNoteDraftSaveSchema, payload);
+    if (parsed.error) return validationError(parsed.error);
+
+    return apiCall(
+      supabase
+        .rpc('save_clinical_note_draft', {
+          p_encounter: parsed.data.encounter_id,
+          p_note_type: parsed.data.note_type,
+          p_content: parsed.data.content,
+        })
+    );
+  },
+
+  async discardNoteDraft(payload) {
+    const parsed = parse(clinicalNoteDraftDiscardSchema, payload);
+    if (parsed.error) return validationError(parsed.error);
+
+    return apiCall(
+      supabase
+        .rpc('discard_clinical_note_draft', {
+          p_encounter: parsed.data.encounter_id,
+          p_status: parsed.data.status,
+          p_converted_note: parsed.data.converted_note_id ?? null,
+        })
+    );
   },
 
   async addDiagnosis(payload) {

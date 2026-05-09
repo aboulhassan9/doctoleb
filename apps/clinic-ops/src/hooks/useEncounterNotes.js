@@ -12,7 +12,7 @@ import { logError } from '@/lib/logger';
  *   loading: boolean,
  *   error: string|null,
  *   isSaving: boolean,
- *   addNote: (payload: object) => Promise<boolean>,
+ *   addNote: (payload: object) => Promise<{ success: boolean, note: object|null }>,
  *   refresh: () => Promise<void>,
  * }}
  */
@@ -57,12 +57,12 @@ export function useEncounterNotes(encounterId) {
 
       showToast('Note added.', 'success');
       await fetch();
-      return true;
+      return { success: true, note: data };
     } catch (err) {
       const msg = err?.message || 'Failed to add note';
       logError('useEncounterNotes.addNote', err);
       showToast(msg, 'error');
-      return false;
+      return { success: false, note: null };
     } finally {
       setIsSaving(false);
     }

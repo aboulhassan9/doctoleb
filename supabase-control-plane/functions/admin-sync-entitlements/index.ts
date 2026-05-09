@@ -15,25 +15,25 @@ const FEATURE_META: Record<string, { name: string; description: string; audience
   messaging: {
     name: 'Messaging',
     description: 'Clinic and patient secure messaging surfaces.',
-    audience: 'staff',
+    audience: 'public',
     targetRoles: ['doctor', 'secretary', 'predoctor', 'patient'],
   },
   custom_branding: {
     name: 'Custom branding',
     description: 'Tenant logo, color, and public app theming.',
-    audience: 'admin',
+    audience: 'staff',
     targetRoles: ['admin', 'doctor'],
   },
   custom_domain: {
     name: 'Custom domain',
     description: 'Clinic-owned web domain mapping.',
-    audience: 'admin',
+    audience: 'staff',
     targetRoles: ['admin', 'doctor'],
   },
   staff_accounts: {
     name: 'Staff accounts',
     description: 'Additional clinic operations seats.',
-    audience: 'admin',
+    audience: 'staff',
     targetRoles: ['admin', 'doctor'],
   },
   insurance_billing: {
@@ -97,6 +97,18 @@ function normalizeEntitlement(row: unknown, tenantId: string) {
   }
 }
 
+function normalizeResetFeatureCodes(value: unknown, protectedCodes: Set<string>) {
+  if (!Array.isArray(value)) return []
+
+  const codes = new Set<string>()
+  for (const item of value) {
+    const code = normalizeFeatureCode(item)
+    if (FEATURE_META[code] && !protectedCodes.has(code)) codes.add(code)
+  }
+
+  return [...codes]
+}
+
 function applyResolved(map: Record<string, Record<string, unknown>>, row: Record<string, unknown>, source: string) {
   const featureCode = normalizeFeatureCode(row.feature_code)
   if (!FEATURE_META[featureCode]) return
@@ -140,6 +152,8 @@ Deno.serve(async (req) => {
   const entitlementRows = Array.isArray(body.entitlements)
     ? body.entitlements.map((row) => normalizeEntitlement(row, tenantId)).filter(Boolean)
     : []
+  const entitlementFeatureCodes = new Set(entitlementRows.map((row) => row?.feature_code).filter((code): code is string => typeof code === 'string'))
+  const resetFeatureCodes = normalizeResetFeatureCodes(body.resetFeatureCodes, entitlementFeatureCodes)
 
   if (!tenant.supabase_project_ref || !tenant.supabase_url) {
     await auditEvent(context.client, {
@@ -148,7 +162,7 @@ Deno.serve(async (req) => {
       actorId: context.admin.id,
       metadata: {
         reason: 'tenant_runtime_not_configured',
-        changedCount: entitlementRows.length,
+        changedCount: entitlementRows.length + resetFeatureCodes.length,
       },
     })
     return errorResponse('TENANT_RUNTIME_NOT_CONFIGURED', 409, cors)
@@ -160,6 +174,17 @@ Deno.serve(async (req) => {
       .upsert(entitlementRows, { onConflict: 'tenant_id,feature_code,source' })
 
     if (error) return errorResponse('TENANT_ENTITLEMENT_SAVE_FAILED', 500, cors)
+  }
+
+  if (resetFeatureCodes.length > 0) {
+    const { error } = await context.client
+      .from('tenant_entitlements')
+      .delete()
+      .eq('tenant_id', tenantId)
+      .eq('source', 'manual_override')
+      .in('feature_code', resetFeatureCodes)
+
+    if (error) return errorResponse('TENANT_ENTITLEMENT_RESET_FAILED', 500, cors)
   }
 
   const [{ data: planEntitlements }, { data: tenantEntitlements }] = await Promise.all([
@@ -230,7 +255,8 @@ Deno.serve(async (req) => {
     actorId: context.admin.id,
     metadata: {
       featureCount: featureFlagRows.length,
-      changedCount: entitlementRows.length,
+      changedCount: entitlementRows.length + resetFeatureCodes.length,
+      resetCount: resetFeatureCodes.length,
     },
   })
 

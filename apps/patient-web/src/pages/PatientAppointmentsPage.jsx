@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { AppointmentCancelInlineConfirm } from '@ui/components/appointments/AppointmentCancelInlineConfirm';
 import { logError } from '@/lib/logger';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { appointmentService } from '@/services/appointments';
+import { doctorService } from '@/services/doctors';
 import { slotService } from '@/services/slots';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_STEPS, normalizeAppointments } from '@/lib/appointments';
+import { getErrorMessage } from '@/lib/errors';
+import {
+    canLoadPatientBookingSlots,
+    normalizeBookingDoctorOptions,
+    resolveInitialBookingDoctorId,
+} from '@/lib/patientAppointmentBooking';
 import { formatClinicDate, formatClinicTime, isFutureClinicDateTime, normalizeTimeValue } from '@/lib/time';
 import { getHomeRouteForRole } from '@/lib/routes';
 
@@ -15,47 +23,84 @@ export default function PatientAppointmentsPage() {
     const { user, logout } = useAuth();
     const { showToast } = useToast();
     const [appointments, setAppointments] = useState([]);
+    const [doctors, setDoctors] = useState([]);
+    const [doctorsLoading, setDoctorsLoading] = useState(false);
     const [availableSlots, setAvailableSlots] = useState([]);
+    const [selectedDoctorId, setSelectedDoctorId] = useState('');
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [reason, setReason] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState('upcoming');
     const [cancelConfirmId, setCancelConfirmId] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
 
     useEffect(() => {
         fetchAppointments();
     }, [user?.id]);
 
     useEffect(() => {
-        if (selectedDate) {
-            setSelectedSlot(null);
+        fetchBookingDoctors();
+    }, [user?.doctor_id]);
+
+    useEffect(() => {
+        setSelectedSlot(null);
+
+        if (canLoadPatientBookingSlots({ selectedDoctorId, selectedDate })) {
             fetchAvailableSlots();
+        } else {
+            setAvailableSlots([]);
         }
-    }, [selectedDate]);
+    }, [selectedDoctorId, selectedDate]);
 
     async function fetchAppointments() {
         try {
             const { data, error } = await appointmentService.getByPatientId(user?.patient_id);
-            if (!error && data) {
-                setAppointments(normalizeAppointments(data || []));
+            if (error) {
+                showToast(getErrorMessage(error, 'Failed to load appointments'), 'error');
+                return;
             }
+
+            setAppointments(normalizeAppointments(data || []));
         } catch (err) {
             showToast('Failed to load appointments', 'error');
         }
     }
 
-    async function fetchAvailableSlots() {
+    async function fetchBookingDoctors() {
         try {
-            if (!user?.doctor_id) {
-                setAvailableSlots([]);
-                showToast('Doctor schedule is not ready yet. Please refresh or contact the clinic.', 'error');
+            setDoctorsLoading(true);
+            const { data, error } = await doctorService.getAll({ page: 1, pageSize: 100 });
+            if (error) {
+                setDoctors([]);
+                showToast(getErrorMessage(error, 'Failed to load doctors for booking'), 'error');
                 return;
             }
 
-            const { data: slots, error } = await slotService.getAvailableSlots(user.doctor_id, selectedDate);
+            const nextDoctors = data || [];
+            setDoctors(nextDoctors);
+            setSelectedDoctorId((current) => current || resolveInitialBookingDoctorId({
+                sessionDoctorId: user?.doctor_id,
+                doctors: nextDoctors,
+            }));
+        } catch (err) {
+            logError('Error fetching booking doctors:', err);
+            showToast('Failed to load doctors for booking', 'error');
+        } finally {
+            setDoctorsLoading(false);
+        }
+    }
+
+    async function fetchAvailableSlots() {
+        try {
+            if (!canLoadPatientBookingSlots({ selectedDoctorId, selectedDate })) {
+                setAvailableSlots([]);
+                return;
+            }
+
+            const { data: slots, error } = await slotService.getAvailableSlots(selectedDoctorId, selectedDate);
             if (error) {
-                showToast('Failed to load available slots', 'error');
+                showToast(getErrorMessage(error, 'Failed to load available slots'), 'error');
                 setAvailableSlots([]);
                 return;
             }
@@ -68,7 +113,7 @@ export default function PatientAppointmentsPage() {
 
     const handleBookAppointment = async (e) => {
         e.preventDefault();
-        if (!selectedDate || !selectedSlot?.id || !reason.trim()) {
+        if (!selectedDoctorId || !selectedDate || !selectedSlot?.id || !reason.trim()) {
             showToast('Please fill all fields', 'error');
             return;
         }
@@ -91,7 +136,7 @@ export default function PatientAppointmentsPage() {
                 setReason('');
                 setActiveTab('upcoming');
             } else {
-                showToast(error || 'Failed to book appointment', 'error');
+                showToast(getErrorMessage(error, 'Failed to book appointment'), 'error');
             }
         } catch (err) {
             logError('Error booking appointment:', err);
@@ -101,21 +146,27 @@ export default function PatientAppointmentsPage() {
         }
     };
 
-    const handleCancelAppointment = async (appointmentId) => {
+    const handleCancelAppointment = async (appointmentId, reason) => {
+        if (!reason?.trim()) {
+            showToast('Please add a cancellation reason', 'error');
+            return;
+        }
+
         try {
             setSubmitting(true);
-            const { error } = await appointmentService.cancel(appointmentId);
+            const { error } = await appointmentService.cancel(appointmentId, reason.trim());
             if (!error) {
                 await fetchAppointments();
                 showToast('Appointment cancelled', 'success');
             } else {
-                showToast('Failed to cancel appointment', 'error');
+                showToast(getErrorMessage(error, 'Failed to cancel appointment'), 'error');
             }
         } catch (err) {
             logError('Error cancelling appointment:', err);
         } finally {
             setSubmitting(false);
             setCancelConfirmId(null);
+            setCancelReason('');
         }
     };
 
@@ -143,6 +194,7 @@ export default function PatientAppointmentsPage() {
 
     const upcomingAppointments = appointments.filter(a => a.status !== 'cancelled' && isFutureClinicDateTime(a.scheduled_at));
     const pastAppointments = appointments.filter(a => a.status === 'cancelled' || !isFutureClinicDateTime(a.scheduled_at));
+    const doctorOptions = normalizeBookingDoctorOptions(doctors);
 
     const getMinDate = () => {
         const tomorrow = new Date();
@@ -245,33 +297,22 @@ export default function PatientAppointmentsPage() {
                                                 <StatusTimeline status={apt.status || 'scheduled'} />
                                             </div>
                                             <div className="flex flex-col items-end gap-2 shrink-0">
-                                                {cancelConfirmId === apt.id ? (
-                                                    <div className="flex flex-col items-end gap-1">
-                                                        <p className="text-xs text-slate-600 font-medium">Cancel this appointment?</p>
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() => setCancelConfirmId(null)}
-                                                                className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
-                                                            >
-                                                                Keep
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleCancelAppointment(apt.id)}
-                                                                disabled={submitting}
-                                                                className="px-3 py-1.5 text-xs font-bold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-all disabled:opacity-50"
-                                                            >
-                                                                Yes, Cancel
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => setCancelConfirmId(apt.id)}
-                                                        className="px-3 py-1.5 text-xs font-medium text-red-500 border border-red-200 hover:bg-red-50 rounded-lg transition-all"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                )}
+                                                <AppointmentCancelInlineConfirm
+                                                    appointmentId={apt.id}
+                                                    isConfirming={cancelConfirmId === apt.id}
+                                                    reason={cancelConfirmId === apt.id ? cancelReason : ''}
+                                                    submitting={submitting}
+                                                    onOpen={(id) => {
+                                                        setCancelConfirmId(id);
+                                                        setCancelReason('');
+                                                    }}
+                                                    onKeep={() => {
+                                                        setCancelConfirmId(null);
+                                                        setCancelReason('');
+                                                    }}
+                                                    onReasonChange={setCancelReason}
+                                                    onConfirm={handleCancelAppointment}
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -344,20 +385,50 @@ export default function PatientAppointmentsPage() {
                         <h2 className="text-xl font-bold text-slate-900 mb-6">Book an Appointment</h2>
                         <form onSubmit={handleBookAppointment} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label htmlFor="patient-booking-doctor" className="block text-sm font-semibold text-slate-700 mb-2">
+                                    Doctor
+                                </label>
+                                <select
+                                    id="patient-booking-doctor"
+                                    value={selectedDoctorId}
+                                    onChange={(e) => {
+                                        setSelectedDoctorId(e.target.value);
+                                        setSelectedSlot(null);
+                                        setAvailableSlots([]);
+                                    }}
+                                    required
+                                    disabled={submitting || doctorsLoading || doctorOptions.length === 0}
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:bg-slate-100 disabled:text-slate-400"
+                                >
+                                    <option value="">{doctorsLoading ? 'Loading doctors...' : 'Select a doctor'}</option>
+                                    {doctorOptions.map((doctor) => (
+                                        <option key={doctor.id} value={doctor.id}>
+                                            {doctor.label}{doctor.specialization ? ` - ${doctor.specialization}` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                                {!doctorsLoading && doctorOptions.length === 0 ? (
+                                    <p className="mt-2 text-sm text-red-500">Online booking is not ready yet. Please contact the clinic.</p>
+                                ) : null}
+                            </div>
+
+                            <div>
+                                <label htmlFor="patient-booking-date" className="block text-sm font-semibold text-slate-700 mb-2">
                                     Appointment Date
                                 </label>
                                 <input
+                                    id="patient-booking-date"
                                     type="date"
                                     value={selectedDate}
                                     onChange={(e) => setSelectedDate(e.target.value)}
                                     min={getMinDate()}
                                     required
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    disabled={!selectedDoctorId || submitting}
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:bg-slate-100 disabled:text-slate-400"
                                 />
                             </div>
 
-                            {selectedDate && availableSlots.length > 0 && (
+                            {selectedDoctorId && selectedDate && availableSlots.length > 0 && (
                                 <div>
                                     <label className="block text-sm font-semibold text-slate-700 mb-2">
                                         Available Time Slots
@@ -381,11 +452,18 @@ export default function PatientAppointmentsPage() {
                                 </div>
                             )}
 
+                            {selectedDoctorId && selectedDate && availableSlots.length === 0 ? (
+                                <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                                    No available slots for this doctor on the selected date.
+                                </p>
+                            ) : null}
+
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                <label htmlFor="patient-booking-reason" className="block text-sm font-semibold text-slate-700 mb-2">
                                     Reason for Visit
                                 </label>
                                 <textarea
+                                    id="patient-booking-reason"
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
                                     placeholder="Describe your symptoms or reason for the appointment..."
@@ -397,7 +475,7 @@ export default function PatientAppointmentsPage() {
 
                             <button
                                 type="submit"
-                                disabled={submitting || !selectedDate || !selectedSlot?.id || !reason}
+                                disabled={submitting || !selectedDoctorId || !selectedDate || !selectedSlot?.id || !reason.trim()}
                                 className="w-full py-3 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 disabled:bg-slate-300 transition-all flex items-center justify-center gap-2"
                             >
                                 {submitting ? (

@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkEdgeRateLimit } from './rateLimit.ts'
 
 export const SERVICE_ROLE = 'server-only'
 
@@ -19,31 +20,44 @@ export type SuperAdminContext = {
   }
 }
 
-const ALLOWED_ORIGINS_ENV = Deno.env.get('CONTROL_PLANE_ALLOWED_ORIGINS') ?? '*'
-const ALLOWED_ORIGINS = ALLOWED_ORIGINS_ENV
+const DEFAULT_CONTROL_PLANE_ALLOWED_ORIGINS = [
+  'https://doctoleb-control-plane.vercel.app',
+  'http://localhost:3003',
+  'http://127.0.0.1:3003',
+]
+
+const ALLOWED_ORIGINS_ENV = Deno.env.get('CONTROL_PLANE_ALLOWED_ORIGINS')
+const ALLOWED_ORIGINS = (ALLOWED_ORIGINS_ENV ?? DEFAULT_CONTROL_PLANE_ALLOWED_ORIGINS.join(','))
   .split(',')
   .map((origin) => origin.trim())
-  .filter(Boolean)
+  .filter((origin) => origin && origin !== '*')
+
+function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) return true
+  return ALLOWED_ORIGINS.includes(origin)
+}
 
 export function corsHeaders(origin: string | null): Record<string, string> {
-  let allow = '*'
-  if (!ALLOWED_ORIGINS.includes('*')) {
-    allow = origin && ALLOWED_ORIGINS.includes(origin) ? origin : (ALLOWED_ORIGINS[0] ?? '')
-  }
+  const allowedOrigin = origin
+    ? (isOriginAllowed(origin) ? origin : '')
+    : (ALLOWED_ORIGINS[0] ?? '')
 
-  return {
-    'Access-Control-Allow-Origin': allow,
+  const headers: Record<string, string> = {
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
     'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-client-info',
     'Access-Control-Max-Age': '86400',
     'Vary': 'Origin',
   }
+
+  if (allowedOrigin) headers['Access-Control-Allow-Origin'] = allowedOrigin
+  return headers
 }
 
 export function jsonResponse(
   body: unknown,
   status = 200,
   cors: Record<string, string> = {},
+  extraHeaders: Record<string, string> = {},
 ): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -54,6 +68,7 @@ export function jsonResponse(
       'X-Content-Type-Options': 'nosniff',
       'Referrer-Policy': 'no-referrer',
       'X-Robots-Tag': 'noindex',
+      ...extraHeaders,
     },
   })
 }
@@ -63,16 +78,22 @@ export function errorResponse(
   status: number,
   cors: Record<string, string>,
   details: Record<string, unknown> = {},
+  extraHeaders: Record<string, string> = {},
 ): Response {
-  return jsonResponse({ data: null, error: code, details }, status, cors)
+  return jsonResponse({ data: null, error: code, details }, status, cors, extraHeaders)
 }
 
 export function preflight(req: Request): Response | null {
   if (req.method !== 'OPTIONS') return null
+  const origin = req.headers.get('origin')
+  if (!isOriginAllowed(origin)) {
+    return errorResponse('ORIGIN_NOT_ALLOWED', 403, corsHeaders(origin))
+  }
+
   return new Response(null, {
     status: 204,
     headers: {
-      ...corsHeaders(req.headers.get('origin')),
+      ...corsHeaders(origin),
       'Cache-Control': 'public, max-age=86400',
       'X-Content-Type-Options': 'nosniff',
     },
@@ -99,10 +120,28 @@ function roleAllowed(role: SuperAdminRole, allowedRoles: SuperAdminRole[]) {
   return allowedRoles.includes(role)
 }
 
+function rejectDisallowedOrigin(req: Request): Response | null {
+  const origin = req.headers.get('origin')
+  if (isOriginAllowed(origin)) return null
+  return errorResponse('ORIGIN_NOT_ALLOWED', 403, corsHeaders(origin))
+}
+
+function routeNameFromRequest(req: Request): string {
+  try {
+    const pathname = new URL(req.url).pathname
+    return pathname.split('/').filter(Boolean).at(-1) ?? 'control_plane_admin'
+  } catch (_error) {
+    return 'control_plane_admin'
+  }
+}
+
 export async function requireSuperAdmin(
   req: Request,
   allowedRoles: SuperAdminRole[] = [],
 ): Promise<{ data: SuperAdminContext | null; response: Response | null }> {
+  const originResponse = rejectDisallowedOrigin(req)
+  if (originResponse) return { data: null, response: originResponse }
+
   const cors = corsHeaders(req.headers.get('origin'))
   const token = bearerToken(req)
   if (!token) {
@@ -129,6 +168,20 @@ export async function requireSuperAdmin(
 
   if (!roleAllowed(admin.role, allowedRoles)) {
     return { data: null, response: errorResponse('INSUFFICIENT_ROLE', 403, cors) }
+  }
+
+  const rateLimit = await checkEdgeRateLimit(client, {
+    req,
+    route: routeNameFromRequest(req),
+    actorId: user.id,
+    limit: 60,
+    windowSeconds: 60,
+  })
+  if (!rateLimit.allowed) {
+    return {
+      data: null,
+      response: errorResponse('RATE_LIMITED', rateLimit.status, cors, rateLimit.details, rateLimit.headers),
+    }
   }
 
   return {

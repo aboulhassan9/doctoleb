@@ -150,24 +150,17 @@ export const scheduleService = {
         };
       }
 
-      const { error: deleteSlotError } = await apiCall(
+      const { error: deactivateSlotError } = await apiCall(
         supabase
           .from('secretary_slots')
-          .delete()
+          .update({ is_active: false })
           .in('id', slotIds)
       );
 
-      if (deleteSlotError) return { data: null, error: deleteSlotError };
+      if (deactivateSlotError) return { data: null, error: deactivateSlotError };
     }
 
-    return apiCall(
-      supabase
-        .from('doctor_schedule_templates')
-        .delete()
-        .eq('id', id)
-        .select(DOCTOR_SCHEDULE_TEMPLATE_SELECT_FIELDS)
-        .single()
-    );
+    return this.deactivateTemplate(id);
   },
 
   async getSlotsForTemplate(templateId, { page = 1, pageSize = 100 } = {}) {

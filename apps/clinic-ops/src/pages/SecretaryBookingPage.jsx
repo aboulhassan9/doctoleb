@@ -7,6 +7,7 @@ import { slotService } from '@/services/slots';
 import { patientService } from '@/services/patients';
 import { appointmentService } from '@/services/appointments';
 import { catalogService } from '@/services/catalogs';
+import { getErrorMessage } from '@/lib/errors';
 
 function formatTime(t) {
   if (!t) return '';
@@ -61,7 +62,7 @@ export default function SecretaryBookingPage() {
     setSearchLoading(true);
     const { data, error } = await patientService.search(searchQuery);
     setSearchLoading(false);
-    if (error) { showToast('Search failed', 'error'); return; }
+    if (error) { showToast(getErrorMessage(error, 'Search failed'), 'error'); return; }
     setPatients(data || []);
   };
 
@@ -80,7 +81,7 @@ export default function SecretaryBookingPage() {
 
     const { data, error } = await slotService.getAvailableSlots(user.doctor_id, date);
     setSlotsLoading(false);
-    if (error) { showToast('Failed to load slots', 'error'); return; }
+    if (error) { showToast(getErrorMessage(error, 'Failed to load slots'), 'error'); return; }
     setAvailableSlots(data || []);
   };
 
@@ -91,7 +92,7 @@ export default function SecretaryBookingPage() {
       showToast('Name and phone are required', 'error'); return;
     }
     const { data, error } = await patientService.createWalkIn({ ...newPatient, created_by: user.id });
-    if (error) { showToast('Failed to create patient: ' + error.message, 'error'); return; }
+    if (error) { showToast(`Failed to create patient: ${getErrorMessage(error, 'Unknown patient creation error')}`, 'error'); return; }
     setSelectedPatient(data);
     setShowNewPatientForm(false);
     setStep(2);
@@ -115,12 +116,13 @@ export default function SecretaryBookingPage() {
     });
     setBooking(false);
     if (error) {
-      if (error?.includes?.('no longer available')) {
+      const message = getErrorMessage(error, 'Booking failed');
+      if (message.includes('no longer available')) {
         showToast('This slot was just taken. Please choose another.', 'error');
         loadSlots(selectedDate);
         setSelectedSlot(null);
       } else {
-        showToast('Booking failed: ' + error, 'error');
+        showToast(`Booking failed: ${message}`, 'error');
       }
       return;
     }

@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBrand } from '@/contexts/BrandContext';
+import { filterNavigationItemsByEntitlements } from '@core/lib/featureVisibility';
+import { useEntitlements } from '@core/hooks/features/useEntitlements';
 
 /**
  * Sidebar configuration per role.
@@ -76,8 +78,10 @@ function SidebarInner({ role, isMobile = false }) {
   const { isCollapsed, toggleSidebar, closeMobile } = useSidebar();
   const { user, logout } = useAuth();
   const { displayName: brandName } = useBrand();
+  const { entitlements } = useEntitlements({ audience: 'staff' });
 
   const config = ROLE_CONFIG[role] || ROLE_CONFIG.secretary;
+  const visibleMenuItems = filterNavigationItemsByEntitlements(config.menuItems, entitlements);
   const resolvedBrandLabel = config.brandLabel || (config.brandIcon ? brandName : null);
   const resolvedBrandSub = config.brandSub || 'Clinic Operations';
   const expanded = isMobile || !isCollapsed;
@@ -146,7 +150,7 @@ function SidebarInner({ role, isMobile = false }) {
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-4 space-y-1">
-        {config.menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
           <motion.button
             key={item.path}
             onClick={() => handleNav(item.path)}

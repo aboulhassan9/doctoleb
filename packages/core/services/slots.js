@@ -129,7 +129,7 @@ export const slotService = {
     );
   },
 
-  /** Delete a single slot */
+  /** Deactivate a single unbooked slot so the action can be reversed later. */
   async deleteSlot(slotId) {
     const { data: appointments, error } = await apiCall(
       supabase
@@ -145,11 +145,16 @@ export const slotService = {
     }
 
     return apiCall(
-      supabase.from('secretary_slots').delete().eq('id', slotId)
+      supabase
+        .from('secretary_slots')
+        .update({ is_active: false })
+        .eq('id', slotId)
+        .select(SECRETARY_SLOT_SELECT_FIELDS)
+        .single()
     );
   },
 
-  /** Delete an entire recurrence group */
+  /** Deactivate an entire unbooked recurrence group so the action can be reversed later. */
   async deleteGroup(groupId) {
     const { data: slots, error: slotError } = await apiCall(
       supabase
@@ -177,7 +182,11 @@ export const slotService = {
     }
 
     return apiCall(
-      supabase.from('secretary_slots').delete().eq('recurrence_group_id', groupId)
+      supabase
+        .from('secretary_slots')
+        .update({ is_active: false })
+        .eq('recurrence_group_id', groupId)
+        .select(SECRETARY_SLOT_SELECT_FIELDS)
     );
   },
 };

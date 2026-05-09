@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import ProtectedRoute, { AuthRedirect } from '@ui/components/ProtectedRoute';
+import FeatureProtectedRoute from '@ui/components/FeatureProtectedRoute';
+import { ENTITLEMENT_FEATURES } from '@core/lib/entitlements';
 import { ToastProvider } from '@ui/contexts/ToastContext';
 import { ThemeProvider } from '@ui/contexts/ThemeContext';
 import { SidebarProvider } from '@ui/contexts/SidebarContext';
@@ -61,7 +63,7 @@ function TenantPortalShell() {
                       <Route path="/patient-appointments" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientAppointmentsPage /></ProtectedRoute>} />
                       <Route path="/patient-dashboard" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientDashboardPage /></ProtectedRoute>} />
                       <Route path="/patient-history" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientMedicalHistoryPage /></ProtectedRoute>} />
-                      <Route path="/patient-messages" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientMessagesPage /></ProtectedRoute>} />
+                      <Route path="/patient-messages" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.messaging} audience="patient"><PatientMessagesPage /></FeatureProtectedRoute></ProtectedRoute>} />
 
                       <Route path="*" element={<NotFoundPage />} />
                     </Routes>

@@ -3,7 +3,7 @@ import { apiCall, apiPaged } from './api';
 import { APPOINTMENT_SELECT_FIELDS } from '@/lib/selects';
 import { normalizeAppointment } from '@/lib/appointments';
 import { assertTransition } from '@/lib/stateMachines';
-import { appointmentBookingSchema, parseWithSchema } from '@/schemas';
+import { appointmentBookingSchema, appointmentCancelSchema, parseWithSchema } from '@/schemas';
 import { bookSlot } from './slots';
 import { notificationCoreService } from './notificationCore';
 
@@ -207,24 +207,36 @@ export const appointmentService = {
   },
 
   async cancel(id, reason = null) {
-    const { data: existingAppointment, error } = await this.getById(id);
-    if (error || !existingAppointment) return { data: null, error: error || 'Appointment not found' };
-
-    try {
-      assertTransition('appointment', existingAppointment.status, 'cancelled');
-    } catch (transitionError) {
-      return { data: null, error: transitionError.message };
+    const { data: payload, error: validationError } = parseWithSchema(appointmentCancelSchema, {
+      appointmentId: id,
+      reason,
+    });
+    if (validationError) {
+      return { data: null, error: validationError };
     }
 
-    const nextNotes = [existingAppointment?.notes, reason].filter(Boolean).join('\n\n');
-
-    return apiCall(
-      supabase
-        .from('appointments')
-        .update({ status: 'cancelled', notes: nextNotes || existingAppointment?.notes || null })
-        .eq('id', id)
-        .select(APPOINTMENT_SELECT_FIELDS)
+    const { error: cancellationError } = await apiCall(
+      supabase.rpc('cancel_appointment', {
+        appointment_id: payload.appointmentId,
+        cancellation_reason: payload.reason,
+      })
     );
+    if (cancellationError) {
+      return { data: null, error: cancellationError };
+    }
+
+    const { data: cancelledAppointment, error: fetchError } = await this.getById(payload.appointmentId);
+    if (fetchError || !cancelledAppointment) {
+      return {
+        data: { id: payload.appointmentId, status: 'cancelled' },
+        error: null,
+      };
+    }
+
+    return {
+      data: normalizeAppointment(cancelledAppointment),
+      error: null,
+    };
   },
 
   async markCompleted(id) {

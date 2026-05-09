@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { AppointmentCancelInlineConfirm } from '@ui/components/appointments/AppointmentCancelInlineConfirm';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 
 import { appointmentService } from '@/services/appointments';
 import { doctorService } from '@/services/doctors';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { normalizeAppointments } from '@/lib/appointments';
+import { getErrorMessage } from '@/lib/errors';
 import { formatClinicTime, isSameClinicDay, parseClinicDateTime } from '@/lib/time';
 
 const HOURS = ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'];
@@ -22,7 +25,12 @@ export default function DoctorAppointmentsPage() {
     const [monthlyDays, setMonthlyDays] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [cancelConfirmId, setCancelConfirmId] = useState(null);
+    const [cancelReason, setCancelReason] = useState('');
+    const [cancellingId, setCancellingId] = useState(null);
     const { user } = useAuth();
+    const { showToast } = useToast();
     
     const doctorUser = user ? {
         name: `${user.first_name || ''} ${user.last_name || ''}`,
@@ -124,7 +132,7 @@ export default function DoctorAppointmentsPage() {
             const { data, error } = await appointmentService.getByDoctorId(doctorId);
             if (!isMounted) return;
             if (error) {
-                setLoadError(error.message || 'Unable to load appointments.');
+                setLoadError(getErrorMessage(error, 'Unable to load appointments.'));
                 applyAppointments([]);
                 return;
             }
@@ -163,7 +171,36 @@ export default function DoctorAppointmentsPage() {
             isMounted = false;
             if (sub) sub.unsubscribe();
         };
-    }, [currentDate, user?.id]);
+    }, [currentDate, user?.id, refreshKey]);
+
+    const closeCancelConfirmation = () => {
+        setCancelConfirmId(null);
+        setCancelReason('');
+    };
+
+    const handleCancelAppointment = async (appointmentId, reason) => {
+        if (!reason?.trim()) {
+            showToast('Please add a cancellation reason', 'error');
+            return;
+        }
+
+        try {
+            setCancellingId(appointmentId);
+            const { error } = await appointmentService.cancel(appointmentId, reason.trim());
+            if (error) {
+                showToast(getErrorMessage(error, 'Failed to cancel appointment'), 'error');
+                return;
+            }
+
+            showToast('Appointment cancelled', 'success');
+            closeCancelConfirmation();
+            setRefreshKey((current) => current + 1);
+        } catch (error) {
+            showToast(getErrorMessage(error, 'Failed to cancel appointment'), 'error');
+        } finally {
+            setCancellingId(null);
+        }
+    };
 
     const getAvatarColor = (name) => {
         const colors = {
@@ -342,15 +379,32 @@ export default function DoctorAppointmentsPage() {
                                                             <span className="text-[10px] text-slate-400 mt-1">{appt.room}</span>
                                                         </div>
                                                         {!appt.cancelled && (
-                                                            <motion.button
-                                                                whileHover={{ scale: 1.02 }}
-                                                                whileTap={{ scale: 0.98 }}
-                                                                onClick={() => navigate(`/doctor-encounter/${appt.id}`)}
-                                                                className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm hover:brightness-110 transition-all mr-2"
-                                                            >
-                                                                <span className="material-symbols-outlined text-sm">play_arrow</span>
-                                                                Start Encounter
-                                                            </motion.button>
+                                                            <>
+                                                                <AppointmentCancelInlineConfirm
+                                                                    appointmentId={appt.id}
+                                                                    isConfirming={cancelConfirmId === appt.id}
+                                                                    reason={cancelConfirmId === appt.id ? cancelReason : ''}
+                                                                    submitting={cancellingId === appt.id}
+                                                                    onOpen={(id) => {
+                                                                        setCancelConfirmId(id);
+                                                                        setCancelReason('');
+                                                                    }}
+                                                                    onKeep={closeCancelConfirmation}
+                                                                    onReasonChange={setCancelReason}
+                                                                    onConfirm={handleCancelAppointment}
+                                                                    triggerLabel="Cancel"
+                                                                    className="hidden md:inline-flex items-center rounded-lg border border-red-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-red-500 transition-all hover:bg-red-50"
+                                                                />
+                                                                <motion.button
+                                                                    whileHover={{ scale: 1.02 }}
+                                                                    whileTap={{ scale: 0.98 }}
+                                                                    onClick={() => navigate(`/doctor-encounter/${appt.id}`)}
+                                                                    className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm hover:brightness-110 transition-all mr-2"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-sm">play_arrow</span>
+                                                                    Start Encounter
+                                                                </motion.button>
+                                                            </>
                                                         )}
                                                         <span className={`material-symbols-outlined ${appt.cancelled ? 'text-slate-300' : 'text-slate-300 group-hover:text-primary'} transition-colors`}>
                                                             {appt.cancelled ? 'block' : 'chevron_right'}

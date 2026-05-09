@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { getErrorMessage } from '@/lib/errors';
 
 /* ═══════════════════════════════════════════════════════════
    Constants & pure utilities
@@ -212,7 +213,7 @@ function QuickAddModal({ onClose, onSuccess }) {
         setQSaving(false);
 
         if (error) {
-            showToast(error.message || 'Failed to register patient', 'error');
+            showToast(getErrorMessage(error, 'Failed to register patient'), 'error');
             return;
         }
 

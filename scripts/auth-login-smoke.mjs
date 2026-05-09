@@ -1,11 +1,17 @@
 process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY ||= '1';
 
 const { chromium } = await import('@playwright/test');
-const fs = await import('node:fs/promises');
 const path = await import('node:path');
+const {
+  assertNoRuntimeIssues,
+  collectRuntimeIssues,
+  ensurePlaywrightOutputDir,
+  getMissingSecretNames,
+  playwrightOutputDir,
+  readSecret,
+  writeJsonReport,
+} = await import('./lib/browser-smoke-helpers.mjs');
 
-const root = path.resolve(import.meta.dirname, '..');
-const outputDir = path.join(root, 'output', 'playwright');
 const required = process.env.AUTH_SMOKE_REQUIRED === 'true';
 
 const scenarios = Object.freeze([
@@ -51,37 +57,47 @@ const scenarios = Object.freeze([
   },
 ]);
 
-function readSecret(name) {
-  const value = process.env[name];
-  return typeof value === 'string' && value.trim() ? value.trim() : null;
-}
+async function verifyPatientBookingEntry(page) {
+  const appointmentsUrl = new URL('/patient-appointments', page.url()).toString();
+  await page.goto(appointmentsUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+  await page.getByRole('heading', { name: 'Appointments', exact: true }).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByRole('button', { name: /book new/i }).click({ timeout: 15_000 });
 
-function getMissingSecretNames() {
-  return scenarios.flatMap((scenario) => [
-    readSecret(scenario.emailEnv) ? null : scenario.emailEnv,
-    readSecret(scenario.passwordEnv) ? null : scenario.passwordEnv,
-  ]).filter(Boolean);
-}
+  const doctorSelect = page.getByLabel('Doctor');
+  await doctorSelect.waitFor({ state: 'visible', timeout: 15_000 });
+  await page.waitForFunction(() => {
+    const select = document.querySelector('#patient-booking-doctor');
+    return select && Array.from(select.options).some((option) => option.value);
+  }, { timeout: 20_000 });
 
-function isCriticalRequest(request) {
-  return ['document', 'script', 'xhr', 'fetch'].includes(request.resourceType());
-}
+  let doctorState = await doctorSelect.evaluate((select) => ({
+    value: select.value,
+    options: Array.from(select.options).map((option) => option.textContent?.trim() || ''),
+  }));
 
-function isIgnoredRequestUrl(url) {
-  return /\/favicon\.(ico|png|svg)(?:\?|$)/i.test(url);
-}
+  if (!doctorState.value) {
+    await doctorSelect.selectOption({ index: 1 });
+    doctorState = await doctorSelect.evaluate((select) => ({
+      value: select.value,
+      options: Array.from(select.options).map((option) => option.textContent?.trim() || ''),
+    }));
+  }
 
-function isExpectedRequestAbort(request) {
-  return request.failure()?.errorText === 'net::ERR_ABORTED';
-}
+  if (!doctorState.value) {
+    throw new Error('patient booking doctor selector did not select a doctor');
+  }
 
-function summarizeRuntimeIssues({ consoleErrors, pageErrors, failedRequests, badResponses }) {
-  const parts = [];
-  if (consoleErrors.length > 0) parts.push(`console=${consoleErrors[0]}`);
-  if (pageErrors.length > 0) parts.push(`page=${pageErrors[0]}`);
-  if (failedRequests.length > 0) parts.push(`request=${failedRequests[0].method} ${failedRequests[0].url} ${failedRequests[0].failure}`);
-  if (badResponses.length > 0) parts.push(`response=${badResponses[0].status} ${badResponses[0].method} ${badResponses[0].url}`);
-  return parts.join(' | ');
+  if (doctorState.options.some((option) => {
+    const parts = option.split(' - ');
+    return parts.some((part, index) => index > 0 && part === parts[index - 1]);
+  })) {
+    throw new Error('patient booking doctor selector contains duplicated label text');
+  }
+
+  const dateDisabled = await page.getByLabel('Appointment Date').evaluate((input) => input.disabled);
+  if (dateDisabled) {
+    throw new Error('patient booking appointment date stayed disabled after doctor selection');
+  }
 }
 
 async function verifyScenario(browser, scenario) {
@@ -97,41 +113,7 @@ async function verifyScenario(browser, scenario) {
     ignoreHTTPSErrors: false,
   });
   const page = await context.newPage();
-  const consoleErrors = [];
-  const pageErrors = [];
-  const failedRequests = [];
-  const badResponses = [];
-
-  page.on('console', (message) => {
-    if (message.type() === 'error') consoleErrors.push(message.text());
-  });
-
-  page.on('pageerror', (error) => {
-    pageErrors.push(error.message);
-  });
-
-  page.on('requestfailed', (request) => {
-    if (isCriticalRequest(request) && !isIgnoredRequestUrl(request.url()) && !isExpectedRequestAbort(request)) {
-      failedRequests.push({
-        url: request.url(),
-        method: request.method(),
-        resourceType: request.resourceType(),
-        failure: request.failure()?.errorText || 'unknown',
-      });
-    }
-  });
-
-  page.on('response', (response) => {
-    const request = response.request();
-    if (response.status() >= 400 && isCriticalRequest(request) && !isIgnoredRequestUrl(response.url())) {
-      badResponses.push({
-        url: response.url(),
-        method: request.method(),
-        resourceType: request.resourceType(),
-        status: response.status(),
-      });
-    }
-  });
+  const runtimeIssues = collectRuntimeIssues(page);
 
   try {
     await page.goto(scenario.url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
@@ -147,18 +129,15 @@ async function verifyScenario(browser, scenario) {
       await page.getByRole('heading', { name: scenario.expectedHeading }).waitFor({ state: 'visible', timeout: 45_000 });
     }
 
-    await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => undefined);
-
-    if (consoleErrors.length > 0 || pageErrors.length > 0 || failedRequests.length > 0 || badResponses.length > 0) {
-      throw new Error(`${scenario.name}: browser runtime errors detected. ${summarizeRuntimeIssues({
-        consoleErrors,
-        pageErrors,
-        failedRequests,
-        badResponses,
-      })}`);
+    if (scenario.name === 'patient-web-patient') {
+      await verifyPatientBookingEntry(page);
     }
 
-    const screenshotPath = path.join(outputDir, `${scenario.name}-auth.png`);
+    await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => undefined);
+
+    assertNoRuntimeIssues(runtimeIssues, scenario.name);
+
+    const screenshotPath = path.join(playwrightOutputDir, `${scenario.name}-auth.png`);
     await page.screenshot({ path: screenshotPath, fullPage: true, timeout: 20_000 });
 
     return {
@@ -173,7 +152,7 @@ async function verifyScenario(browser, scenario) {
 }
 
 async function main() {
-  const missingSecretNames = getMissingSecretNames();
+  const missingSecretNames = getMissingSecretNames(scenarios);
   if (missingSecretNames.length > 0) {
     const message = `Missing auth smoke environment variables: ${missingSecretNames.join(', ')}`;
     if (required) {
@@ -185,7 +164,7 @@ async function main() {
     return;
   }
 
-  await fs.mkdir(outputDir, { recursive: true });
+  await ensurePlaywrightOutputDir();
 
   const browser = await chromium.launch({ headless: true });
   const report = [];
@@ -211,15 +190,7 @@ async function main() {
     await browser.close();
   }
 
-  const reportPath = path.join(outputDir, 'deployed-auth-login-qa-report.json');
-  await fs.writeFile(
-    reportPath,
-    JSON.stringify({
-      generatedAt: new Date().toISOString(),
-      report,
-      failures,
-    }, null, 2),
-  );
+  const reportPath = await writeJsonReport('deployed-auth-login-qa-report.json', { report, failures });
 
   if (failures.length > 0) {
     console.error(`Auth smoke failed. Report: ${reportPath}`);

@@ -103,6 +103,10 @@ Known implemented foundation:
 - Patient-web tenant landing exists in `apps/patient-web/src/pages/LandingPage.jsx`; it is the clinic/doctor-branded patient surface, not DoctoLeb SaaS buyer marketing.
 - Admin Edge Functions exist under `supabase-control-plane/functions`.
 - ADR-005 records the SaaS admin, entitlements, and manual provisioning direction.
+- Provider-aware tenant draft creation exists with an undoable provisioning step ledger.
+- `admin-run-provisioning-step` can safely advance provider readiness, operator-linked Supabase project verification, tenant migration readiness, tenant profile/app-config seed, Vercel/free-alias routing verification, runtime config checks, resolver smoke, and tenant activation.
+- Tenant DB migration `20260509022000_tenant_profile_seed_service.sql` makes tenant profile seeding doctor-independent through service-role-only `service_seed_tenant_profile(text,text,jsonb)`.
+- First doctor/admin provisioning now has a real input-backed flow: the control plane captures first doctor/admin contact metadata, the tenant runner sends a tenant Auth invite, and tenant DB migration `20260509023000_first_doctor_admin_seed_service.sql` creates/links the domain `users`/`doctors` rows through service-role-only `service_seed_first_doctor_admin(uuid,text,text,text,uuid)`.
 
 Known quality risks to address before adding more features:
 
@@ -111,6 +115,8 @@ Known quality risks to address before adding more features:
 - `packages/ui/components/consent/PatientConsentGate.jsx` is also large enough to deserve extraction.
 - `apps/clinic-ops/src/pages/CreateBillPage.jsx` contains mock/demo-style coverage logic and must be reviewed or gated before production.
 - There are many changed/untracked files, including generated `dist/` output and Vite cache paths. Confirm what is intentionally tracked before committing.
+- Automatic external Supabase project creation is not complete. Do not mark that step done without external resource IDs, cost/region/org controls, idempotency, audit events, and compensation/undo behavior.
+- Completed-step compensation now exists for safe provisioning steps and activation rollback, but first-doctor/admin completed onboarding still needs a separate operator-facing disable/cancel workflow.
 
 ---
 
@@ -1133,4 +1139,178 @@ npm run build:patient
 npm run build:ops
 npm run build:control-plane
 Playwright MCP local browser snapshots for patient landing, patient login labels, and ops login labels
+```
+
+---
+
+## 28. Provider-Aware Draft And Step Ledger Slice — 2026-05-09
+
+Implemented the next provisioning slice so creating a future tenant from the SaaS console is no longer only a loose checklist:
+
+- Added migration `00010000000015_control_plane_provider_aware_draft_steps.sql`.
+- Added service-role helper `admin_seed_tenant_provisioning_steps(...)`.
+- Extended `admin_create_tenant_draft_atomic(...)` with `p_supabase_connection_id`, `p_vercel_connection_id`, and `p_automation_mode`.
+- `admin-create-provisioning-job` now validates and forwards provider connection ids plus automation mode.
+- `admin-get-tenant` now returns `provisioningSteps`.
+- Added provider connection metadata UI in `ProviderConnectionsPanel`.
+- Added provider-aware draft creation controls in `ProvisioningPanel`.
+- Added `ProvisioningStepsPanel` so the SaaS admin sees readiness, status, attempts, and undo strategy per step.
+- Applied the migration to live control-plane project `xouqxgwccewvbtkqming`.
+- Redeployed `admin-create-provisioning-job` and `admin-get-tenant`.
+
+The seeded step plan is:
+
+- `tenant_draft_created`
+- `provider_connections_selected`
+- `create_supabase_project`
+- `apply_tenant_migrations`
+- `seed_tenant_profile`
+- `seed_first_doctor_admin`
+- `configure_vercel_project`
+- `store_runtime_config`
+- `smoke_test_resolver`
+- `activate_tenant`
+
+Boundary still enforced:
+
+- No provider API calls are made from the browser.
+- No raw Supabase/Vercel tokens are stored in browser-visible rows.
+- External project creation is still deferred until `admin-run-provisioning-step`.
+- The new flow works without buying `doctoleb.com`; pending real domains remain pending and Vercel/shared aliases stay usable.
+
+Verification:
+
+```txt
+node --test tests/unit/controlPlaneDraftHelpers.test.mjs tests/unit/saasFoundationContracts.test.mjs
+npm run build:control-plane
+npm run verify
+npm run build:patient
+npm run build:ops
+npm run build:control-plane
+npm run audit:bundle-secrets  # patient, ops, control-plane build outputs
+Live rollback Supabase smoke: assisted draft created 10 provisioning steps, then rolled back
+Local Playwright smoke: control-plane unauthenticated shell loaded without runtime errors
+```
+
+---
+
+## 29. Provisioning Step Runner Slice — 2026-05-09
+
+Implemented the first real server-owned runner for the tenant provisioning ledger:
+
+- Added migration `00010000000016_control_plane_provisioning_step_runner.sql`.
+- Added private service-role RPC `admin_mark_provisioning_step_running(...)`.
+- Added private service-role RPC `admin_record_provisioning_step_result_atomic(...)`.
+- Added Edge Function `admin-run-provisioning-step` with JWT verification and super-admin `owner`/`operator` authorization.
+- Added `controlPlaneApi.runProvisioningStep(...)`.
+- Added a `Run safe check` action to `ProvisioningStepsPanel`.
+- Wired `ConsoleScreen` to call the runner and reload canonical tenant/step state.
+- Tightened provider connection validation so automation-enabled connections must use uppercase Edge Function secret names that the runner can actually resolve.
+- Applied the migration to live control-plane project `xouqxgwccewvbtkqming`.
+- Deployed `admin-run-provisioning-step` to live control-plane project `xouqxgwccewvbtkqming`.
+- Redeployed provider connection admin functions after tightening shared server validation.
+
+What the runner can do in this slice:
+
+- `provider_connections_selected`: verifies selected provider connection metadata and checks the referenced server-side credential against the provider API for assisted/automatic jobs, or skips cleanly for manual jobs with no provider connection.
+- `create_supabase_project`: verifies an operator-linked existing tenant project ref, URL, and anon key in runtime config. It still does not create a new paid/free Supabase project through the Management API.
+- `apply_tenant_migrations`: verifies the linked tenant DB is reachable through a tenant service-role secret and has required runtime tables.
+- `seed_tenant_profile`: seeds tenant profile/app config through service-role-only tenant RPCs.
+- `seed_first_doctor_admin`: invites and seeds the first doctor/admin through tenant Auth plus service-role-only tenant RPCs, with Auth-user compensation on seed failure.
+- `configure_vercel_project`: verifies active patient and ops routable hosts using localhost, Vercel/free aliases, or verified custom domains. Unpurchased `doctoleb.com` rows remain pending.
+- `store_runtime_config`: verifies runtime resolver metadata is present after `admin-set-tenant-runtime-config`.
+- `smoke_test_resolver`: calls the control-plane resolver path and accepts expected pre-activation inactive resolver results.
+- `activate_tenant`: activates only after runtime config and active patient/ops routable domains exist, then performs public resolver smoke for both surfaces.
+
+What it intentionally refuses:
+
+- Supabase Management API project creation.
+- Vercel REST API project/domain/env mutation.
+- Any fake completion of missing external/provider state.
+
+External mutations must not be marked complete by placeholder logic. Future automatic provider work must store safe external resource IDs and define compensation for each created resource.
+
+Verification:
+
+```txt
+node --test tests/unit/saasFoundationContracts.test.mjs
+npm run lint
+npm run build:control-plane
+Live Supabase migration apply: control_plane_provisioning_step_runner
+Live rollback Supabase smoke: temporary job step moved running -> skipped, wrote two audit events, then rolled back
+Live Edge Function list: admin-run-provisioning-step ACTIVE with verify_jwt=true
+Live unauthenticated POST: 401 fail-closed
+Live CORS preflight: allowed console origin returns 204, unknown origin returns ORIGIN_NOT_ALLOWED
+Provider credential verification helper: Supabase Management API and Vercel REST API credentials are checked server-side from Edge Function secret references only
+```
+
+Next implementation slice:
+
+- Add rate limiting and safe telemetry for public/high-value Edge Functions.
+- Add authenticated browser E2E proof for provisioning, staff invite acceptance, and patient/staff first-band flows.
+
+---
+
+## 30. No-Domain Provisioning Activation And Compensation Slice — 2026-05-09
+
+Implemented the next assisted tenant creation band without requiring `doctoleb.com`:
+
+- Extended `admin-run-provisioning-step` for `configure_vercel_project`, `smoke_test_resolver`, and `activate_tenant`.
+- Added public resolver smoke before and after activation while preserving the resolver response contract.
+- Allowed localhost and Vercel/free aliases as routable active domains; real `doctoleb.com` rows can stay `pending` until DNS/SSL ownership is verified.
+- Added migration `00010000000018_control_plane_provisioning_cancel_compensate.sql`.
+- Added service-role-only RPC `admin_cancel_provisioning_job_atomic(...)`.
+- Added service-role-only RPC `admin_mark_provisioning_step_rolled_back_atomic(...)`.
+- Added Edge Function `admin-cancel-provisioning-job` with JWT verification and super-admin `owner`/`operator` authorization.
+- Added Edge Function `admin-compensate-provisioning-step` with JWT verification and super-admin `owner`/`operator` authorization.
+- Added `controlPlaneApi.cancelProvisioningJob(...)` and `controlPlaneApi.compensateProvisioningStep(...)`.
+- Added console actions for `Cancel provisioning job` and `Compensate` without exposing raw table mutations to React.
+- Fixed `StatusPill` so both `value` and existing `status` callers render the canonical status text.
+- Applied the migration to live control-plane project `xouqxgwccewvbtkqming` through Supabase MCP.
+- Deployed `admin-cancel-provisioning-job`, `admin-compensate-provisioning-step`, and the updated `admin-run-provisioning-step` to live control-plane project `xouqxgwccewvbtkqming`.
+
+Important safety behavior:
+
+- Cancellation is soft-state only. It cancels the job and non-terminal steps, records an audit event, and moves draft/provisioning tenants back to inactive; it refuses already-active tenants.
+- Compensation only runs on succeeded steps with `undo_strategy <> 'none'`.
+- Activation compensation sets the tenant back to `inactive` through `admin_update_tenant_atomic`.
+- Verification-only steps with undo metadata can be marked rolled back with no external deletion.
+- Steps that need human review, such as completed first-doctor/admin onboarding, still return `COMPENSATION_NOT_AUTOMATED` until a dedicated disable/cancel workflow is built.
+
+Verification:
+
+```txt
+node --test tests/unit/saasFoundationContracts.test.mjs  # 44/44 passing
+npm run lint
+npm run build:control-plane
+Live Supabase MCP grant check: both new RPCs are SECURITY DEFINER and executable only by postgres/service_role
+Live Edge Function list: new admin functions ACTIVE with verify_jwt=true; admin-run-provisioning-step redeployed as version 7
+Live unauthenticated POST: both new admin functions fail closed with 401
+Live CORS preflight: unknown origin returns ORIGIN_NOT_ALLOWED
+```
+
+Remaining provider-owned/manual items:
+
+- Add GitHub `BACKEND_TEST_*` live DB contract secrets before pushing to `main`.
+- Set tenant service-role Edge Function secrets for any tenant project that should run migration/profile/doctor seed checks.
+- Keep real `doctoleb.com` custom domains pending until the domain is purchased, DNS is configured, and SSL/domain verification passes.
+
+---
+
+## 31. Resolver Direct-RPC Hardening — 2026-05-09
+
+Closed a Supabase advisor warning without changing the public resolver API:
+
+- Added migration `00010000000019_control_plane_resolve_tenant_rpc_private.sql`.
+- Revoked direct `public`, `anon`, and `authenticated` execute on `public.resolve_tenant(text,text)`.
+- Granted `resolve_tenant` execute only to `service_role`, so browser traffic must use the `tenant-resolve` Edge Function.
+- Applied the migration to live control-plane project `xouqxgwccewvbtkqming`.
+
+Verification:
+
+```txt
+node --test tests/unit/controlPlaneActivation.test.mjs
+npm run smoke:tenant-resolver
+Live ACL check: resolve_tenant acl = {postgres=X/postgres,service_role=X/postgres}
+Supabase security advisor: only remaining warning is leaked-password protection disabled, which is plan/manual deferred.
 ```

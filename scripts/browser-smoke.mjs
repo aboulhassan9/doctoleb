@@ -1,11 +1,15 @@
 process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY ||= '1';
 
 const { chromium, devices } = await import('@playwright/test');
-const fs = await import('node:fs/promises');
 const path = await import('node:path');
-
-const root = path.resolve(import.meta.dirname, '..');
-const outputDir = path.join(root, 'output', 'playwright');
+const {
+  assertNoRuntimeIssues,
+  collectRuntimeIssues,
+  ensurePlaywrightOutputDir,
+  hasUnsafeControlChars,
+  playwrightOutputDir,
+  writeJsonReport,
+} = await import('./lib/browser-smoke-helpers.mjs');
 
 const VIEWPORTS = Object.freeze([
   {
@@ -41,6 +45,16 @@ const APPS = Object.freeze([
       'SURFACE_MISMATCH',
       'TENANT_NOT_FOUND',
     ],
+    links: [
+      {
+        text: /Patient Registration/i,
+        expectedPath: '/signup',
+      },
+      {
+        text: /Patient Login/i,
+        expectedPath: '/login',
+      },
+    ],
   },
   {
     app: 'clinic-ops',
@@ -55,6 +69,12 @@ const APPS = Object.freeze([
       'Wrong portal',
       'SURFACE_MISMATCH',
       'TENANT_NOT_FOUND',
+    ],
+    links: [
+      {
+        text: /Patient Portal/i,
+        expectedUrl: process.env.PATIENT_WEB_LOGIN_URL || 'https://doctoleb-patient-web.vercel.app/login',
+      },
     ],
   },
   {
@@ -73,18 +93,6 @@ const APPS = Object.freeze([
   },
 ]);
 
-function isCriticalRequest(request) {
-  return ['document', 'script', 'xhr', 'fetch'].includes(request.resourceType());
-}
-
-function isIgnoredRequestUrl(url) {
-  return /\/favicon\.(ico|png|svg)(?:\?|$)/i.test(url);
-}
-
-function isExpectedRequestAbort(request) {
-  return request.failure()?.errorText === 'net::ERR_ABORTED';
-}
-
 function assertText(bodyText, expectedText, context) {
   if (!bodyText.toLocaleLowerCase().includes(expectedText.toLocaleLowerCase())) {
     throw new Error(`${context}: expected page text to include "${expectedText}".`);
@@ -97,13 +105,46 @@ function assertMissingText(bodyText, forbiddenText, context) {
   }
 }
 
-function summarizeRuntimeIssues({ consoleErrors, pageErrors, failedRequests, badResponses }) {
-  const parts = [];
-  if (consoleErrors.length > 0) parts.push(`console=${consoleErrors[0]}`);
-  if (pageErrors.length > 0) parts.push(`page=${pageErrors[0]}`);
-  if (failedRequests.length > 0) parts.push(`request=${failedRequests[0].method} ${failedRequests[0].url} ${failedRequests[0].failure}`);
-  if (badResponses.length > 0) parts.push(`response=${badResponses[0].status} ${badResponses[0].method} ${badResponses[0].url}`);
-  return parts.join(' | ');
+function assertSameUrl(actualUrl, expectedUrl, context) {
+  const actual = new URL(actualUrl);
+  const expected = new URL(expectedUrl);
+  if (actual.origin !== expected.origin || actual.pathname !== expected.pathname) {
+    throw new Error(`${context}: expected link to resolve to ${expected.origin}${expected.pathname}, received ${actual.origin}${actual.pathname}.`);
+  }
+}
+
+async function assertLinks(page, rules, context) {
+  if (!rules?.length) return;
+
+  const links = await page.locator('a').evaluateAll((nodes) => nodes.map((node) => ({
+    text: node.textContent || '',
+    href: node.getAttribute('href') || '',
+    resolvedHref: node.href || '',
+  })));
+
+  for (const rule of rules) {
+    const matchingLinks = links.filter((link) => rule.text.test(link.text));
+    if (matchingLinks.length === 0) {
+      throw new Error(`${context}: expected at least one link matching ${rule.text}.`);
+    }
+
+    for (const link of matchingLinks) {
+      if (hasUnsafeControlChars(link.href) || hasUnsafeControlChars(link.resolvedHref)) {
+        throw new Error(`${context}: link "${link.text.trim()}" contains unsafe control characters in href.`);
+      }
+
+      if (rule.expectedPath) {
+        const resolved = new URL(link.resolvedHref);
+        if (resolved.pathname !== rule.expectedPath) {
+          throw new Error(`${context}: expected link "${link.text.trim()}" to resolve to ${rule.expectedPath}, received ${resolved.pathname}.`);
+        }
+      }
+
+      if (rule.expectedUrl) {
+        assertSameUrl(link.resolvedHref, rule.expectedUrl, `${context}: link "${link.text.trim()}"`);
+      }
+    }
+  }
 }
 
 async function verifyApp(browser, appConfig, viewportConfig) {
@@ -112,43 +153,7 @@ async function verifyApp(browser, appConfig, viewportConfig) {
     ignoreHTTPSErrors: false,
   });
   const page = await context.newPage();
-  const consoleErrors = [];
-  const pageErrors = [];
-  const failedRequests = [];
-  const badResponses = [];
-
-  page.on('console', (message) => {
-    if (message.type() === 'error') {
-      consoleErrors.push(message.text());
-    }
-  });
-
-  page.on('pageerror', (error) => {
-    pageErrors.push(error.message);
-  });
-
-  page.on('requestfailed', (request) => {
-    if (isCriticalRequest(request) && !isIgnoredRequestUrl(request.url()) && !isExpectedRequestAbort(request)) {
-      failedRequests.push({
-        url: request.url(),
-        method: request.method(),
-        resourceType: request.resourceType(),
-        failure: request.failure()?.errorText || 'unknown',
-      });
-    }
-  });
-
-  page.on('response', (response) => {
-    const request = response.request();
-    if (response.status() >= 400 && isCriticalRequest(request) && !isIgnoredRequestUrl(response.url())) {
-      badResponses.push({
-        url: response.url(),
-        method: request.method(),
-        resourceType: request.resourceType(),
-        status: response.status(),
-      });
-    }
-  });
+  const runtimeIssues = collectRuntimeIssues(page);
 
   const contextLabel = `${appConfig.app}/${viewportConfig.name}`;
   try {
@@ -170,17 +175,11 @@ async function verifyApp(browser, appConfig, viewportConfig) {
     for (const forbiddenText of appConfig.excludeText) {
       assertMissingText(bodyText, forbiddenText, contextLabel);
     }
+    await assertLinks(page, appConfig.links, contextLabel);
 
-    if (consoleErrors.length > 0 || pageErrors.length > 0 || failedRequests.length > 0 || badResponses.length > 0) {
-      throw new Error(`${contextLabel}: browser runtime errors detected. ${summarizeRuntimeIssues({
-        consoleErrors,
-        pageErrors,
-        failedRequests,
-        badResponses,
-      })}`);
-    }
+    assertNoRuntimeIssues(runtimeIssues, contextLabel);
 
-    const screenshotPath = path.join(outputDir, `${appConfig.app}-${viewportConfig.name}.png`);
+    const screenshotPath = path.join(playwrightOutputDir, `${appConfig.app}-${viewportConfig.name}.png`);
     await page.screenshot({ path: screenshotPath, fullPage: true, timeout: 20_000 });
 
     return {
@@ -190,10 +189,10 @@ async function verifyApp(browser, appConfig, viewportConfig) {
       title,
       h1: String(appConfig.h1),
       screenshotPath,
-      consoleErrors,
-      pageErrors,
-      failedRequests,
-      badResponses,
+      consoleErrors: runtimeIssues.consoleErrors,
+      pageErrors: runtimeIssues.pageErrors,
+      failedRequests: runtimeIssues.failedRequests,
+      badResponses: runtimeIssues.badResponses,
     };
   } finally {
     await context.close();
@@ -201,7 +200,7 @@ async function verifyApp(browser, appConfig, viewportConfig) {
 }
 
 async function main() {
-  await fs.mkdir(outputDir, { recursive: true });
+  await ensurePlaywrightOutputDir();
 
   const browser = await chromium.launch({ headless: true });
   const report = [];
@@ -230,15 +229,7 @@ async function main() {
     await browser.close();
   }
 
-  const reportPath = path.join(outputDir, 'deployed-ui-qa-report.json');
-  await fs.writeFile(
-    reportPath,
-    JSON.stringify({
-      generatedAt: new Date().toISOString(),
-      report,
-      failures,
-    }, null, 2),
-  );
+  const reportPath = await writeJsonReport('deployed-ui-qa-report.json', { report, failures });
 
   if (failures.length > 0) {
     console.error(`Browser smoke failed. Report: ${reportPath}`);

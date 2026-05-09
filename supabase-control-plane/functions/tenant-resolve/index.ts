@@ -14,6 +14,7 @@
  *   403 → { data: null, error: 'SURFACE_MISMATCH' }
  *   404 → { data: null, error: 'TENANT_NOT_FOUND' }
  *   423 → { data: null, error: 'TENANT_INACTIVE' }
+ *   429 → { data: null, error: 'TENANT_RESOLVER_DOWN' }
  *   503 → { data: null, error: 'TENANT_RESOLVER_DOWN' }
  *
  * NO PHI ever flows through this endpoint. Only tenant routing metadata
@@ -30,6 +31,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { checkEdgeRateLimit } from '../_shared/rateLimit.ts'
 
 // ── CORS ──
 
@@ -222,6 +224,23 @@ Deno.serve(async (req) => {
       400,
       cors,
       ERROR_CACHE_CONTROL,
+    )
+  }
+
+  const rateLimit = await checkEdgeRateLimit(supabase, {
+    req,
+    route: 'tenant_resolve',
+    keyParts: [host, surface],
+    limit: 120,
+    windowSeconds: 60,
+  })
+  if (!rateLimit.allowed) {
+    return jsonResponse(
+      { data: null, error: 'TENANT_RESOLVER_DOWN' },
+      rateLimit.status === 429 ? 429 : 503,
+      cors,
+      ERROR_CACHE_CONTROL,
+      rateLimit.headers,
     )
   }
 

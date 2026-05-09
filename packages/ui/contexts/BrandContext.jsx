@@ -154,6 +154,23 @@ export function BrandProvider({ children, appSurface = 'patient-web' }) {
   }, [refresh]);
 
   useEffect(() => {
+    let isMounted = true;
+    const refreshVisibleBrand = () => {
+      if (document.visibilityState === 'hidden') return;
+      void refresh(() => isMounted);
+    };
+
+    window.addEventListener('focus', refreshVisibleBrand);
+    document.addEventListener('visibilitychange', refreshVisibleBrand);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('focus', refreshVisibleBrand);
+      document.removeEventListener('visibilitychange', refreshVisibleBrand);
+    };
+  }, [refresh]);
+
+  useEffect(() => {
     const root = document.documentElement;
     const primary = normalizeHexColor(brand.primary_color, DEFAULT_BRAND.primary_color);
     const primaryHover = shadeHexColor(primary, -8);

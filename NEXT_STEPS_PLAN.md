@@ -5,6 +5,7 @@
 > **Purpose**: forward roadmap covering ERD export readiness, UX flows, business logic, and API contracts. Consumes the open items already cataloged in the review docs; does not re-litigate them.
 > **Frontend boundary update**: patient web and clinic operations must split into separate deployable apps. See `docs/decisions/ADR-002-separate-patient-and-clinic-ops-apps.md` and `FRONTEND_APP_SPLIT_PLAN.md`.
 > **Runtime tenancy update**: hostname-based tenant routing is the next platform tier. See `docs/decisions/ADR-004-domain-routing-and-control-plane-contract.md` and **Block G** below.
+> **Action contract update**: patient web, future Flutter patient app, and clinic staff flows must follow `PATIENT_AND_STAFF_ACTION_CONTRACTS_20260509.md` before new UI, API, DB, or test work is treated as complete.
 
 ---
 

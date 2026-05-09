@@ -15,11 +15,12 @@
 - Lifecycle status changes go through a named lifecycle method/RPC, never a raw page-level status update.
 - Pages/components do not import Supabase directly.
 - Services own DB selectors, normalizers, RPC calls, and DB-to-UI shape.
-- There are currently no canonical repo Edge Functions. Future Edge Functions must not duplicate business logic; they validate/authenticate and call canonical RPC/service paths.
+- Canonical repo Edge Functions are listed in the domain ledger below. Future Edge Functions must not duplicate business logic; they validate/authenticate and call canonical RPC/service paths.
 - Old duplicate tables are removed once replacement consumers are migrated. There is no production data yet, so dead/duplicate surfaces should not be preserved by default.
 - New work must not recreate or build on the removed legacy surfaces: `consultations`, `notifications`, `doctor_brand`, `clinic_settings`, `medical_reports`, `certificates`, or `referrals`.
 - **No `tenant_id` columns inside any tenant DB table.** Tenant isolation is at the Supabase project level. Adding `tenant_id` to a tenant table is a contract violation, blocked by `npm run audit:backend-contract` (Slice F of ADR-004).
 - **No service-role keys may be returned by any frontend-reachable response.** Anon keys are public (resolver may return them); service-role keys live only in server-side env vars or a secret manager.
+- Production bundles must be scanned during deploy. `npm run audit:bundle-secrets` blocks service/provider/payment secret markers for all three apps and blocks tenant local-fallback URL/JWT material from patient/ops bundles.
 
 ## Runtime Tenant Connection
 
@@ -35,7 +36,12 @@ window.location.hostname
 
 Service contracts are unchanged. Every existing `import { supabase } from '@/lib/supabase'` continues to work via a Proxy compatibility shim. What changed is when the underlying client is constructed and against which tenant.
 
-The resolver endpoint itself is **public** but returns only routing metadata. PHI never flows through it. The control-plane database backing it stores only tenant routing/provisioning rows (`tenants`, `tenant_domains`, etc.) — see ADR-004 for the schema.
+The resolver endpoint itself is **public** but returns only routing metadata. PHI never flows through it. The control-plane database backing it stores only tenant routing/provisioning rows (`tenants`, `tenant_domains`, etc.) — see ADR-004 for the schema. Direct browser execution of `public.resolve_tenant(text,text)` is revoked; the public interface is the `tenant-resolve` Edge Function, which calls the RPC with service-role access.
+The public resolver contract is post-deploy smoked by `npm run smoke:tenant-resolver`: Vercel patient/ops hosts must resolve, uppercase host lookup must remain case-insensitive, unknown hosts and wrong surfaces must fail with stable errors, pending not-purchased domains must remain inactive, and responses must not contain forbidden secret markers.
+The control-plane admin Edge Functions are authenticated and RBAC-gated, and their browser CORS boundary must remain explicit. `CONTROL_PLANE_ALLOWED_ORIGINS` must list verified console origins such as `https://doctoleb-control-plane.vercel.app`; wildcard admin CORS is blocked by `tests/unit/saasFoundationContracts.test.mjs` and live-smoked by `npm run smoke:control-plane-admin-cors`.
+Control-plane zero-PHI drift is also a backend contract: `npm run audit:backend-contract` fails if `supabase-control-plane` migrations/functions introduce tenant clinical tables, PHI-owned columns, or direct clinical table access.
+Provider-aware tenant draft creation is now part of the control-plane contract. `admin-create-provisioning-job` may accept `automationMode`, `supabaseConnectionId`, and `vercelConnectionId`, but it must only store provider metadata and secret references. `admin_create_tenant_draft_atomic(...)` seeds `tenant_provisioning_steps` with idempotency keys, preconditions, postconditions, and undo strategies before any runner executes provider-aware work.
+Provisioning runner APIs are server-owned. `admin-run-provisioning-step` can verify provider readiness, operator-linked Supabase runtime config, tenant DB migration readiness, tenant profile/app config, first doctor/admin seed, Vercel/free-alias routing, resolver smoke, and activation. `admin-cancel-provisioning-job` and `admin-compensate-provisioning-step` expose undo/cancel through service-role RPCs only. React may call these named admin functions but must never mutate `tenant_provisioning_jobs` or `tenant_provisioning_steps` directly.
 
 Local development fallback: setting `VITE_DEV_TENANT_SLUG` plus the existing `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` lets `npm run dev:patient` / `npm run dev:ops` boot without a control plane.
 
@@ -74,17 +80,36 @@ The baseline runs before the old `20240626_create_scheduling_tables.sql` migrati
 
 - `authService`: sign-in, sign-up, logout, forgot/reset password.
 - `authIdentity`: session profile resolution by `auth_user_id`; email inference is not allowed for new identity work.
+- `staffService.invite`: doctor-owned staff invite request; calls the `staff-invite` Edge Function.
+- `staffService.deactivate`: doctor-owned staff access disable/cancel request; calls the `staff-member-disable` Edge Function.
+- `staffService.resendInvite`: doctor-owned pending staff invite resend request; calls the `staff-invite-resend` Edge Function with a client request id.
+- `staffService.reissueInvite`: doctor-owned cancelled-pending-invite reissue request; calls the `staff-invite-reissue` Edge Function with a client request id.
+- `staffService.reactivate`: doctor-owned accepted-staff reactivation request; calls the `staff-member-reactivate` Edge Function.
+
+**Canonical Edge Functions**
+
+- `staff-invite`: authenticated tenant Edge Function for doctor staff onboarding. It validates the caller JWT, requires an active doctor profile, sends the Supabase Auth invite with the service-role key server-side, calls `create_staff_invite_domain_identity` for atomic domain rows, and soft-deletes the just-created Auth identity if domain creation fails.
+- `staff-member-disable`: authenticated tenant Edge Function for staff invite cancellation and accepted-staff access disable. It validates the caller JWT, calls `disable_staff_member_domain_identity` through service-role access, soft-deletes only pending/non-accepted Auth identities, and preserves accepted Auth identities for future reactivation.
+- `staff-invite-resend`: authenticated tenant Edge Function for pending invite resends. It validates the caller JWT, creates or reuses an idempotent `staff_invite_resend_events` row, sends the Supabase Auth invite server-side, and finalizes the event as `sent` or `failed` without exposing service-role material.
+- `staff-invite-reissue`: authenticated tenant Edge Function for cancelled pending invite recovery. It validates the caller JWT, creates or reuses an idempotent `staff_invite_reissue_events` row, sends a new Supabase Auth invite server-side, relinks the tenant domain user through `finish_staff_invite_reissue_event`, and can be undone by the existing disable/cancel flow.
+- `staff-member-reactivate`: authenticated tenant Edge Function for re-enabling previously accepted staff. It validates the caller JWT and calls `reactivate_staff_member_domain_identity`; v1 rejects cancelled pending invites because they use `staff-invite-reissue`.
 
 **Writes**
 
 - Patient sign-up is auth-backed and should provision domain profile through DB/server-backed creation.
 - Staff/doctor creation is staff/admin workflow; public signup must not create staff.
+- Staff invite creation is server-side only. Browser code must not directly insert `staff_members` onboarding rows.
+- Staff lifecycle disable/cancel is server-side only. Browser code must not directly update `staff_members.user_id`, `invite_status`, `is_active`, disable metadata, or Auth linkage.
+- Staff invite resend is server-side only. Browser code must not directly update `invite_resent_at`, `invite_resent_by`, `invite_resend_count`, or insert resend event rows.
+- Staff invite reissue is server-side only. Browser code must not directly update `invite_reissued_at`, `invite_reissued_by`, `invite_reissue_count`, Auth linkage, or insert reissue event rows.
+- Staff member reactivation is server-side only. Browser code must not directly update `reactivated_at`, `reactivated_by`, `reactivation_count`, `invite_status`, `is_active`, or linked user active state.
 
 **Security**
 
 - `password_hash` is legacy only and must not be read/written by frontend code.
 - Inactive users are blocked at auth/profile resolution.
 - Role redirects are centralized through role route helpers.
+- v1 staff roles are limited to `secretary` and `predoctor` until additional dashboards, route guards, RLS policy coverage, and tests are designed.
 
 **Tests**
 
@@ -165,6 +190,7 @@ The baseline runs before the old `20240626_create_scheduling_tables.sql` migrati
 
 - `encounters`: visit/encounter timeline.
 - `clinical_notes`: SOAP/general/private notes.
+- `clinical_note_drafts`: active doctor-authored note drafts with RLS ownership, scheduled TTL expiry, and explicit discard/converted states.
 - `diagnoses`: structured encounter diagnoses.
 - `prescriptions`: medication orders.
 - `lab_orders`, `imaging_orders`: clinical orders.
@@ -180,6 +206,7 @@ The baseline runs before the old `20240626_create_scheduling_tables.sql` migrati
 **Canonical operations**
 
 - `start_encounter`, `complete_encounter`, `cancel_encounter` RPCs own encounter status and appointment coupling.
+- `save_clinical_note_draft`, `get_active_clinical_note_draft`, `discard_clinical_note_draft`, and `expire_clinical_note_drafts` own draft persistence; pages/hooks must not store clinical note PHI in browser storage.
 - `finalize_clinical_document`, `void_clinical_document` RPCs own document status.
 - Clinical document file bytes live in the private `clinical-documents` Storage bucket. Clients receive short-lived signed URLs through `clinicalService.getDocumentSignedUrl()` / `documentService.getDownloadUrl()`, never direct public URLs.
 - Direct status updates from pages are not allowed.
@@ -196,6 +223,7 @@ The baseline runs before the old `20240626_create_scheduling_tables.sql` migrati
 - Completed encounter cannot return to `in_progress`.
 - Draft document finalizes through RPC only.
 - Clinical writes enforce author/current user identity.
+- Clinical note drafts autosave to tenant DB only, are scoped to the current doctor/author, and expire/clear stale content through the scheduled service-role cleanup RPC.
 
 ### Insurance And Billing
 

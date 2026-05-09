@@ -31,8 +31,16 @@ export const CLINIC_OPS_ROLES = Object.freeze([
 
 function appendPath(baseUrl, path) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  if (!baseUrl) return normalizedPath;
-  return `${baseUrl.replace(/\/$/, '')}${normalizedPath}`;
+  const normalizedBaseUrl = normalizeConfiguredAppUrl(baseUrl);
+  if (!normalizedBaseUrl) return normalizedPath;
+  return `${normalizedBaseUrl.replace(/\/$/, '')}${normalizedPath}`;
+}
+
+function normalizeConfiguredAppUrl(value) {
+  return String(value || '')
+    .replace(/\\[rn]/g, '')
+    .replace(/[\r\n]/g, '')
+    .trim();
 }
 
 /**

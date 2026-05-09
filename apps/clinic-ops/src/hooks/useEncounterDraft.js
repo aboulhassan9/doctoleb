@@ -1,59 +1,43 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { clinicalService } from '@/services/clinical';
+import { logError } from '@/lib/logger';
 
-const STORAGE_PREFIX = 'doctoleb:encounter-note-draft:';
 const EMPTY_DRAFT = Object.freeze({ noteType: 'general', content: '' });
 const AUTOSAVE_INTERVAL_MS = 30_000;
+
+function normalizeHookInput(input) {
+  if (typeof input === 'string' || input === null || input === undefined) {
+    return { encounterId: input ?? null, enabled: true };
+  }
+
+  return {
+    encounterId: input.encounterId ?? null,
+    enabled: input.enabled !== false,
+  };
+}
+
+function normalizeDraft(row) {
+  return {
+    noteType: typeof row?.note_type === 'string' ? row.note_type : EMPTY_DRAFT.noteType,
+    content: typeof row?.content === 'string' ? row.content : EMPTY_DRAFT.content,
+  };
+}
 
 function hasMeaningfulDraft(draft) {
   return Boolean(draft?.content?.trim()) || draft?.noteType !== EMPTY_DRAFT.noteType;
 }
 
-function readDraft(storageKey) {
-  if (!storageKey || typeof window === 'undefined') return { ...EMPTY_DRAFT };
-
-  try {
-    const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return { ...EMPTY_DRAFT };
-
-    const parsed = JSON.parse(raw);
-    return {
-      ...EMPTY_DRAFT,
-      noteType: typeof parsed.noteType === 'string' ? parsed.noteType : EMPTY_DRAFT.noteType,
-      content: typeof parsed.content === 'string' ? parsed.content : EMPTY_DRAFT.content,
-      savedAt: typeof parsed.savedAt === 'string' ? parsed.savedAt : null,
-    };
-  } catch {
-    return { ...EMPTY_DRAFT };
-  }
-}
-
-function writeDraft(storageKey, draft) {
-  if (!storageKey || typeof window === 'undefined') return null;
-
-  try {
-    if (!hasMeaningfulDraft(draft)) {
-      window.localStorage.removeItem(storageKey);
-      return null;
-    }
-
-    const savedAt = new Date().toISOString();
-    window.localStorage.setItem(storageKey, JSON.stringify({ ...draft, savedAt }));
-    return savedAt;
-  } catch {
-    return null;
-  }
-}
-
 /**
- * Persists a local clinical-note draft per encounter.
- *
- * This is intentionally client-local. It prevents accidental text loss while
- * the canonical medical record remains `clinical_notes` after explicit save.
+ * Persists one active clinical-note draft per encounter and author in the
+ * tenant database. PHI never falls back to browser storage.
  */
-export function useEncounterDraft(encounterId) {
-  const storageKey = encounterId ? `${STORAGE_PREFIX}${encounterId}` : null;
+export function useEncounterDraft(input) {
+  const { encounterId, enabled } = normalizeHookInput(input);
   const [draft, setDraft] = useState({ ...EMPTY_DRAFT });
   const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   const draftRef = useRef(draft);
 
   useEffect(() => {
@@ -61,54 +45,130 @@ export function useEncounterDraft(encounterId) {
   }, [draft]);
 
   useEffect(() => {
-    const storedDraft = readDraft(storageKey);
-    setDraft({ noteType: storedDraft.noteType, content: storedDraft.content });
-    setLastSavedAt(storedDraft.savedAt || null);
-  }, [storageKey]);
+    let isMounted = true;
+
+    async function loadDraft() {
+      if (!encounterId || !enabled) {
+        setDraft({ ...EMPTY_DRAFT });
+        setLastSavedAt(null);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      const result = await clinicalService.getNoteDraft(encounterId);
+      if (!isMounted) return;
+
+      if (result.error) {
+        logError('useEncounterDraft.loadDraft', result.error);
+        setDraft({ ...EMPTY_DRAFT });
+        setLastSavedAt(null);
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+
+      setDraft(normalizeDraft(result.data));
+      setLastSavedAt(result.data?.updated_at ?? null);
+      setLoading(false);
+    }
+
+    loadDraft();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [enabled, encounterId]);
 
   const updateDraft = useCallback((patch) => {
     setDraft((current) => ({ ...current, ...patch }));
   }, []);
 
-  const persistDraft = useCallback(() => {
-    setLastSavedAt(writeDraft(storageKey, draftRef.current));
-  }, [storageKey]);
-
-  const persistDraftSilently = useCallback(() => {
-    writeDraft(storageKey, draftRef.current);
-  }, [storageKey]);
-
-  const clearDraft = useCallback(() => {
-    if (storageKey && typeof window !== 'undefined') {
-      window.localStorage.removeItem(storageKey);
+  const discardDraft = useCallback(async ({ status = 'discarded', convertedNoteId = null } = {}) => {
+    if (!encounterId) {
+      setDraft({ ...EMPTY_DRAFT });
+      setLastSavedAt(null);
+      return true;
     }
+
+    const result = await clinicalService.discardNoteDraft({
+      encounter_id: encounterId,
+      status,
+      converted_note_id: convertedNoteId,
+    });
+
+    if (result.error) {
+      logError('useEncounterDraft.discardDraft', result.error);
+      setError(result.error);
+      return false;
+    }
+
     setDraft({ ...EMPTY_DRAFT });
     setLastSavedAt(null);
-  }, [storageKey]);
+    setError(null);
+    return true;
+  }, [encounterId]);
+
+  const persistDraft = useCallback(async () => {
+    if (!encounterId || !enabled) return false;
+
+    const currentDraft = draftRef.current;
+    if (!hasMeaningfulDraft(currentDraft)) {
+      return discardDraft();
+    }
+
+    setSaving(true);
+    const result = await clinicalService.saveNoteDraft({
+      encounter_id: encounterId,
+      note_type: currentDraft.noteType,
+      content: currentDraft.content,
+    });
+    setSaving(false);
+
+    if (result.error) {
+      logError('useEncounterDraft.persistDraft', result.error);
+      setError(result.error);
+      return false;
+    }
+
+    setLastSavedAt(result.data?.updated_at ?? new Date().toISOString());
+    setError(null);
+    return true;
+  }, [discardDraft, enabled, encounterId]);
 
   useEffect(() => {
-    if (!storageKey || typeof window === 'undefined') return undefined;
+    if (!encounterId || !enabled) return undefined;
 
-    const intervalId = window.setInterval(persistDraft, AUTOSAVE_INTERVAL_MS);
-    return () => {
-      window.clearInterval(intervalId);
-      persistDraftSilently();
+    const intervalId = window.setInterval(() => {
+      void persistDraft();
+    }, AUTOSAVE_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [enabled, encounterId, persistDraft]);
+
+  useEffect(() => {
+    if (!encounterId || !enabled) return undefined;
+
+    const persistOnHide = () => {
+      void persistDraft();
     };
-  }, [persistDraft, persistDraftSilently, storageKey]);
 
-  useEffect(() => {
-    if (!storageKey || typeof window === 'undefined') return undefined;
-
-    window.addEventListener('pagehide', persistDraftSilently);
-    return () => window.removeEventListener('pagehide', persistDraftSilently);
-  }, [persistDraftSilently, storageKey]);
+    window.addEventListener('pagehide', persistOnHide);
+    return () => window.removeEventListener('pagehide', persistOnHide);
+  }, [enabled, encounterId, persistDraft]);
 
   return {
     draft,
     updateDraft,
     persistDraft,
-    clearDraft,
+    clearDraft: discardDraft,
     hasDraft: hasMeaningfulDraft(draft),
     lastSavedAt,
+    loading,
+    saving,
+    error,
   };
 }

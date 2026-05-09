@@ -24,7 +24,7 @@ const NOTE_TYPE_COLORS = {
 /**
  * EncounterNotesTab — Visit notes list + add form.
  *
- * @param {{ notes: Array, loading: boolean, isSaving: boolean, onAddNote: (payload: object) => Promise<boolean>, encounterId: string, patientId: string, doctorId: string, authorUserId: string, isActive: boolean }} props
+ * @param {{ notes: Array, loading: boolean, isSaving: boolean, onAddNote: (payload: object) => Promise<{ success: boolean, note: object|null }|boolean>, encounterId: string, patientId: string, doctorId: string, authorUserId: string, isActive: boolean }} props
  */
 export default function EncounterNotesTab({
   notes,
@@ -45,15 +45,19 @@ export default function EncounterNotesTab({
     clearDraft,
     hasDraft,
     lastSavedAt,
-  } = useEncounterDraft(encounterId);
+    loading: draftLoading,
+    saving: draftSaving,
+    error: draftError,
+  } = useEncounterDraft({ encounterId, enabled: isActive });
   const noteType = draft.noteType;
   const content = draft.content;
+  const draftBusy = draftLoading || draftSaving;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
 
-    const success = await onAddNote({
+    const result = await onAddNote({
       encounter_id: encounterId,
       patient_id: patientId,
       doctor_id: doctorId,
@@ -61,9 +65,13 @@ export default function EncounterNotesTab({
       note_type: noteType,
       content: content.trim(),
     });
+    const success = result === true || result?.success === true;
 
     if (success) {
-      clearDraft();
+      await clearDraft({
+        status: result?.note?.id ? 'converted' : 'discarded',
+        convertedNoteId: result?.note?.id ?? null,
+      });
       setShowForm(false);
     }
   };
@@ -90,22 +98,29 @@ export default function EncounterNotesTab({
                   <h4 className="text-sm font-bold text-slate-900">New Clinical Note</h4>
                   <p className="mt-1 text-xs text-slate-500">
                     {lastSavedAt
-                      ? `Draft saved locally ${formatTime(lastSavedAt)}`
-                      : 'Draft autosaves locally every 30 seconds.'}
+                      ? `Draft saved to the tenant clinical database ${formatTime(lastSavedAt)}`
+                      : 'Draft autosaves to the tenant clinical database every 30 seconds.'}
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    persistDraft();
-                    setShowForm(false);
+                  onClick={async () => {
+                    const saved = await persistDraft();
+                    if (saved) setShowForm(false);
                   }}
+                  disabled={draftBusy}
                   className="text-slate-400 hover:text-slate-600"
                   aria-label="Close note draft"
                 >
                   <span className="material-symbols-outlined text-xl">close</span>
                 </button>
               </div>
+
+              {draftError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                  Draft could not be saved. Please retry before leaving this encounter.
+                </div>
+              )}
 
               {/* Note Type Selector */}
               <div className="flex flex-wrap gap-2">
@@ -114,6 +129,7 @@ export default function EncounterNotesTab({
                     key={value}
                     type="button"
                     onClick={() => updateDraft({ noteType: value })}
+                    disabled={draftBusy}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
                       noteType === value
                         ? NOTE_TYPE_COLORS[value]
@@ -130,10 +146,13 @@ export default function EncounterNotesTab({
               <textarea
                 value={content}
                 onChange={(e) => updateDraft({ content: e.target.value })}
-                onBlur={persistDraft}
+                onBlur={() => {
+                  void persistDraft();
+                }}
                 placeholder="Enter your clinical note..."
                 rows={4}
                 className={TEXTAREA_CLASS}
+                disabled={draftLoading}
                 autoFocus
               />
 
@@ -142,10 +161,11 @@ export default function EncounterNotesTab({
                 {hasDraft && (
                   <button
                     type="button"
-                    onClick={() => {
-                      clearDraft();
-                      setShowForm(false);
+                    onClick={async () => {
+                      const discarded = await clearDraft();
+                      if (discarded) setShowForm(false);
                     }}
+                    disabled={draftBusy}
                     className="px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-error transition-colors"
                   >
                     Discard Draft
@@ -153,17 +173,18 @@ export default function EncounterNotesTab({
                 )}
                 <button
                   type="button"
-                  onClick={() => {
-                    persistDraft();
-                    setShowForm(false);
+                  onClick={async () => {
+                    const saved = await persistDraft();
+                    if (saved) setShowForm(false);
                   }}
+                  disabled={draftBusy}
                   className={BUTTON_SECONDARY}
                 >
                   Close
                 </button>
                 <button
                   type="submit"
-                  disabled={!content.trim() || isSaving}
+                  disabled={!content.trim() || isSaving || draftBusy}
                   className={`${BUTTON_PRIMARY} flex items-center gap-2`}
                 >
                   {isSaving && (

@@ -10,12 +10,13 @@ const TONE_MAP = {
   archived: 'bg-zinc-200 text-zinc-700 ring-zinc-300',
 };
 
-export default function StatusPill({ value }) {
-  const tone = TONE_MAP[value] || 'bg-slate-100 text-slate-600 ring-slate-200';
+export default function StatusPill({ value, status }) {
+  const label = value ?? status
+  const tone = TONE_MAP[label] || 'bg-slate-100 text-slate-600 ring-slate-200';
 
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${tone}`}>
-      {value || 'unknown'}
+      {label || 'unknown'}
     </span>
   );
 }

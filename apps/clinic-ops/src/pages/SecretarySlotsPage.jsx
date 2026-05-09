@@ -5,6 +5,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { slotService } from '@/services/slots';
 import { clinicService } from '@/services/clinics';
+import { getErrorMessage } from '@/lib/errors';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -113,7 +114,7 @@ export default function SecretarySlotsPage() {
       is_active: true,
     });
     setSaving(false);
-    if (error) { showToast('Failed to create slot: ' + error.message, 'error'); return; }
+    if (error) { showToast(`Failed to create slot: ${getErrorMessage(error, 'Unknown scheduling error')}`, 'error'); return; }
     showToast('Slot created successfully', 'success');
     setManualForm(BLANK_MANUAL);
     refreshSlots();
@@ -146,7 +147,7 @@ export default function SecretarySlotsPage() {
       created_by: user.id,
     });
     setSaving(false);
-    if (error) { showToast('Failed to create recurring slots: ' + error.message, 'error'); return; }
+    if (error) { showToast(`Failed to create recurring slots: ${getErrorMessage(error, 'Unknown scheduling error')}`, 'error'); return; }
     showToast(`${occurrences} recurring slots created`, 'success');
     setRecurringForm(BLANK_RECURRING);
     refreshSlots();
@@ -164,13 +165,13 @@ export default function SecretarySlotsPage() {
       return;
     }
     const { error } = await slotService.editSlot(editingSlot.id, editForm);
-    if (error) { showToast('Failed to update slot', 'error'); return; }
+    if (error) { showToast(getErrorMessage(error, 'Failed to update slot'), 'error'); return; }
     showToast('Slot updated', 'success');
     setEditingSlot(null);
     refreshSlots();
   };
 
-  // ── Delete ─────────────────────────────────────────────────────────────────
+  // ── Deactivate ─────────────────────────────────────────────────────────────
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
     let error;
@@ -179,8 +180,8 @@ export default function SecretarySlotsPage() {
     } else {
       ({ error } = await slotService.deleteGroup(deleteConfirm.id));
     }
-    if (error) { showToast('Failed to delete', 'error'); return; }
-    showToast('Deleted successfully', 'success');
+    if (error) { showToast(getErrorMessage(error, 'Failed to deactivate'), 'error'); return; }
+    showToast('Slot availability deactivated', 'success');
     setDeleteConfirm(null);
     refreshSlots();
   };
@@ -412,21 +413,21 @@ export default function SecretarySlotsPage() {
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'bg-slate-100 text-slate-500'
                         }`}>
-                          {slot.is_active ? 'Available' : 'Booked'}
+                          {slot.is_active ? 'Available' : 'Unavailable'}
                         </span>
 
                         {/* Actions */}
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <button className={btnSecondary} onClick={() => openEdit(slot)}>✏️ Edit</button>
                           <button className={btnDanger} onClick={() => setDeleteConfirm({ type: 'single', id: slot.id })}>
-                            🗑️ Delete
+                            Deactivate
                           </button>
                           {slot.recurrence_group_id && (
                             <button
                               className="flex items-center gap-1 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold rounded-lg transition-all"
                               onClick={() => setDeleteConfirm({ type: 'group', id: slot.recurrence_group_id })}
                             >
-                              🔄 Del Group
+                              Deactivate Group
                             </button>
                           )}
                         </div>
@@ -490,7 +491,7 @@ export default function SecretarySlotsPage() {
           )}
         </AnimatePresence>
 
-        {/* ── Delete Confirm Modal ──────────────────────────────────── */}
+        {/* ── Deactivate Confirm Modal ───────────────────────────────── */}
         <AnimatePresence>
           {deleteConfirm && (
             <motion.div
@@ -504,18 +505,18 @@ export default function SecretarySlotsPage() {
                 onClick={e => e.stopPropagation()}
               >
                 <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🗑️</div>
-                <h3 className="text-lg font-black text-slate-900 mb-2">Confirm Deletion</h3>
+                <h3 className="text-lg font-black text-slate-900 mb-2">Confirm Deactivation</h3>
                 <p className="text-sm text-slate-500 mb-6">
                   {deleteConfirm.type === 'group'
-                    ? 'This will delete all slots in the recurring group. This action cannot be undone.'
-                    : 'This will permanently delete this slot. This action cannot be undone.'}
+                    ? 'This will make all unbooked slots in the recurring group unavailable. They remain in the audit trail and can be restored later.'
+                    : 'This will make the slot unavailable. It remains in the audit trail and can be restored later.'}
                 </p>
                 <div className="flex gap-3">
                   <button
                     className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition-all"
                     onClick={confirmDelete}
                   >
-                    {deleteConfirm.type === 'group' ? 'Delete Group' : 'Delete Slot'}
+                    {deleteConfirm.type === 'group' ? 'Deactivate Group' : 'Deactivate Slot'}
                   </button>
                   <button
                     className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all"

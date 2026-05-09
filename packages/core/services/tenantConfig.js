@@ -27,6 +27,14 @@ function parse(schema, payload) {
   return { data: result.data };
 }
 
+const FEATURE_FLAG_AUDIENCES = new Set(['public', 'patient', 'staff', 'admin']);
+
+function normalizeFeatureFlagAudience(value) {
+  if (typeof value !== 'string') return '';
+  const normalized = value.trim().toLowerCase();
+  return FEATURE_FLAG_AUDIENCES.has(normalized) ? normalized : '';
+}
+
 export const tenantConfigService = {
   async getPublicConfig() {
     return apiCall(
@@ -89,7 +97,12 @@ export const tenantConfigService = {
       .order('code', { ascending: true });
 
     if (enabledOnly) query = query.eq('is_enabled', true);
-    if (audience) query = query.eq('audience', audience);
+    if (audience) {
+      const normalizedAudience = normalizeFeatureFlagAudience(audience);
+      if (!normalizedAudience) return validationError('Invalid feature flag audience');
+      const audiences = normalizedAudience === 'public' ? ['public'] : ['public', normalizedAudience];
+      query = query.in('audience', audiences);
+    }
 
     return apiPaged(query, { page, pageSize });
   },

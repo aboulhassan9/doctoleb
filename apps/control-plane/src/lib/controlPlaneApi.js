@@ -81,6 +81,18 @@ export const controlPlaneApi = {
     return invokeAdminFunction('admin-create-provisioning-job', payload)
   },
 
+  runProvisioningStep(payload) {
+    return invokeAdminFunction('admin-run-provisioning-step', payload)
+  },
+
+  cancelProvisioningJob(payload) {
+    return invokeAdminFunction('admin-cancel-provisioning-job', payload)
+  },
+
+  compensateProvisioningStep(payload) {
+    return invokeAdminFunction('admin-compensate-provisioning-step', payload)
+  },
+
   listProviderConnections(payload = {}) {
     return invokeAdminFunction('admin-list-provider-connections', payload)
   },

@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  SUPPORTED_CONVERSATION_PARTICIPANT_ROLES,
+  SUPPORTED_STAFF_MEMBER_ROLES,
+} from '../lib/roles.js';
 
 const PHONE_REGEX = /^\+?[\d\s-]{8,20}$/;
 
@@ -78,6 +82,11 @@ export const appointmentBookingSchema = z.object({
   reason: z.string().trim().min(1).max(1000),
   durationMinutes: z.number().int().min(5).max(240).default(30),
   status: z.literal('scheduled').optional().default('scheduled'),
+});
+
+export const appointmentCancelSchema = z.object({
+  appointmentId: z.string().uuid(),
+  reason: nullableTrimmedString(1000).optional(),
 });
 
 export const patientProfileUpdateSchema = z.object({
@@ -179,6 +188,28 @@ export const clinicalNoteSchema = z.object({
   content: z.string().trim().min(1).max(12000),
   visibility: z.enum(['clinical', 'doctor_private']).optional().default('clinical'),
 });
+
+export const clinicalNoteDraftSaveSchema = z.object({
+  encounter_id: z.string().uuid(),
+  note_type: z.enum(['subjective', 'objective', 'assessment', 'plan', 'general', 'private']).optional().default('general'),
+  content: z.string().max(12000).default(''),
+}).refine(
+  ({ note_type: noteType, content }) => Boolean(content.trim()) || noteType !== 'general',
+  { message: 'Draft must include note text or a non-general note type.' }
+);
+
+export const clinicalNoteDraftGetSchema = z.object({
+  encounter_id: z.string().uuid(),
+});
+
+export const clinicalNoteDraftDiscardSchema = z.object({
+  encounter_id: z.string().uuid(),
+  status: z.enum(['discarded', 'converted']).optional().default('discarded'),
+  converted_note_id: z.string().uuid().optional().nullable(),
+}).refine(
+  ({ status, converted_note_id: convertedNoteId }) => status !== 'converted' || Boolean(convertedNoteId),
+  { message: 'Converted drafts must include the saved clinical note id.' }
+);
 
 export const diagnosisSchema = z.object({
   encounter_id: z.string().uuid(),
@@ -322,7 +353,7 @@ export const conversationParticipantSchema = z.object({
   user_id: z.string().uuid().optional().nullable(),
   staff_member_id: z.string().uuid().optional().nullable(),
   patient_id: z.string().uuid().optional().nullable(),
-  role: z.enum(['patient', 'doctor', 'secretary', 'predoctor', 'nurse', 'assistant', 'junior_doctor', 'admin']),
+  role: z.enum(SUPPORTED_CONVERSATION_PARTICIPANT_ROLES),
   is_active: z.boolean().optional().default(true),
   last_read_at: z.string().datetime().optional().nullable(),
 }).refine(
@@ -566,14 +597,47 @@ export const doctorScheduleTemplateSchema = z.object({
 export const staffMemberSchema = z.object({
   user_id: z.string().uuid().optional().nullable(),
   doctor_id: z.string().uuid(),
-  role: z.enum(['secretary', 'predoctor', 'nurse', 'assistant', 'junior_doctor']),
+  role: z.enum(SUPPORTED_STAFF_MEMBER_ROLES),
   display_name: z.string().trim().min(1).max(160),
   phone: nullablePhone.optional(),
   email: z.preprocess(blankToNull, z.string().trim().email().nullable()).optional(),
-  invite_status: z.enum(['not_invited', 'invited', 'accepted', 'disabled']).optional().default('not_invited'),
+  invite_status: z.enum(['none', 'invited', 'accepted', 'disabled']).optional().default('none'),
   reports_to: z.string().uuid().optional().nullable(),
   hire_date: z.string().optional().nullable(),
   is_active: z.boolean().optional().default(true),
+});
+
+export const staffInviteSchema = z.object({
+  role: z.enum(SUPPORTED_STAFF_MEMBER_ROLES),
+  display_name: z.string().trim().min(1).max(160),
+  email: z.string().trim().email().max(320).transform((value) => value.toLowerCase()),
+  phone: nullablePhone.optional(),
+  hire_date: z.string().optional().nullable(),
+  client_request_id: optionalClientRequestId,
+});
+
+export const staffMemberUpdateSchema = z.object({
+  display_name: z.string().trim().min(1).max(160).optional(),
+  phone: nullablePhone.optional(),
+  hire_date: z.string().optional().nullable(),
+});
+
+export const staffMemberDisableSchema = z.object({
+  staff_member_id: z.string().uuid(),
+});
+
+export const staffInviteResendSchema = z.object({
+  staff_member_id: z.string().uuid(),
+  client_request_id: z.string().uuid(),
+});
+
+export const staffInviteReissueSchema = z.object({
+  staff_member_id: z.string().uuid(),
+  client_request_id: z.string().uuid(),
+});
+
+export const staffMemberReactivateSchema = z.object({
+  staff_member_id: z.string().uuid(),
 });
 
 export const catalogEntrySchema = z.object({

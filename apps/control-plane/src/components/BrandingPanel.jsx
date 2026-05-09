@@ -1,25 +1,21 @@
 import { useEffect, useState } from 'react';
-import { DEFAULT_BRANDING } from '../data/saasCatalog';
 import { controlPlaneApi } from '../lib/controlPlaneApi';
+import { buildTenantBrandingDraft, updateTenantBrandingDraft } from '../lib/tenantBrandingDrafts';
 import { Field, TextInput, PrimaryButton } from './ui';
 
-export default function BrandingPanel({ tenant }) {
-  const [branding, setBranding] = useState(DEFAULT_BRANDING);
+export default function BrandingPanel({ tenant, runtimeBranding = null, runtimeBrandingError = '', onSaved }) {
+  const [branding, setBranding] = useState(() => buildTenantBrandingDraft({ tenant, runtimeBranding }));
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const hasRuntimeConfig = Boolean(tenant.supabase_project_ref && tenant.supabase_url);
 
   useEffect(() => {
-    setBranding({
-      ...DEFAULT_BRANDING,
-      display_name: tenant.display_name || DEFAULT_BRANDING.display_name,
-      app_name: tenant.display_name || DEFAULT_BRANDING.app_name,
-    });
+    setBranding(buildTenantBrandingDraft({ tenant, runtimeBranding }));
     setMessage('');
-  }, [tenant.id, tenant.display_name]);
+  }, [tenant.id, tenant.display_name, runtimeBranding]);
 
   function updateField(key, value) {
-    setBranding((current) => ({ ...current, [key]: value }));
+    setBranding((current) => updateTenantBrandingDraft(current, key, value));
   }
 
   async function sync() {
@@ -32,15 +28,26 @@ export default function BrandingPanel({ tenant }) {
     const result = await controlPlaneApi.syncTenantConfig({ tenantId: tenant.id, branding });
     setSaving(false);
     setMessage(result.error || 'Branding synced to tenant runtime config.');
+    if (!result.error) onSaved?.();
   }
 
   return (
     <section className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
       <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">Branding</p>
-      <h2 className="mt-2 text-2xl font-black">Tenant theme projection</h2>
+      <h2 className="mt-2 text-2xl font-black">Live tenant brand</h2>
+      <p className="mt-2 text-sm font-semibold text-slate-500">
+        This writes the tenant database runtime config. Patient web, doctor/staff web, and future Flutter shells read this data at runtime, without a redeploy.
+      </p>
+      <div className="mt-4 rounded-2xl bg-cyan-50 p-4 text-sm font-bold text-cyan-900">
+        {runtimeBranding ? 'Loaded from the tenant runtime database.' : 'Using SaaS fallback values until runtime branding can be read.'}
+        {runtimeBrandingError ? <span className="block text-cyan-800">Runtime read status: {runtimeBrandingError}</span> : null}
+      </div>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <Field label="Display name">
+        <Field label="Practice display name">
           <TextInput value={branding.display_name} onChange={(event) => updateField('display_name', event.target.value)} />
+        </Field>
+        <Field label="App name shown on patient and staff apps">
+          <TextInput value={branding.app_name} onChange={(event) => updateField('app_name', event.target.value)} />
         </Field>
         <Field label="Tagline">
           <TextInput value={branding.app_tagline} onChange={(event) => updateField('app_tagline', event.target.value)} />

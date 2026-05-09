@@ -75,6 +75,15 @@ describe('cross-app URLs', () => {
     assert.equal(getClinicOpsLoginUrl(), 'https://ops.example.com/login');
   });
 
+  it('normalizes configured app URLs with literal and escaped line endings', () => {
+    process.env.VITE_PATIENT_WEB_URL = 'https://patient.example.com\\r';
+    process.env.VITE_CLINIC_OPS_URL = "https://ops.example.com/\r\n";
+
+    assert.equal(getPatientWebLoginUrl(), 'https://patient.example.com/login');
+    assert.equal(getPatientWebHomeUrl(), 'https://patient.example.com/patient-dashboard');
+    assert.equal(getClinicOpsLoginUrl(), 'https://ops.example.com/login');
+  });
+
   it('uses local development ports when app URLs are not configured', () => {
     process.env.NODE_ENV = 'development';
     delete process.env.VITE_PATIENT_WEB_URL;

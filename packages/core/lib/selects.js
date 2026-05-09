@@ -202,9 +202,22 @@ export const STAFF_MEMBER_SELECT_FIELDS = [
   'phone',
   'email',
   'invite_status',
+  'invite_client_request_id',
+  'disabled_previous_invite_status',
+  'invite_resent_at',
+  'invite_resent_by',
+  'invite_resend_count',
+  'reactivated_at',
+  'reactivated_by',
+  'reactivation_count',
+  'invite_reissued_at',
+  'invite_reissued_by',
+  'invite_reissue_count',
   'reports_to',
   'hire_date',
   'is_active',
+  'disabled_at',
+  'disabled_by',
   'created_at',
   'updated_at',
 ].join(', ');
@@ -423,6 +436,23 @@ export const CLINICAL_NOTE_SELECT_FIELDS = [
   'created_at',
   'updated_at',
   `users!clinical_notes_author_user_id_fkey(${USER_CONTACT_FIELDS})`,
+].join(', ');
+
+export const CLINICAL_NOTE_DRAFT_SELECT_FIELDS = [
+  'id',
+  'encounter_id',
+  'patient_id',
+  'doctor_id',
+  'author_user_id',
+  'note_type',
+  'content',
+  'status',
+  'expires_at',
+  'discarded_at',
+  'converted_at',
+  'converted_note_id',
+  'created_at',
+  'updated_at',
 ].join(', ');
 
 export const DIAGNOSIS_SELECT_FIELDS = [

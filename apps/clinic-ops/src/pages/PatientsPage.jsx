@@ -6,6 +6,7 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import CountUp from '@/components/CountUp';
 import { useToast } from '@/contexts/ToastContext';
 import { stagger } from '@/lib/animations';
+import { getErrorMessage } from '@/lib/errors';
 
 import { patientService } from '@/services/patients';
 import { usePatients } from '@/hooks/features/usePatients';
@@ -649,7 +650,7 @@ export default function PatientsPage() {
             date_of_birth: form.dob || null,
         });
         if (error) {
-            showToast(error.message || 'Failed to create patient', 'error');
+            showToast(getErrorMessage(error, 'Failed to create patient'), 'error');
             return { error };
         }
         await fetchPatients();

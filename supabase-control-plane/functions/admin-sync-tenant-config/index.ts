@@ -13,51 +13,12 @@ import {
   TENANT_APP_CONFIG_SELECT,
   TENANT_PROFILE_SELECT,
 } from '../_shared/selects.ts'
+import {
+  normalizeTenantBranding,
+  tenantBrandingRequestedKeys,
+} from '../_shared/tenantBranding.ts'
 
-const HEX = /^#[0-9A-Fa-f]{6}$/
 const TENANT_SECRET_PREFIX = 'TENANT_SERVICE_ROLE_KEY_'
-
-function nullableText(value: unknown, max = 2000) {
-  if (value === null || value === undefined || value === '') return null
-  return typeof value === 'string' ? value.trim().slice(0, max) : null
-}
-
-function normalizeLocales(value: unknown) {
-  if (!Array.isArray(value)) return ['en']
-  const locales = value
-    .filter((item) => typeof item === 'string')
-    .map((item) => item.trim().toLowerCase())
-    .filter((item) => /^[a-z]{2}(?:-[a-z]{2})?$/.test(item))
-  return locales.length > 0 ? Array.from(new Set(locales)) : ['en']
-}
-
-function normalizeBranding(value: unknown) {
-  const input = value && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : {}
-
-  const primary = nullableText(input.primary_color, 20)
-  const secondary = nullableText(input.secondary_color, 20)
-
-  return {
-    profile: {
-      display_name: nullableText(input.display_name, 160),
-      default_locale: normalizeLocales(input.enabled_locales)[0],
-    },
-    app: {
-      app_name: nullableText(input.app_name ?? input.display_name, 160) ?? 'DoctoLeb Clinic',
-      app_tagline: nullableText(input.app_tagline, 240),
-      splash_logo_url: nullableText(input.splash_logo_url, 2000),
-      icon_url: nullableText(input.icon_url, 2000),
-      primary_color: primary && HEX.test(primary) ? primary : null,
-      secondary_color: secondary && HEX.test(secondary) ? secondary : null,
-      support_phone: nullableText(input.support_phone, 80),
-      support_email: nullableText(input.support_email, 240),
-      enabled_locales: normalizeLocales(input.enabled_locales),
-      maintenance_message: nullableText(input.maintenance_message, 1000),
-    },
-  }
-}
 
 Deno.serve(async (req) => {
   const preflightResponse = preflight(req)
@@ -90,14 +51,14 @@ Deno.serve(async (req) => {
       actorId: context.admin.id,
       metadata: {
         reason: 'tenant_runtime_not_configured',
-        requestedKeys: Object.keys(body.branding && typeof body.branding === 'object' ? body.branding : {}),
+        requestedKeys: tenantBrandingRequestedKeys(body.branding),
       },
     })
     return errorResponse('TENANT_RUNTIME_NOT_CONFIGURED', 409, cors)
   }
 
   const { key, secretName } = getTenantServiceRoleKey(tenant.supabase_project_ref)
-  const branding = normalizeBranding(body.branding)
+  const branding = normalizeTenantBranding(body.branding)
 
   if (!key) {
     await auditEvent(context.client, {
@@ -108,7 +69,7 @@ Deno.serve(async (req) => {
         reason: 'missing_tenant_service_secret',
         secretPrefix: TENANT_SECRET_PREFIX,
         secretName,
-        requestedKeys: Object.keys(body.branding && typeof body.branding === 'object' ? body.branding : {}),
+        requestedKeys: tenantBrandingRequestedKeys(body.branding),
       },
     })
     return errorResponse('TENANT_SERVICE_ROLE_NOT_CONFIGURED', 409, cors, { secretName })
@@ -160,7 +121,7 @@ Deno.serve(async (req) => {
     actorId: context.admin.id,
     metadata: {
       previousSnapshot,
-      requestedKeys: Object.keys(body.branding && typeof body.branding === 'object' ? body.branding : {}),
+      requestedKeys: tenantBrandingRequestedKeys(body.branding),
       profilePatchKeys: Object.keys(profilePatch),
       appConfigKeys: Object.keys(branding.app),
     },
@@ -212,6 +173,34 @@ Deno.serve(async (req) => {
     },
     appConfig,
   }
+  const nextTenantDisplayName = currentSnapshot.profile.display_name || appConfig.app_name || tenant.display_name
+  let syncedTenant = tenant
+
+  if (nextTenantDisplayName && nextTenantDisplayName !== tenant.display_name) {
+    const { data: updatedTenant, error: tenantUpdateError } = await context.client
+      .from('tenants')
+      .update({ display_name: nextTenantDisplayName })
+      .eq('id', tenantId)
+      .select('id, slug, display_name, updated_at')
+      .single()
+
+    if (tenantUpdateError) {
+      await auditEvent(context.client, {
+        tenantId,
+        eventType: 'tenant_config.sync_partial',
+        actorId: context.admin.id,
+        metadata: {
+          reason: 'control_plane_display_name_update_failed',
+          appConfigId: appConfig.id,
+          previousSnapshot,
+          currentSnapshot,
+        },
+      })
+      return errorResponse('TENANT_CONTROL_PLANE_SYNC_FAILED', 500, cors)
+    }
+
+    syncedTenant = updatedTenant
+  }
 
   await auditEvent(context.client, {
     tenantId,
@@ -219,11 +208,12 @@ Deno.serve(async (req) => {
     actorId: context.admin.id,
     metadata: {
       appConfigId: appConfig.id,
+      tenantDisplayName: syncedTenant.display_name,
       brandingKeys: Object.keys(branding.app),
       previousSnapshot,
       currentSnapshot,
     },
   })
 
-  return jsonResponse({ data: { profileId: profile.id, appConfig }, error: null }, 200, cors)
+  return jsonResponse({ data: { profileId: profile.id, appConfig, tenant: syncedTenant }, error: null }, 200, cors)
 })

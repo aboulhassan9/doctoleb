@@ -6,17 +6,27 @@ import DashboardLayout from '@ui/components/layouts/DashboardLayout';
 import { Modal, LoadingSkeleton } from '@ui/components/ui';
 import { staffService } from '@core/services/staff';
 import { stagger, fadeUp } from '@core/lib/animations';
+import { createClientRequestId } from '@core/lib/idempotency';
+import { DEFAULT_STAFF_MEMBER_ROLE, SUPPORTED_STAFF_MEMBER_ROLES } from '@core/lib/roles';
 
-const STAFF_ROLES = [
-  { value: 'secretary', label: 'Secretary', icon: 'badge', color: 'text-indigo-600 bg-indigo-50' },
-  { value: 'predoctor', label: 'Pre-Doctor', icon: 'stethoscope', color: 'text-teal-600 bg-teal-50' },
-  { value: 'nurse', label: 'Nurse', icon: 'medical_services', color: 'text-pink-600 bg-pink-50' },
-  { value: 'assistant', label: 'Assistant', icon: 'support_agent', color: 'text-amber-600 bg-amber-50' },
-  { value: 'junior_doctor', label: 'Junior Doctor', icon: 'person', color: 'text-cyan-600 bg-cyan-50' },
-];
+const STAFF_ROLE_PRESENTATION = {
+  secretary: { label: 'Secretary', icon: 'badge', color: 'text-indigo-600 bg-indigo-50' },
+  predoctor: { label: 'Pre-Doctor', icon: 'stethoscope', color: 'text-teal-600 bg-teal-50' },
+};
+
+const UNSUPPORTED_ROLE_DISPLAY = {
+  label: 'Unsupported Role',
+  icon: 'block',
+  color: 'text-slate-600 bg-slate-100',
+};
+
+const STAFF_ROLES = SUPPORTED_STAFF_MEMBER_ROLES.map((value) => ({
+  value,
+  ...STAFF_ROLE_PRESENTATION[value],
+}));
 
 const INVITE_STATUSES = {
-  not_invited: { label: 'Not Invited', color: 'bg-slate-100 text-slate-600' },
+  none: { label: 'Not Invited', color: 'bg-slate-100 text-slate-600' },
   invited: { label: 'Invited', color: 'bg-blue-50 text-blue-600' },
   accepted: { label: 'Accepted', color: 'bg-emerald-50 text-emerald-600' },
   disabled: { label: 'Disabled', color: 'bg-red-50 text-red-500' },
@@ -24,16 +34,57 @@ const INVITE_STATUSES = {
 
 const DEFAULT_FORM = {
   display_name: '',
-  role: 'secretary',
+  role: DEFAULT_STAFF_MEMBER_ROLE,
   phone: '',
   email: '',
   hire_date: '',
-  invite_status: 'not_invited',
-  is_active: true,
 };
 
+function buildStaffUpdatePayload(form) {
+  return {
+    display_name: form.display_name,
+    phone: form.phone || null,
+    hire_date: form.hire_date || null,
+  };
+}
+
+function getDisableCopy(member) {
+  const isPendingInvite = member?.invite_status !== 'accepted';
+
+  return {
+    title: isPendingInvite ? 'Cancel Staff Invite' : 'Disable Staff Access',
+    message: isPendingInvite
+      ? 'This cancels the pending invite, disables the roster entry, and prevents the invite from being used.'
+      : 'This disables the roster entry and blocks this staff member from using the app.',
+    actionLabel: isPendingInvite ? 'Cancel invite' : 'Disable access',
+    pendingLabel: isPendingInvite ? 'Cancelling...' : 'Disabling...',
+    successMessage: isPendingInvite ? 'Staff invite cancelled.' : 'Staff access disabled.',
+  };
+}
+
+function canResendInvite(member) {
+  return member?.is_active === true && member?.invite_status === 'invited';
+}
+
+function canReactivateStaff(member) {
+  return (
+    member?.is_active === false
+    && member?.invite_status === 'disabled'
+    && member?.disabled_previous_invite_status === 'accepted'
+  );
+}
+
+function canReissueInvite(member) {
+  return (
+    member?.is_active === false
+    && member?.invite_status === 'disabled'
+    && ['none', 'invited'].includes(member?.disabled_previous_invite_status)
+    && Boolean(member?.email)
+  );
+}
+
 function getRoleDisplay(role) {
-  return STAFF_ROLES.find((r) => r.value === role) || STAFF_ROLES[0];
+  return STAFF_ROLES.find((r) => r.value === role) || UNSUPPORTED_ROLE_DISPLAY;
 }
 
 export default function DoctorStaffPage() {
@@ -54,6 +105,9 @@ export default function DoctorStaffPage() {
 
   const [deactivateTarget, setDeactivateTarget] = useState(null);
   const [deactivating, setDeactivating] = useState(false);
+  const [resendingInviteId, setResendingInviteId] = useState(null);
+  const [reissuingInviteId, setReissuingInviteId] = useState(null);
+  const [reactivatingId, setReactivatingId] = useState(null);
 
   const [showInactive, setShowInactive] = useState(false);
   const [roleFilter, setRoleFilter] = useState('all');
@@ -97,34 +151,31 @@ export default function DoctorStaffPage() {
     setEditingMember(member);
     setForm({
       display_name: member.display_name || '',
-      role: member.role || 'secretary',
+      role: member.role || DEFAULT_STAFF_MEMBER_ROLE,
       phone: member.phone || '',
       email: member.email || '',
       hire_date: member.hire_date || '',
-      invite_status: member.invite_status || 'not_invited',
-      is_active: member.is_active !== false,
     });
     setShowModal(true);
   };
 
   const handleSave = async () => {
     setSaving(true);
-    const payload = {
-      ...form,
-      doctor_id: doctorId,
-      phone: form.phone || null,
-      email: form.email || null,
-      hire_date: form.hire_date || null,
-    };
-
     const result = modalMode === 'edit'
-      ? await staffService.update(editingMember.id, payload)
-      : await staffService.create(payload);
+      ? await staffService.update(editingMember.id, buildStaffUpdatePayload(form))
+      : await staffService.invite({
+        display_name: form.display_name,
+        role: form.role,
+        phone: form.phone || null,
+        email: form.email || '',
+        hire_date: form.hire_date || null,
+        client_request_id: createClientRequestId(),
+      });
 
     if (result.error) {
       showToast(result.error, 'error');
     } else {
-      showToast(`Staff member ${modalMode === 'edit' ? 'updated' : 'added'} successfully.`, 'success');
+      showToast(`Staff member ${modalMode === 'edit' ? 'updated' : 'invited'} successfully.`, 'success');
       setShowModal(false);
       loadStaff();
     }
@@ -133,16 +184,86 @@ export default function DoctorStaffPage() {
 
   const handleDeactivate = async () => {
     if (!deactivateTarget) return;
+    const copy = getDisableCopy(deactivateTarget);
     setDeactivating(true);
     const result = await staffService.deactivate(deactivateTarget.id);
     if (result.error) {
       showToast(result.error, 'error');
     } else {
-      showToast('Staff member deactivated.', 'success');
+      showToast(copy.successMessage, 'success');
       setDeactivateTarget(null);
       loadStaff();
     }
     setDeactivating(false);
+  };
+
+  const handleResendInvite = async (member) => {
+    if (!canResendInvite(member)) {
+      showToast('Only active pending invites can be resent.', 'error');
+      return;
+    }
+
+    const clientRequestId = createClientRequestId();
+    if (!clientRequestId) {
+      showToast('Your browser could not create a safe request id. Refresh and try again.', 'error');
+      return;
+    }
+
+    setResendingInviteId(member.id);
+    const result = await staffService.resendInvite(member.id, clientRequestId);
+
+    if (result.error) {
+      showToast(result.error, 'error');
+    } else {
+      showToast('Staff invite resent.', 'success');
+      loadStaff();
+    }
+
+    setResendingInviteId(null);
+  };
+
+  const handleReactivate = async (member) => {
+    if (!canReactivateStaff(member)) {
+      showToast('Only previously accepted disabled staff can be reactivated.', 'error');
+      return;
+    }
+
+    setReactivatingId(member.id);
+    const result = await staffService.reactivate(member.id);
+
+    if (result.error) {
+      showToast(result.error, 'error');
+    } else {
+      showToast('Staff access reactivated.', 'success');
+      loadStaff();
+    }
+
+    setReactivatingId(null);
+  };
+
+  const handleReissueInvite = async (member) => {
+    if (!canReissueInvite(member)) {
+      showToast('Only cancelled pending invites can be reissued.', 'error');
+      return;
+    }
+
+    const clientRequestId = createClientRequestId();
+    if (!clientRequestId) {
+      showToast('Your browser could not create a safe request id. Refresh and try again.', 'error');
+      return;
+    }
+
+    setReissuingInviteId(member.id);
+    const result = await staffService.reissueInvite(member.id, clientRequestId);
+
+    if (result.error) {
+      showToast(result.error, 'error');
+    } else {
+      showToast('Staff invite reissued.', 'success');
+      loadStaff();
+    }
+
+    setReissuingInviteId(null);
   };
 
   const updateField = (field, value) => {
@@ -235,7 +356,7 @@ export default function DoctorStaffPage() {
             <span className="material-symbols-outlined text-5xl text-slate-300 mb-4 block">group</span>
             <h3 className="text-lg font-semibold text-slate-700">No staff members yet</h3>
             <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-              Add your team members — secretaries, pre-doctors, nurses, and assistants.
+              Add supported v1 team members: secretaries and pre-doctors.
             </p>
             <button
               onClick={openCreate}
@@ -251,7 +372,7 @@ export default function DoctorStaffPage() {
           <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filtered.map((member) => {
               const roleDisplay = getRoleDisplay(member.role);
-              const inviteStatus = INVITE_STATUSES[member.invite_status] || INVITE_STATUSES.not_invited;
+              const inviteStatus = INVITE_STATUSES[member.invite_status] || INVITE_STATUSES.none;
               const initials = (member.display_name || '')
                 .split(' ')
                 .map((w) => w[0])
@@ -283,8 +404,49 @@ export default function DoctorStaffPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
+                      {canReactivateStaff(member) && (
+                        <button
+                          onClick={() => handleReactivate(member)}
+                          disabled={reactivatingId === member.id}
+                          title="Reactivate access"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <span className="sr-only">Reactivate access</span>
+                          <span className="material-symbols-outlined text-lg">
+                            {reactivatingId === member.id ? 'hourglass_top' : 'person_check'}
+                          </span>
+                        </button>
+                      )}
+                      {canReissueInvite(member) && (
+                        <button
+                          onClick={() => handleReissueInvite(member)}
+                          disabled={reissuingInviteId === member.id}
+                          title="Reissue cancelled invite"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-700 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <span className="sr-only">Reissue cancelled invite</span>
+                          <span className="material-symbols-outlined text-lg">
+                            {reissuingInviteId === member.id ? 'hourglass_top' : 'person_add'}
+                          </span>
+                        </button>
+                      )}
+                      {canResendInvite(member) && (
+                        <button
+                          onClick={() => handleResendInvite(member)}
+                          disabled={resendingInviteId === member.id}
+                          title="Resend invite"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <span className="sr-only">Resend invite</span>
+                          <span className="material-symbols-outlined text-lg">
+                            {resendingInviteId === member.id ? 'hourglass_top' : 'forward_to_inbox'}
+                          </span>
+                        </button>
+                      )}
                       <button
                         onClick={() => openEdit(member)}
+                        title="Edit staff member"
+                        aria-label="Edit staff member"
                         className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-colors"
                       >
                         <span className="material-symbols-outlined text-lg">edit</span>
@@ -292,6 +454,8 @@ export default function DoctorStaffPage() {
                       {member.is_active && (
                         <button
                           onClick={() => setDeactivateTarget(member)}
+                          title={member.invite_status === 'accepted' ? 'Disable staff access' : 'Cancel staff invite'}
+                          aria-label={member.invite_status === 'accepted' ? 'Disable staff access' : 'Cancel staff invite'}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                         >
                           <span className="material-symbols-outlined text-lg">person_off</span>
@@ -317,6 +481,24 @@ export default function DoctorStaffPage() {
                       <p className="text-xs text-slate-500 flex items-center gap-1.5">
                         <span className="material-symbols-outlined text-sm">event</span>
                         Hired {member.hire_date}
+                      </p>
+                    )}
+                    {member.invite_resend_count > 0 && (
+                      <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-sm">mark_email_read</span>
+                        Invite resent {member.invite_resend_count} time{member.invite_resend_count === 1 ? '' : 's'}
+                      </p>
+                    )}
+                    {member.reactivation_count > 0 && (
+                      <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-sm">person_check</span>
+                        Reactivated {member.reactivation_count} time{member.reactivation_count === 1 ? '' : 's'}
+                      </p>
+                    )}
+                    {member.invite_reissue_count > 0 && (
+                      <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-sm">person_add</span>
+                        Invite reissued {member.invite_reissue_count} time{member.invite_reissue_count === 1 ? '' : 's'}
                       </p>
                     )}
                   </div>
@@ -348,18 +530,20 @@ export default function DoctorStaffPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Role *</label>
-                  <select
-                    value={form.role}
-                    onChange={(e) => updateField('role', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  >
-                    {STAFF_ROLES.map((r) => (
-                      <option key={r.value} value={r.value}>{r.label}</option>
-                    ))}
-                  </select>
-                </div>
+                {modalMode === 'create' && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Role *</label>
+                    <select
+                      value={form.role}
+                      onChange={(e) => updateField('role', e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      {STAFF_ROLES.map((r) => (
+                        <option key={r.value} value={r.value}>{r.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Hire Date</label>
                   <input
@@ -394,18 +578,6 @@ export default function DoctorStaffPage() {
                 </div>
               </div>
 
-              {modalMode === 'edit' && (
-                <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.is_active}
-                    onChange={(e) => updateField('is_active', e.target.checked)}
-                    className="rounded border-slate-300 text-primary focus:ring-primary/30"
-                  />
-                  Active
-                </label>
-              )}
-
               <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
                 <button
                   onClick={() => setShowModal(false)}
@@ -418,7 +590,7 @@ export default function DoctorStaffPage() {
                   disabled={saving || !form.display_name.trim()}
                   className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-medium shadow-lg shadow-primary/20 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
-                  {saving ? 'Saving…' : modalMode === 'edit' ? 'Update' : 'Add Member'}
+                  {saving ? 'Saving…' : modalMode === 'edit' ? 'Update' : 'Send Invite'}
                 </button>
               </div>
             </div>
@@ -432,12 +604,12 @@ export default function DoctorStaffPage() {
           <Modal
             isOpen={!!deactivateTarget}
             onClose={() => setDeactivateTarget(null)}
-            title="Deactivate Staff Member"
+            title={getDisableCopy(deactivateTarget).title}
           >
             <div className="p-1 space-y-4">
               <p className="text-sm text-slate-600">
-                Are you sure you want to deactivate <strong>{deactivateTarget.display_name}</strong>?
-                They will lose access to the system.
+                {getDisableCopy(deactivateTarget).message}{' '}
+                <strong>{deactivateTarget.display_name}</strong> will no longer have access.
               </p>
               <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
                 <button
@@ -451,7 +623,7 @@ export default function DoctorStaffPage() {
                   disabled={deactivating}
                   className="px-5 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 disabled:opacity-50 transition-all"
                 >
-                  {deactivating ? 'Deactivating…' : 'Deactivate'}
+                  {deactivating ? getDisableCopy(deactivateTarget).pendingLabel : getDisableCopy(deactivateTarget).actionLabel}
                 </button>
               </div>
             </div>

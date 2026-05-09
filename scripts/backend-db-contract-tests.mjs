@@ -41,6 +41,8 @@ const testUrl = env.BACKEND_TEST_SUPABASE_URL || env.VITE_SUPABASE_URL;
 const anonKey = env.BACKEND_TEST_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY;
 const databaseUrl = env.BACKEND_TEST_DATABASE_URL;
 const allowLive = env.BACKEND_TEST_ALLOW_LIVE === 'true';
+const allowLiveAnonRpc = allowLive || env.BACKEND_TEST_ALLOW_LIVE_ANON_RPC === 'true';
+const contractRequired = env.BACKEND_DB_CONTRACT_REQUIRED === 'true';
 
 const results = [];
 
@@ -49,6 +51,10 @@ function record(name, passed, detail = '') {
 }
 
 function skip(name, detail) {
+  if (contractRequired) {
+    fail(name, `REQUIRED BUT SKIPPED: ${detail}`);
+    return;
+  }
   record(name, true, `SKIP: ${detail}`);
 }
 
@@ -100,12 +106,13 @@ async function callRpcWithRetry(client, name, args = {}) {
   return result;
 }
 
-function assertNotLive(url) {
-  if (allowLive) return;
+function assertNotLive(url, context, { allow } = {}) {
+  if (allow) return;
   if (url?.includes(LIVE_PROJECT_REF)) {
     throw new Error(
-      `Refusing to run backend DB contract tests against live project ${LIVE_PROJECT_REF}. ` +
-      'Use a Supabase branch/local URL or set BACKEND_TEST_ALLOW_LIVE=true only for read-only diagnostics.'
+      `Refusing to run ${context} against live project ${LIVE_PROJECT_REF}. ` +
+      'Use a disposable local/branch database for SQL tests. ' +
+      'Set BACKEND_TEST_ALLOW_LIVE_ANON_RPC=true only for read-only anon RPC diagnostics.'
     );
   }
 }
@@ -116,7 +123,7 @@ function runSqlAuditIfConfigured() {
     return;
   }
 
-  assertNotLive(databaseUrl);
+  assertNotLive(databaseUrl, 'DB introspection SQL audit');
 
   const auditFile = path.join(root, 'supabase', 'sql', 'backend_contract_audit.sql');
   if (!fs.existsSync(auditFile)) {
@@ -148,7 +155,7 @@ function runPgTapRlsSuiteIfConfigured() {
     return;
   }
 
-  assertNotLive(databaseUrl);
+  assertNotLive(databaseUrl, 'pgTAP RLS contract suite');
 
   const testFile = path.join(root, 'supabase', 'tests', 'pgtap_rls.sql');
   if (!fs.existsSync(testFile)) {
@@ -202,7 +209,7 @@ async function runAnonRpcExposureTests() {
     return;
   }
 
-  assertNotLive(testUrl);
+  assertNotLive(testUrl, 'anon RPC exposure tests', { allow: allowLiveAnonRpc });
 
   const client = createClient(testUrl, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },

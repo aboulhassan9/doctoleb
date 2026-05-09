@@ -397,6 +397,103 @@ function assertNoTenantIdColumnInMigrations() {
   }
 }
 
+function assertNoClinicalDataInControlPlane() {
+  // The control-plane Supabase project is zero-PHI. It may store tenant
+  // routing, provisioning, plan, entitlement, and audit metadata only.
+  // Clinical/operational tenant data belongs in tenant Supabase projects.
+  const forbiddenTables = new Set([
+    'patients',
+    'patient_consents',
+    'patient_devices',
+    'patient_diseases',
+    'patient_family_history',
+    'patient_insurance_policies',
+    'patient_surgeries',
+    'patient_vaccinations',
+    'appointments',
+    'encounters',
+    'clinical_notes',
+    'clinical_documents',
+    'document_attachments',
+    'diagnoses',
+    'prescriptions',
+    'lab_orders',
+    'imaging_orders',
+    'messages',
+    'message_attachments',
+    'message_read_receipts',
+    'bills',
+    'payments',
+    'insurance_claims',
+    'insurance_providers',
+    'insurance_plans',
+    'staff_members',
+    'doctors',
+    'clinics',
+  ]);
+  const forbiddenColumns = [
+    'patient_id',
+    'doctor_id',
+    'appointment_id',
+    'encounter_id',
+    'clinical_note_id',
+    'clinical_document_id',
+    'diagnosis_id',
+    'prescription_id',
+    'message_id',
+    'document_id',
+    'claim_id',
+    'policy_id',
+    'date_of_birth',
+    'birth_date',
+    'diagnosis_text',
+    'medical_history',
+    'chief_complaint',
+    'symptoms',
+    'allergies',
+    'medications',
+    'lab_result',
+    'imaging_result',
+  ];
+  const migrationFiles = walk(path.join(root, 'supabase-control-plane', 'migrations'), ['.sql']);
+  const functionFiles = walk(path.join(root, 'supabase-control-plane', 'functions'), ['.ts', '.js']);
+  const violations = [];
+  const ddlColumnPattern = new RegExp(
+    `^\\s*(${forbiddenColumns.join('|')})\\s+(?:uuid|text|varchar|character|date|timestamp|timestamptz|jsonb)\\b`,
+    'i'
+  );
+  const createTablePattern = /create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?([a-z0-9_]+)/i;
+  const fromTablePattern = /(?:from|insert|update|delete)\s*\(\s*['"]([a-z0-9_]+)['"]\s*\)/i;
+
+  for (const file of migrationFiles) {
+    read(file).split(/\r?\n/).forEach((line, index) => {
+      const tableMatch = line.match(createTablePattern);
+      if (tableMatch && forbiddenTables.has(tableMatch[1].toLowerCase())) {
+        violations.push(`${rel(file)}:${index + 1}: forbidden control-plane table ${tableMatch[1]}`);
+      }
+      const columnMatch = line.match(ddlColumnPattern);
+      if (columnMatch) {
+        violations.push(`${rel(file)}:${index + 1}: forbidden control-plane column ${columnMatch[1]}`);
+      }
+    });
+  }
+
+  for (const file of functionFiles) {
+    read(file).split(/\r?\n/).forEach((line, index) => {
+      const tableMatch = line.match(fromTablePattern);
+      if (tableMatch && forbiddenTables.has(tableMatch[1].toLowerCase())) {
+        violations.push(`${rel(file)}:${index + 1}: control-plane function touches tenant clinical table ${tableMatch[1]}`);
+      }
+    });
+  }
+
+  if (violations.length) {
+    fail('Control-plane schema/functions remain zero-PHI and do not touch tenant clinical tables', violations);
+  } else {
+    pass('Control-plane schema/functions remain zero-PHI and do not touch tenant clinical tables');
+  }
+}
+
 const srcFiles = walk(path.join(root, 'src'), ['.js', '.jsx']);
 const pageFiles = [
   ...walk(path.join(root, 'apps', 'patient-web', 'src', 'pages'), ['.js', '.jsx']),
@@ -426,6 +523,7 @@ assertKnownLegacyRisksAreTracked();
 assertNoHardcodedTenantSupabaseUrls();
 assertNoServiceRoleKeyReferencesInFrontend();
 assertNoTenantIdColumnInMigrations();
+assertNoClinicalDataInControlPlane();
 
 const failed = CHECKS.filter((check) => !check.passed);
 

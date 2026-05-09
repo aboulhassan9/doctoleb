@@ -18,6 +18,7 @@ export const SECRET_STORAGES = new Set([
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const SAFE_SECRET_REF = /^[a-zA-Z0-9:_./-]{3,512}$/
+const EDGE_FUNCTION_SECRET_REF = /^[A-Z][A-Z0-9_]{2,200}$/
 const TOKENISH_SECRET = /(eyJ|sbp_|vcp_|sk_live_|sk_test_)/i
 const SECRET_INPUT_KEY = /(token|access[_-]?key|api[_-]?key|secret[_-]?value|service[_-]?role|management[_-]?key)/i
 const SAFE_SECRET_REFERENCE_KEYS = new Set(['secretRef', 'secret_ref', 'secretStorage', 'secret_storage'])
@@ -184,6 +185,14 @@ export function normalizeProviderConnectionPatch(
   const nextSecretRef = patch.secret_ref !== undefined ? patch.secret_ref : existing?.secret_ref
   const automationEnabled = Boolean(patch.is_automation_enabled ?? existing?.is_automation_enabled ?? false)
 
+  if (automationEnabled && nextSecretStorage !== 'edge_function_secret') {
+    return { data: null, error: 'UNSUPPORTED_AUTOMATION_SECRET_STORAGE' }
+  }
+
+  if (automationEnabled && typeof nextSecretRef === 'string' && !EDGE_FUNCTION_SECRET_REF.test(nextSecretRef)) {
+    return { data: null, error: 'INVALID_EDGE_SECRET_REF' }
+  }
+
   if (automationEnabled && (nextStatus !== 'active' || nextSecretStorage === 'none' || !nextSecretRef)) {
     return { data: null, error: 'INVALID_AUTOMATION_STATE' }
   }
@@ -195,7 +204,9 @@ export function providerConnectionErrorStatus(code: string) {
   const statuses: Record<string, number> = {
     INVALID_REQUEST: 400,
     SECRET_INPUT_NOT_ALLOWED: 400,
+    INVALID_EDGE_SECRET_REF: 400,
     INVALID_AUTOMATION_STATE: 409,
+    UNSUPPORTED_AUTOMATION_SECRET_STORAGE: 409,
     PROVIDER_IMMUTABLE: 409,
     USE_ARCHIVE_ENDPOINT: 409,
     CONNECTION_ARCHIVED: 409,

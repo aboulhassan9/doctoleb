@@ -25,7 +25,7 @@ jobs:
   verify:
     name: Lint, Build, Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
@@ -52,8 +52,59 @@ jobs:
       - name: Audit backend contracts
         run: npm run audit:backend-contract
 
+      - name: Install PostgreSQL client for DB contract checks
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.72.7
+
+      - name: Start disposable local Supabase stack
+        run: supabase start -x realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+
+      - name: Apply tenant migrations to disposable local database
+        run: supabase db reset --local --no-seed
+
+      - name: Export local Supabase contract-test environment
+        run: |
+          set -euo pipefail
+
+          status="$(supabase status -o env)"
+
+          get_env_value() {
+            printf '%s\n' "$status" | awk -F= -v key="$1" '$1 == key { print substr($0, length(key) + 2) }' | tail -n 1
+          }
+
+          db_url="$(get_env_value DB_URL)"
+          api_url="$(get_env_value API_URL)"
+          anon_key="$(get_env_value ANON_KEY)"
+
+          if [ -z "$db_url" ] || [ -z "$api_url" ] || [ -z "$anon_key" ]; then
+            echo "::error::Could not resolve local Supabase DB/API/anon values from supabase status."
+            exit 1
+          fi
+
+          {
+            echo "BACKEND_TEST_DATABASE_URL<<EOF"
+            printf '%s\n' "$db_url"
+            echo "EOF"
+            echo "BACKEND_TEST_SUPABASE_URL<<EOF"
+            printf '%s\n' "$api_url"
+            echo "EOF"
+            echo "BACKEND_TEST_SUPABASE_ANON_KEY<<EOF"
+            printf '%s\n' "$anon_key"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
       - name: Run backend DB contract checks
         run: npm run test:backend-db-contract
+        env:
+          BACKEND_DB_CONTRACT_REQUIRED: 'true'
+
+      - name: Stop disposable local Supabase stack
+        if: always()
+        run: supabase stop --no-backup || true
 
       - name: Audit high-severity dependencies
         run: npm run audit:high
@@ -128,13 +179,11 @@ jobs:
       - name: Build production artifact
         run: npx --yes vercel@${VERCEL_CLI_VERSION} build --prod --token="$VERCEL_TOKEN"
 
-      - name: Guard patient/ops bundles against local tenant fallback leakage
-        if: matrix.app != 'control-plane'
-        run: |
-          if grep -R -q -E 'gezmfmskhmjgnquoyosq|eyJhbGciOiJIUzI1Ni' .vercel/output/static; then
-            echo "::error::Production bundle contains tenant fallback URL/key material."
-            exit 1
-          fi
+      - name: Guard production bundle against secret leakage
+        run: npm run audit:bundle-secrets
+        env:
+          BUNDLE_APP: ${{ matrix.app }}
+          BUNDLE_DIR: .vercel/output/static
 
       - name: Deploy production artifact
         id: deploy
@@ -223,6 +272,69 @@ jobs:
           path: output/playwright/
           if-no-files-found: ignore
 
+  csp-smoke-vercel:
+    name: CSP report-only smoke
+    needs:
+      - deploy-vercel
+      - smoke-vercel
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify deployed security headers and report-only CSP
+        run: npm run smoke:csp:deployed
+
+  control-plane-admin-cors-smoke:
+    name: Control-plane admin CORS smoke
+    needs:
+      - deploy-vercel
+      - smoke-vercel
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify control-plane admin CORS preflight
+        run: npm run smoke:control-plane-admin-cors
+
+  tenant-resolver-smoke:
+    name: Tenant resolver HTTP smoke
+    needs:
+      - deploy-vercel
+      - smoke-vercel
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify public tenant resolver contract
+        run: npm run smoke:tenant-resolver
+
   auth-smoke-vercel:
     name: Auth smoke Vercel aliases
     needs:
@@ -268,5 +380,54 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: auth-smoke-artifacts
+          path: output/playwright/
+          if-no-files-found: ignore
+
+  deployed-flow-smoke-vercel:
+    name: First-band deployed flow smoke
+    needs:
+      - deploy-vercel
+      - smoke-vercel
+      - auth-smoke-vercel
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run first-band deployed flow smoke
+        run: npm run smoke:flows:deployed
+        env:
+          FLOW_SMOKE_REQUIRED: 'true'
+          AUTH_SMOKE_PATIENT_EMAIL: ${{ secrets.AUTH_SMOKE_PATIENT_EMAIL }}
+          AUTH_SMOKE_PATIENT_PASSWORD: ${{ secrets.AUTH_SMOKE_PATIENT_PASSWORD }}
+          AUTH_SMOKE_DOCTOR_EMAIL: ${{ secrets.AUTH_SMOKE_DOCTOR_EMAIL }}
+          AUTH_SMOKE_DOCTOR_PASSWORD: ${{ secrets.AUTH_SMOKE_DOCTOR_PASSWORD }}
+          AUTH_SMOKE_SECRETARY_EMAIL: ${{ secrets.AUTH_SMOKE_SECRETARY_EMAIL }}
+          AUTH_SMOKE_SECRETARY_PASSWORD: ${{ secrets.AUTH_SMOKE_SECRETARY_PASSWORD }}
+          AUTH_SMOKE_PREDOCTOR_EMAIL: ${{ secrets.AUTH_SMOKE_PREDOCTOR_EMAIL }}
+          AUTH_SMOKE_PREDOCTOR_PASSWORD: ${{ secrets.AUTH_SMOKE_PREDOCTOR_PASSWORD }}
+          AUTH_SMOKE_CONTROL_OWNER_EMAIL: ${{ secrets.AUTH_SMOKE_CONTROL_OWNER_EMAIL }}
+          AUTH_SMOKE_CONTROL_OWNER_PASSWORD: ${{ secrets.AUTH_SMOKE_CONTROL_OWNER_PASSWORD }}
+
+      - name: Upload first-band flow artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployed-flow-smoke-artifacts
           path: output/playwright/
           if-no-files-found: ignore

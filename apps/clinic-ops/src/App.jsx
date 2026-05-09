@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import ProtectedRoute, { AuthRedirect } from '@ui/components/ProtectedRoute';
+import FeatureProtectedRoute from '@ui/components/FeatureProtectedRoute';
+import { ENTITLEMENT_FEATURES } from '@core/lib/entitlements';
 import { CLINIC_OPS_ROLES, APP_SURFACES } from '@/lib/appBoundaries';
 import { ToastProvider } from '@ui/contexts/ToastContext';
 import { ThemeProvider } from '@ui/contexts/ThemeContext';
@@ -88,9 +90,9 @@ function App() {
                       <Route path="/secretary-booking" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><SecretaryBookingPage /></ProtectedRoute>} />
                       <Route path="/secretary-intake/:patientId" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><SecretaryIntakePage /></ProtectedRoute>} />
                       <Route path="/secretary-ops-catalogs" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><SecretaryOpsCatalogsPage /></ProtectedRoute>} />
-                      <Route path="/secretary-insurance-providers" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><SecretaryInsuranceProvidersPage /></ProtectedRoute>} />
-                      <Route path="/secretary-patient-insurance/:patientId" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><SecretaryPatientInsurancePage /></ProtectedRoute>} />
-                      <Route path="/secretary-claim-templates" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><SecretaryClaimTemplatesPage /></ProtectedRoute>} />
+                      <Route path="/secretary-insurance-providers" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.insuranceBilling} audience="staff"><SecretaryInsuranceProvidersPage /></FeatureProtectedRoute></ProtectedRoute>} />
+                      <Route path="/secretary-patient-insurance/:patientId" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.insuranceBilling} audience="staff"><SecretaryPatientInsurancePage /></FeatureProtectedRoute></ProtectedRoute>} />
+                      <Route path="/secretary-claim-templates" element={<ProtectedRoute requiredRole="secretary" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.insuranceBilling} audience="staff"><SecretaryClaimTemplatesPage /></FeatureProtectedRoute></ProtectedRoute>} />
 
                       {/* Pre-doctor */}
                       <Route path="/predoctor-dashboard" element={<ProtectedRoute requiredRole="predoctor" appSurface={APP_SURFACES.clinicOps}><PreDoctorDashboardPage /></ProtectedRoute>} />
@@ -109,19 +111,19 @@ function App() {
                       <Route path="/doctor-lab-request" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorLabRequestPage /></ProtectedRoute>} />
                       <Route path="/doctor-patient/:id" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorPatientProfilePage /></ProtectedRoute>} />
                       <Route path="/doctor-patient-history/:id" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorMedicalHistoryPage /></ProtectedRoute>} />
-                      <Route path="/doctor-reports" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorReportsPage /></ProtectedRoute>} />
+                      <Route path="/doctor-reports" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.advancedReports} audience="staff"><DoctorReportsPage /></FeatureProtectedRoute></ProtectedRoute>} />
                       <Route path="/doctor-referrals" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorReferralsPage /></ProtectedRoute>} />
                       <Route path="/doctor-certificates" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorCertificatesPage /></ProtectedRoute>} />
                       <Route path="/doctor-encounter/:appointmentId" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorEncounterPage /></ProtectedRoute>} />
                       <Route path="/doctor-encounter-id/:encounterId" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorEncounterPage /></ProtectedRoute>} />
                       <Route path="/doctor-schedule" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorScheduleTemplatesPage /></ProtectedRoute>} />
-                      <Route path="/doctor-staff" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorStaffPage /></ProtectedRoute>} />
+                      <Route path="/doctor-staff" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.staffAccounts} audience="staff"><DoctorStaffPage /></FeatureProtectedRoute></ProtectedRoute>} />
                       <Route path="/doctor-tenant-settings" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorTenantSettingsPage /></ProtectedRoute>} />
                       <Route path="/doctor-clinical-catalogs" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorClinicalCatalogsPage /></ProtectedRoute>} />
-                      <Route path="/doctor-claims" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorClaimPage /></ProtectedRoute>} />
+                      <Route path="/doctor-claims" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.insuranceBilling} audience="staff"><DoctorClaimPage /></FeatureProtectedRoute></ProtectedRoute>} />
 
                       {/* Shared messaging — accessible to all clinic-ops staff */}
-                      <Route path="/staff-messages" element={<ProtectedRoute allowedRoles={CLINIC_OPS_ROLES} appSurface={APP_SURFACES.clinicOps}><StaffMessagesPage /></ProtectedRoute>} />
+                      <Route path="/staff-messages" element={<ProtectedRoute allowedRoles={CLINIC_OPS_ROLES} appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.messaging} audience="staff"><StaffMessagesPage /></FeatureProtectedRoute></ProtectedRoute>} />
 
                       <Route path="*" element={<Navigate to="/login" replace />} />
                     </Routes>

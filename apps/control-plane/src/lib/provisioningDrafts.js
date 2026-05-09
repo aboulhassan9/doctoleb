@@ -1,4 +1,7 @@
+export { createClientRequestId } from '../../../../packages/core/lib/idempotency.js';
+
 const SLUG_MAX_LENGTH = 63;
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export function normalizeTenantSlug(value) {
   return String(value || '')
@@ -31,28 +34,24 @@ export function buildPendingTenantDomains(slug, primaryDomain = 'doctoleb.com') 
   ];
 }
 
-export function createClientRequestId(cryptoSource = globalThis.crypto) {
-  if (cryptoSource?.randomUUID) return cryptoSource.randomUUID();
-  if (!cryptoSource?.getRandomValues) return null;
-
-  const bytes = new Uint8Array(16);
-  cryptoSource.getRandomValues(bytes);
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0'));
-
-  return [
-    hex.slice(0, 4).join(''),
-    hex.slice(4, 6).join(''),
-    hex.slice(6, 8).join(''),
-    hex.slice(8, 10).join(''),
-    hex.slice(10, 16).join(''),
-  ].join('-');
-}
-
 export function validateProvisioningDraft({ requestedSlug, requestedDisplayName, clientRequestId }) {
   if (!clientRequestId) return 'Your browser could not create an idempotency key. Refresh and try again.';
   if (!normalizeTenantSlug(requestedSlug)) return 'Tenant slug is required.';
   if (!String(requestedDisplayName || '').trim()) return 'Clinic name is required.';
+  return '';
+}
+
+export function normalizeFirstDoctorAdminDraft(input = {}) {
+  return {
+    displayName: String(input.displayName || input.display_name || '').trim().slice(0, 160),
+    email: String(input.email || '').trim().toLowerCase().slice(0, 320),
+    phone: String(input.phone || '').trim().slice(0, 40),
+  };
+}
+
+export function validateFirstDoctorAdminDraft(input = {}) {
+  const draft = normalizeFirstDoctorAdminDraft(input);
+  if (!draft.displayName) return 'First doctor name is required.';
+  if (!EMAIL.test(draft.email)) return 'A valid first doctor email is required.';
   return '';
 }
