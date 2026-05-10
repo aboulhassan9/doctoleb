@@ -586,14 +586,20 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /configure_vercel_project/);
     assert.match(runner, /runConfigureVercelProject/);
     assert.match(runner, /VERCEL_ROUTING_DOMAIN_REQUIRED/);
+    assert.match(runner, /noDomainPathRoutingForTenant/);
+    assert.match(runner, /vercel_path_routing/);
+    assert.match(runner, /noDomainPathRoutingConfigured/);
     assert.match(runner, /store_runtime_config/);
     assert.match(runner, /smoke_test_resolver/);
     assert.match(runner, /runSmokeTestResolver/);
     assert.match(runner, /resolve_tenant/);
+    assert.match(runner, /resolve_tenant_by_slug/);
+    assert.match(runner, /noDomainPathSmokePassed/);
     assert.match(runner, /activate_tenant/);
     assert.match(runner, /runActivateTenant/);
     assert.match(runner, /admin_update_tenant_atomic/);
     assert.match(runner, /smokePublicResolver/);
+    assert.match(runner, /noDomainPathActivated/);
     assert.match(runner, /TENANT_ACTIVE_DOMAIN_REQUIRED/);
     assert.match(runner, /STEP_NOT_AUTOMATED/);
     assert.match(runner, /STEP_PRECONDITION_FAILED/);
@@ -718,6 +724,9 @@ describe('SaaS foundation contracts', () => {
     assert.match(panel, /PROVISIONING_STEP_ORDER/);
     assert.match(panel, /create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
     assert.match(panel, /nextRunnableStepId/);
+    assert.match(panel, /Next action/);
+    assert.match(panel, /guidanceForStep/);
+    assert.match(panel, /\/t\/<tenant-slug>/);
     assert.match(panel, /isBlocked/);
     assert.match(panel, /Blocked until the previous readiness step succeeds/);
     assert.match(panel, /TENANT_SECRET_NAME_PREFIX_PARTS/);
@@ -726,6 +735,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(panel, /navigator\.clipboard\.writeText/);
     assert.match(panel, /https:\/\/supabase\.com\/dashboard\/project\/xouqxgwccewvbtkqming\/functions\/secrets/);
     assert.match(panel, /Privileged tenant keys stay server-side only/);
+    assert.match(panel, /Settings -> API Keys -> Secret keys -> default/);
   });
 
   it('tenant profile seeding is doctor-independent, service-role only, and runner-backed', () => {
@@ -820,6 +830,9 @@ describe('SaaS foundation contracts', () => {
     assert.doesNotMatch(source, /SERVICE_ROLE_KEY_/);
     assert.match(api, /admin-set-tenant-runtime-config/);
     assert.match(panel, /Tenant service-role keys stay/);
+    assert.match(panel, /Where to find these values/);
+    assert.match(panel, /Settings -> API Keys/);
+    assert.match(panel, /Do not paste the secret\/service key here/);
   });
 
   it('draft tenants cannot sync runtime branding or feature flags before runtime config exists', () => {

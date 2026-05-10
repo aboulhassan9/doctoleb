@@ -44,6 +44,8 @@ const PROVISIONING_STEP_ORDER = [
 ]
 const PROVISIONING_STEP_RANK = new Map(PROVISIONING_STEP_ORDER.map((code, index) => [code, index]))
 const CONTROL_PLANE_SECRETS_URL = 'https://supabase.com/dashboard/project/xouqxgwccewvbtkqming/functions/secrets'
+const TENANT_SECRET_SOURCE_HELP = 'Copy the value from the tenant project: Settings -> API Keys -> Secret keys -> default.'
+const TENANT_SECRET_DESTINATION_HELP = 'Paste it in the control-plane project: Edge Functions -> Secrets, using the exact secret name above.'
 const UPPERCASE_ENV_TOKEN_PATTERN = /\b([A-Z0-9]+(?:_[A-Z0-9]+){4,})\b/
 const TENANT_SECRET_NAME_PREFIX_PARTS = [
   ['TEN', 'ANT'].join(''),
@@ -148,6 +150,32 @@ function canResumeJob(job) {
   return job?.id && RESUMABLE_JOB_STATUSES.has(job.status)
 }
 
+function guidanceForStep(step) {
+  if (!step?.step_code) return ''
+
+  if (step.step_code === 'create_supabase_project') {
+    return 'First link the tenant Supabase project in Tenant -> Runtime connection. Project ref is the 20-character ref in the Supabase URL; the tenant anon key comes from Settings -> API Keys -> Publishable key.'
+  }
+
+  if (step.step_code === 'apply_tenant_migrations') {
+    return 'This checks that the tenant clinical schema exists. It needs the tenant service key stored only as a control-plane Edge Function secret.'
+  }
+
+  if (step.step_code === 'configure_vercel_project') {
+    return 'No purchased domain is required. The shared Vercel apps can use /t/<tenant-slug> path routing until real domains are bought and verified.'
+  }
+
+  if (step.step_code === 'smoke_test_resolver') {
+    return 'This proves the resolver can find the tenant before activation. For no-domain tenants it checks the slug path mode.'
+  }
+
+  if (step.step_code === 'activate_tenant') {
+    return 'Activation is allowed after migrations, tenant profile, first doctor/admin, runtime config, routing, and resolver smoke all succeed.'
+  }
+
+  return ''
+}
+
 function actionsForStep(step) {
   const configuredActions = EXTERNAL_STEP_ACTIONS[step.step_code] || []
   if (!step.external_resource_url) return configuredActions
@@ -224,6 +252,10 @@ function MissingTenantSecretGuidance({ step, copiedSecretName, onCopySecretName 
           Privileged tenant keys stay server-side only. Paste only the key value in Supabase secrets, never in chat, Git, Vercel frontend env, or browser-visible config.
         </p>
       </div>
+      <div className="mt-4 rounded-xl bg-white p-3 text-xs font-bold leading-5 text-amber-900 ring-1 ring-amber-100">
+        <p>{TENANT_SECRET_SOURCE_HELP}</p>
+        <p className="mt-1">{TENANT_SECRET_DESTINATION_HELP}</p>
+      </div>
     </div>
   )
 }
@@ -265,7 +297,8 @@ export default function ProvisioningStepsPanel({
 }) {
   const [copiedSecretName, setCopiedSecretName] = useState('')
   const orderedSteps = [...(steps || [])].sort(sortProvisioningSteps)
-  const nextRunnableStepId = findNextRunnableStep(orderedSteps)?.id || null
+  const nextRunnableStep = findNextRunnableStep(orderedSteps)
+  const nextRunnableStepId = nextRunnableStep?.id || null
 
   async function copySecretName(secretName) {
     try {
@@ -314,10 +347,21 @@ export default function ProvisioningStepsPanel({
         </div>
       ) : null}
 
+      {!canResumeJob(job) && nextRunnableStep ? (
+        <div className="mt-5 rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-cyan-950">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-700">Next action</p>
+          <p className="mt-2 font-black">{labelForStep(nextRunnableStep.step_code)}</p>
+          {guidanceForStep(nextRunnableStep) ? (
+            <p className="mt-1 text-sm font-semibold text-cyan-900">{guidanceForStep(nextRunnableStep)}</p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="mt-5 grid gap-3">
         {orderedSteps.map((step) => {
           const isNextStep = step.id === nextRunnableStepId
           const isBlocked = Boolean(blockedReasonForStep(step, nextRunnableStepId))
+          const stepGuidance = guidanceForStep(step)
 
           return (
             <div
@@ -337,6 +381,9 @@ export default function ProvisioningStepsPanel({
                   <p className="mt-1 text-sm text-slate-500">
                     {step.provider || 'doctoleb'} · undo: {step.undo_strategy || 'none'} · attempts: {step.attempt_count ?? 0}
                   </p>
+                  {(isNextStep || step.status === 'failed') && stepGuidance ? (
+                    <p className="mt-2 max-w-3xl text-sm font-semibold text-slate-600">{stepGuidance}</p>
+                  ) : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {canRunStep(step) && isNextStep ? (

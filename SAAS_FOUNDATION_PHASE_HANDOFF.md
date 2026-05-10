@@ -1394,3 +1394,38 @@ Verification:
 ```txt
 node --test tests/unit/saasFoundationContracts.test.mjs
 ```
+
+---
+
+## 35. No-Domain Tenant Activation Fix — 2026-05-10
+
+Closed the activation blocker found while creating the `assad` tenant: the control plane already supported `/t/{tenantSlug}` runtime routing, but the provisioning runner still treated active patient/ops domain rows as mandatory for Vercel routing, resolver smoke, and activation.
+
+- Updated `admin-run-provisioning-step` so `configure_vercel_project`, `smoke_test_resolver`, and `activate_tenant` accept no-domain path routing when the tenant has a valid slug and runtime Supabase config.
+- Kept real `doctoleb.com` domain rows pending. They are still future custom-domain records, not required for current Vercel-free access.
+- Public resolver smoke now passes `slug=<tenantSlug>` for path mode and still preserves host/domain behavior when active domains exist.
+- Improved the provisioning ledger UI with a single "Next action" card, locked future steps, and clearer missing-secret instructions.
+- Improved the runtime config panel so operators know to paste the publishable/anon key there, and to store the secret/service key only in control-plane Edge Function secrets.
+- Redeployed `admin-run-provisioning-step` to live control-plane project `xouqxgwccewvbtkqming`.
+
+Verification:
+
+```txt
+npm run build:control-plane
+npm run test:unit -- --test-name-pattern "provisioning runner executes|provisioning UI orders|tenant runtime config"
+npm run lint
+npm run audit:bundle-secrets
+npm run audit:backend-contract
+npm run verify
+npm run build:patient
+npm run build:ops
+```
+
+Operator path after this fix:
+
+1. Open the draft tenant.
+2. Add runtime config in the Tenant tab: project ref, Supabase URL, and publishable/anon key.
+3. Add the tenant service key as a control-plane Edge Function secret only.
+4. Resume provisioning if the old job was cancelled.
+5. Run readiness steps in order until activation.
+6. Use `https://doctoleb-patient-web.vercel.app/t/{tenantSlug}` and `https://doctoleb-clinic-ops.vercel.app/t/{tenantSlug}` until real domains are purchased and verified.

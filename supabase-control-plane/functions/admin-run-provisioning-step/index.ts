@@ -17,6 +17,9 @@ import { normalizeTenantBranding } from '../_shared/tenantBranding.ts'
 import { verifyProviderCredential } from '../_shared/providerExecution.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
+const DEFAULT_PATIENT_WEB_URL = 'https://doctoleb-patient-web.vercel.app'
+const DEFAULT_CLINIC_OPS_URL = 'https://doctoleb-clinic-ops.vercel.app'
 const TERMINAL_STEP_STATUSES = new Set(['succeeded', 'skipped', 'cancelled', 'rolled_back'])
 const SAFE_RUNNER_STEPS = new Set([
   'provider_connections_selected',
@@ -314,6 +317,7 @@ async function runStoreRuntimeConfig(
 }
 
 function normalizeSupabaseRuntimeConfig(tenant: {
+  slug?: string | null
   supabase_project_ref?: string | null
   supabase_url?: string | null
   supabase_anon_key?: string | null
@@ -336,6 +340,31 @@ function normalizeSupabaseRuntimeConfig(tenant: {
     projectRef,
     supabaseUrl,
     supabaseUrlHost: `${projectRef}.supabase.co`,
+  }
+}
+
+function appBaseUrl(envName: string, fallback: string) {
+  return (Deno.env.get(envName)?.trim() || fallback).replace(/\/+$/, '')
+}
+
+function noDomainPathRoutingForTenant(tenant: {
+  slug?: string | null
+  supabase_project_ref?: string | null
+  supabase_url?: string | null
+  supabase_anon_key?: string | null
+}) {
+  const slug = String(tenant.slug || '').trim().toLowerCase()
+  if (!TENANT_SLUG.test(slug) || !normalizeSupabaseRuntimeConfig(tenant)) return null
+
+  const patientBaseUrl = appBaseUrl('PATIENT_WEB_APP_URL', DEFAULT_PATIENT_WEB_URL)
+  const opsBaseUrl = appBaseUrl('CLINIC_OPS_APP_URL', DEFAULT_CLINIC_OPS_URL)
+
+  return {
+    slug,
+    patientUrl: `${patientBaseUrl}/t/${slug}`,
+    opsUrl: `${opsBaseUrl}/t/${slug}`,
+    patientHost: new URL(patientBaseUrl).hostname,
+    opsHost: new URL(opsBaseUrl).hostname,
   }
 }
 
@@ -393,6 +422,20 @@ async function runConfigureVercelProject(
   context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
   tenantId: string,
 ): Promise<StepExecution> {
+  const { data: tenant, error: tenantError } = await context.client
+    .from('tenants')
+    .select('id, slug, supabase_project_ref, supabase_url, supabase_anon_key')
+    .eq('id', tenantId)
+    .maybeSingle()
+
+  if (tenantError || !tenant) {
+    return {
+      data: null,
+      error: 'RUNTIME_CONFIG_REQUIRED',
+      summary: 'Tenant runtime config could not be loaded for routing verification.',
+    }
+  }
+
   const { data: domains, error } = await loadTenantDomains(context, tenantId)
   if (error) {
     return {
@@ -403,15 +446,35 @@ async function runConfigureVercelProject(
   }
 
   const required = requireActivePatientAndOpsDomains(domains)
+  const noDomainRouting = noDomainPathRoutingForTenant(tenant)
+
   if (required.error || !required.data) {
+    if (noDomainRouting) {
+      return {
+        data: {
+          status: 'succeeded',
+          postconditions: {
+            routingConfigured: true,
+            noDomainPathRoutingConfigured: true,
+            patientPathUrl: noDomainRouting.patientUrl,
+            opsPathUrl: noDomainRouting.opsUrl,
+            realDoctolebDomainsCanRemainPending: true,
+          },
+          externalResourceKind: 'vercel_path_routing',
+          externalResourceId: `${noDomainRouting.patientUrl},${noDomainRouting.opsUrl}`,
+          externalResourceUrl: noDomainRouting.patientUrl,
+          summary: 'Shared Vercel /t/<tenant-slug> path routing is ready; no purchased domain is required.',
+        },
+        error: null,
+      }
+    }
+
     return {
       data: null,
       error: 'VERCEL_ROUTING_DOMAIN_REQUIRED',
-      summary: 'Add active patient and ops Vercel/local domain rows before routing can be marked configured.',
+      summary: 'Add tenant runtime config for /t/<tenant-slug> path routing, or add active patient and ops domain rows.',
     }
   }
-
-  const activeHostnames = [...required.data.patient, ...required.data.ops].map((domain) => domain.hostname)
 
   return {
     data: {
@@ -421,10 +484,11 @@ async function runConfigureVercelProject(
         activePatientHosts: required.data.patient.map((domain) => domain.hostname),
         activeOpsHosts: required.data.ops.map((domain) => domain.hostname),
         pendingDomainRows: domains.filter((domain) => domain.status === 'pending').length,
+        noDomainPathRoutingAvailable: Boolean(noDomainRouting),
         realDoctolebDomainsCanRemainPending: true,
       },
       externalResourceKind: 'vercel_routing',
-      externalResourceId: activeHostnames.join(','),
+      externalResourceId: [...required.data.patient, ...required.data.ops].map((domain) => domain.hostname).join(','),
       summary: 'Vercel/local routing rows are present for both patient and ops surfaces.',
     },
     error: null,
@@ -444,6 +508,16 @@ async function runSmokeTestResolver(
   context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
   tenantId: string,
 ): Promise<StepExecution> {
+  const { data: tenant, error: tenantError } = await context.client
+    .from('tenants')
+    .select('id, slug, supabase_project_ref, supabase_url, supabase_anon_key')
+    .eq('id', tenantId)
+    .maybeSingle()
+
+  if (tenantError || !tenant) {
+    return { data: null, error: 'RUNTIME_CONFIG_REQUIRED', summary: 'Tenant runtime config could not be loaded for resolver smoke.' }
+  }
+
   const { data: domains, error } = await loadTenantDomains(context, tenantId)
   if (error) {
     return { data: null, error: 'RESOLVER_SMOKE_FAILED', summary: 'Tenant domains could not be loaded for resolver smoke.' }
@@ -451,10 +525,49 @@ async function runSmokeTestResolver(
 
   const required = requireActivePatientAndOpsDomains(domains)
   if (required.error || !required.data) {
+    const noDomainRouting = noDomainPathRoutingForTenant(tenant)
+    if (noDomainRouting) {
+      const results: Record<string, string | null> = {}
+      for (const surface of ['patient', 'ops'] as const) {
+        const { data, error: rpcError } = await context.client.rpc('resolve_tenant_by_slug', {
+          p_slug: noDomainRouting.slug,
+          p_surface: surface,
+        })
+        if (rpcError) {
+          return { data: null, error: 'RESOLVER_SMOKE_FAILED', summary: 'Control-plane slug resolver RPC failed during smoke test.' }
+        }
+
+        const payload = normalizeRpcResolverPayload(data)
+        if (payload.error && payload.error !== 'TENANT_INACTIVE') {
+          return {
+            data: null,
+            error: 'RESOLVER_SMOKE_FAILED',
+            summary: `No-domain resolver smoke for ${surface} returned ${payload.error}.`,
+          }
+        }
+        results[surface] = payload.error
+      }
+
+      return {
+        data: {
+          status: 'succeeded',
+          postconditions: {
+            resolverSmokePassed: true,
+            noDomainPathSmokePassed: true,
+            preActivationSmoke: true,
+            patientPathResult: results.patient,
+            opsPathResult: results.ops,
+          },
+          summary: 'No-domain slug resolver recognizes both tenant app surfaces before activation.',
+        },
+        error: null,
+      }
+    }
+
     return {
       data: null,
       error: 'TENANT_ACTIVE_DOMAIN_REQUIRED',
-      summary: 'Resolver smoke requires active patient and ops domains.',
+      summary: 'Resolver smoke requires /t/<tenant-slug> runtime config or active patient and ops domains.',
     }
   }
 
@@ -506,7 +619,7 @@ function tenantResolverUrl() {
   return supabaseUrl ? `${supabaseUrl}/functions/v1/tenant-resolve` : ''
 }
 
-async function smokePublicResolver(host: string, surface: 'patient' | 'ops', tenantId: string) {
+async function smokePublicResolver(host: string, surface: 'patient' | 'ops', tenantId: string, slug?: string) {
   const resolverUrl = tenantResolverUrl()
   if (!resolverUrl) return { error: 'RESOLVER_SMOKE_FAILED', summary: 'TENANT_RESOLVER_URL is not configured.' }
 
@@ -514,6 +627,7 @@ async function smokePublicResolver(host: string, surface: 'patient' | 'ops', ten
     const url = new URL(resolverUrl)
     url.searchParams.set('host', host)
     url.searchParams.set('surface', surface)
+    if (slug) url.searchParams.set('slug', slug)
 
     const response = await fetch(url)
     const body = await response.json().catch(() => null)
@@ -533,7 +647,7 @@ async function runActivateTenant(
 ): Promise<StepExecution> {
   const { data: tenant, error: tenantError } = await context.client
     .from('tenants')
-    .select('id, status, supabase_project_ref, supabase_url, supabase_anon_key')
+    .select('id, slug, status, supabase_project_ref, supabase_url, supabase_anon_key')
     .eq('id', tenantId)
     .maybeSingle()
 
@@ -552,11 +666,13 @@ async function runActivateTenant(
   }
 
   const required = requireActivePatientAndOpsDomains(domains)
-  if (required.error || !required.data) {
+  const noDomainRouting = noDomainPathRoutingForTenant(tenant)
+
+  if ((required.error || !required.data) && !noDomainRouting) {
     return {
       data: null,
       error: 'TENANT_ACTIVE_DOMAIN_REQUIRED',
-      summary: 'Activation requires active patient and ops domains. Real doctoleb.com rows can remain pending.',
+      summary: 'Activation requires /t/<tenant-slug> path routing or active patient and ops domains. Real doctoleb.com rows can remain pending.',
     }
   }
 
@@ -577,12 +693,24 @@ async function runActivateTenant(
     }
   }
 
-  const patientSmoke = await smokePublicResolver(required.data.patient[0].hostname, 'patient', tenantId)
+  const patientHost = required.data?.patient[0]?.hostname ?? noDomainRouting?.patientHost
+  const opsHost = required.data?.ops[0]?.hostname ?? noDomainRouting?.opsHost
+  const pathSlug = required.data ? undefined : noDomainRouting?.slug
+
+  if (!patientHost || !opsHost) {
+    return {
+      data: null,
+      error: 'TENANT_ACTIVE_DOMAIN_REQUIRED',
+      summary: 'Activation could not determine patient and ops routing hosts.',
+    }
+  }
+
+  const patientSmoke = await smokePublicResolver(patientHost, 'patient', tenantId, pathSlug)
   if (patientSmoke.error) {
     return { data: null, error: patientSmoke.error, summary: patientSmoke.summary ?? 'Patient resolver smoke failed.' }
   }
 
-  const opsSmoke = await smokePublicResolver(required.data.ops[0].hostname, 'ops', tenantId)
+  const opsSmoke = await smokePublicResolver(opsHost, 'ops', tenantId, pathSlug)
   if (opsSmoke.error) {
     return { data: null, error: opsSmoke.error, summary: opsSmoke.summary ?? 'Ops resolver smoke failed.' }
   }
@@ -593,8 +721,11 @@ async function runActivateTenant(
       postconditions: {
         tenantActivated: true,
         postActivationResolverSmokePassed: true,
-        activePatientHost: required.data.patient[0].hostname,
-        activeOpsHost: required.data.ops[0].hostname,
+        noDomainPathActivated: Boolean(pathSlug),
+        activePatientHost: patientHost,
+        activeOpsHost: opsHost,
+        patientPathUrl: noDomainRouting?.patientUrl ?? null,
+        opsPathUrl: noDomainRouting?.opsUrl ?? null,
       },
       externalResourceKind: 'control_plane_tenant_status',
       externalResourceId: tenantId,
