@@ -17,9 +17,19 @@ import TenantReadinessPanel from './TenantReadinessPanel'
 import TenantCreationWorkspace from './TenantCreationWorkspace'
 
 const AUTH_ERROR_CODES = new Set(['AUTH_REQUIRED', 'JWT_EXPIRED', 'INVALID_JWT'])
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i
+const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 
 function isAuthError(error) {
   return AUTH_ERROR_CODES.has(String(error || '').toUpperCase())
+}
+
+function isUuid(value) {
+  return UUID.test(String(value || ''))
+}
+
+function isTenantSlug(value) {
+  return TENANT_SLUG.test(String(value || ''))
 }
 
 export default function ConsoleScreen({ session, onSignOut }) {
@@ -124,8 +134,9 @@ export default function ConsoleScreen({ session, onSignOut }) {
 
   async function handleResumeProvisioningJob(job) {
     const tenantId = tenant?.id || tenantDetail?.tenant?.id || selectedTenant?.id
+    const tenantSlug = tenant?.slug || tenantDetail?.tenant?.slug || selectedTenant?.slug
     const previousJobId = job?.id || provisioningJob?.id
-    if (!tenantId && !previousJobId) {
+    if (!isUuid(tenantId) && !isUuid(previousJobId) && !isTenantSlug(tenantSlug)) {
       setProvisioningRunMessage('Resume needs the selected tenant or the latest provisioning job. Reopen the tenant and try again.')
       return
     }
@@ -135,8 +146,9 @@ export default function ConsoleScreen({ session, onSignOut }) {
 
     try {
       const result = await controlPlaneApi.resumeProvisioningJob({
-        tenantId,
-        previousJobId,
+        tenantId: isUuid(tenantId) ? tenantId : undefined,
+        tenantSlug: isTenantSlug(tenantSlug) ? tenantSlug : undefined,
+        previousJobId: isUuid(previousJobId) ? previousJobId : undefined,
         reason: 'Resumed from control-plane console after cancellation or blocked recovery',
       })
       setProvisioningRunMessage(result.error || 'Provisioning resumed. Continue from the next safe readiness step.')

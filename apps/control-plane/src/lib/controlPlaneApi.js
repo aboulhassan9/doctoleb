@@ -3,6 +3,8 @@ import { createControlPlaneClient } from './controlPlaneClient'
 let client = null
 const pendingAdminRequestControllers = new Set()
 const TOKEN_REFRESH_SKEW_SECONDS = 60
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i
+const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 
 export function getControlPlaneClient() {
   if (!client) client = createControlPlaneClient()
@@ -152,13 +154,9 @@ async function invokeAdminFunction(name, body = {}, options = {}) {
 
 function hasResumeTarget(payload) {
   return Boolean(
-    payload.tenantId
-      || payload.tenant_id
-      || payload.previousJobId
-      || payload.previous_job_id
-      || payload.jobId
-      || payload.provisioningJobId
-      || payload.provisioning_job_id,
+    UUID.test(String(payload.tenantId || payload.tenant_id || ''))
+      || UUID.test(String(payload.previousJobId || payload.previous_job_id || payload.jobId || payload.provisioningJobId || payload.provisioning_job_id || ''))
+      || TENANT_SLUG.test(String(payload.tenantSlug || payload.tenant_slug || payload.slug || '')),
   )
 }
 

@@ -90,6 +90,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(api, /getControlPlaneClient\(\)\.auth\.signOut\(\{ scope: 'local' \}\)/);
     assert.match(api, /RESUME_TARGET_REQUIRED/);
     assert.match(api, /hasResumeTarget/);
+    assert.match(api, /TENANT_SLUG/);
     assert.match(api, /access_token/);
     assert.match(api, /Authorization: `Bearer \$\{tokenResult\.data\}`/);
     assert.match(api, /AUTH_REQUIRED/);
@@ -714,7 +715,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(resumeFunction, /tenant\.provisioning_job_resumed/);
     assert.match(resumeFunction, /body\.jobId/);
     assert.match(resumeFunction, /body\.provisioningJobId/);
-    assert.match(resumeFunction, /Resume requires a tenant id or provisioning job id/);
+    assert.match(resumeFunction, /body\.tenantSlug/);
+    assert.match(resumeFunction, /body\.tenant_slug/);
+    assert.match(resumeFunction, /body\.slug/);
+    assert.match(resumeFunction, /Resume requires a tenant id, tenant slug, or provisioning job id/);
     assert.match(resumeFunction, /markProviderSelectionCheckpoint/);
     assert.match(resumeFunction, /markSupabaseProjectCheckpoint/);
     assert.match(resumeFunction, /status: 'provisioning'/);
@@ -728,8 +732,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(api, /RESUME_TARGET_REQUIRED/);
     assert.match(consoleScreen, /handleResumeProvisioningJob/);
     assert.match(consoleScreen, /const tenantId = tenant\?\.id \|\| tenantDetail\?\.tenant\?\.id \|\| selectedTenant\?\.id/);
+    assert.match(consoleScreen, /const tenantSlug = tenant\?\.slug \|\| tenantDetail\?\.tenant\?\.slug \|\| selectedTenant\?\.slug/);
     assert.match(consoleScreen, /const previousJobId = job\?\.id \|\| provisioningJob\?\.id/);
-    assert.match(consoleScreen, /previousJobId,/);
+    assert.match(consoleScreen, /tenantSlug: isTenantSlug\(tenantSlug\) \? tenantSlug : undefined/);
+    assert.match(consoleScreen, /previousJobId: isUuid\(previousJobId\) \? previousJobId : undefined/);
     assert.match(stepsPanel, /RESUMABLE_JOB_STATUSES/);
     assert.match(stepsPanel, /Resume provisioning/);
     assert.match(stepsPanel, /history stays locked for audit/);

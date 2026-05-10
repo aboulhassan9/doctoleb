@@ -14,6 +14,7 @@ import {
 } from '../_shared/selects.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i
+const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 const ACTIVE_JOB_STATUSES = new Set(['draft', 'ready_for_manual_provisioning', 'provisioning'])
 const RESUMABLE_JOB_STATUSES = new Set(['blocked', 'failed', 'cancelled'])
 const TENANT_RESUMABLE_STATUSES = new Set(['draft', 'provisioning', 'inactive'])
@@ -72,6 +73,12 @@ function normalizeUuid(value: unknown) {
   if (typeof value !== 'string') return ''
   const id = value.trim().toLowerCase()
   return UUID.test(id) ? id : ''
+}
+
+function normalizeTenantSlug(value: unknown) {
+  if (typeof value !== 'string') return ''
+  const slug = value.trim().toLowerCase()
+  return TENANT_SLUG.test(slug) ? slug : ''
 }
 
 function normalizeReason(value: unknown) {
@@ -219,6 +226,7 @@ Deno.serve(async (req) => {
 
   const body = await readJsonBody(req)
   const tenantIdInput = normalizeUuid(body.tenantId ?? body.tenant_id)
+  const tenantSlugInput = normalizeTenantSlug(body.tenantSlug ?? body.tenant_slug ?? body.slug)
   const previousJobIdInput = body.previousJobId
     ?? body.previous_job_id
     ?? body.jobId
@@ -227,10 +235,10 @@ Deno.serve(async (req) => {
   const previousJobId = normalizeUuid(previousJobIdInput)
   const reason = normalizeReason(body.reason)
 
-  if (!tenantIdInput && !previousJobId) {
+  if (!tenantIdInput && !previousJobId && !tenantSlugInput) {
     return errorResponse('INVALID_REQUEST', 400, cors, {
-      summary: 'Resume requires a tenant id or provisioning job id.',
-      acceptedFields: ['tenantId', 'tenant_id', 'previousJobId', 'previous_job_id', 'jobId', 'provisioningJobId', 'provisioning_job_id'],
+      summary: 'Resume requires a tenant id, tenant slug, or provisioning job id.',
+      acceptedFields: ['tenantId', 'tenant_id', 'tenantSlug', 'tenant_slug', 'slug', 'previousJobId', 'previous_job_id', 'jobId', 'provisioningJobId', 'provisioning_job_id'],
     })
   }
 
@@ -255,16 +263,18 @@ Deno.serve(async (req) => {
     tenantId = previousTenantId
   }
 
-  const { data: tenant, error: tenantError } = await context.client
+  let tenantQuery = context.client
     .from('tenants')
     .select('id, slug, display_name, status, plan, supabase_project_ref, supabase_url, supabase_anon_key, schema_version')
-    .eq('id', tenantId)
-    .maybeSingle()
+  tenantQuery = tenantId ? tenantQuery.eq('id', tenantId) : tenantQuery.eq('slug', tenantSlugInput)
+
+  const { data: tenant, error: tenantError } = await tenantQuery.maybeSingle()
 
   if (tenantError) return errorResponse('PROVISIONING_RESUME_FAILED', 500, cors)
   if (!tenant) return errorResponse('TENANT_NOT_FOUND', 404, cors)
 
   const typedTenant = tenant as Tenant
+  tenantId = typedTenant.id
   if (typedTenant.status === 'active') return errorResponse('TENANT_ALREADY_ACTIVE', 409, cors)
   if (!TENANT_RESUMABLE_STATUSES.has(typedTenant.status)) {
     return errorResponse('TENANT_NOT_RESUMABLE', 409, cors, { status: typedTenant.status })

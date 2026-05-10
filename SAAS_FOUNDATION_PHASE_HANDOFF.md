@@ -1445,6 +1445,7 @@ Follow-up admin session hardening:
 - The CSP warnings from `vercel.live` are report-only Vercel toolbar violations and are not the provisioning blocker. The blocking signal is the admin Edge Function 401.
 - Sign-out now clears the persisted control-plane Supabase auth key from browser storage after calling local Supabase sign-out, so refresh cannot silently restore a stale console session.
 - Resume provisioning is guarded on the client before the Edge Function call. The UI now sends the selected tenant id as the stable resume target and includes the latest job id when available, preventing empty `INVALID_REQUEST` resume payloads.
+- Resume provisioning also accepts `tenantSlug`/`tenant_slug`/`slug` as a safe fallback target. This keeps no-domain tenants recoverable even if a stale browser state loses or corrupts UUID fields.
 
 Verification:
 
