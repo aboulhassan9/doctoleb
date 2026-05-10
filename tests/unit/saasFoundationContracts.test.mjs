@@ -668,6 +668,39 @@ describe('SaaS foundation contracts', () => {
     assert.doesNotMatch(consoleScreen, /from\('tenant_provisioning_/);
   });
 
+  it('cancelled provisioning jobs recover through a new audited resume ledger', () => {
+    const resumeFunction = read('supabase-control-plane/functions/admin-resume-provisioning-job/index.ts');
+    const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
+    const consoleScreen = read('apps/control-plane/src/components/ConsoleScreen.jsx');
+    const stepsPanel = read('apps/control-plane/src/components/ProvisioningStepsPanel.jsx');
+    const ledger = read('BACKEND_CONTRACT_LEDGER.md');
+    const readme = read('supabase-control-plane/README.md');
+
+    assert.match(resumeFunction, /requireSuperAdmin\(req, \['operator'\]\)/);
+    assert.match(resumeFunction, /RESUMABLE_JOB_STATUSES/);
+    assert.match(resumeFunction, /ACTIVE_JOB_STATUSES/);
+    assert.match(resumeFunction, /PREVIOUS_JOB_NOT_LATEST/);
+    assert.match(resumeFunction, /admin_seed_tenant_provisioning_steps/);
+    assert.match(resumeFunction, /tenant\.provisioning_job_resumed/);
+    assert.match(resumeFunction, /markProviderSelectionCheckpoint/);
+    assert.match(resumeFunction, /markSupabaseProjectCheckpoint/);
+    assert.match(resumeFunction, /status: 'provisioning'/);
+    assert.match(resumeFunction, /runtimeConfigAlreadyPresent/);
+    assert.match(resumeFunction, /phi: false/);
+    assert.doesNotMatch(resumeFunction, /delete from|\.delete\(/i);
+    assert.doesNotMatch(resumeFunction, /service_role_key|sb_secret_|vcp_/i);
+
+    assert.match(api, /resumeProvisioningJob/);
+    assert.match(api, /admin-resume-provisioning-job/);
+    assert.match(consoleScreen, /handleResumeProvisioningJob/);
+    assert.match(consoleScreen, /previousJobId: job\.id/);
+    assert.match(stepsPanel, /RESUMABLE_JOB_STATUSES/);
+    assert.match(stepsPanel, /Resume provisioning/);
+    assert.match(stepsPanel, /history stays locked for audit/);
+    assert.match(readme, /admin-resume-provisioning-job/);
+    assert.match(ledger, /Cancelled jobs stay terminal for audit/);
+  });
+
   it('provisioning UI orders steps, locks future actions, and guides missing tenant service secrets', () => {
     const panel = read('apps/control-plane/src/components/ProvisioningStepsPanel.jsx');
 

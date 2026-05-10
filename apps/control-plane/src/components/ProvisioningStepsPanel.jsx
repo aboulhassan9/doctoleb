@@ -29,6 +29,7 @@ const RUNNABLE_STATUSES = new Set(['pending', 'queued', 'failed'])
 const TERMINAL_STEP_STATUSES = new Set(['succeeded', 'skipped', 'cancelled', 'rolled_back'])
 const IN_PROGRESS_STEP_STATUSES = new Set(['running', 'compensating'])
 const FINAL_JOB_STATUSES = new Set(['completed', 'cancelled', 'archived'])
+const RESUMABLE_JOB_STATUSES = new Set(['blocked', 'failed', 'cancelled'])
 const PROVISIONING_STEP_ORDER = [
   'tenant_draft_created',
   'provider_connections_selected',
@@ -143,6 +144,10 @@ function canCancelJob(job) {
   return job?.id && !FINAL_JOB_STATUSES.has(job.status)
 }
 
+function canResumeJob(job) {
+  return job?.id && RESUMABLE_JOB_STATUSES.has(job.status)
+}
+
 function actionsForStep(step) {
   const configuredActions = EXTERNAL_STEP_ACTIONS[step.step_code] || []
   if (!step.external_resource_url) return configuredActions
@@ -250,9 +255,11 @@ export default function ProvisioningStepsPanel({
   job,
   onRunStep,
   onCancelJob,
+  onResumeJob,
   onCompensateStep,
   runningStepId,
   cancellingJob,
+  resumingJob,
   compensatingStepId,
   runMessage,
 }) {
@@ -290,6 +297,22 @@ export default function ProvisioningStepsPanel({
           </SecondaryButton>
         ) : null}
       </div>
+
+      {canResumeJob(job) ? (
+        <div className="mt-5 rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-black text-cyan-950">Resume this tenant setup safely</p>
+              <p className="mt-1 text-sm font-semibold text-cyan-900">
+                This job is {job.status}. Its history stays locked for audit, and resume creates a new readiness ledger that carries forward safe completed checkpoints.
+              </p>
+            </div>
+            <PrimaryButton onClick={() => onResumeJob?.(job)} disabled={resumingJob}>
+              {resumingJob ? 'Resuming...' : 'Resume provisioning'}
+            </PrimaryButton>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-5 grid gap-3">
         {orderedSteps.map((step) => {

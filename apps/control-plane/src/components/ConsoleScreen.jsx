@@ -22,6 +22,7 @@ export default function ConsoleScreen({ session, onSignOut }) {
   const [activeSection, setActiveSection] = useState('tenant')
   const [runningStepId, setRunningStepId] = useState(null)
   const [cancellingJob, setCancellingJob] = useState(false)
+  const [resumingJob, setResumingJob] = useState(false)
   const [compensatingStepId, setCompensatingStepId] = useState(null)
   const [provisioningRunMessage, setProvisioningRunMessage] = useState('')
   const {
@@ -111,6 +112,26 @@ export default function ConsoleScreen({ session, onSignOut }) {
       await reloadTenants()
     } finally {
       setCancellingJob(false)
+    }
+  }
+
+  async function handleResumeProvisioningJob(job) {
+    if (!tenant?.id || !job?.id) return
+
+    setResumingJob(true)
+    setProvisioningRunMessage('')
+
+    try {
+      const result = await controlPlaneApi.resumeProvisioningJob({
+        tenantId: tenant.id,
+        previousJobId: job.id,
+        reason: 'Resumed from control-plane console after cancellation or blocked recovery',
+      })
+      setProvisioningRunMessage(result.error || 'Provisioning resumed. Continue from the next safe readiness step.')
+      await reloadTenantDetail()
+      await reloadTenants()
+    } finally {
+      setResumingJob(false)
     }
   }
 
@@ -207,9 +228,11 @@ export default function ConsoleScreen({ session, onSignOut }) {
                     job={provisioningJob}
                     onRunStep={handleRunProvisioningStep}
                     onCancelJob={handleCancelProvisioningJob}
+                    onResumeJob={handleResumeProvisioningJob}
                     onCompensateStep={handleCompensateProvisioningStep}
                     runningStepId={runningStepId}
                     cancellingJob={cancellingJob}
+                    resumingJob={resumingJob}
                     compensatingStepId={compensatingStepId}
                     runMessage={provisioningRunMessage}
                   />

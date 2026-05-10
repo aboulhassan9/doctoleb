@@ -89,6 +89,10 @@ export const controlPlaneApi = {
     return invokeAdminFunction('admin-cancel-provisioning-job', payload)
   },
 
+  resumeProvisioningJob(payload) {
+    return invokeAdminFunction('admin-resume-provisioning-job', payload)
+  },
+
   compensateProvisioningStep(payload) {
     return invokeAdminFunction('admin-compensate-provisioning-step', payload)
   },

@@ -116,6 +116,7 @@ supabase functions deploy admin-upsert-provider-connection
 supabase functions deploy admin-archive-provider-connection
 supabase functions deploy admin-run-provisioning-step
 supabase functions deploy admin-cancel-provisioning-job
+supabase functions deploy admin-resume-provisioning-job
 supabase functions deploy admin-compensate-provisioning-step
 
 # (Optional) tighten CORS to exact production origins once domains are live.
@@ -142,5 +143,5 @@ The control plane now has schema support for provider-flexible provisioning:
 - Provisioning jobs can link to selected provider connections and record step-level idempotency plus undo metadata.
 - Dedicated provider metadata Edge Functions now exist for list/upsert/archive. They reject raw token-shaped input, sanitize `secret_ref` out of responses, and use reversible archive semantics.
 - `admin-run-provisioning-step` advances the assisted path through provider readiness, operator-linked tenant project verification, migration readiness, tenant profile/app config seed, first doctor/admin seed, Vercel/free-alias routing verification, resolver smoke, and guarded activation.
-- `admin-cancel-provisioning-job` and `admin-compensate-provisioning-step` expose operator undo/cancel paths through service-role RPCs only. Browser code never writes provisioning ledger tables directly.
+- `admin-cancel-provisioning-job`, `admin-resume-provisioning-job`, and `admin-compensate-provisioning-step` expose operator cancel/recovery/undo paths through authenticated admin functions only. A cancelled job remains terminal for audit; resume creates a new zero-PHI provisioning ledger for the same tenant and carries forward safe checkpoints.
 - The current UI remains manual-assisted for external provider creation. Supabase Management API project creation and Vercel REST project/env/custom-domain mutation are deferred until provider credentials, cost/region/org selection, external resource IDs, and compensation rules are fully designed.
