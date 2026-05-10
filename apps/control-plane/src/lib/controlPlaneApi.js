@@ -26,7 +26,16 @@ function normalizeFunctionResult(result) {
 
 async function invokeAdminFunction(name, body = {}) {
   try {
-    const result = await getControlPlaneClient().functions.invoke(name, { body })
+    const { data } = await getControlPlaneClient().auth.getSession()
+    const accessToken = data?.session?.access_token
+    if (!accessToken) return { data: null, error: 'AUTH_REQUIRED' }
+
+    const result = await getControlPlaneClient().functions.invoke(name, {
+      body,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
     return normalizeFunctionResult(result)
   } catch (error) {
     return { data: null, error: error?.message || 'REQUEST_FAILED' }

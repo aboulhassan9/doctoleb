@@ -81,6 +81,10 @@ describe('SaaS foundation contracts', () => {
 
     assert.match(client, /VITE_CONTROL_PLANE_SUPABASE_URL/);
     assert.match(client, /VITE_CONTROL_PLANE_SUPABASE_ANON_KEY/);
+    assert.match(api, /auth\.getSession\(\)/);
+    assert.match(api, /access_token/);
+    assert.match(api, /Authorization: `Bearer \$\{accessToken\}`/);
+    assert.match(api, /AUTH_REQUIRED/);
     assert.doesNotMatch(client, /SERVICE_ROLE/i);
     assert.doesNotMatch(api, /SERVICE_ROLE/i);
   });
