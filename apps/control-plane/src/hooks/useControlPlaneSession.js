@@ -61,8 +61,9 @@ export function useControlPlaneSession() {
   }, [isConfigured]);
 
   const signOut = useCallback(async () => {
-    await controlPlaneApi.signOut();
+    controlPlaneApi.abortPendingAdminRequests();
     setSession(null);
+    await controlPlaneApi.signOut();
   }, []);
 
   return { envStatus, session, booting, setSession, signOut };

@@ -6,10 +6,11 @@ export function useTenantList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (options = {}) => {
     setLoading(true)
     setError('')
-    const result = await controlPlaneApi.listTenants()
+    const result = await controlPlaneApi.listTenants(options)
+    if (options.signal?.aborted) return []
     setLoading(false)
     if (result.error) {
       setError(result.error)
@@ -21,7 +22,11 @@ export function useTenantList() {
   }, [])
 
   useEffect(() => {
-    void reload()
+    const controller = new AbortController()
+    void reload({ signal: controller.signal })
+    return () => {
+      controller.abort()
+    }
   }, [reload])
 
   return {

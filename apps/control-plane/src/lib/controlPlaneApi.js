@@ -1,10 +1,18 @@
 import { createControlPlaneClient } from './controlPlaneClient'
 
 let client = null
+const pendingAdminRequestControllers = new Set()
 
 export function getControlPlaneClient() {
   if (!client) client = createControlPlaneClient()
   return client
+}
+
+function abortPendingAdminRequests() {
+  for (const controller of pendingAdminRequestControllers) {
+    controller.abort()
+  }
+  pendingAdminRequestControllers.clear()
 }
 
 function normalizeFunctionResult(result) {
@@ -24,7 +32,15 @@ function normalizeFunctionResult(result) {
   return { data: payload ?? null, error: null }
 }
 
-async function invokeAdminFunction(name, body = {}) {
+async function invokeAdminFunction(name, body = {}, options = {}) {
+  if (options.signal?.aborted) return { data: null, error: 'ABORTED' }
+
+  const controller = new AbortController()
+  pendingAdminRequestControllers.add(controller)
+
+  const abortFromCaller = () => controller.abort()
+  options.signal?.addEventListener('abort', abortFromCaller, { once: true })
+
   try {
     const { data } = await getControlPlaneClient().auth.getSession()
     const accessToken = data?.session?.access_token
@@ -35,14 +51,22 @@ async function invokeAdminFunction(name, body = {}) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      signal: controller.signal,
     })
+    if (controller.signal.aborted) return { data: null, error: 'ABORTED' }
     return normalizeFunctionResult(result)
   } catch (error) {
+    if (controller.signal.aborted) return { data: null, error: 'ABORTED' }
     return { data: null, error: error?.message || 'REQUEST_FAILED' }
+  } finally {
+    options.signal?.removeEventListener('abort', abortFromCaller)
+    pendingAdminRequestControllers.delete(controller)
   }
 }
 
 export const controlPlaneApi = {
+  abortPendingAdminRequests,
+
   onAuthStateChange(callback) {
     return getControlPlaneClient().auth.onAuthStateChange(callback)
   },
@@ -62,12 +86,12 @@ export const controlPlaneApi = {
     return { data: null, error: error?.message ?? null }
   },
 
-  listTenants() {
-    return invokeAdminFunction('admin-list-tenants')
+  listTenants(options) {
+    return invokeAdminFunction('admin-list-tenants', {}, options)
   },
 
-  getTenant(tenantId) {
-    return invokeAdminFunction('admin-get-tenant', { tenantId })
+  getTenant(tenantId, options) {
+    return invokeAdminFunction('admin-get-tenant', { tenantId }, options)
   },
 
   updateTenant({ tenantId, patch, domains }) {
@@ -106,8 +130,8 @@ export const controlPlaneApi = {
     return invokeAdminFunction('admin-compensate-provisioning-step', payload)
   },
 
-  listProviderConnections(payload = {}) {
-    return invokeAdminFunction('admin-list-provider-connections', payload)
+  listProviderConnections(payload = {}, options) {
+    return invokeAdminFunction('admin-list-provider-connections', payload, options)
   },
 
   upsertProviderConnection(payload) {

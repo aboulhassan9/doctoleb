@@ -85,6 +85,11 @@ describe('SaaS foundation contracts', () => {
     assert.match(api, /access_token/);
     assert.match(api, /Authorization: `Bearer \$\{accessToken\}`/);
     assert.match(api, /AUTH_REQUIRED/);
+    assert.match(api, /pendingAdminRequestControllers/);
+    assert.match(api, /abortPendingAdminRequests/);
+    assert.match(api, /signal: controller\.signal/);
+    const sessionHook = read('apps/control-plane/src/hooks/useControlPlaneSession.js');
+    assert.match(sessionHook, /abortPendingAdminRequests\(\)/);
     assert.doesNotMatch(client, /SERVICE_ROLE/i);
     assert.doesNotMatch(api, /SERVICE_ROLE/i);
   });
@@ -539,6 +544,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(providerHelpers, /TOKENISH_SECRET/);
     assert.match(providerHelpers, /Automation can be enabled only for an active connection/);
     assert.match(hook, /listProviderConnections/);
+    assert.match(hook, /AbortController/);
+    assert.match(hook, /controller\.abort\(\)/);
     assert.match(getTenant, /CONTROL_PLANE_PROVISIONING_STEP_SELECT/);
     assert.match(getTenant, /provisioningSteps/);
   });

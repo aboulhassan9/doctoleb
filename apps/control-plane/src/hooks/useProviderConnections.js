@@ -6,9 +6,10 @@ export function useProviderConnections() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (options = {}) => {
     setLoading(true)
-    const result = await controlPlaneApi.listProviderConnections()
+    const result = await controlPlaneApi.listProviderConnections({}, options)
+    if (options.signal?.aborted) return []
     setLoading(false)
     if (result.error) {
       setError(result.error)
@@ -20,7 +21,11 @@ export function useProviderConnections() {
   }, [])
 
   useEffect(() => {
-    void reload()
+    const controller = new AbortController()
+    void reload({ signal: controller.signal })
+    return () => {
+      controller.abort()
+    }
   }, [reload])
 
   return {
