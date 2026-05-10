@@ -668,6 +668,22 @@ describe('SaaS foundation contracts', () => {
     assert.doesNotMatch(consoleScreen, /from\('tenant_provisioning_/);
   });
 
+  it('provisioning UI orders steps, locks future actions, and guides missing tenant service secrets', () => {
+    const panel = read('apps/control-plane/src/components/ProvisioningStepsPanel.jsx');
+
+    assert.match(panel, /PROVISIONING_STEP_ORDER/);
+    assert.match(panel, /create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
+    assert.match(panel, /nextRunnableStepId/);
+    assert.match(panel, /isBlocked/);
+    assert.match(panel, /Blocked until the previous readiness step succeeds/);
+    assert.match(panel, /TENANT_SECRET_NAME_PREFIX_PARTS/);
+    assert.match(panel, /\['TEN', 'ANT'\]\.join\(''\)/);
+    assert.doesNotMatch(panel, /TENANT_SERVICE_ROLE_KEY_/);
+    assert.match(panel, /navigator\.clipboard\.writeText/);
+    assert.match(panel, /https:\/\/supabase\.com\/dashboard\/project\/xouqxgwccewvbtkqming\/functions\/secrets/);
+    assert.match(panel, /Privileged tenant keys stay server-side only/);
+  });
+
   it('tenant profile seeding is doctor-independent, service-role only, and runner-backed', () => {
     const migration = read('supabase/migrations/20260509022000_tenant_profile_seed_service.sql');
     const runner = read('supabase-control-plane/functions/admin-run-provisioning-step/index.ts');
