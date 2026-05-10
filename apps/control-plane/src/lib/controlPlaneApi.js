@@ -2,6 +2,7 @@ import { createControlPlaneClient } from './controlPlaneClient'
 
 let client = null
 const pendingAdminRequestControllers = new Set()
+const TOKEN_REFRESH_SKEW_SECONDS = 60
 
 export function getControlPlaneClient() {
   if (!client) client = createControlPlaneClient()
@@ -15,8 +16,64 @@ function abortPendingAdminRequests() {
   pendingAdminRequestControllers.clear()
 }
 
-function normalizeFunctionResult(result) {
+function decodeJwtExpiry(accessToken) {
+  try {
+    const payload = accessToken.split('.')[1]
+    if (!payload) return 0
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const decoded = JSON.parse(atob(normalized))
+    return typeof decoded.exp === 'number' ? decoded.exp : 0
+  } catch {
+    return 0
+  }
+}
+
+function shouldRefreshToken(accessToken) {
+  const expiresAt = decodeJwtExpiry(accessToken)
+  if (!expiresAt) return true
+  return expiresAt <= Math.floor(Date.now() / 1000) + TOKEN_REFRESH_SKEW_SECONDS
+}
+
+async function readFunctionHttpError(error) {
+  const response = error?.context
+  if (!response || typeof response.json !== 'function') return null
+
+  try {
+    const payload = await response.json()
+    if (payload && typeof payload === 'object' && ('data' in payload || 'error' in payload)) {
+      return {
+        data: payload.data ?? null,
+        error: payload.error ?? error?.message ?? 'REQUEST_FAILED',
+        details: payload.details ?? null,
+        status: response.status ?? null,
+      }
+    }
+  } catch {
+    // Supabase FunctionsHttpError sometimes has a consumed or non-JSON body.
+  }
+
+  return null
+}
+
+async function getFreshAccessToken() {
+  const auth = getControlPlaneClient().auth
+  let { data, error } = await auth.getSession()
+  if (error) return { data: null, error: 'AUTH_REQUIRED' }
+
+  let session = data?.session
+  if (session?.access_token && shouldRefreshToken(session.access_token)) {
+    const refreshed = await auth.refreshSession()
+    if (refreshed.error) return { data: null, error: 'AUTH_REQUIRED' }
+    session = refreshed.data?.session ?? null
+  }
+
+  return { data: session?.access_token ?? null, error: session?.access_token ? null : 'AUTH_REQUIRED' }
+}
+
+async function normalizeFunctionResult(result) {
   if (result.error) {
+    const httpError = await readFunctionHttpError(result.error)
+    if (httpError) return httpError
     return { data: null, error: result.error.message || 'REQUEST_FAILED' }
   }
 
@@ -42,14 +99,13 @@ async function invokeAdminFunction(name, body = {}, options = {}) {
   options.signal?.addEventListener('abort', abortFromCaller, { once: true })
 
   try {
-    const { data } = await getControlPlaneClient().auth.getSession()
-    const accessToken = data?.session?.access_token
-    if (!accessToken) return { data: null, error: 'AUTH_REQUIRED' }
+    const tokenResult = await getFreshAccessToken()
+    if (tokenResult.error || !tokenResult.data) return { data: null, error: tokenResult.error || 'AUTH_REQUIRED' }
 
     const result = await getControlPlaneClient().functions.invoke(name, {
       body,
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${tokenResult.data}`,
       },
       signal: controller.signal,
     })
@@ -57,6 +113,8 @@ async function invokeAdminFunction(name, body = {}, options = {}) {
     return normalizeFunctionResult(result)
   } catch (error) {
     if (controller.signal.aborted) return { data: null, error: 'ABORTED' }
+    const httpError = await readFunctionHttpError(error)
+    if (httpError) return httpError
     return { data: null, error: error?.message || 'REQUEST_FAILED' }
   } finally {
     options.signal?.removeEventListener('abort', abortFromCaller)

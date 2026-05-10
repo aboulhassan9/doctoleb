@@ -16,6 +16,12 @@ import ConsoleWorkspaceTabs, { getControlPlaneSection } from './ConsoleWorkspace
 import TenantReadinessPanel from './TenantReadinessPanel'
 import TenantCreationWorkspace from './TenantCreationWorkspace'
 
+const AUTH_ERROR_CODES = new Set(['AUTH_REQUIRED', 'JWT_EXPIRED', 'INVALID_JWT'])
+
+function isAuthError(error) {
+  return AUTH_ERROR_CODES.has(String(error || '').toUpperCase())
+}
+
 export default function ConsoleScreen({ session, onSignOut }) {
   const [selectedTenant, setSelectedTenant] = useState(null)
   const [workspaceMode, setWorkspaceMode] = useState('tenant')
@@ -50,6 +56,7 @@ export default function ConsoleScreen({ session, onSignOut }) {
 
   const tenant = workspaceMode === 'tenant' ? tenantDetail?.tenant || selectedTenant : null
   const error = listError || detailError || providerConnectionsError
+  const authError = isAuthError(error)
   const provisioningJob = [...(tenant?.tenant_provisioning_jobs || [])]
     .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))[0]
   const section = getControlPlaneSection(activeSection)
@@ -176,7 +183,19 @@ export default function ConsoleScreen({ session, onSignOut }) {
         />
         <section className="grid gap-5">
           {loading ? <p className="rounded-[2rem] bg-white p-6 text-sm font-semibold text-slate-500">Loading tenants...</p> : null}
-          {error ? <p className="rounded-[2rem] bg-rose-50 p-6 text-sm font-bold text-rose-700">{error}</p> : null}
+          {authError ? (
+            <div className="rounded-[2rem] bg-amber-50 p-6 text-sm font-bold text-amber-900 ring-1 ring-amber-100">
+              <p className="text-base font-black">Admin session expired</p>
+              <p className="mt-1 font-semibold">
+                The control-plane API rejected the current browser token. Sign in again, then reopen the tenant and continue provisioning.
+              </p>
+              <div className="mt-4">
+                <SecondaryButton onClick={onSignOut}>Sign in again</SecondaryButton>
+              </div>
+            </div>
+          ) : error ? (
+            <p className="rounded-[2rem] bg-rose-50 p-6 text-sm font-bold text-rose-700">{error}</p>
+          ) : null}
           {workspaceMode === 'create' ? (
             <TenantCreationWorkspace
               providerConnections={providerConnections}

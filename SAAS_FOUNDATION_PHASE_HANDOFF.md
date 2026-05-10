@@ -1436,3 +1436,20 @@ Follow-up resume hardening:
 - If the browser sends only a provisioning job id, the Edge Function derives the tenant id from the control-plane ledger instead of returning `INVALID_REQUEST`.
 - Invalid resume requests now return safe guidance details without exposing secrets or PHI.
 - Redeployed `admin-resume-provisioning-job` to live control-plane project `xouqxgwccewvbtkqming`.
+
+Follow-up admin session hardening:
+
+- `controlPlaneApi` now refreshes a near-expired control-plane Supabase session before calling privileged admin Edge Functions.
+- Supabase `FunctionsHttpError` responses are parsed back into the existing `{ data, error, details }` envelope so the console shows the real admin/API error instead of a generic non-2xx message.
+- `ConsoleScreen` now treats `AUTH_REQUIRED`, `JWT_EXPIRED`, and `INVALID_JWT` as an expired admin session and presents a clear `Sign in again` recovery action.
+- The CSP warnings from `vercel.live` are report-only Vercel toolbar violations and are not the provisioning blocker. The blocking signal is the admin Edge Function 401.
+
+Verification:
+
+```txt
+npm run build:control-plane
+npm run test:unit -- --test-name-pattern "control-plane browser app uses|control-plane console can select provider connections|cancelled provisioning jobs recover"
+npm run lint
+npm run audit:bundle-secrets
+npm run audit:backend-contract
+```
