@@ -218,12 +218,41 @@ Deno.serve(async (req) => {
   if (response) return response
 
   const body = await readJsonBody(req)
-  const tenantId = normalizeUuid(body.tenantId ?? body.tenant_id)
-  const previousJobId = normalizeUuid(body.previousJobId ?? body.previous_job_id)
+  const tenantIdInput = normalizeUuid(body.tenantId ?? body.tenant_id)
+  const previousJobIdInput = body.previousJobId
+    ?? body.previous_job_id
+    ?? body.jobId
+    ?? body.provisioningJobId
+    ?? body.provisioning_job_id
+  const previousJobId = normalizeUuid(previousJobIdInput)
   const reason = normalizeReason(body.reason)
 
-  if (!tenantId || ((body.previousJobId ?? body.previous_job_id) && !previousJobId)) {
-    return errorResponse('INVALID_REQUEST', 400, cors)
+  if (!tenantIdInput && !previousJobId) {
+    return errorResponse('INVALID_REQUEST', 400, cors, {
+      summary: 'Resume requires a tenant id or provisioning job id.',
+      acceptedFields: ['tenantId', 'tenant_id', 'previousJobId', 'previous_job_id', 'jobId', 'provisioningJobId', 'provisioning_job_id'],
+    })
+  }
+
+  if (previousJobIdInput && !previousJobId) {
+    return errorResponse('INVALID_REQUEST', 400, cors, {
+      summary: 'Provisioning job id must be a valid UUID.',
+      acceptedFields: ['previousJobId', 'previous_job_id', 'jobId', 'provisioningJobId', 'provisioning_job_id'],
+    })
+  }
+
+  let tenantId = tenantIdInput
+  if (!tenantId && previousJobId) {
+    const { data: previousJob, error: previousJobError } = await context.client
+      .from('tenant_provisioning_jobs')
+      .select('id, tenant_id')
+      .eq('id', previousJobId)
+      .maybeSingle()
+
+    if (previousJobError) return errorResponse('PROVISIONING_RESUME_FAILED', 500, cors)
+    const previousTenantId = normalizeUuid((previousJob as { tenant_id?: unknown } | null)?.tenant_id)
+    if (!previousTenantId) return errorResponse('PROVISIONING_JOB_NOT_RESUMABLE', 409, cors)
+    tenantId = previousTenantId
   }
 
   const { data: tenant, error: tenantError } = await context.client

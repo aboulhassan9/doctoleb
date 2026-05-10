@@ -1429,3 +1429,10 @@ Operator path after this fix:
 4. Resume provisioning if the old job was cancelled.
 5. Run readiness steps in order until activation.
 6. Use `https://doctoleb-patient-web.vercel.app/t/{tenantSlug}` and `https://doctoleb-clinic-ops.vercel.app/t/{tenantSlug}` until real domains are purchased and verified.
+
+Follow-up resume hardening:
+
+- `admin-resume-provisioning-job` now accepts `previousJobId`, `previous_job_id`, `jobId`, `provisioningJobId`, or `provisioning_job_id`.
+- If the browser sends only a provisioning job id, the Edge Function derives the tenant id from the control-plane ledger instead of returning `INVALID_REQUEST`.
+- Invalid resume requests now return safe guidance details without exposing secrets or PHI.
+- Redeployed `admin-resume-provisioning-job` to live control-plane project `xouqxgwccewvbtkqming`.

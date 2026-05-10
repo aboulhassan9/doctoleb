@@ -699,6 +699,9 @@ describe('SaaS foundation contracts', () => {
     assert.match(resumeFunction, /PREVIOUS_JOB_NOT_LATEST/);
     assert.match(resumeFunction, /admin_seed_tenant_provisioning_steps/);
     assert.match(resumeFunction, /tenant\.provisioning_job_resumed/);
+    assert.match(resumeFunction, /body\.jobId/);
+    assert.match(resumeFunction, /body\.provisioningJobId/);
+    assert.match(resumeFunction, /Resume requires a tenant id or provisioning job id/);
     assert.match(resumeFunction, /markProviderSelectionCheckpoint/);
     assert.match(resumeFunction, /markSupabaseProjectCheckpoint/);
     assert.match(resumeFunction, /status: 'provisioning'/);
