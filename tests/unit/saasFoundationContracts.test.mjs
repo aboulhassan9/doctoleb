@@ -86,6 +86,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(api, /getFreshAccessToken/);
     assert.match(api, /readFunctionHttpError/);
     assert.match(api, /TOKEN_REFRESH_SKEW_SECONDS/);
+    assert.match(api, /clearPersistedControlPlaneAuthSession/);
+    assert.match(api, /getControlPlaneClient\(\)\.auth\.signOut\(\{ scope: 'local' \}\)/);
+    assert.match(api, /RESUME_TARGET_REQUIRED/);
+    assert.match(api, /hasResumeTarget/);
     assert.match(api, /access_token/);
     assert.match(api, /Authorization: `Bearer \$\{tokenResult\.data\}`/);
     assert.match(api, /AUTH_REQUIRED/);
@@ -98,6 +102,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(consoleScreen, /Sign in again/);
     const sessionHook = read('apps/control-plane/src/hooks/useControlPlaneSession.js');
     assert.match(sessionHook, /abortPendingAdminRequests\(\)/);
+    assert.match(sessionHook, /finally/);
     assert.doesNotMatch(client, /SERVICE_ROLE/i);
     assert.doesNotMatch(api, /SERVICE_ROLE/i);
   });
@@ -720,8 +725,11 @@ describe('SaaS foundation contracts', () => {
 
     assert.match(api, /resumeProvisioningJob/);
     assert.match(api, /admin-resume-provisioning-job/);
+    assert.match(api, /RESUME_TARGET_REQUIRED/);
     assert.match(consoleScreen, /handleResumeProvisioningJob/);
-    assert.match(consoleScreen, /previousJobId: job\.id/);
+    assert.match(consoleScreen, /const tenantId = tenant\?\.id \|\| tenantDetail\?\.tenant\?\.id \|\| selectedTenant\?\.id/);
+    assert.match(consoleScreen, /const previousJobId = job\?\.id \|\| provisioningJob\?\.id/);
+    assert.match(consoleScreen, /previousJobId,/);
     assert.match(stepsPanel, /RESUMABLE_JOB_STATUSES/);
     assert.match(stepsPanel, /Resume provisioning/);
     assert.match(stepsPanel, /history stays locked for audit/);

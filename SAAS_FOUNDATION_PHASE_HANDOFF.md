@@ -1443,6 +1443,8 @@ Follow-up admin session hardening:
 - Supabase `FunctionsHttpError` responses are parsed back into the existing `{ data, error, details }` envelope so the console shows the real admin/API error instead of a generic non-2xx message.
 - `ConsoleScreen` now treats `AUTH_REQUIRED`, `JWT_EXPIRED`, and `INVALID_JWT` as an expired admin session and presents a clear `Sign in again` recovery action.
 - The CSP warnings from `vercel.live` are report-only Vercel toolbar violations and are not the provisioning blocker. The blocking signal is the admin Edge Function 401.
+- Sign-out now clears the persisted control-plane Supabase auth key from browser storage after calling local Supabase sign-out, so refresh cannot silently restore a stale console session.
+- Resume provisioning is guarded on the client before the Edge Function call. The UI now sends the selected tenant id as the stable resume target and includes the latest job id when available, preventing empty `INVALID_REQUEST` resume payloads.
 
 Verification:
 

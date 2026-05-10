@@ -16,6 +16,34 @@ function abortPendingAdminRequests() {
   pendingAdminRequestControllers.clear()
 }
 
+function getControlPlaneProjectRef() {
+  try {
+    return new URL(import.meta.env.VITE_CONTROL_PLANE_SUPABASE_URL || '').hostname.split('.')[0] || ''
+  } catch {
+    return ''
+  }
+}
+
+function removeStorageKeys(storage, predicate) {
+  if (!storage) return
+  for (let index = storage.length - 1; index >= 0; index -= 1) {
+    const key = storage.key(index)
+    if (key && predicate(key)) storage.removeItem(key)
+  }
+}
+
+function clearPersistedControlPlaneAuthSession() {
+  if (typeof window === 'undefined') return
+  const projectRef = getControlPlaneProjectRef()
+  const isControlPlaneAuthKey = (key) => {
+    if (!projectRef) return key.startsWith('sb-') && key.endsWith('-auth-token')
+    return key === `sb-${projectRef}-auth-token` || key.includes(projectRef)
+  }
+
+  removeStorageKeys(window.localStorage, isControlPlaneAuthKey)
+  removeStorageKeys(window.sessionStorage, isControlPlaneAuthKey)
+}
+
 function decodeJwtExpiry(accessToken) {
   try {
     const payload = accessToken.split('.')[1]
@@ -122,6 +150,18 @@ async function invokeAdminFunction(name, body = {}, options = {}) {
   }
 }
 
+function hasResumeTarget(payload) {
+  return Boolean(
+    payload.tenantId
+      || payload.tenant_id
+      || payload.previousJobId
+      || payload.previous_job_id
+      || payload.jobId
+      || payload.provisioningJobId
+      || payload.provisioning_job_id,
+  )
+}
+
 export const controlPlaneApi = {
   abortPendingAdminRequests,
 
@@ -140,8 +180,12 @@ export const controlPlaneApi = {
   },
 
   async signOut() {
-    const { error } = await getControlPlaneClient().auth.signOut()
-    return { data: null, error: error?.message ?? null }
+    try {
+      const { error } = await getControlPlaneClient().auth.signOut({ scope: 'local' })
+      return { data: null, error: error?.message ?? null }
+    } finally {
+      clearPersistedControlPlaneAuthSession()
+    }
   },
 
   listTenants(options) {
@@ -180,7 +224,10 @@ export const controlPlaneApi = {
     return invokeAdminFunction('admin-cancel-provisioning-job', payload)
   },
 
-  resumeProvisioningJob(payload) {
+  resumeProvisioningJob(payload = {}) {
+    if (!hasResumeTarget(payload)) {
+      return { data: null, error: 'RESUME_TARGET_REQUIRED' }
+    }
     return invokeAdminFunction('admin-resume-provisioning-job', payload)
   },
 

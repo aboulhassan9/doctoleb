@@ -123,15 +123,20 @@ export default function ConsoleScreen({ session, onSignOut }) {
   }
 
   async function handleResumeProvisioningJob(job) {
-    if (!tenant?.id || !job?.id) return
+    const tenantId = tenant?.id || tenantDetail?.tenant?.id || selectedTenant?.id
+    const previousJobId = job?.id || provisioningJob?.id
+    if (!tenantId && !previousJobId) {
+      setProvisioningRunMessage('Resume needs the selected tenant or the latest provisioning job. Reopen the tenant and try again.')
+      return
+    }
 
     setResumingJob(true)
     setProvisioningRunMessage('')
 
     try {
       const result = await controlPlaneApi.resumeProvisioningJob({
-        tenantId: tenant.id,
-        previousJobId: job.id,
+        tenantId,
+        previousJobId,
         reason: 'Resumed from control-plane console after cancellation or blocked recovery',
       })
       setProvisioningRunMessage(result.error || 'Provisioning resumed. Continue from the next safe readiness step.')
