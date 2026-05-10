@@ -10,10 +10,12 @@ import {
   SSL_STATUS_OPTIONS,
   updateDomainDraft,
 } from '../lib/domainDrafts';
+import { buildNoDomainTenantAccess } from '../lib/noDomainAccess';
 import { Field, PrimaryButton, SelectInput, StatusPill } from './ui';
 
 export default function DomainsPanel({ tenant, onSaved }) {
   const domains = tenant.tenant_domains || [];
+  const noDomainAccess = buildNoDomainTenantAccess(tenant);
   const domainKey = domains
     .map((domain) => `${domain.id}:${domain.hostname}:${domain.status}:${domain.dns_status}:${domain.ssl_status}`)
     .join('|');
@@ -53,6 +55,27 @@ export default function DomainsPanel({ tenant, onSaved }) {
       <p className="mt-2 text-sm text-slate-500">
         DoctoLeb domains stay pending until ownership, DNS, and SSL are verified. Localhost rows can stay active for smoke tests.
       </p>
+      {noDomainAccess.available ? (
+        <div className="mt-5 rounded-2xl bg-cyan-50 p-4 ring-1 ring-cyan-100">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-black text-cyan-950">No-domain access</p>
+              <p className="mt-1 text-sm text-cyan-800">
+                These URLs use path routing for setup, QA, and early access before a real domain is purchased.
+              </p>
+            </div>
+            <StatusPill value="path-ready" />
+          </div>
+          <div className="mt-4 grid gap-3">
+            <a className="break-all rounded-xl bg-white px-4 py-3 text-sm font-black text-slate-900 ring-1 ring-cyan-100" href={noDomainAccess.patientUrl} target="_blank" rel="noreferrer">
+              {noDomainAccess.patientUrl}
+            </a>
+            <a className="break-all rounded-xl bg-white px-4 py-3 text-sm font-black text-slate-900 ring-1 ring-cyan-100" href={noDomainAccess.opsUrl} target="_blank" rel="noreferrer">
+              {noDomainAccess.opsUrl}
+            </a>
+          </div>
+        </div>
+      ) : null}
       <div className="mt-5 grid gap-3">
         {drafts.map((domain) => (
           <div key={domain.id} className="rounded-2xl bg-slate-50 p-4">

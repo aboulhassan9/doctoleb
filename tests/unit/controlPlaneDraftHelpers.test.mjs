@@ -30,6 +30,7 @@ import {
   buildTenantReadinessItems,
   summarizeTenantReadiness,
 } from '../../apps/control-plane/src/lib/tenantReadiness.js';
+import { buildNoDomainTenantAccess } from '../../apps/control-plane/src/lib/noDomainAccess.js';
 import {
   buildTenantBrandingDraft,
   updateTenantBrandingDraft,
@@ -143,9 +144,32 @@ describe('control-plane tenant readiness helpers', () => {
     assert.equal(items.find((item) => item.id === 'flutter_path')?.status, 'prepared');
   });
 
-  it('does not treat localhost-only domains as online production proof', () => {
+  it('builds no-domain access URLs from the tenant slug', () => {
+    const access = buildNoDomainTenantAccess({ slug: 'assad' });
+
+    assert.equal(access.available, true);
+    assert.equal(access.patientUrl, 'https://doctoleb-patient-web.vercel.app/t/assad');
+    assert.equal(access.opsUrl, 'https://doctoleb-clinic-ops.vercel.app/t/assad');
+  });
+
+  it('treats path routing as online proof when runtime config exists', () => {
     const summary = summarizeTenantReadiness({
       ...readyNoDomainTenant,
+      tenant_domains: [
+        { hostname: 'assad.doctoleb.com', surface: 'patient', status: 'pending', dns_status: 'pending', ssl_status: 'pending' },
+        { hostname: 'assad.ops.doctoleb.com', surface: 'ops', status: 'pending', dns_status: 'pending', ssl_status: 'pending' },
+      ],
+    });
+
+    assert.equal(summary.status, 'ready');
+    assert.equal(summary.blockers.length, 0);
+  });
+
+  it('does not treat localhost-only domains as online proof without runtime config', () => {
+    const summary = summarizeTenantReadiness({
+      ...readyNoDomainTenant,
+      supabase_project_ref: '',
+      supabase_url: '',
       tenant_domains: [
         { hostname: 'localhost:3001', surface: 'patient', status: 'active', dns_status: null, ssl_status: null },
         { hostname: 'localhost:3002', surface: 'ops', status: 'active', dns_status: null, ssl_status: null },

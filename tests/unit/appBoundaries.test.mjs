@@ -35,13 +35,17 @@ function restoreEnv(snap) {
 }
 
 let envSnap;
+let windowSnap;
 
 beforeEach(() => {
   envSnap = snapshotEnv();
+  windowSnap = globalThis.window;
 });
 
 afterEach(() => {
   restoreEnv(envSnap);
+  if (windowSnap === undefined) delete globalThis.window;
+  else globalThis.window = windowSnap;
 });
 
 describe('role surface classification', () => {
@@ -92,5 +96,26 @@ describe('cross-app URLs', () => {
     assert.equal(getPatientWebLoginUrl(), 'http://127.0.0.1:3001/login');
     assert.equal(getPatientWebHomeUrl(), 'http://127.0.0.1:3001/patient-dashboard');
     assert.equal(getClinicOpsLoginUrl(), 'http://127.0.0.1:3002/login');
+  });
+
+  it('preserves /t/:tenantSlug in configured cross-app URLs', () => {
+    globalThis.window = { location: { pathname: '/t/assad/patient-dashboard' } };
+    process.env.VITE_PATIENT_WEB_URL = 'https://patient.example.com/';
+    process.env.VITE_CLINIC_OPS_URL = 'https://ops.example.com/';
+
+    assert.equal(getPatientWebLoginUrl(), 'https://patient.example.com/t/assad/login');
+    assert.equal(getPatientWebHomeUrl(), 'https://patient.example.com/t/assad/patient-dashboard');
+    assert.equal(getClinicOpsLoginUrl(), 'https://ops.example.com/t/assad/login');
+  });
+
+  it('preserves /t/:tenantSlug in local development cross-app URLs', () => {
+    globalThis.window = { location: { pathname: '/t/assad/login' } };
+    process.env.NODE_ENV = 'development';
+    delete process.env.VITE_PATIENT_WEB_URL;
+    delete process.env.VITE_CLINIC_OPS_URL;
+
+    assert.equal(getPatientWebLoginUrl(), 'http://127.0.0.1:3001/t/assad/login');
+    assert.equal(getPatientWebHomeUrl(), 'http://127.0.0.1:3001/t/assad/patient-dashboard');
+    assert.equal(getClinicOpsLoginUrl(), 'http://127.0.0.1:3002/t/assad/login');
   });
 });

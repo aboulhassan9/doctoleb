@@ -11,6 +11,7 @@ import { BrandProvider } from '@ui/contexts/BrandContext';
 import { TenantBootstrap } from '@ui/contexts/TenantBootstrap';
 import { PatientConsentGate } from '@ui/components/consent/PatientConsentGate';
 import { APP_SURFACES } from '@/lib/appBoundaries';
+import { getCurrentTenantBasename } from '@core/lib/tenantPath';
 import ErrorBoundary from '@ui/components/ErrorBoundary';
 import { LoadingSkeleton } from '@ui/components/ui';
 
@@ -36,6 +37,8 @@ const PatientDashboardPage = lazy(() => import('./pages/PatientDashboardPage'));
 const PatientMessagesPage = lazy(() => import('./pages/PatientMessagesPage'));
 
 function TenantPortalShell() {
+  const routerBasename = getCurrentTenantBasename();
+
   return (
     <ThemeProvider>
       <SidebarProvider>
@@ -45,7 +48,7 @@ function TenantPortalShell() {
             <BrandProvider appSurface={APP_SURFACES.patientWeb}>
               <PatientConsentGate>
               <ErrorBoundary>
-                <Router>
+                <Router basename={routerBasename}>
                   <Suspense fallback={<LoadingSkeleton rows={8} />}>
                     <Routes>
                       {/* Public */}

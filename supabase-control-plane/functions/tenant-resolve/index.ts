@@ -1,14 +1,16 @@
 /**
  * tenant-resolve · Supabase Edge Function (Deno)
  *
- * Resolves `(hostname, surface) → tenant Supabase connection blob` for the
+ * Resolves `(hostname, surface)` or `(tenant slug, surface)` to a tenant
+ * Supabase connection blob for the
  * runtime resolver client at packages/core/services/tenantResolver.js.
  *
  * Runs inside the CONTROL-PLANE Supabase project, NOT any tenant project.
- * Reads tenant rows via the SECURITY DEFINER `resolve_tenant(text, text)` RPC.
+ * Reads tenant rows via service-role-only SECURITY DEFINER resolver RPCs.
  *
  * Endpoint contract (matches the resolver client):
  *   GET /tenant-resolve?host=<hostname>&surface=<patient|ops>
+ *   GET /tenant-resolve?host=<hostname>&surface=<patient|ops>&slug=<tenant-slug>
  *   200 → { data: TenantConnection, error: null }
  *   400 → { data: null, error: 'INVALID_REQUEST' }
  *   403 → { data: null, error: 'SURFACE_MISMATCH' }
@@ -44,6 +46,7 @@ const ALLOWED_ORIGINS = ALLOWED_ORIGINS_ENV
 const SUCCESS_CACHE_CONTROL = 'public, max-age=60, s-maxage=300, stale-while-revalidate=60'
 const ERROR_CACHE_CONTROL = 'no-store'
 const MAX_HOST_LENGTH = 300
+const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 
 function corsHeaders(origin: string | null): Record<string, string> {
   let allow: string
@@ -97,6 +100,13 @@ function normalizeHost(value: string | null): string | null {
   return host
 }
 
+function normalizeSlug(value: string | null): string | null {
+  const slug = value?.trim().toLowerCase() ?? ''
+  if (!slug) return null
+  if (!TENANT_SLUG.test(slug)) return ''
+  return slug
+}
+
 function normalizePayload(data: unknown): ResolverEnvelope {
   if (!data || typeof data !== 'object') {
     return { data: null, error: 'TENANT_RESOLVER_DOWN' }
@@ -133,13 +143,14 @@ function normalizePayload(data: unknown): ResolverEnvelope {
   return { data: payload.data, error: null }
 }
 
-function safeRpcErrorMetadata(surface: string, error: unknown): Record<string, string> {
+function safeRpcErrorMetadata(surface: string, mode: string, error: unknown): Record<string, string> {
   const candidate = error && typeof error === 'object'
     ? (error as { code?: unknown }).code
     : null
 
   return {
     surface,
+    mode,
     errorCode: typeof candidate === 'string' && candidate.trim()
       ? candidate.trim().slice(0, 80)
       : 'UNKNOWN',
@@ -208,6 +219,7 @@ Deno.serve(async (req) => {
 
   const host = normalizeHost(url.searchParams.get('host'))
   const surface = url.searchParams.get('surface')
+  const slug = normalizeSlug(url.searchParams.get('slug'))
 
   if (!host || !surface) {
     return jsonResponse(
@@ -227,10 +239,19 @@ Deno.serve(async (req) => {
     )
   }
 
+  if (slug === '') {
+    return jsonResponse(
+      { data: null, error: 'INVALID_REQUEST' },
+      400,
+      cors,
+      ERROR_CACHE_CONTROL,
+    )
+  }
+
   const rateLimit = await checkEdgeRateLimit(supabase, {
     req,
-    route: 'tenant_resolve',
-    keyParts: [host, surface],
+    route: slug ? 'tenant_resolve_slug' : 'tenant_resolve',
+    keyParts: [host, surface, slug ?? 'host'],
     limit: 120,
     windowSeconds: 60,
   })
@@ -246,13 +267,18 @@ Deno.serve(async (req) => {
 
   // Call the SECURITY DEFINER RPC inside the control-plane DB.
   // It already returns the { data, error } envelope shape.
-  const { data, error } = await supabase.rpc('resolve_tenant', {
-    p_host: host,
-    p_surface: surface,
-  })
+  const { data, error } = slug
+    ? await supabase.rpc('resolve_tenant_by_slug', {
+      p_slug: slug,
+      p_surface: surface,
+    })
+    : await supabase.rpc('resolve_tenant', {
+      p_host: host,
+      p_surface: surface,
+    })
 
   if (error) {
-    console.error('resolve_tenant RPC failed', safeRpcErrorMetadata(surface, error))
+    console.error('resolve_tenant RPC failed', safeRpcErrorMetadata(surface, slug ? 'slug' : 'host', error))
     return jsonResponse(
       { data: null, error: 'TENANT_RESOLVER_DOWN' },
       503,

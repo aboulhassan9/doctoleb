@@ -1472,7 +1472,8 @@ describe('SaaS foundation contracts', () => {
     assert.doesNotMatch(helper, /console\.log|console\.error/);
     assert.match(admin, /checkEdgeRateLimit/);
     assert.match(admin, /RATE_LIMITED/);
-    assert.match(resolver, /route: 'tenant_resolve'/);
+    assert.match(resolver, /route: slug \? 'tenant_resolve_slug' : 'tenant_resolve'/);
+    assert.match(resolver, /keyParts: \[host, surface, slug \?\? 'host'\]/);
     assert.match(resolver, /error: 'TENANT_RESOLVER_DOWN'/);
     assert.match(resolver, /rateLimit\.headers/);
   });

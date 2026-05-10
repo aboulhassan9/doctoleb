@@ -1,3 +1,5 @@
+import { buildNoDomainTenantAccess } from './noDomainAccess.js'
+
 const READY_STATUSES = new Set(['ready', 'prepared'])
 
 function domainsFor(tenant) {
@@ -35,6 +37,8 @@ export function buildTenantReadinessItems(tenant = {}) {
   const patientOnlineDomain = findVerifiedOnlineDomain(domains, 'patient')
   const opsOnlineDomain = findVerifiedOnlineDomain(domains, 'ops')
   const pendingDoctoLebDomains = countPendingDoctoLebDomains(domains)
+  const noDomainAccess = buildNoDomainTenantAccess(tenant)
+  const hasNoDomainAccess = hasRuntimeConfig && noDomainAccess.available
 
   return [
     {
@@ -56,20 +60,24 @@ export function buildTenantReadinessItems(tenant = {}) {
     {
       id: 'patient_web',
       label: 'Patient web online',
-      status: patientOnlineDomain ? 'ready' : 'needs_work',
+      status: patientOnlineDomain || hasNoDomainAccess ? 'ready' : 'needs_work',
       required: true,
       detail: patientOnlineDomain
         ? `${patientOnlineDomain.hostname} is active with verified DNS and issued SSL.`
-        : 'Add an active patient web host before marking the tenant ready.',
+        : hasNoDomainAccess
+          ? `${noDomainAccess.patientUrl} can resolve this tenant before domain purchase.`
+          : 'Add runtime config or an active patient web host before marking the tenant ready.',
     },
     {
       id: 'ops_web',
       label: 'Doctor/staff web online',
-      status: opsOnlineDomain ? 'ready' : 'needs_work',
+      status: opsOnlineDomain || hasNoDomainAccess ? 'ready' : 'needs_work',
       required: true,
       detail: opsOnlineDomain
         ? `${opsOnlineDomain.hostname} is active with verified DNS and issued SSL.`
-        : 'Add an active ops web host before marking the tenant ready.',
+        : hasNoDomainAccess
+          ? `${noDomainAccess.opsUrl} can resolve this tenant before domain purchase.`
+          : 'Add runtime config or an active ops web host before marking the tenant ready.',
     },
     {
       id: 'future_domain',
@@ -83,7 +91,7 @@ export function buildTenantReadinessItems(tenant = {}) {
     {
       id: 'flutter_path',
       label: 'Flutter app path prepared',
-      status: hasRuntimeConfig && patientOnlineDomain ? 'prepared' : 'needs_work',
+      status: hasRuntimeConfig && (patientOnlineDomain || hasNoDomainAccess) ? 'prepared' : 'needs_work',
       required: false,
       detail: 'The future Flutter app should use the same tenant resolver and runtime config as patient web.',
     },

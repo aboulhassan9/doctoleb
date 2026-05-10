@@ -6,6 +6,8 @@ const opsHost = process.env.TENANT_RESOLVER_OPS_HOST || 'doctoleb-clinic-ops.ver
 const unknownHost = process.env.TENANT_RESOLVER_UNKNOWN_HOST || 'unknown-doctoleb-smoke.invalid';
 const pendingPatientHost = process.env.TENANT_RESOLVER_PENDING_PATIENT_HOST || 'dev.doctoleb.com';
 const pendingOpsHost = process.env.TENANT_RESOLVER_PENDING_OPS_HOST || 'dev.ops.doctoleb.com';
+const noDomainSlug = process.env.TENANT_RESOLVER_PATH_SLUG || 'dev';
+const unknownSlug = process.env.TENANT_RESOLVER_UNKNOWN_SLUG || 'qa-missing-tenant';
 
 const SECRET_MARKERS = Object.freeze([
   /service[_-]?role/i,
@@ -35,6 +37,22 @@ const SUCCESS_CASES = Object.freeze([
     host: patientHost.toUpperCase(),
     surface: 'patient',
     expectedSurface: 'patient',
+  },
+  {
+    name: 'patient no-domain slug resolves without a domain row',
+    host: patientHost,
+    surface: 'patient',
+    slug: noDomainSlug,
+    expectedSlug: noDomainSlug,
+    expectedSurface: 'patient',
+  },
+  {
+    name: 'ops no-domain slug resolves without a domain row',
+    host: opsHost,
+    surface: 'ops',
+    slug: noDomainSlug,
+    expectedSlug: noDomainSlug,
+    expectedSurface: 'ops',
   },
 ]);
 
@@ -67,12 +85,21 @@ const ERROR_CASES = Object.freeze([
     expectedStatus: 423,
     expectedError: 'TENANT_INACTIVE',
   },
+  {
+    name: 'unknown no-domain slug returns tenant not found',
+    host: patientHost,
+    surface: 'patient',
+    slug: unknownSlug,
+    expectedStatus: 404,
+    expectedError: 'TENANT_NOT_FOUND',
+  },
 ]);
 
-function buildUrl(host, surface) {
+function buildUrl(host, surface, slug = null) {
   const url = new URL(resolverUrl);
   url.searchParams.set('host', host);
   url.searchParams.set('surface', surface);
+  if (slug) url.searchParams.set('slug', slug);
   return url;
 }
 
@@ -85,7 +112,7 @@ function assertNoSecretMarkers(caseName, rawBody) {
 }
 
 async function requestCase(testCase) {
-  const url = buildUrl(testCase.host, testCase.surface);
+  const url = buildUrl(testCase.host, testCase.surface, testCase.slug || null);
   const response = await fetch(url, {
     headers: {
       Accept: 'application/json',
@@ -116,8 +143,9 @@ function assertSuccessEnvelope(testCase, status, body) {
     throw new Error(`${testCase.name}: expected { data, error: null }, received ${JSON.stringify(body)}`);
   }
 
-  if (body.data.slug !== 'dev') {
-    throw new Error(`${testCase.name}: expected dev tenant slug, received ${body.data.slug}`);
+  const expectedSlug = testCase.expectedSlug || 'dev';
+  if (body.data.slug !== expectedSlug) {
+    throw new Error(`${testCase.name}: expected ${expectedSlug} tenant slug, received ${body.data.slug}`);
   }
 
   if (body.data.surface !== testCase.expectedSurface) {

@@ -26,6 +26,7 @@ import {
   resolverSurfaceFor,
   SURFACES,
 } from '@/lib/hostnameSurface';
+import { getCurrentTenantPath } from '@/lib/tenantPath';
 import { tenantResolverService, RESOLVER_ERRORS } from '@/services/tenantResolver';
 
 const APP_SURFACE_TO_RESOLVER = Object.freeze({
@@ -60,7 +61,14 @@ const ERROR_COPY = Object.freeze({
   },
 });
 
-function getSurfaceForApp(appSurface, classification) {
+function getSurfaceForApp(appSurface, classification, tenantPath = null) {
+  // Path-mode tenants run under shared app hosts, so the deployed app owns
+  // the surface decision. Host classification remains authoritative for
+  // domain/subdomain routing.
+  if (tenantPath?.isTenantPath && !tenantPath.error) {
+    return APP_SURFACE_TO_RESOLVER[appSurface] || null;
+  }
+
   // Trust the classification first (it knows ops-tenant vs patient-tenant).
   const fromClassification = resolverSurfaceFor(classification.surface);
   if (fromClassification) return fromClassification;
@@ -170,7 +178,19 @@ export function TenantBootstrap({ appSurface, children, FallbackSplash, Fallback
 
     async function bootstrap() {
       const classification = classifyCurrentLocation();
-      const resolverSurface = getSurfaceForApp(appSurface, classification);
+      const tenantPath = getCurrentTenantPath();
+      const resolverSurface = getSurfaceForApp(appSurface, classification, tenantPath);
+
+      if (tenantPath.isTenantPath && tenantPath.error) {
+        if (isMounted) {
+          setState({
+            status: 'error',
+            errorCode: RESOLVER_ERRORS.INVALID_REQUEST,
+            classification,
+          });
+        }
+        return;
+      }
 
       if (!resolverSurface) {
         if (isMounted) {
@@ -186,6 +206,7 @@ export function TenantBootstrap({ appSurface, children, FallbackSplash, Fallback
       const { data, error } = await tenantResolverService.resolve({
         host: classification.host,
         surface: resolverSurface,
+        slug: tenantPath.tenantSlug,
         signal: controller.signal,
       });
 
@@ -219,6 +240,7 @@ export function TenantBootstrap({ appSurface, children, FallbackSplash, Fallback
         status: 'ready',
         tenant: data,
         classification,
+        tenantPath,
       });
     }
 

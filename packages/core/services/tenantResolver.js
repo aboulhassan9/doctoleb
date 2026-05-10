@@ -13,6 +13,7 @@
  */
 
 import { isRuntimeDev, isRuntimeProd, readRuntimeEnv } from '../lib/env.js';
+import { isValidTenantSlug } from '../lib/hostnameSurface.js';
 
 // ── Error codes (stable contract; UI maps to copy) ──
 
@@ -36,8 +37,9 @@ const MAX_RESOLVER_TIMEOUT_MS = 30000;
 
 const _cache = new Map();
 
-function cacheKey(host, surface) {
-  return `${(host || '').toLowerCase()}::${surface}`;
+function cacheKey(host, surface, slug = null) {
+  const mode = slug ? `slug:${slug.toLowerCase()}` : 'host';
+  return `${(host || '').toLowerCase()}::${surface}::${mode}`;
 }
 
 function readCache(key) {
@@ -70,7 +72,7 @@ export function clearResolverCache() {
 
 // ── DEV fallback ──
 
-function devFallback({ host, surface }) {
+function devFallback({ host, surface, slug: requestedSlug = null }) {
   const url = readRuntimeEnv('VITE_SUPABASE_URL');
   const anonKey = readRuntimeEnv('VITE_SUPABASE_ANON_KEY');
 
@@ -81,7 +83,7 @@ function devFallback({ host, surface }) {
   // Slug is optional in DEV — defaults to 'dev' so existing local .env files
   // (with only VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY) keep working
   // unchanged. Set VITE_DEV_TENANT_SLUG when testing tenant-specific UX.
-  const slug = readRuntimeEnv('VITE_DEV_TENANT_SLUG') || 'dev';
+  const slug = requestedSlug || readRuntimeEnv('VITE_DEV_TENANT_SLUG') || 'dev';
 
   return {
     tenantId: `dev-${slug}`,
@@ -97,12 +99,13 @@ function devFallback({ host, surface }) {
 
 // ── HTTP path ──
 
-function buildResolverUrl({ host, surface }) {
+function buildResolverUrl({ host, surface, slug = null }) {
   const baseUrl = readRuntimeEnv('VITE_TENANT_RESOLVER_URL');
   if (!baseUrl) return null;
 
   const trimmed = baseUrl.replace(/\/$/, '');
   const params = new URLSearchParams({ host, surface });
+  if (slug) params.set('slug', slug);
   return `${trimmed}?${params.toString()}`;
 }
 
@@ -150,8 +153,8 @@ function mapStatusToError(status) {
   }
 }
 
-async function fetchResolver({ host, surface, signal }) {
-  const url = buildResolverUrl({ host, surface });
+async function fetchResolver({ host, surface, slug = null, signal }) {
+  const url = buildResolverUrl({ host, surface, slug });
   if (!url) return null; // no endpoint configured
 
   const resolverSignal = createResolverSignal(signal);
@@ -198,11 +201,20 @@ async function fetchResolver({ host, surface, signal }) {
 
 // ── Validation ──
 
-function validateRequest({ host, surface }) {
+function normalizeSlug(value) {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value !== 'string') return '';
+  return value.trim().toLowerCase();
+}
+
+function validateRequest({ host, surface, slug = null }) {
   if (typeof host !== 'string' || host.length === 0) {
     return RESOLVER_ERRORS.INVALID_REQUEST;
   }
   if (surface !== 'patient' && surface !== 'ops') {
+    return RESOLVER_ERRORS.INVALID_REQUEST;
+  }
+  if (slug !== null && !isValidTenantSlug(slug)) {
     return RESOLVER_ERRORS.INVALID_REQUEST;
   }
   return null;
@@ -238,21 +250,22 @@ export const tenantResolverService = {
    * - Errors are cached for 30 seconds to avoid hammering during outages.
    * - Use `clearResolverCache()` in tests.
    *
-   * @param {{ host: string, surface: 'patient'|'ops', signal?: AbortSignal }} request
+   * @param {{ host: string, surface: 'patient'|'ops', slug?: string|null, signal?: AbortSignal }} request
    * @returns {Promise<{ data: object|null, error: string|null }>}
    */
-  async resolve({ host, surface, signal } = {}) {
-    const validationError = validateRequest({ host, surface });
+  async resolve({ host, surface, slug = null, signal } = {}) {
+    const normalizedSlug = normalizeSlug(slug);
+    const validationError = validateRequest({ host, surface, slug: normalizedSlug });
     if (validationError) {
       return { data: null, error: validationError };
     }
 
-    const key = cacheKey(host, surface);
+    const key = cacheKey(host, surface, normalizedSlug);
     const cached = readCache(key);
     if (cached) return cached;
 
     // 1. Try real resolver endpoint if configured.
-    const httpResult = await fetchResolver({ host, surface, signal });
+    const httpResult = await fetchResolver({ host, surface, slug: normalizedSlug, signal });
     if (httpResult && httpResult.data) {
       const responseError = validateResponse(httpResult.data, surface);
       if (!responseError) {
@@ -275,7 +288,7 @@ export const tenantResolverService = {
 
     // 2. DEV fallback from env.
     if (!isRuntimeProd()) {
-      const fallback = devFallback({ host, surface });
+      const fallback = devFallback({ host, surface, slug: normalizedSlug });
       if (fallback) {
         const value = { data: fallback, error: null };
         writeCache(key, value, SUCCESS_TTL_MS);

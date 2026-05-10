@@ -10,6 +10,7 @@ import { SidebarProvider } from '@ui/contexts/SidebarContext';
 import { AuthProvider } from '@ui/contexts/AuthContext';
 import { BrandProvider } from '@ui/contexts/BrandContext';
 import { TenantBootstrap } from '@ui/contexts/TenantBootstrap';
+import { getCurrentTenantBasename } from '@core/lib/tenantPath';
 import ErrorBoundary from '@ui/components/ErrorBoundary';
 import { LoadingSkeleton } from '@ui/components/ui';
 
@@ -65,6 +66,8 @@ const DoctorClaimPage = lazy(() => import('./pages/DoctorClaimPage'));
 const StaffMessagesPage = lazy(() => import('./pages/StaffMessagesPage'));
 
 function App() {
+  const routerBasename = getCurrentTenantBasename();
+
   return (
     <ThemeProvider>
       <SidebarProvider>
@@ -73,7 +76,7 @@ function App() {
           <AuthProvider>
             <BrandProvider appSurface={APP_SURFACES.clinicOps}>
               <ErrorBoundary>
-                <Router>
+                <Router basename={routerBasename}>
                   <Suspense fallback={<LoadingSkeleton rows={8} />}>
                     <Routes>
                       {/* Staff login */}

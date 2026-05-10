@@ -57,6 +57,35 @@ const APPS = Object.freeze([
     ],
   },
   {
+    app: 'patient-web-path',
+    url: process.env.PATIENT_WEB_PATH_SMOKE_URL || 'https://doctoleb-patient-web.vercel.app/t/dev',
+    title: /Patient Portal/i,
+    h1: 'Patient care starts here.',
+    includeText: [
+      'Doctor-led clinic access',
+      'Available patient services',
+      'Private patient access',
+      'Patient Registration',
+    ],
+    excludeText: [
+      'Clinic SaaS for doctors',
+      'Run the digital side of your clinic without duct tape.',
+      'Wrong portal',
+      'SURFACE_MISMATCH',
+      'TENANT_NOT_FOUND',
+    ],
+    links: [
+      {
+        text: /Patient Registration/i,
+        expectedPath: '/t/dev/signup',
+      },
+      {
+        text: /Patient Login/i,
+        expectedPath: '/t/dev/login',
+      },
+    ],
+  },
+  {
     app: 'clinic-ops',
     url: process.env.CLINIC_OPS_SMOKE_URL || 'https://doctoleb-clinic-ops.vercel.app/login',
     title: /Clinic Operations|Clinic Portal/i,
@@ -74,6 +103,27 @@ const APPS = Object.freeze([
       {
         text: /Patient Portal/i,
         expectedUrl: process.env.PATIENT_WEB_LOGIN_URL || 'https://doctoleb-patient-web.vercel.app/login',
+      },
+    ],
+  },
+  {
+    app: 'clinic-ops-path',
+    url: process.env.CLINIC_OPS_PATH_SMOKE_URL || 'https://doctoleb-clinic-ops.vercel.app/t/dev/login',
+    title: /Clinic Operations|Clinic Portal/i,
+    h1: 'Clinic Operations Portal',
+    includeText: [
+      'Sign in with your staff credentials',
+      'Patient accounts should use the',
+    ],
+    excludeText: [
+      'Wrong portal',
+      'SURFACE_MISMATCH',
+      'TENANT_NOT_FOUND',
+    ],
+    links: [
+      {
+        text: /Patient Portal/i,
+        expectedUrl: process.env.PATIENT_WEB_PATH_LOGIN_URL || 'https://doctoleb-patient-web.vercel.app/t/dev/login',
       },
     ],
   },

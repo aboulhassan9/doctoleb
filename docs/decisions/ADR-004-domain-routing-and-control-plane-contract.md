@@ -86,15 +86,34 @@ VITE_PUBLIC_PRIMARY_DOMAIN  -> canonical purchased domain family, default doctol
 
 These values are public routing metadata, not secrets. They can contain comma-separated hostnames or URLs. Tenant Vercel hosts still require matching `tenant_domains` rows in the control plane when they should resolve to a tenant. Real `doctoleb.com` rows stay `pending` until ownership, DNS, and SSL are verified.
 
+### No-Domain Path Routing
+
+Before a tenant owns a domain, the shared Vercel apps may also route by tenant slug:
+
+```txt
+https://doctoleb-patient-web.vercel.app/t/{tenantSlug}
+https://doctoleb-clinic-ops.vercel.app/t/{tenantSlug}
+```
+
+This path mode is additive. Host/domain routing remains the preferred production path once a real domain is purchased and verified. In path mode:
+
+- The browser extracts `/t/{tenantSlug}` before tenant bootstrap.
+- The patient app uses resolver surface `patient`; the clinic-ops app uses resolver surface `ops`.
+- React Router runs with `basename="/t/{tenantSlug}"`, so existing routes still behave as `/login`, `/patient-dashboard`, `/doctor-dashboard`, etc. inside the app.
+- The resolver receives `host`, `surface`, and `slug`; if `slug` is present, the control plane resolves by `tenants.slug` and does not require an active `tenant_domains` row.
+- Only `active` tenants resolve by slug. `draft`, `provisioning`, `inactive`, `suspended`, and `maintenance` return `TENANT_INACTIVE`.
+- `/t/{tenantSlug}` is not stored in `tenant_domains`; it is a path route, not a domain.
+
 ## Tenant Resolver Contract
 
 ### Request
 
 ```txt
 GET /api/tenant-resolve?host={hostname}&surface=patient|ops
+GET /api/tenant-resolve?host={hostname}&surface=patient|ops&slug={tenantSlug}
 ```
 
-`host` is required. `surface` is required and must be `patient` or `ops`. Other surfaces (marketing, control-plane) do not call this endpoint.
+`host` is required. `surface` is required and must be `patient` or `ops`. `slug` is optional and is used only for no-domain path routing. Other surfaces (marketing, control-plane) do not call this endpoint.
 
 ### Response (success)
 
@@ -131,7 +150,7 @@ The response shape mirrors the rest of the codebase's contract: `{ data, error }
 
 - Successful resolution is cacheable for **5 minutes** in browser memory (not localStorage; not a service worker).
 - A failed resolution is cached for **30 seconds** to avoid hammering the control plane during outages.
-- Cache key is the `(host, surface)` tuple.
+- Cache key is `(host, surface, mode)`, where mode is either host routing or slug routing.
 - The resolver itself may set `Cache-Control: max-age=300, public` on success and `Cache-Control: no-store` on error.
 
 ### Local development fallback

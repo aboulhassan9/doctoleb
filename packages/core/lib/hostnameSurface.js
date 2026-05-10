@@ -203,7 +203,7 @@ function stripPrimaryDomain(hostname, primaryDomain) {
   return null;
 }
 
-function isValidTenantSlug(slug) {
+export function isValidTenantSlug(slug) {
   if (typeof slug !== 'string') return false;
   if (slug.length === 0 || slug.length > 63) return false;
   if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(slug)) return false;

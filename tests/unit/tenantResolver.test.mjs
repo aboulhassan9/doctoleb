@@ -115,6 +115,11 @@ describe('tenantResolverService.resolve — validation', () => {
     const r = await tenantResolverService.resolve({ host: 'x.com', surface: null });
     assert.equal(r.error, RESOLVER_ERRORS.INVALID_REQUEST);
   });
+
+  it('invalid slug → INVALID_REQUEST', async () => {
+    const r = await tenantResolverService.resolve({ host: 'x.com', surface: 'patient', slug: 'bad_slug' });
+    assert.equal(r.error, RESOLVER_ERRORS.INVALID_REQUEST);
+  });
 });
 
 // ── DEV fallback ──
@@ -152,6 +157,22 @@ describe('tenantResolverService.resolve — DEV fallback', () => {
     assert.equal(r.data.slug, 'dr-custom');
     assert.equal(r.data.tenantId, 'dev-dr-custom');
     assert.equal(r.data.surface, 'ops');
+  });
+
+  it('uses the requested path slug for DEV fallback when provided', async () => {
+    setDevEnv();
+    process.env.VITE_DEV_TENANT_SLUG = 'ignored-env-slug';
+    delete process.env.VITE_TENANT_RESOLVER_URL;
+
+    const r = await tenantResolverService.resolve({
+      host: 'localhost:3001',
+      surface: 'patient',
+      slug: 'assad',
+    });
+
+    assert.equal(r.error, null);
+    assert.equal(r.data.slug, 'assad');
+    assert.equal(r.data.tenantId, 'dev-assad');
   });
 
   it('returns RESOLVER_NOT_CONFIGURED when env is missing in dev', async () => {
@@ -263,6 +284,29 @@ describe('tenantResolverService.resolve — HTTP success', () => {
     const parsed = new URL(calledUrl);
     assert.equal(parsed.searchParams.get('host'), 'dr-hassan.doctoleb.com');
     assert.equal(parsed.searchParams.get('surface'), 'ops');
+    assert.equal(parsed.pathname, '/tenant-resolve');
+  });
+
+  it('adds slug to the resolver URL for no-domain tenant path routing', async () => {
+    setProdEnv();
+    process.env.VITE_TENANT_RESOLVER_URL = 'https://control.example.com/tenant-resolve/';
+    let calledUrl = null;
+    mockFetch(async (url) => {
+      calledUrl = String(url);
+      return new Response(JSON.stringify({ data: sampleData, error: null }), { status: 200 });
+    });
+
+    await tenantResolverService.resolve({
+      host: 'doctoleb-patient-web.vercel.app',
+      surface: 'patient',
+      slug: 'dr-hassan',
+    });
+
+    assert.ok(calledUrl);
+    const parsed = new URL(calledUrl);
+    assert.equal(parsed.searchParams.get('host'), 'doctoleb-patient-web.vercel.app');
+    assert.equal(parsed.searchParams.get('surface'), 'patient');
+    assert.equal(parsed.searchParams.get('slug'), 'dr-hassan');
     assert.equal(parsed.pathname, '/tenant-resolve');
   });
 
@@ -393,6 +437,23 @@ describe('tenantResolverService.resolve — cache', () => {
     await tenantResolverService.resolve({ host: 'dr-y.doctoleb.com', surface: 'patient' });
 
     assert.equal(callCount, 3);
+  });
+
+  it('host routing and path slug routing have independent cache entries', async () => {
+    setProdEnv();
+    process.env.VITE_TENANT_RESOLVER_URL = 'https://control.example.com/tenant-resolve';
+
+    let callCount = 0;
+    mockFetch(async () => {
+      callCount += 1;
+      return new Response(JSON.stringify({ data: sampleData, error: null }), { status: 200 });
+    });
+
+    await tenantResolverService.resolve({ host: 'doctoleb-patient-web.vercel.app', surface: 'patient' });
+    await tenantResolverService.resolve({ host: 'doctoleb-patient-web.vercel.app', surface: 'patient', slug: 'dr-x' });
+    await tenantResolverService.resolve({ host: 'doctoleb-patient-web.vercel.app', surface: 'patient', slug: 'dr-x' });
+
+    assert.equal(callCount, 2);
   });
 
   it('clearResolverCache forces a re-fetch', async () => {

@@ -73,6 +73,23 @@ describe('SaaS activation contracts', () => {
     assert.match(resolver, /verify_jwt=false|--no-verify-jwt/);
   });
 
+  it('no-domain slug resolver is service-role-only and active-tenant-only', () => {
+    const source = read('supabase-control-plane/migrations/00010000000021_control_plane_no_domain_slug_resolver.sql');
+    const resolver = read('supabase-control-plane/functions/tenant-resolve/index.ts');
+    const bootstrap = read('packages/ui/contexts/TenantBootstrap.jsx');
+
+    assert.match(source, /create or replace function public\.resolve_tenant_by_slug/);
+    assert.match(source, /v_slug !~ '\^\[a-z0-9\]/);
+    assert.match(source, /v_row\.tenant_status <> 'active'/);
+    assert.match(source, /grant execute on function public\.resolve_tenant_by_slug\(text, text\) to service_role/i);
+    assert.match(source, /revoke execute on function public\.resolve_tenant_by_slug\(text, text\) from public, anon, authenticated/i);
+    assert.match(resolver, /url\.searchParams\.get\('slug'\)/);
+    assert.match(resolver, /resolve_tenant_by_slug/);
+    assert.match(resolver, /slug \? 'tenant_resolve_slug' : 'tenant_resolve'/);
+    assert.match(bootstrap, /tenantPath\?\.isTenantPath && !tenantPath\.error/);
+    assert.match(bootstrap, /getSurfaceForApp\(appSurface, classification, tenantPath\)/);
+  });
+
   it('tenant resolver edge function validates host and sets production headers', () => {
     const source = read('supabase-control-plane/functions/tenant-resolve/index.ts');
 

@@ -10,6 +10,7 @@
  */
 
 import { isRuntimeDev, readRuntimeEnv } from './env.js';
+import { withCurrentTenantBasename } from './tenantPath.js';
 
 // ── App Surface Identifiers ──
 
@@ -87,10 +88,11 @@ export function getLoginPathForRole(role) {
  * In production this should be configured as VITE_CLINIC_OPS_URL.
  */
 export function getClinicOpsLoginUrl() {
+  const loginPath = withCurrentTenantBasename('/login');
   const configuredUrl = readRuntimeEnv('VITE_CLINIC_OPS_URL');
-  if (configuredUrl) return appendPath(configuredUrl, '/login');
-  if (isRuntimeDev()) return 'http://127.0.0.1:3002/login';
-  return '/login';
+  if (configuredUrl) return appendPath(configuredUrl, loginPath);
+  if (isRuntimeDev()) return `http://127.0.0.1:3002${loginPath}`;
+  return loginPath;
 }
 
 /**
@@ -98,20 +100,22 @@ export function getClinicOpsLoginUrl() {
  * In production this should be configured as VITE_PATIENT_WEB_URL.
  */
 export function getPatientWebLoginUrl() {
+  const loginPath = withCurrentTenantBasename('/login');
   const configuredUrl = readRuntimeEnv('VITE_PATIENT_WEB_URL');
-  if (configuredUrl) return appendPath(configuredUrl, '/login');
-  if (isRuntimeDev()) return 'http://127.0.0.1:3001/login';
-  return '/login';
+  if (configuredUrl) return appendPath(configuredUrl, loginPath);
+  if (isRuntimeDev()) return `http://127.0.0.1:3001${loginPath}`;
+  return loginPath;
 }
 
 /**
  * Returns the patient-web dashboard URL for controlled cross-surface handoffs.
  */
 export function getPatientWebHomeUrl() {
+  const homePath = withCurrentTenantBasename('/patient-dashboard');
   const configuredUrl = readRuntimeEnv('VITE_PATIENT_WEB_URL');
-  if (configuredUrl) return appendPath(configuredUrl, '/patient-dashboard');
-  if (isRuntimeDev()) return 'http://127.0.0.1:3001/patient-dashboard';
-  return '/patient-dashboard';
+  if (configuredUrl) return appendPath(configuredUrl, homePath);
+  if (isRuntimeDev()) return `http://127.0.0.1:3001${homePath}`;
+  return homePath;
 }
 
 // ── Route Ownership Lists ──
