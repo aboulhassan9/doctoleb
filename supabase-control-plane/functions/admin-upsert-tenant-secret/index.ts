@@ -12,6 +12,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const PROJECT_REF = /^[a-z0-9]{20}$/
 const SECRET_KINDS = new Set(['service_role_key', 'database_url'])
 const SECRET_STORAGES = new Set(['supabase_vault', 'edge_function_secret', 'external_secret_manager'])
+const DATABASE_URL_PROTOCOLS = new Set(['postgres:', 'postgresql:'])
 
 function normalizeUuid(value: unknown) {
   const id = typeof value === 'string' ? value.trim().toLowerCase() : ''
@@ -30,6 +31,19 @@ function normalizeEnum(value: unknown, allowed: Set<string>, fallback = '') {
 
 function normalizeSecretInput(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function normalizeDatabaseUrlSecret(value: string, projectRef: string) {
+  try {
+    const parsed = new URL(value)
+    if (!DATABASE_URL_PROTOCOLS.has(parsed.protocol)) return ''
+    const hostname = parsed.hostname.toLowerCase()
+    const username = decodeURIComponent(parsed.username || '').toLowerCase()
+    if (!hostname.includes(projectRef) && !username.includes(projectRef)) return ''
+    return parsed.href
+  } catch (_error) {
+    return ''
+  }
 }
 
 function statusForStoreError(message = '') {
@@ -56,6 +70,16 @@ function codeForStoreError(message = '') {
     if (message.includes(code)) return code
   }
   return 'TENANT_SECRET_STORE_FAILED'
+}
+
+function summaryForStoreError(code: string) {
+  if (code === 'TENANT_NOT_FOUND') return 'The selected tenant no longer exists.'
+  if (code === 'INVALID_PROJECT_REF') return 'Save a valid Supabase project ref before storing this secret.'
+  if (code === 'INVALID_SECRET_KIND') return 'This tenant secret type is not supported.'
+  if (code === 'INVALID_SECRET_STORAGE') return 'This tenant secret storage mode is not supported.'
+  if (code === 'SECRET_VALUE_REQUIRED') return 'Paste the required server-only value before continuing.'
+  if (code === 'SECRET_REF_INVALID') return 'Secret references must be names only, not raw keys or database URLs.'
+  return 'Secret was not saved. Check the value and try again.'
 }
 
 function sanitizeTenantSecret(row: Record<string, unknown> | null) {
@@ -88,7 +112,7 @@ Deno.serve(async (req) => {
   const tenantId = normalizeUuid(body.tenantId ?? body.tenant_id)
   const secretKind = normalizeEnum(body.secretKind ?? body.secret_kind, SECRET_KINDS, 'service_role_key')
   const secretStorage = normalizeEnum(body.secretStorage ?? body.secret_storage, SECRET_STORAGES, 'supabase_vault')
-  const secretValue = normalizeSecretInput(body.secretValue ?? body.secret_value)
+  let secretValue = normalizeSecretInput(body.secretValue ?? body.secret_value)
   const secretRef = normalizeSecretInput(body.secretRef ?? body.secret_ref)
 
   if (!tenantId) return errorResponse('INVALID_REQUEST', 400, cors, { summary: 'tenantId is required.' })
@@ -105,6 +129,16 @@ Deno.serve(async (req) => {
   const projectRef = normalizeProjectRef(body.projectRef ?? body.project_ref ?? tenant.supabase_project_ref)
   if (!projectRef) return errorResponse('INVALID_PROJECT_REF', 400, cors)
 
+  if (secretKind === 'database_url' && secretStorage === 'supabase_vault') {
+    const normalizedDatabaseUrl = normalizeDatabaseUrlSecret(secretValue, projectRef)
+    if (!normalizedDatabaseUrl) {
+      return errorResponse('INVALID_DATABASE_URL', 400, cors, {
+        summary: 'Use the tenant project Postgres connection string.',
+      })
+    }
+    secretValue = normalizedDatabaseUrl
+  }
+
   const { data, error } = await context.client.rpc('admin_store_tenant_secret_ref', {
     p_tenant_id: tenantId,
     p_project_ref: projectRef,
@@ -117,7 +151,8 @@ Deno.serve(async (req) => {
 
   if (error) {
     const message = error.message || ''
-    return errorResponse(codeForStoreError(message), statusForStoreError(message), cors)
+    const code = codeForStoreError(message)
+    return errorResponse(code, statusForStoreError(message), cors, { summary: summaryForStoreError(code) })
   }
 
   const row = Array.isArray(data) ? data[0] : data

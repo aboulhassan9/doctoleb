@@ -180,7 +180,7 @@ export default function ConsoleScreen({ session, onSignOut }) {
   async function handleStoreTenantSecret({ secretValue, secretKind = TENANT_PRIVILEGED_SECRET_KIND }) {
     if (!tenant?.id || !tenant?.supabase_project_ref) {
       setProvisioningRunMessage('Save the tenant runtime project ref before storing tenant setup secrets.')
-      return
+      return { data: null, error: 'RUNTIME_CONFIG_REQUIRED' }
     }
 
     setStoringTenantSecret(true)
@@ -194,10 +194,13 @@ export default function ConsoleScreen({ session, onSignOut }) {
         secretStorage: 'supabase_vault',
         secretValue,
       })
-      setProvisioningRunMessage(result.error || (secretKind === 'database_url'
+      setProvisioningRunMessage((result.error
+        ? (result.details?.summary || result.error)
+        : (secretKind === 'database_url'
         ? 'Tenant database connection stored in Vault. Run database setup again.'
-        : 'Tenant setup secret stored in Vault. Continue the readiness checks.'))
-      await reloadTenantDetail()
+        : 'Tenant setup secret stored in Vault. Continue the readiness checks.')))
+      if (!result.error) await reloadTenantDetail()
+      return result
     } finally {
       setStoringTenantSecret(false)
     }

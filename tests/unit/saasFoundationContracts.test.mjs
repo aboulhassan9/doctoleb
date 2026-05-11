@@ -439,6 +439,7 @@ describe('SaaS foundation contracts', () => {
   it('tenant DB setup automation stores only secret references and records migration runs', () => {
     const migration = read('supabase-control-plane/migrations/00010000000022_control_plane_tenant_db_setup_automation.sql');
     const runnerMigration = read('supabase-control-plane/migrations/00010000000023_control_plane_tenant_db_migration_runner.sql');
+    const secretRetryMigration = read('supabase-control-plane/migrations/00010000000024_control_plane_tenant_secret_vault_upsert_retry.sql');
     const tenantSecrets = read('supabase-control-plane/functions/_shared/tenantSecrets.ts');
     const tenantMigrationRunner = read('supabase-control-plane/functions/_shared/tenantMigrationRunner.ts');
     const tenantMigrationBundle = read('supabase-control-plane/functions/_shared/tenantMigrationBundle.ts');
@@ -475,6 +476,13 @@ describe('SaaS foundation contracts', () => {
     assert.match(runnerMigration, /create or replace function public\.admin_finish_tenant_migration_run/);
     assert.match(runnerMigration, /grant execute on function public\.admin_upsert_tenant_migration_item[\s\S]*to service_role/);
     assert.doesNotMatch(runnerMigration, /grant execute on function public\.admin_upsert_tenant_migration_item[\s\S]*to authenticated/i);
+    assert.match(secretRetryMigration, /create or replace function public\.admin_store_tenant_secret_ref/);
+    assert.match(secretRetryMigration, /v_has_existing/);
+    assert.match(secretRetryMigration, /from vault\.secrets/);
+    assert.match(secretRetryMigration, /vault\.update_secret/);
+    assert.match(secretRetryMigration, /vault\.create_secret/);
+    assert.match(secretRetryMigration, /recoversNamedVaultSecret/);
+    assert.match(secretRetryMigration, /rawSecretStoredInPublicTable', false/);
 
     assert.match(tenantSecrets, /resolveTenantServiceRoleKey/);
     assert.match(tenantSecrets, /resolveTenantDatabaseUrl/);
@@ -501,6 +509,11 @@ describe('SaaS foundation contracts', () => {
     }
     assert.match(storeProviderSecret, /admin_store_provider_secret_ref/);
     assert.match(storeTenantSecret, /admin_store_tenant_secret_ref/);
+    assert.match(storeTenantSecret, /normalizeDatabaseUrlSecret/);
+    assert.match(storeTenantSecret, /DATABASE_URL_PROTOCOLS/);
+    assert.match(storeTenantSecret, /parsed\.href/);
+    assert.match(storeTenantSecret, /INVALID_DATABASE_URL/);
+    assert.match(storeTenantSecret, /summaryForStoreError/);
     assert.match(revokeTenantSecret, /admin_revoke_tenant_secret_ref/);
     assert.match(listTenantSetup, /requireSuperAdmin\(req\)/);
     assert.match(listTenantSetup, /has_secret_ref/);
@@ -519,6 +532,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(providerPanel, /Store or rotate provider secret in Vault/);
     assert.match(stepsPanel, /postgresql:\/\/\.\.\./);
     assert.match(stepsPanel, /secretKind: 'database_url'/);
+    assert.match(stepsPanel, /const storeResult = await onStoreTenantSecret\?\.\(\{ secretValue: value, secretKind: 'database_url' \}\)/);
+    assert.match(stepsPanel, /if \(storeResult\?\.error\) return/);
     assert.match(stepsPanel, /Latest DB setup/);
     assert.match(readme, /tenant_secret_refs/);
     assert.match(readme, /tenant_migration_runs/);

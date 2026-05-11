@@ -229,7 +229,8 @@ function DatabaseSetupAction({
     event.preventDefault()
     const value = databaseUrl.trim()
     if (value) {
-      await onStoreTenantSecret?.({ secretValue: value, secretKind: 'database_url' })
+      const storeResult = await onStoreTenantSecret?.({ secretValue: value, secretKind: 'database_url' })
+      if (storeResult?.error) return
       setDatabaseUrl('')
     }
     await onRunStep?.(step)
@@ -273,7 +274,8 @@ function TenantSecretAction({
     event.preventDefault()
     const value = secretValue.trim()
     if (value) {
-      await onStoreTenantSecret?.({ secretValue: value })
+      const storeResult = await onStoreTenantSecret?.({ secretValue: value })
+      if (storeResult?.error) return
       setSecretValue('')
     }
     await onRunStep?.(step)
