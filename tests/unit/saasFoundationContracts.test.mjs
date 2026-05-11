@@ -436,6 +436,73 @@ describe('SaaS foundation contracts', () => {
     assert.match(handoff, /Provider Connection Metadata APIs/);
   });
 
+  it('tenant DB setup automation stores only secret references and records migration runs', () => {
+    const migration = read('supabase-control-plane/migrations/00010000000022_control_plane_tenant_db_setup_automation.sql');
+    const tenantSecrets = read('supabase-control-plane/functions/_shared/tenantSecrets.ts');
+    const providerExecution = read('supabase-control-plane/functions/_shared/providerExecution.ts');
+    const storeProviderSecret = read('supabase-control-plane/functions/admin-store-provider-secret/index.ts');
+    const storeTenantSecret = read('supabase-control-plane/functions/admin-upsert-tenant-secret/index.ts');
+    const listTenantSetup = read('supabase-control-plane/functions/admin-list-tenant-db-setup/index.ts');
+    const revokeTenantSecret = read('supabase-control-plane/functions/admin-revoke-tenant-secret/index.ts');
+    const runner = read('supabase-control-plane/functions/admin-run-provisioning-step/index.ts');
+    const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
+    const providerPanel = read('apps/control-plane/src/components/ProviderConnectionsPanel.jsx');
+    const stepsPanel = read('apps/control-plane/src/components/ProvisioningStepsPanel.jsx');
+    const readme = read('supabase-control-plane/README.md');
+
+    assert.match(migration, /create extension if not exists supabase_vault with schema vault/);
+    assert.match(migration, /create table if not exists public\.tenant_secret_refs/);
+    assert.match(migration, /create table if not exists public\.tenant_migration_runs/);
+    assert.match(migration, /create table if not exists public\.tenant_migration_items/);
+    assert.match(migration, /tenant_secret_refs_secret_ref_not_raw/);
+    assert.match(migration, /secret_ref !~\*/);
+    assert.match(migration, /postgres\(ql\)\?:\/\//);
+    assert.match(migration, /alter table public\.tenant_secret_refs enable row level security/);
+    assert.match(migration, /alter table public\.tenant_migration_runs enable row level security/);
+    assert.match(migration, /admin_store_tenant_secret_ref/);
+    assert.match(migration, /vault\.create_secret/);
+    assert.match(migration, /admin_read_tenant_secret/);
+    assert.match(migration, /admin_revoke_tenant_secret_ref/);
+    assert.match(migration, /admin_store_provider_secret_ref/);
+    assert.match(migration, /admin_create_tenant_migration_run/);
+    assert.match(migration, /grant execute on function public\.admin_store_tenant_secret_ref[\s\S]*to service_role/);
+    assert.doesNotMatch(migration, /grant execute on function public\.admin_store_tenant_secret_ref[\s\S]*to authenticated/i);
+
+    assert.match(tenantSecrets, /resolveTenantServiceRoleKey/);
+    assert.match(tenantSecrets, /admin_read_tenant_secret/);
+    assert.match(tenantSecrets, /admin_read_vault_secret_ref/);
+    assert.match(tenantSecrets, /source: 'supabase_vault'/);
+    assert.match(providerExecution, /readVaultSecretRef/);
+    assert.match(providerExecution, /secretStorage === 'supabase_vault'/);
+
+    for (const source of [storeProviderSecret, storeTenantSecret, revokeTenantSecret]) {
+      assert.match(source, /requireSuperAdmin\(req, \['operator'\]\)/);
+      assert.doesNotMatch(source, /jsonResponse\(\{\s*data:\s*(secretValue|secret_value)/);
+      assert.doesNotMatch(source, /jsonResponse\([\s\S]{0,180}(secretValue|secret_value)/);
+    }
+    assert.match(storeProviderSecret, /admin_store_provider_secret_ref/);
+    assert.match(storeTenantSecret, /admin_store_tenant_secret_ref/);
+    assert.match(revokeTenantSecret, /admin_revoke_tenant_secret_ref/);
+    assert.match(listTenantSetup, /requireSuperAdmin\(req\)/);
+    assert.match(listTenantSetup, /has_secret_ref/);
+    assert.doesNotMatch(listTenantSetup, /decrypted_secret|secret_value/);
+
+    assert.match(runner, /recordTenantMigrationRun/);
+    assert.match(runner, /admin_create_tenant_migration_run/);
+    assert.match(runner, /migrationRunId/);
+    assert.match(runner, /TENANT_MIGRATIONS_NOT_READY/);
+    assert.match(api, /admin-store-provider-secret/);
+    assert.match(api, /admin-upsert-tenant-secret/);
+    assert.match(api, /admin-list-tenant-db-setup/);
+    assert.match(api, /admin-revoke-tenant-secret/);
+    assert.match(providerPanel, /Store or rotate provider secret in Vault/);
+    assert.match(stepsPanel, /Store privileged key in control-plane Vault/);
+    assert.match(stepsPanel, /Latest DB setup run/);
+    assert.match(readme, /tenant_secret_refs/);
+    assert.match(readme, /tenant_migration_runs/);
+    assert.match(readme, /admin-upsert-tenant-secret/);
+  });
+
   it('control-plane console can select provider connections and render the provisioning step ledger', () => {
     const consoleScreen = read('apps/control-plane/src/components/ConsoleScreen.jsx');
     const tenantCreationWorkspace = read('apps/control-plane/src/components/TenantCreationWorkspace.jsx');
@@ -549,7 +616,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(providerHelpers, /Assisted or automatic provisioning requires/);
     assert.match(providerPanel, /upsertProviderConnection/);
     assert.match(providerPanel, /archiveProviderConnection/);
-    assert.match(providerPanel, /Raw provider tokens, service-role keys, and management keys never enter/);
+    assert.match(providerPanel, /Raw provider tokens, privileged database keys, and management keys never enter/);
     assert.match(stepsPanel, /idempotency key and undo strategy/);
     assert.match(stepsPanel, /Open Supabase projects/);
     assert.match(stepsPanel, /Open Vercel dashboard/);
@@ -592,7 +659,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /apply_tenant_migrations/);
     assert.match(runner, /runApplyTenantMigrations/);
     assert.match(runner, /createTenantServiceClient/);
-    assert.match(runner, /getTenantServiceRoleKey/);
+    assert.match(runner, /resolveTenantServiceRoleKey/);
     assert.match(runner, /tenant_profile/);
     assert.match(runner, /tenant_app_config/);
     assert.match(runner, /TENANT_SERVICE_ROLE_SECRET_REQUIRED/);
@@ -632,10 +699,11 @@ describe('SaaS foundation contracts', () => {
     assert.doesNotMatch(runner, /fetch\(['"`]https:\/\/api\.supabase\.com/);
 
     assert.match(providerExecution, /verifyProviderCredential/);
+    assert.match(providerExecution, /readVaultSecretRef/);
     assert.match(providerExecution, /Deno\.env\.get\(secretRef\)/);
     assert.match(providerExecution, /https:\/\/api\.supabase\.com\/v1\/projects/);
     assert.match(providerExecution, /https:\/\/api\.vercel\.com\/v2\/user/);
-    assert.match(providerExecution, /Authorization: `Bearer \$\{token\}`/);
+    assert.match(providerExecution, /Authorization: `Bearer \$\{bearerCredential\}`/);
     assert.match(providerExecution, /PROVIDER_SECRET_NOT_CONFIGURED/);
     assert.match(providerExecution, /PROVIDER_SECRET_STORAGE_UNSUPPORTED/);
     assert.match(providerExecution, /PROVIDER_AUTH_FAILED/);
@@ -854,10 +922,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(source, /normalizeAnonKey/);
     assert.doesNotMatch(source, /SERVICE_ROLE_KEY_/);
     assert.match(api, /admin-set-tenant-runtime-config/);
-    assert.match(panel, /Tenant service-role keys stay/);
+    assert.match(panel, /Tenant privileged keys stay/);
     assert.match(panel, /Where to find these values/);
     assert.match(panel, /Settings -> API Keys/);
-    assert.match(panel, /Do not paste the secret\/service key here/);
+    assert.match(panel, /Do not paste any privileged key here/);
   });
 
   it('draft tenants cannot sync runtime branding or feature flags before runtime config exists', () => {
@@ -871,7 +939,7 @@ describe('SaaS foundation contracts', () => {
 
     assert.match(admin, /TENANT_SERVICE_ROLE_KEY_UNCONFIGURED/);
     assert.match(getTenant, /readTenantRuntimeBranding/);
-    assert.match(getTenant, /getTenantServiceRoleKey/);
+    assert.match(getTenant, /resolveTenantServiceRoleKey/);
     assert.match(getTenant, /runtimeBranding/);
     assert.match(getTenant, /TENANT_SERVICE_ROLE_NOT_CONFIGURED/);
     assert.match(configSync, /TENANT_RUNTIME_NOT_CONFIGURED/);

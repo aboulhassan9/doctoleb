@@ -2,12 +2,12 @@ import {
   createTenantServiceClient,
   corsHeaders,
   errorResponse,
-  getTenantServiceRoleKey,
   jsonResponse,
   preflight,
   readJsonBody,
   requireSuperAdmin,
 } from '../_shared/admin.ts'
+import { resolveTenantServiceRoleKey } from '../_shared/tenantSecrets.ts'
 import {
   CONTROL_PLANE_PLAN_ENTITLEMENT_SELECT,
   CONTROL_PLANE_PLAN_SELECT,
@@ -24,7 +24,7 @@ function readTenantSelector(req: Request, body: Record<string, unknown>) {
   }
 }
 
-async function readTenantRuntimeBranding(tenant: Record<string, unknown>) {
+async function readTenantRuntimeBranding(client: Parameters<typeof resolveTenantServiceRoleKey>[0], tenant: Record<string, unknown>) {
   const projectRef = typeof tenant.supabase_project_ref === 'string' ? tenant.supabase_project_ref : ''
   const tenantUrl = typeof tenant.supabase_url === 'string' ? tenant.supabase_url : ''
 
@@ -32,7 +32,10 @@ async function readTenantRuntimeBranding(tenant: Record<string, unknown>) {
     return { data: null, error: 'TENANT_RUNTIME_NOT_CONFIGURED' }
   }
 
-  const { key } = getTenantServiceRoleKey(projectRef)
+  const { key } = await resolveTenantServiceRoleKey(client, {
+    tenantId: typeof tenant.id === 'string' ? tenant.id : null,
+    projectRef,
+  })
   if (!key) return { data: null, error: 'TENANT_SERVICE_ROLE_NOT_CONFIGURED' }
 
   const tenantClient = createTenantServiceClient(tenantUrl, key)
@@ -148,7 +151,7 @@ Deno.serve(async (req) => {
   if (error) return errorResponse('TENANT_LOOKUP_FAILED', 500, cors)
   if (!tenant) return errorResponse('TENANT_NOT_FOUND', 404, cors)
 
-  const [{ data: plans }, { data: planEntitlements }, { data: events }, { data: provisioningSteps }] = await Promise.all([
+  const [{ data: plans }, { data: planEntitlements }, { data: events }, { data: provisioningSteps }, { data: migrationRuns }] = await Promise.all([
     context.client.from('plans').select(CONTROL_PLANE_PLAN_SELECT).order('sort_order', { ascending: true }),
     context.client.from('plan_entitlements').select(CONTROL_PLANE_PLAN_ENTITLEMENT_SELECT).order('feature_code', { ascending: true }),
     context.client
@@ -162,9 +165,15 @@ Deno.serve(async (req) => {
       .select(CONTROL_PLANE_PROVISIONING_STEP_SELECT)
       .eq('tenant_id', tenant.id)
       .order('created_at', { ascending: true }),
+    context.client
+      .from('tenant_migration_runs')
+      .select('id, tenant_id, provisioning_step_id, project_ref, runner_mode, status, migration_source, expected_migrations_count, applied_migrations_count, failed_migration_version, failed_migration_name, last_error_code, last_error_summary, started_at, completed_at, created_at, updated_at')
+      .eq('tenant_id', tenant.id)
+      .order('created_at', { ascending: false })
+      .limit(10),
   ])
 
-  const runtimeBranding = await readTenantRuntimeBranding(tenant)
+  const runtimeBranding = await readTenantRuntimeBranding(context.client, tenant)
 
   return jsonResponse({
     data: {
@@ -173,6 +182,7 @@ Deno.serve(async (req) => {
       planEntitlements: planEntitlements ?? [],
       events: events ?? [],
       provisioningSteps: provisioningSteps ?? [],
+      migrationRuns: migrationRuns ?? [],
       runtimeBranding: runtimeBranding.data,
       runtimeBrandingError: runtimeBranding.error,
     },

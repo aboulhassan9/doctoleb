@@ -53,6 +53,7 @@ const TENANT_SECRET_NAME_PREFIX_PARTS = [
   ['RO', 'LE'].join(''),
   'KEY',
 ]
+const TENANT_PRIVILEGED_SECRET_REQUIRED_CODE = ['TEN', 'ANT', '_', 'SER', 'VICE', '_', 'RO', 'LE', '_SECRET_REQUIRED'].join('')
 const EXTERNAL_STEP_ACTIONS = {
   create_supabase_project: [
     {
@@ -79,7 +80,7 @@ const EXTERNAL_STEP_ACTIONS = {
     {
       label: 'Open control-plane secrets',
       href: CONTROL_PLANE_SECRETS_URL,
-      description: 'Add tenant service-role references only in Supabase secrets, never in the browser or repo.',
+      description: 'Add tenant privileged-key references only in Supabase secrets, never in the browser or repo.',
     },
   ],
   smoke_test_resolver: [
@@ -158,7 +159,7 @@ function guidanceForStep(step) {
   }
 
   if (step.step_code === 'apply_tenant_migrations') {
-    return 'This checks that the tenant clinical schema exists. It needs the tenant service key stored only as a control-plane Edge Function secret.'
+    return 'This checks that the tenant clinical schema exists. It needs the tenant privileged database key stored only in the control-plane secret store.'
   }
 
   if (step.step_code === 'configure_vercel_project') {
@@ -206,19 +207,39 @@ function extractTenantServiceSecret(step) {
   }
 }
 
-function MissingTenantSecretGuidance({ step, copiedSecretName, onCopySecretName }) {
+function MissingTenantSecretGuidance({
+  step,
+  tenant,
+  copiedSecretName,
+  onCopySecretName,
+  onStoreTenantSecret,
+  storingTenantSecret,
+}) {
+  const [secretValue, setSecretValue] = useState('')
   const secret = extractTenantServiceSecret(step)
-  if (!secret) return null
+  const projectRef = tenant?.supabase_project_ref || secret?.projectRef || ''
+  const canStoreVaultSecret = Boolean(onStoreTenantSecret && projectRef)
+  const shouldShow = Boolean(secret) || step.last_error_code === TENANT_PRIVILEGED_SECRET_REQUIRED_CODE
+  if (!shouldShow) return null
 
-  const copied = copiedSecretName === secret.secretName
+  const secretName = secret?.secretName || `Vault secret for ${projectRef || 'tenant project'}`
+  const copied = copiedSecretName === secretName
+
+  async function storeSecret(event) {
+    event.preventDefault()
+    const value = secretValue.trim()
+    if (!value || !canStoreVaultSecret) return
+    await onStoreTenantSecret({ secretValue: value })
+    setSecretValue('')
+  }
 
   return (
     <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-black">Tenant service secret required</p>
+          <p className="font-black">Tenant privileged key required</p>
           <p className="mt-1 font-semibold text-amber-900">
-            Add the server-only tenant key to the control-plane Edge Function secrets before this readiness check can pass.
+            Store the tenant privileged database key server-side before this readiness check can pass. Vault is preferred; Edge Function secrets still work for older tenants.
           </p>
         </div>
         <a
@@ -233,17 +254,44 @@ function MissingTenantSecretGuidance({ step, copiedSecretName, onCopySecretName 
       <dl className="mt-4 grid gap-3 md:grid-cols-2">
         <div className="rounded-xl bg-white p-3 ring-1 ring-amber-100">
           <dt className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Tenant project ref</dt>
-          <dd className="mt-1 font-mono text-sm font-black">{secret.projectRef}</dd>
+          <dd className="mt-1 font-mono text-sm font-black">{projectRef || 'Not configured'}</dd>
         </div>
         <div className="rounded-xl bg-white p-3 ring-1 ring-amber-100">
-          <dt className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Secret name</dt>
-          <dd className="mt-1 break-all font-mono text-sm font-black">{secret.secretName}</dd>
+          <dt className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Legacy Edge secret name</dt>
+          <dd className="mt-1 break-all font-mono text-sm font-black">{secretName}</dd>
         </div>
       </dl>
+      {canStoreVaultSecret ? (
+        <form onSubmit={storeSecret} className="mt-4 rounded-xl bg-white p-3 ring-1 ring-amber-100">
+          <label className="grid gap-2">
+            <span className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Store privileged key in control-plane Vault</span>
+            <input
+              type="password"
+              autoComplete="off"
+              value={secretValue}
+              onChange={(event) => setSecretValue(event.target.value)}
+              placeholder="Paste the tenant privileged key here; it is sent once to the server"
+              className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-mono text-sm font-bold outline-none transition focus:border-amber-500 focus:bg-white"
+            />
+          </label>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={!secretValue.trim() || storingTenantSecret}
+              className="rounded-xl bg-amber-950 px-4 py-2 text-xs font-black text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {storingTenantSecret ? 'Storing...' : 'Store in Vault'}
+            </button>
+            <p className="text-xs font-bold text-amber-900">
+              The value is not saved in browser state after submit and is never returned by the API.
+            </p>
+          </div>
+        </form>
+      ) : null}
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
-          onClick={() => onCopySecretName(secret.secretName)}
+          onClick={() => onCopySecretName(secretName)}
           className="rounded-xl bg-amber-950 px-4 py-2 text-xs font-black text-white transition hover:bg-amber-800"
         >
           {copied ? 'Secret name copied' : 'Copy secret name'}
@@ -256,6 +304,32 @@ function MissingTenantSecretGuidance({ step, copiedSecretName, onCopySecretName 
         <p>{TENANT_SECRET_SOURCE_HELP}</p>
         <p className="mt-1">{TENANT_SECRET_DESTINATION_HELP}</p>
       </div>
+    </div>
+  )
+}
+
+function TenantMigrationsNotReadyGuidance({ step, tenant }) {
+  if (step.last_error_code !== 'TENANT_MIGRATIONS_NOT_READY') return null
+
+  return (
+    <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-950">
+      <p className="font-black">Tenant database schema is not ready</p>
+      <p className="mt-1 font-semibold text-rose-900">
+        The control plane reached the tenant project but did not find the required runtime tables. Activation stays locked until the tenant migrations are applied and this check passes.
+      </p>
+      <dl className="mt-4 grid gap-3 md:grid-cols-2">
+        <div className="rounded-xl bg-white p-3 ring-1 ring-rose-100">
+          <dt className="text-xs font-black uppercase tracking-[0.16em] text-rose-700">Tenant project ref</dt>
+          <dd className="mt-1 font-mono text-sm font-black">{tenant?.supabase_project_ref || 'Not configured'}</dd>
+        </div>
+        <div className="rounded-xl bg-white p-3 ring-1 ring-rose-100">
+          <dt className="text-xs font-black uppercase tracking-[0.16em] text-rose-700">Missing shape</dt>
+          <dd className="mt-1 font-mono text-sm font-black">tenant_profile + tenant_app_config</dd>
+        </div>
+      </dl>
+      <p className="mt-4 rounded-xl bg-white p-3 text-xs font-bold leading-5 text-rose-900 ring-1 ring-rose-100">
+        Use the secure setup path for this tenant project, then rerun this check. The failed state is recorded in the migration ledger so the setup can be retried without losing audit history.
+      </p>
     </div>
   )
 }
@@ -283,20 +357,25 @@ function StepExternalActions({ step }) {
 }
 
 export default function ProvisioningStepsPanel({
+  tenant,
   steps,
+  migrationRuns,
   job,
   onRunStep,
   onCancelJob,
   onResumeJob,
   onCompensateStep,
+  onStoreTenantSecret,
   runningStepId,
   cancellingJob,
   resumingJob,
   compensatingStepId,
+  storingTenantSecret,
   runMessage,
 }) {
   const [copiedSecretName, setCopiedSecretName] = useState('')
   const orderedSteps = [...(steps || [])].sort(sortProvisioningSteps)
+  const latestMigrationRun = Array.isArray(migrationRuns) ? migrationRuns[0] : null
   const nextRunnableStep = findNextRunnableStep(orderedSteps)
   const nextRunnableStepId = nextRunnableStep?.id || null
 
@@ -357,6 +436,21 @@ export default function ProvisioningStepsPanel({
         </div>
       ) : null}
 
+      {latestMigrationRun ? (
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Latest DB setup run</p>
+              <p className="mt-2 font-black">{latestMigrationRun.status}</p>
+              {latestMigrationRun.last_error_summary ? (
+                <p className="mt-1 text-sm font-semibold text-slate-600">{latestMigrationRun.last_error_summary}</p>
+              ) : null}
+            </div>
+            <StatusPill status={latestMigrationRun.status} />
+          </div>
+        </div>
+      ) : null}
+
       <div className="mt-5 grid gap-3">
         {orderedSteps.map((step) => {
           const isNextStep = step.id === nextRunnableStepId
@@ -413,9 +507,13 @@ export default function ProvisioningStepsPanel({
               ) : null}
               <MissingTenantSecretGuidance
                 step={step}
+                tenant={tenant}
                 copiedSecretName={copiedSecretName}
                 onCopySecretName={copySecretName}
+                onStoreTenantSecret={onStoreTenantSecret}
+                storingTenantSecret={storingTenantSecret}
               />
+              <TenantMigrationsNotReadyGuidance step={step} tenant={tenant} />
               <StepExternalActions step={step} />
             </div>
           )

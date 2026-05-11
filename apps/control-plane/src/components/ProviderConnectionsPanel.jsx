@@ -34,6 +34,9 @@ export default function ProviderConnectionsPanel({
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
   const [archivingId, setArchivingId] = useState('')
+  const [storingSecretId, setStoringSecretId] = useState('')
+  const [enablingId, setEnablingId] = useState('')
+  const [secretDrafts, setSecretDrafts] = useState({})
 
   function updateDraft(field, value) {
     setDraft((current) => ({
@@ -67,12 +70,41 @@ export default function ProviderConnectionsPanel({
     if (!result.error) onChanged()
   }
 
+  async function storeProviderSecret(connectionId) {
+    const secretValue = String(secretDrafts[connectionId] || '').trim()
+    if (!secretValue) {
+      setMessage('Paste the provider token or key before storing it in Vault.')
+      return
+    }
+
+    setStoringSecretId(connectionId)
+    const result = await controlPlaneApi.storeProviderSecret({ connectionId, secretValue })
+    setStoringSecretId('')
+    setMessage(result.error || 'Provider secret stored in Vault.')
+    if (!result.error) {
+      setSecretDrafts((current) => ({ ...current, [connectionId]: '' }))
+      onChanged()
+    }
+  }
+
+  async function enableAutomation(connectionId) {
+    setEnablingId(connectionId)
+    const result = await controlPlaneApi.upsertProviderConnection({
+      connectionId,
+      status: 'active',
+      isAutomationEnabled: true,
+    })
+    setEnablingId('')
+    setMessage(result.error || 'Provider automation enabled.')
+    if (!result.error) onChanged()
+  }
+
   return (
     <section className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
       <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">Provider accounts</p>
       <h2 className="mt-2 text-2xl font-black">Supabase and Vercel access</h2>
       <p className="mt-2 text-sm text-slate-500">
-        Store account metadata and secret references only. Raw provider tokens, service-role keys, and management keys never enter the browser response.
+        Store account metadata and secret references only. Raw provider tokens, privileged database keys, and management keys never enter the browser response.
       </p>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-4">
@@ -154,6 +186,35 @@ export default function ProviderConnectionsPanel({
             <SecondaryButton onClick={() => archiveConnection(connection.id)} disabled={archivingId === connection.id}>
               {archivingId === connection.id ? 'Archiving...' : 'Archive'}
             </SecondaryButton>
+            {connection.has_secret_ref && !connection.is_automation_enabled ? (
+              <SecondaryButton onClick={() => enableAutomation(connection.id)} disabled={enablingId === connection.id}>
+                {enablingId === connection.id ? 'Enabling...' : 'Enable automation'}
+              </SecondaryButton>
+            ) : null}
+            <div className="md:col-span-2 rounded-xl bg-white p-3 ring-1 ring-slate-200">
+              <label className="grid gap-2">
+                <span className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Store or rotate provider secret in Vault</span>
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={secretDrafts[connection.id] || ''}
+                  onChange={(event) => setSecretDrafts((current) => ({ ...current, [connection.id]: event.target.value }))}
+                  placeholder="Paste provider token once; the API never returns it"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm font-bold outline-none transition focus:border-cyan-500 focus:bg-white"
+                />
+              </label>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <SecondaryButton
+                  onClick={() => storeProviderSecret(connection.id)}
+                  disabled={storingSecretId === connection.id || !String(secretDrafts[connection.id] || '').trim()}
+                >
+                  {storingSecretId === connection.id ? 'Storing...' : 'Store Vault secret'}
+                </SecondaryButton>
+                <p className="text-xs font-bold text-slate-500">
+                  Use this for Supabase/Vercel automation. Raw values are sent once to the server and kept out of metadata tables.
+                </p>
+              </div>
+            </div>
           </div>
         ))}
         {!loading && (connections || []).length === 0 ? (

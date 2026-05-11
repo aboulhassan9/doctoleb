@@ -3,13 +3,13 @@ import {
   corsHeaders,
   createTenantServiceClient,
   errorResponse,
-  getTenantServiceRoleKey,
   jsonResponse,
   preflight,
   readJsonBody,
   requireSuperAdmin,
 } from '../_shared/admin.ts'
 import { TENANT_FEATURE_FLAG_SELECT } from '../_shared/selects.ts'
+import { resolveTenantServiceRoleKey } from '../_shared/tenantSecrets.ts'
 
 const FEATURE_META: Record<string, { name: string; description: string; audience: string; targetRoles: string[] }> = {
   messaging: {
@@ -202,7 +202,10 @@ Deno.serve(async (req) => {
   for (const row of planEntitlements ?? []) applyResolved(resolved, row, 'plan')
   for (const row of tenantEntitlements ?? []) applyResolved(resolved, row, String(row.source))
 
-  const { key, secretName } = getTenantServiceRoleKey(tenant.supabase_project_ref)
+  const { key, secretName, secretStorage } = await resolveTenantServiceRoleKey(context.client, {
+    tenantId,
+    projectRef: tenant.supabase_project_ref,
+  })
   if (!key) {
     await auditEvent(context.client, {
       tenantId,
@@ -212,6 +215,7 @@ Deno.serve(async (req) => {
         reason: 'missing_tenant_service_secret',
         secretPrefix: TENANT_SECRET_PREFIX,
         secretName,
+        secretStorage,
         entitlementCount: Object.keys(resolved).length,
       },
     })

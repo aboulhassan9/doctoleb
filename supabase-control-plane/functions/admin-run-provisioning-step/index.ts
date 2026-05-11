@@ -4,7 +4,6 @@ import {
   jsonResponse,
   preflight,
   createTenantServiceClient,
-  getTenantServiceRoleKey,
   readJsonBody,
   requireSuperAdmin,
 } from '../_shared/admin.ts'
@@ -15,6 +14,7 @@ import {
 } from '../_shared/selects.ts'
 import { normalizeTenantBranding } from '../_shared/tenantBranding.ts'
 import { verifyProviderCredential } from '../_shared/providerExecution.ts'
+import { resolveTenantServiceRoleKey } from '../_shared/tenantSecrets.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
@@ -52,6 +52,7 @@ const RPC_ERROR_STATUS: Record<string, number> = {
   SUPABASE_PROJECT_RUNTIME_CONFIG_REQUIRED: 409,
   TENANT_SERVICE_ROLE_SECRET_REQUIRED: 409,
   TENANT_MIGRATIONS_NOT_READY: 409,
+  TENANT_MIGRATION_RUN_RECORD_FAILED: 500,
   TENANT_PROFILE_SEED_RPC_NOT_READY: 409,
   TENANT_PROFILE_SEED_FAILED: 500,
   FIRST_DOCTOR_ADMIN_INPUT_REQUIRED: 422,
@@ -119,7 +120,7 @@ type StepExecution =
       }
       error: null
     }
-  | { data: null; error: string; summary: string }
+  | { data: null; error: string; summary: string; details?: Record<string, unknown> }
 
 function normalizeUuid(value: unknown) {
   if (typeof value !== 'string') return ''
@@ -250,12 +251,12 @@ async function runProviderConnectionsSelected(
     }
   }
 
-  const supabaseVerification = supabaseReady ? await verifyProviderCredential(supabaseConnection) : null
+  const supabaseVerification = supabaseReady ? await verifyProviderCredential(supabaseConnection, context.client) : null
   if (supabaseVerification?.error) {
     return { data: null, error: supabaseVerification.error, summary: supabaseVerification.summary }
   }
 
-  const vercelVerification = vercelReady ? await verifyProviderCredential(vercelConnection) : null
+  const vercelVerification = vercelReady ? await verifyProviderCredential(vercelConnection, context.client) : null
   if (vercelVerification?.error) {
     return { data: null, error: vercelVerification.error, summary: vercelVerification.summary }
   }
@@ -790,9 +791,45 @@ async function runCreateSupabaseProject(
   }
 }
 
+async function recordTenantMigrationRun(
+  context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
+  {
+    tenantId,
+    stepId,
+    projectRef,
+    runnerMode,
+    status,
+    errorCode,
+    errorSummary,
+  }: {
+    tenantId: string
+    stepId: string | null
+    projectRef: string
+    runnerMode: 'verify_only' | 'supabase_management_api' | 'database_url'
+    status: 'succeeded' | 'failed' | 'blocked'
+    errorCode: string | null
+    errorSummary: string | null
+  },
+) {
+  const { data, error } = await context.client.rpc('admin_create_tenant_migration_run', {
+    p_tenant_id: tenantId,
+    p_provisioning_step_id: stepId,
+    p_project_ref: projectRef,
+    p_runner_mode: runnerMode,
+    p_status: status,
+    p_error_code: errorCode,
+    p_error_summary: errorSummary,
+    p_actor_id: context.admin.id,
+  })
+
+  if (error) return { data: null, error: 'TENANT_MIGRATION_RUN_RECORD_FAILED' }
+  return { data, error: null }
+}
+
 async function runApplyTenantMigrations(
   context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
   tenantId: string,
+  stepId: string | null,
 ): Promise<StepExecution> {
   const { data: tenant, error } = await context.client
     .from('tenants')
@@ -809,12 +846,31 @@ async function runApplyTenantMigrations(
     }
   }
 
-  const tenantSecret = getTenantServiceRoleKey(runtimeConfig.projectRef)
+  const tenantSecret = await resolveTenantServiceRoleKey(context.client, {
+    tenantId,
+    projectRef: runtimeConfig.projectRef,
+  })
   if (!tenantSecret.key) {
+    const run = await recordTenantMigrationRun(context, {
+      tenantId,
+      stepId,
+      projectRef: runtimeConfig.projectRef,
+      runnerMode: 'verify_only',
+      status: 'blocked',
+      errorCode: 'TENANT_SERVICE_ROLE_SECRET_REQUIRED',
+      errorSummary: `Configure ${tenantSecret.secretName} before checking tenant migrations.`,
+    })
+
     return {
       data: null,
       error: 'TENANT_SERVICE_ROLE_SECRET_REQUIRED',
       summary: `Configure ${tenantSecret.secretName} before checking tenant migrations.`,
+      details: {
+        migrationRunId: (run.data as { id?: string } | null)?.id ?? null,
+        secretName: tenantSecret.secretName,
+        secretStorage: tenantSecret.secretStorage,
+        projectRef: runtimeConfig.projectRef,
+      },
     }
   }
 
@@ -825,12 +881,38 @@ async function runApplyTenantMigrations(
   ])
 
   if (profileError || appConfigError) {
+    const run = await recordTenantMigrationRun(context, {
+      tenantId,
+      stepId,
+      projectRef: runtimeConfig.projectRef,
+      runnerMode: 'verify_only',
+      status: 'blocked',
+      errorCode: 'TENANT_MIGRATIONS_NOT_READY',
+      errorSummary: 'Tenant database migrations are not ready or expected runtime tables are missing.',
+    })
+
     return {
       data: null,
       error: 'TENANT_MIGRATIONS_NOT_READY',
       summary: 'Tenant database migrations are not ready or expected runtime tables are missing.',
+      details: {
+        migrationRunId: (run.data as { id?: string } | null)?.id ?? null,
+        checkedTables: ['tenant_profile', 'tenant_app_config'],
+        projectRef: runtimeConfig.projectRef,
+        nextAction: 'Run the tenant database setup automation with a server-side tenant secret or apply the tenant migrations to this project.',
+      },
     }
   }
+
+  await recordTenantMigrationRun(context, {
+    tenantId,
+    stepId,
+    projectRef: runtimeConfig.projectRef,
+    runnerMode: 'verify_only',
+    status: 'succeeded',
+    errorCode: null,
+    errorSummary: null,
+  })
 
   return {
     data: {
@@ -840,6 +922,7 @@ async function runApplyTenantMigrations(
         tenantProfileTableReady: true,
         tenantAppConfigTableReady: true,
         checkedWithServiceRoleSecret: tenantSecret.secretName,
+        checkedWithSecretStorage: tenantSecret.secretStorage,
       },
       summary: 'Tenant database migration shape is ready.',
     },
@@ -867,7 +950,10 @@ async function runSeedTenantProfile(
     }
   }
 
-  const tenantSecret = getTenantServiceRoleKey(runtimeConfig.projectRef)
+  const tenantSecret = await resolveTenantServiceRoleKey(context.client, {
+    tenantId,
+    projectRef: runtimeConfig.projectRef,
+  })
   if (!tenantSecret.key) {
     return {
       data: null,
@@ -970,7 +1056,10 @@ async function runSeedFirstDoctorAdmin(
     }
   }
 
-  const tenantSecret = getTenantServiceRoleKey(runtimeConfig.projectRef)
+  const tenantSecret = await resolveTenantServiceRoleKey(context.client, {
+    tenantId,
+    projectRef: runtimeConfig.projectRef,
+  })
   if (!tenantSecret.key) {
     return {
       data: null,
@@ -1158,7 +1247,7 @@ Deno.serve(async (req) => {
   } else if (step.step_code === 'create_supabase_project') {
     execution = await runCreateSupabaseProject(context, tenantId)
   } else if (step.step_code === 'apply_tenant_migrations') {
-    execution = await runApplyTenantMigrations(context, tenantId)
+    execution = await runApplyTenantMigrations(context, tenantId, step.id)
   } else if (step.step_code === 'seed_tenant_profile') {
     execution = await runSeedTenantProfile(context, tenantId, job)
   } else if (step.step_code === 'seed_first_doctor_admin') {
@@ -1177,7 +1266,10 @@ Deno.serve(async (req) => {
     const failed = await recordFailure(context, context.admin.id, step.id, execution.error, execution.summary)
     const failureRecordError = failed.error ? 'STEP_RESULT_RECORD_FAILED' : readPayloadError(failed.data)
     if (failureRecordError) return errorResponse(failureRecordError, statusForError(failureRecordError), cors)
-    return errorResponse(execution.error, statusForError(execution.error), cors, { summary: execution.summary })
+    return errorResponse(execution.error, statusForError(execution.error), cors, {
+      summary: execution.summary,
+      ...(execution.details ?? {}),
+    })
   }
 
   const recorded = await recordResult(context, context.admin.id, step.id, execution.data)

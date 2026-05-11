@@ -9,7 +9,7 @@ import {
 import { Field, TextInput, PrimaryButton } from './ui';
 
 const RUNTIME_CONFIG_SOURCE_HELP =
-  'In the tenant Supabase project, copy the project ref from the project URL, copy the API URL from Data API, and copy the browser-safe publishable/anon key from Settings -> API Keys. Do not paste the secret/service key here.';
+  'In the tenant Supabase project, copy the project ref from the project URL, copy the API URL from Data API, and copy the browser-safe publishable/anon key from Settings -> API Keys. Do not paste any privileged key here.';
 
 export default function RuntimeConfigPanel({ tenant, onSaved }) {
   const [projectRef, setProjectRef] = useState(tenant.supabase_project_ref || '');
@@ -60,7 +60,7 @@ export default function RuntimeConfigPanel({ tenant, onSaved }) {
       <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">Runtime connection</p>
       <h2 className="mt-2 text-2xl font-black">Tenant Supabase project</h2>
       <p className="mt-2 text-sm text-slate-500">
-        Stores public resolver metadata only. Tenant service-role keys stay in Edge Function secrets or Vault, never in this form.
+        Stores public resolver metadata only. Tenant privileged keys stay in Edge Function secrets or Vault, never in this form.
       </p>
       <div className="mt-4 rounded-2xl bg-cyan-50 p-4 text-sm text-cyan-950 ring-1 ring-cyan-100">
         <p className="font-black">Where to find these values</p>

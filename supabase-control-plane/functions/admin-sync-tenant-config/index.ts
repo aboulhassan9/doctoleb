@@ -3,12 +3,12 @@ import {
   corsHeaders,
   createTenantServiceClient,
   errorResponse,
-  getTenantServiceRoleKey,
   jsonResponse,
   preflight,
   readJsonBody,
   requireSuperAdmin,
 } from '../_shared/admin.ts'
+import { resolveTenantServiceRoleKey } from '../_shared/tenantSecrets.ts'
 import {
   TENANT_APP_CONFIG_SELECT,
   TENANT_PROFILE_SELECT,
@@ -57,7 +57,10 @@ Deno.serve(async (req) => {
     return errorResponse('TENANT_RUNTIME_NOT_CONFIGURED', 409, cors)
   }
 
-  const { key, secretName } = getTenantServiceRoleKey(tenant.supabase_project_ref)
+  const { key, secretName, secretStorage } = await resolveTenantServiceRoleKey(context.client, {
+    tenantId,
+    projectRef: tenant.supabase_project_ref,
+  })
   const branding = normalizeTenantBranding(body.branding)
 
   if (!key) {
@@ -69,6 +72,7 @@ Deno.serve(async (req) => {
         reason: 'missing_tenant_service_secret',
         secretPrefix: TENANT_SECRET_PREFIX,
         secretName,
+        secretStorage,
         requestedKeys: tenantBrandingRequestedKeys(body.branding),
       },
     })

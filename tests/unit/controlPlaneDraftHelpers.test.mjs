@@ -375,12 +375,18 @@ describe('control-plane provider connection helpers', () => {
       ...baseDraft,
       secretStorage: 'supabase_vault',
       secretRef: 'vault:/providers/supabase/customer-a',
-    }), /Edge Function secret reference/i);
+    }), /Vault secret reference/i);
 
     assert.equal(validateProviderConnectionDraft({
       ...baseDraft,
       secretStorage: 'edge_function_secret',
       secretRef: 'SUPABASE_CUSTOMER_A_TOKEN',
+    }), '');
+
+    assert.equal(validateProviderConnectionDraft({
+      ...baseDraft,
+      secretStorage: 'supabase_vault',
+      secretRef: 'vault:123e4567-e89b-42d3-a456-426614174000',
     }), '');
   });
 });

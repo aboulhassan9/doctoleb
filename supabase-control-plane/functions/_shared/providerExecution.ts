@@ -1,3 +1,6 @@
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { readVaultSecretRef } from './tenantSecrets.ts'
+
 type ProviderConnection = {
   provider?: unknown
   secret_storage?: unknown
@@ -17,7 +20,7 @@ function providerVerificationUrl(provider: string) {
   return ''
 }
 
-async function fetchWithTimeout(url: string, token: string) {
+async function fetchWithTimeout(url: string, bearerCredential: string) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), VERIFY_TIMEOUT_MS)
 
@@ -25,7 +28,7 @@ async function fetchWithTimeout(url: string, token: string) {
     return await fetch(url, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${bearerCredential}`,
         Accept: 'application/json',
       },
       signal: controller.signal,
@@ -35,7 +38,35 @@ async function fetchWithTimeout(url: string, token: string) {
   }
 }
 
-export async function verifyProviderCredential(connection: ProviderConnection | null): Promise<VerificationResult> {
+async function readProviderCredentialSecret(client: SupabaseClient | null, secretStorage: string, secretRef: string) {
+  if (secretStorage === 'edge_function_secret') {
+    if (!EDGE_FUNCTION_SECRET_REF.test(secretRef)) {
+      return { data: null, error: 'PROVIDER_SECRET_REF_INVALID' }
+    }
+
+    const credential = Deno.env.get(secretRef)
+    return {
+      data: credential ?? null,
+      error: credential ? null : 'PROVIDER_SECRET_NOT_CONFIGURED',
+    }
+  }
+
+  if (secretStorage === 'supabase_vault') {
+    if (!client) return { data: null, error: 'PROVIDER_SECRET_STORAGE_UNSUPPORTED' }
+    const vault = await readVaultSecretRef(client, secretRef)
+    return {
+      data: vault.data,
+      error: vault.error ? 'PROVIDER_SECRET_NOT_CONFIGURED' : null,
+    }
+  }
+
+  return { data: null, error: 'PROVIDER_SECRET_STORAGE_UNSUPPORTED' }
+}
+
+export async function verifyProviderCredential(
+  connection: ProviderConnection | null,
+  client: SupabaseClient | null = null,
+): Promise<VerificationResult> {
   const provider = typeof connection?.provider === 'string' ? connection.provider : ''
   const secretStorage = typeof connection?.secret_storage === 'string' ? connection.secret_storage : ''
   const secretRef = typeof connection?.secret_ref === 'string' ? connection.secret_ref.trim() : ''
@@ -45,33 +76,25 @@ export async function verifyProviderCredential(connection: ProviderConnection | 
     return { data: null, error: 'INVALID_PROVIDER_CONNECTION', summary: 'Provider is not supported by the runner.' }
   }
 
-  if (secretStorage !== 'edge_function_secret') {
-    return {
-      data: null,
-      error: 'PROVIDER_SECRET_STORAGE_UNSUPPORTED',
-      summary: 'This runner currently supports Edge Function secret references only.',
-    }
-  }
-
-  if (!EDGE_FUNCTION_SECRET_REF.test(secretRef)) {
+  if (!secretRef) {
     return {
       data: null,
       error: 'PROVIDER_SECRET_REF_INVALID',
-      summary: 'Provider secret reference must be a safe Edge Function secret name.',
+      summary: 'Provider secret reference is missing or invalid.',
     }
   }
 
-  const token = Deno.env.get(secretRef)
-  if (!token) {
+  const credential = await readProviderCredentialSecret(client, secretStorage, secretRef)
+  if (credential.error || !credential.data) {
     return {
       data: null,
-      error: 'PROVIDER_SECRET_NOT_CONFIGURED',
-      summary: 'Provider secret reference is valid, but the Edge Function secret is not configured.',
+      error: credential.error ?? 'PROVIDER_SECRET_NOT_CONFIGURED',
+      summary: 'Provider secret reference is valid, but the server-side secret is not configured.',
     }
   }
 
   try {
-    const response = await fetchWithTimeout(url, token)
+    const response = await fetchWithTimeout(url, credential.data)
 
     if (response.status === 401 || response.status === 403) {
       return { data: null, error: 'PROVIDER_AUTH_FAILED', summary: 'Provider rejected the configured credential.' }

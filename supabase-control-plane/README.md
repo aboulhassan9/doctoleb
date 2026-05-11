@@ -62,13 +62,20 @@ supabase-control-plane/
 | `tenant_events` | Audit log for control-plane actions |
 | `provisioning_provider_connections` | Authorized Supabase/Vercel account handles for future tenant automation. Secret references only, no raw tokens |
 | `tenant_provisioning_steps` | Step-level provisioning ledger with idempotency, external resource ids, and undo metadata |
+| `tenant_secret_refs` | Tenant setup secret metadata: Vault/Edge/external secret references only, never raw service keys or DB URLs |
+| `tenant_migration_runs` | Tenant DB setup/migration run ledger with status, checksum/error metadata, and retry visibility |
+| `tenant_migration_items` | Per-migration status rows under a setup run; metadata only |
 | `control_plane_private.is_super_admin()` | RLS helper for authenticated super-admin reads |
 | `resolve_tenant(text, text)` | Public-safe RPC. Returns `{ data, error }` jsonb |
 | `admin_update_tenant_atomic(uuid, uuid, jsonb, jsonb)` | Private service-role RPC for atomic admin tenant/domain updates |
 | `tenant-resolve` Edge Function | HTTP wrapper around `resolve_tenant`. Public; no JWT verification |
 | `admin-list-provider-connections` Edge Function | Authenticated metadata list. Returns secret-reference booleans, never raw provider tokens |
 | `admin-upsert-provider-connection` Edge Function | Operator-only create/update for safe provider connection metadata |
+| `admin-store-provider-secret` Edge Function | Operator-only one-way provider token/key storage into Vault; response is sanitized |
 | `admin-archive-provider-connection` Edge Function | Operator-only reversible archive path that blocks active provisioning jobs |
+| `admin-upsert-tenant-secret` Edge Function | Operator-only one-way tenant service/database secret storage into Vault or secret-reference metadata |
+| `admin-list-tenant-db-setup` Edge Function | Super-admin read model for tenant secret-reference flags and migration run history |
+| `admin-revoke-tenant-secret` Edge Function | Operator-only reversible revoke path for tenant setup secrets |
 
 ## What MUST NOT live here
 
@@ -113,7 +120,11 @@ supabase functions deploy tenant-resolve --no-verify-jwt
 # Deploy authenticated admin functions with JWT verification enabled.
 supabase functions deploy admin-list-provider-connections
 supabase functions deploy admin-upsert-provider-connection
+supabase functions deploy admin-store-provider-secret
 supabase functions deploy admin-archive-provider-connection
+supabase functions deploy admin-upsert-tenant-secret
+supabase functions deploy admin-list-tenant-db-setup
+supabase functions deploy admin-revoke-tenant-secret
 supabase functions deploy admin-run-provisioning-step
 supabase functions deploy admin-cancel-provisioning-job
 supabase functions deploy admin-resume-provisioning-job
@@ -142,6 +153,8 @@ The control plane now has schema support for provider-flexible provisioning:
 - These rows store metadata and secret references only. Raw provider tokens, management API credentials, and tenant service-role keys stay server-side.
 - Provisioning jobs can link to selected provider connections and record step-level idempotency plus undo metadata.
 - Dedicated provider metadata Edge Functions now exist for list/upsert/archive. They reject raw token-shaped input, sanitize `secret_ref` out of responses, and use reversible archive semantics.
+- Provider and tenant setup secrets can be stored through one-way Edge Function calls into Supabase Vault. Browser responses include only safe metadata such as `has_secret_ref`, storage type, status, and timestamps.
+- `apply_tenant_migrations` now writes a tenant migration-run ledger row for succeeded/blocked checks. This keeps `TENANT_MIGRATIONS_NOT_READY` retryable and auditable instead of a silent dead end.
 - `admin-run-provisioning-step` advances the assisted path through provider readiness, operator-linked tenant project verification, migration readiness, tenant profile/app config seed, first doctor/admin seed, Vercel/free-alias routing verification, resolver smoke, and guarded activation.
 - `admin-cancel-provisioning-job`, `admin-resume-provisioning-job`, and `admin-compensate-provisioning-step` expose operator cancel/recovery/undo paths through authenticated admin functions only. A cancelled job remains terminal for audit; resume creates a new zero-PHI provisioning ledger for the same tenant and carries forward safe checkpoints.
-- The current UI remains manual-assisted for external provider creation. Supabase Management API project creation and Vercel REST project/env/custom-domain mutation are deferred until provider credentials, cost/region/org selection, external resource IDs, and compensation rules are fully designed.
+- The current UI remains manual-assisted for external project creation. Supabase Management API project creation and Vercel REST project/env/custom-domain mutation are still gated behind provider credentials, cost/region/org selection, external resource IDs, and compensation rules.

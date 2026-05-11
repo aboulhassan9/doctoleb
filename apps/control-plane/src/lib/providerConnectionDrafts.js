@@ -40,6 +40,7 @@ export const AUTOMATION_MODE_OPTIONS = Object.freeze([
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const TOKENISH_SECRET = /(eyJ|sbp_|vcp_|sk_live_|sk_test_)/i
 const EDGE_FUNCTION_SECRET_REF = /^[A-Z][A-Z0-9_]{2,200}$/
+const VAULT_SECRET_REF = /^vault:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 export function normalizeProviderConnectionId(value) {
   const id = String(value || '').trim().toLowerCase()
@@ -108,11 +109,14 @@ export function validateProviderConnectionDraft(input = {}) {
   if (draft.secretRef && TOKENISH_SECRET.test(draft.secretRef)) {
     return 'Paste a secret reference only, not a raw provider token or key.'
   }
-  if (draft.isAutomationEnabled && draft.secretStorage !== 'edge_function_secret') {
-    return 'Automation currently requires an Edge Function secret reference.'
+  if (draft.isAutomationEnabled && !['edge_function_secret', 'supabase_vault'].includes(draft.secretStorage)) {
+    return 'Automation requires an Edge Function secret or Supabase Vault secret reference.'
   }
   if (draft.isAutomationEnabled && draft.secretStorage === 'edge_function_secret' && !EDGE_FUNCTION_SECRET_REF.test(draft.secretRef)) {
     return 'Automation Edge Function secret reference must be an uppercase Edge Function secret name.'
+  }
+  if (draft.isAutomationEnabled && draft.secretStorage === 'supabase_vault' && !VAULT_SECRET_REF.test(draft.secretRef)) {
+    return 'Automation Vault secret reference must be stored through the provider secret action.'
   }
   if (draft.isAutomationEnabled && (draft.status !== 'active' || draft.secretStorage === 'none' || !draft.secretRef)) {
     return 'Automation can be enabled only for an active connection with a server-side secret reference.'

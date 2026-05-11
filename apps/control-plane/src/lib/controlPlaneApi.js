@@ -244,4 +244,20 @@ export const controlPlaneApi = {
   archiveProviderConnection(payload) {
     return invokeAdminFunction('admin-archive-provider-connection', payload)
   },
+
+  storeProviderSecret(payload) {
+    return invokeAdminFunction('admin-store-provider-secret', payload)
+  },
+
+  listTenantDbSetup(payload = {}, options) {
+    return invokeAdminFunction('admin-list-tenant-db-setup', payload, options)
+  },
+
+  upsertTenantSecret(payload) {
+    return invokeAdminFunction('admin-upsert-tenant-secret', payload)
+  },
+
+  revokeTenantSecret(payload) {
+    return invokeAdminFunction('admin-revoke-tenant-secret', payload)
+  },
 }

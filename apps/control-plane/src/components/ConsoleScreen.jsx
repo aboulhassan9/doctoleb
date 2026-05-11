@@ -40,6 +40,7 @@ export default function ConsoleScreen({ session, onSignOut }) {
   const [cancellingJob, setCancellingJob] = useState(false)
   const [resumingJob, setResumingJob] = useState(false)
   const [compensatingStepId, setCompensatingStepId] = useState(null)
+  const [storingTenantSecret, setStoringTenantSecret] = useState(false)
   const [provisioningRunMessage, setProvisioningRunMessage] = useState('')
   const {
     tenants,
@@ -175,6 +176,29 @@ export default function ConsoleScreen({ session, onSignOut }) {
     }
   }
 
+  async function handleStoreTenantSecret({ secretValue }) {
+    if (!tenant?.id || !tenant?.supabase_project_ref) {
+      setProvisioningRunMessage('Save the tenant runtime project ref before storing tenant setup secrets.')
+      return
+    }
+
+    setStoringTenantSecret(true)
+    setProvisioningRunMessage('')
+
+    try {
+      const result = await controlPlaneApi.upsertTenantSecret({
+        tenantId: tenant.id,
+        projectRef: tenant.supabase_project_ref,
+        secretStorage: 'supabase_vault',
+        secretValue,
+      })
+      setProvisioningRunMessage(result.error || 'Tenant setup secret stored in Vault. Run the database setup check again.')
+      await reloadTenantDetail()
+    } finally {
+      setStoringTenantSecret(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#eef5f2] text-slate-950">
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-[#eef5f2]/85 backdrop-blur-xl">
@@ -260,16 +284,20 @@ export default function ConsoleScreen({ session, onSignOut }) {
 
                 {tenant && activeSection === 'provisioning' ? (
                   <ProvisioningStepsPanel
+                    tenant={tenant}
                     steps={tenantDetail?.provisioningSteps || []}
+                    migrationRuns={tenantDetail?.migrationRuns || []}
                     job={provisioningJob}
                     onRunStep={handleRunProvisioningStep}
                     onCancelJob={handleCancelProvisioningJob}
                     onResumeJob={handleResumeProvisioningJob}
                     onCompensateStep={handleCompensateProvisioningStep}
+                    onStoreTenantSecret={handleStoreTenantSecret}
                     runningStepId={runningStepId}
                     cancellingJob={cancellingJob}
                     resumingJob={resumingJob}
                     compensatingStepId={compensatingStepId}
+                    storingTenantSecret={storingTenantSecret}
                     runMessage={provisioningRunMessage}
                   />
                 ) : null}
