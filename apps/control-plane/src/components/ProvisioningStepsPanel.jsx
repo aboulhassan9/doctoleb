@@ -470,6 +470,9 @@ export default function ProvisioningStepsPanel({
   const currentStepIndex = currentStep ? currentSteps.findIndex((step) => step.id === currentStep.id) : -1
   const completedCount = currentSteps.filter((step) => step.status === 'succeeded' || step.status === 'skipped').length
   const totalSteps = currentSteps.length
+  const jobCanResume = canResumeJob(job)
+  const currentStepNeedsTenantSecret = needsTenantSecret(currentStep)
+  const shouldShowCurrentStep = Boolean(currentStep && (!jobCanResume || currentStepNeedsTenantSecret))
 
   return (
     <section className="grid gap-5 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
@@ -487,9 +490,7 @@ export default function ProvisioningStepsPanel({
 
       {totalSteps > 0 ? <ProgressStrip steps={currentSteps} currentStep={currentStep} /> : null}
 
-      {canResumeJob(job) ? (
-        <PausedSetupCard job={job} onResumeJob={onResumeJob} resumingJob={resumingJob} />
-      ) : currentStep ? (
+      {shouldShowCurrentStep ? (
         <CurrentStepCard
           step={currentStep}
           stepNumber={currentStepIndex + 1}
@@ -499,6 +500,8 @@ export default function ProvisioningStepsPanel({
           runningStepId={runningStepId}
           storingTenantSecret={storingTenantSecret}
         />
+      ) : jobCanResume ? (
+        <PausedSetupCard job={job} onResumeJob={onResumeJob} resumingJob={resumingJob} />
       ) : totalSteps > 0 ? (
         <DoneCard />
       ) : (

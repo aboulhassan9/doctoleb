@@ -879,6 +879,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(panel, /FIRST_DOCTOR_ADMIN_INVITE_FAILED/);
     assert.match(panel, /Service role key/);
     assert.match(panel, /Save & retry/);
+    assert.match(panel, /currentStepNeedsTenantSecret = needsTenantSecret\(currentStep\)/);
+    assert.match(panel, /shouldShowCurrentStep = Boolean\(currentStep && \(!jobCanResume \|\| currentStepNeedsTenantSecret\)\)/);
+    assert.match(panel, /shouldShowCurrentStep \? \(/);
+    assert.match(panel, /jobCanResume \? \(/);
   });
 
   it('tenant profile seeding is doctor-independent, service-role only, and runner-backed', () => {
