@@ -54,6 +54,7 @@ const TENANT_SECRET_NAME_PREFIX_PARTS = [
   'KEY',
 ]
 const TENANT_PRIVILEGED_SECRET_REQUIRED_CODE = ['TEN', 'ANT', '_', 'SER', 'VICE', '_', 'RO', 'LE', '_SECRET_REQUIRED'].join('')
+const TENANT_DATABASE_URL_REQUIRED_CODE = 'TENANT_DATABASE_URL_SECRET_REQUIRED'
 const EXTERNAL_STEP_ACTIONS = {
   create_supabase_project: [
     {
@@ -159,7 +160,7 @@ function guidanceForStep(step) {
   }
 
   if (step.step_code === 'apply_tenant_migrations') {
-    return 'This checks that the tenant clinical schema exists. It needs the tenant privileged database key stored only in the control-plane secret store.'
+    return 'This creates or verifies the tenant clinical schema. It needs the tenant database connection string stored only in the control-plane Vault.'
   }
 
   if (step.step_code === 'configure_vercel_project') {
@@ -205,6 +206,84 @@ function extractTenantServiceSecret(step) {
     secretName,
     projectRef: parts.slice(4).join('_').toLowerCase(),
   }
+}
+
+function DatabaseUrlGuidance({
+  step,
+  tenant,
+  onStoreTenantSecret,
+  storingTenantSecret,
+}) {
+  const [secretValue, setSecretValue] = useState('')
+  const projectRef = tenant?.supabase_project_ref || ''
+  const canStoreVaultSecret = Boolean(onStoreTenantSecret && projectRef)
+  const shouldShow = step.step_code === 'apply_tenant_migrations'
+    && !TERMINAL_STEP_STATUSES.has(step.status)
+
+  if (!shouldShow) return null
+
+  async function storeSecret(event) {
+    event.preventDefault()
+    const value = secretValue.trim()
+    if (!value || !canStoreVaultSecret) return
+    await onStoreTenantSecret({ secretValue: value, secretKind: 'database_url' })
+    setSecretValue('')
+  }
+
+  return (
+    <div className="mt-3 rounded-2xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-950">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="font-black">Tenant database setup credential</p>
+          <p className="mt-1 font-semibold text-cyan-900">
+            Store the tenant database connection string in Vault so the server runner can apply DoctoLeb migrations. This value is never returned to the browser.
+          </p>
+        </div>
+        <StatusPill status={step.last_error_code === TENANT_DATABASE_URL_REQUIRED_CODE ? 'required' : 'server-only'} />
+      </div>
+      <dl className="mt-4 grid gap-3 md:grid-cols-2">
+        <div className="rounded-xl bg-white p-3 ring-1 ring-cyan-100">
+          <dt className="text-xs font-black uppercase tracking-[0.16em] text-cyan-700">Tenant project ref</dt>
+          <dd className="mt-1 font-mono text-sm font-black">{projectRef || 'Not configured'}</dd>
+        </div>
+        <div className="rounded-xl bg-white p-3 ring-1 ring-cyan-100">
+          <dt className="text-xs font-black uppercase tracking-[0.16em] text-cyan-700">Recommended source</dt>
+          <dd className="mt-1 text-sm font-black">Supabase project Connect panel or Database settings</dd>
+        </div>
+      </dl>
+      {canStoreVaultSecret ? (
+        <form onSubmit={storeSecret} className="mt-4 rounded-xl bg-white p-3 ring-1 ring-cyan-100">
+          <label className="grid gap-2">
+            <span className="text-xs font-black uppercase tracking-[0.16em] text-cyan-700">Store database connection in control-plane Vault</span>
+            <input
+              type="password"
+              autoComplete="off"
+              value={secretValue}
+              onChange={(event) => setSecretValue(event.target.value)}
+              placeholder="Paste the tenant database connection string here; it is sent once to the server"
+              className="rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-3 font-mono text-sm font-bold outline-none transition focus:border-cyan-500 focus:bg-white"
+            />
+          </label>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={!secretValue.trim() || storingTenantSecret}
+              className="rounded-xl bg-cyan-950 px-4 py-2 text-xs font-black text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {storingTenantSecret ? 'Storing...' : 'Store DB connection'}
+            </button>
+            <p className="text-xs font-bold text-cyan-900">
+              Use a fresh tenant project. Unknown existing schemas are refused instead of modified.
+            </p>
+          </div>
+        </form>
+      ) : (
+        <p className="mt-4 rounded-xl bg-white p-3 text-xs font-bold leading-5 text-cyan-900 ring-1 ring-cyan-100">
+          Save the tenant runtime project ref first, then return here to store the database connection string.
+        </p>
+      )}
+    </div>
+  )
 }
 
 function MissingTenantSecretGuidance({
@@ -448,6 +527,16 @@ export default function ProvisioningStepsPanel({
             </div>
             <StatusPill status={latestMigrationRun.status} />
           </div>
+          {latestMigrationRun.tenant_migration_items?.length ? (
+            <div className="mt-4 grid gap-2">
+              {latestMigrationRun.tenant_migration_items.slice(0, 8).map((item) => (
+                <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3 text-xs ring-1 ring-slate-200">
+                  <span className="font-mono font-black text-slate-700">{item.version}_{item.name}</span>
+                  <StatusPill status={item.status} />
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -510,6 +599,12 @@ export default function ProvisioningStepsPanel({
                 tenant={tenant}
                 copiedSecretName={copiedSecretName}
                 onCopySecretName={copySecretName}
+                onStoreTenantSecret={onStoreTenantSecret}
+                storingTenantSecret={storingTenantSecret}
+              />
+              <DatabaseUrlGuidance
+                step={step}
+                tenant={tenant}
                 onStoreTenantSecret={onStoreTenantSecret}
                 storingTenantSecret={storingTenantSecret}
               />

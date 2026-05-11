@@ -76,6 +76,7 @@ supabase-control-plane/
 | `admin-upsert-tenant-secret` Edge Function | Operator-only one-way tenant service/database secret storage into Vault or secret-reference metadata |
 | `admin-list-tenant-db-setup` Edge Function | Super-admin read model for tenant secret-reference flags and migration run history |
 | `admin-revoke-tenant-secret` Edge Function | Operator-only reversible revoke path for tenant setup secrets |
+| `tenantMigrationBundle.ts` | Generated server-only migration bundle from `supabase/migrations`; never edit by hand |
 
 ## What MUST NOT live here
 
@@ -112,6 +113,9 @@ supabase link --project-ref <control-plane-ref>
 
 # Apply the baseline migration.
 supabase db push
+
+# Keep the server-side tenant migration bundle aligned with tenant migrations.
+npm run check:tenant-migration-bundle
 
 # Deploy the resolver Edge Function. --no-verify-jwt is correct; the
 # endpoint is intentionally public.
@@ -154,7 +158,8 @@ The control plane now has schema support for provider-flexible provisioning:
 - Provisioning jobs can link to selected provider connections and record step-level idempotency plus undo metadata.
 - Dedicated provider metadata Edge Functions now exist for list/upsert/archive. They reject raw token-shaped input, sanitize `secret_ref` out of responses, and use reversible archive semantics.
 - Provider and tenant setup secrets can be stored through one-way Edge Function calls into Supabase Vault. Browser responses include only safe metadata such as `has_secret_ref`, storage type, status, and timestamps.
-- `apply_tenant_migrations` now writes a tenant migration-run ledger row for succeeded/blocked checks. This keeps `TENANT_MIGRATIONS_NOT_READY` retryable and auditable instead of a silent dead end.
+- `apply_tenant_migrations` now uses a server-side database connection string stored in Vault to apply the canonical tenant migrations from `supabase/migrations`, then records run/item status in `tenant_migration_runs` and `tenant_migration_items`.
+- Tenant database setup refuses unknown non-empty public schemas unless a DoctoLeb/Supabase migration ledger already exists. This prevents the SaaS admin from accidentally modifying a customer database that was not prepared for DoctoLeb.
 - `admin-run-provisioning-step` advances the assisted path through provider readiness, operator-linked tenant project verification, migration readiness, tenant profile/app config seed, first doctor/admin seed, Vercel/free-alias routing verification, resolver smoke, and guarded activation.
 - `admin-cancel-provisioning-job`, `admin-resume-provisioning-job`, and `admin-compensate-provisioning-step` expose operator cancel/recovery/undo paths through authenticated admin functions only. A cancelled job remains terminal for audit; resume creates a new zero-PHI provisioning ledger for the same tenant and carries forward safe checkpoints.
 - The current UI remains manual-assisted for external project creation. Supabase Management API project creation and Vercel REST project/env/custom-domain mutation are still gated behind provider credentials, cost/region/org selection, external resource IDs, and compensation rules.

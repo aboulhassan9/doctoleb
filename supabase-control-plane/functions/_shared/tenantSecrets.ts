@@ -15,6 +15,14 @@ type TenantServiceRoleResult = {
   source: 'edge_function_secret' | 'supabase_vault' | 'tenant_secret_refs' | 'missing'
 }
 
+type TenantDatabaseUrlResult = {
+  databaseUrl: string | null
+  secretName: string
+  secretRef: string | null
+  secretStorage: string | null
+  source: 'edge_function_secret' | 'supabase_vault' | 'tenant_secret_refs' | 'missing'
+}
+
 const SAFE_EDGE_SECRET_REF = /^[A-Z][A-Z0-9_]{2,200}$/
 const PROJECT_REF = /^[a-z0-9]{20}$/
 
@@ -144,6 +152,90 @@ export async function resolveTenantServiceRoleKey(
   return {
     key: null,
     secretName: tenantServiceRoleSecretName(normalizedProjectRef),
+    secretRef: secretData.secretRef,
+    secretStorage: secretData.secretStorage,
+    source: 'missing',
+  }
+}
+
+function tenantDatabaseUrlSecretName(projectRef: unknown): string {
+  const normalized = typeof projectRef === 'string' ? projectRef.trim().toUpperCase() : ''
+  return normalized ? `TENANT_DATABASE_URL_${normalized}` : 'TENANT_DATABASE_URL_UNCONFIGURED'
+}
+
+export async function resolveTenantDatabaseUrl(
+  client: SupabaseClient,
+  {
+    tenantId,
+    projectRef,
+  }: {
+    tenantId?: string | null
+    projectRef?: string | null
+  },
+): Promise<TenantDatabaseUrlResult> {
+  const normalizedProjectRef = normalizeProjectRef(projectRef)
+  const secretName = tenantDatabaseUrlSecretName(normalizedProjectRef)
+  const envValue = Deno.env.get(secretName) ?? null
+  if (envValue) {
+    return {
+      databaseUrl: envValue,
+      secretName,
+      secretRef: secretName,
+      secretStorage: 'edge_function_secret',
+      source: 'edge_function_secret',
+    }
+  }
+
+  const storedSecret = await readTenantSecret(client, {
+    tenantId,
+    projectRef: normalizedProjectRef,
+    secretKind: 'database_url',
+  })
+
+  if (storedSecret.error) {
+    return {
+      databaseUrl: null,
+      secretName,
+      secretRef: null,
+      secretStorage: null,
+      source: 'missing',
+    }
+  }
+
+  const secretData = storedSecret.data
+  if (!secretData?.secretRef) {
+    return {
+      databaseUrl: null,
+      secretName,
+      secretRef: null,
+      secretStorage: null,
+      source: 'missing',
+    }
+  }
+
+  if (secretData.secretStorage === 'supabase_vault') {
+    return {
+      databaseUrl: secretData.value,
+      secretName: secretData.secretRef,
+      secretRef: secretData.secretRef,
+      secretStorage: 'supabase_vault',
+      source: 'supabase_vault',
+    }
+  }
+
+  if (secretData.secretStorage === 'edge_function_secret' && SAFE_EDGE_SECRET_REF.test(secretData.secretRef)) {
+    return {
+      databaseUrl: Deno.env.get(secretData.secretRef) ?? null,
+      secretName: secretData.secretRef,
+      secretRef: secretData.secretRef,
+      secretStorage: 'edge_function_secret',
+      source: 'tenant_secret_refs',
+    }
+  }
+
+  return {
+    databaseUrl: null,
+    secretName,
     secretRef: secretData.secretRef,
     secretStorage: secretData.secretStorage,
     source: 'missing',

@@ -15,6 +15,7 @@ import {
 import { normalizeTenantBranding } from '../_shared/tenantBranding.ts'
 import { verifyProviderCredential } from '../_shared/providerExecution.ts'
 import { resolveTenantServiceRoleKey } from '../_shared/tenantSecrets.ts'
+import { runTenantDatabaseMigrations } from '../_shared/tenantMigrationRunner.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
@@ -50,9 +51,16 @@ const RPC_ERROR_STATUS: Record<string, number> = {
   PROVIDER_RATE_LIMITED: 429,
   PROVIDER_VERIFICATION_FAILED: 502,
   SUPABASE_PROJECT_RUNTIME_CONFIG_REQUIRED: 409,
+  TENANT_DATABASE_URL_SECRET_REQUIRED: 409,
+  TENANT_DATABASE_URL_INVALID: 400,
+  TENANT_DATABASE_PROJECT_MISMATCH: 409,
+  TENANT_DATABASE_NOT_EMPTY: 409,
   TENANT_SERVICE_ROLE_SECRET_REQUIRED: 409,
   TENANT_MIGRATIONS_NOT_READY: 409,
+  TENANT_MIGRATION_FAILED: 409,
+  TENANT_MIGRATION_RUN_FAILED: 500,
   TENANT_MIGRATION_RUN_RECORD_FAILED: 500,
+  TENANT_MIGRATION_ITEM_RECORD_FAILED: 500,
   TENANT_PROFILE_SEED_RPC_NOT_READY: 409,
   TENANT_PROFILE_SEED_FAILED: 500,
   FIRST_DOCTOR_ADMIN_INPUT_REQUIRED: 422,
@@ -791,41 +799,6 @@ async function runCreateSupabaseProject(
   }
 }
 
-async function recordTenantMigrationRun(
-  context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
-  {
-    tenantId,
-    stepId,
-    projectRef,
-    runnerMode,
-    status,
-    errorCode,
-    errorSummary,
-  }: {
-    tenantId: string
-    stepId: string | null
-    projectRef: string
-    runnerMode: 'verify_only' | 'supabase_management_api' | 'database_url'
-    status: 'succeeded' | 'failed' | 'blocked'
-    errorCode: string | null
-    errorSummary: string | null
-  },
-) {
-  const { data, error } = await context.client.rpc('admin_create_tenant_migration_run', {
-    p_tenant_id: tenantId,
-    p_provisioning_step_id: stepId,
-    p_project_ref: projectRef,
-    p_runner_mode: runnerMode,
-    p_status: status,
-    p_error_code: errorCode,
-    p_error_summary: errorSummary,
-    p_actor_id: context.admin.id,
-  })
-
-  if (error) return { data: null, error: 'TENANT_MIGRATION_RUN_RECORD_FAILED' }
-  return { data, error: null }
-}
-
 async function runApplyTenantMigrations(
   context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
   tenantId: string,
@@ -846,85 +819,36 @@ async function runApplyTenantMigrations(
     }
   }
 
-  const tenantSecret = await resolveTenantServiceRoleKey(context.client, {
-    tenantId,
-    projectRef: runtimeConfig.projectRef,
-  })
-  if (!tenantSecret.key) {
-    const run = await recordTenantMigrationRun(context, {
-      tenantId,
-      stepId,
-      projectRef: runtimeConfig.projectRef,
-      runnerMode: 'verify_only',
-      status: 'blocked',
-      errorCode: 'TENANT_SERVICE_ROLE_SECRET_REQUIRED',
-      errorSummary: `Configure ${tenantSecret.secretName} before checking tenant migrations.`,
-    })
-
-    return {
-      data: null,
-      error: 'TENANT_SERVICE_ROLE_SECRET_REQUIRED',
-      summary: `Configure ${tenantSecret.secretName} before checking tenant migrations.`,
-      details: {
-        migrationRunId: (run.data as { id?: string } | null)?.id ?? null,
-        secretName: tenantSecret.secretName,
-        secretStorage: tenantSecret.secretStorage,
-        projectRef: runtimeConfig.projectRef,
-      },
-    }
-  }
-
-  const tenantClient = createTenantServiceClient(runtimeConfig.supabaseUrl, tenantSecret.key)
-  const [{ error: profileError }, { error: appConfigError }] = await Promise.all([
-    tenantClient.from('tenant_profile').select('id, schema_version, status').limit(1),
-    tenantClient.from('tenant_app_config').select('id, app_name').limit(1),
-  ])
-
-  if (profileError || appConfigError) {
-    const run = await recordTenantMigrationRun(context, {
-      tenantId,
-      stepId,
-      projectRef: runtimeConfig.projectRef,
-      runnerMode: 'verify_only',
-      status: 'blocked',
-      errorCode: 'TENANT_MIGRATIONS_NOT_READY',
-      errorSummary: 'Tenant database migrations are not ready or expected runtime tables are missing.',
-    })
-
-    return {
-      data: null,
-      error: 'TENANT_MIGRATIONS_NOT_READY',
-      summary: 'Tenant database migrations are not ready or expected runtime tables are missing.',
-      details: {
-        migrationRunId: (run.data as { id?: string } | null)?.id ?? null,
-        checkedTables: ['tenant_profile', 'tenant_app_config'],
-        projectRef: runtimeConfig.projectRef,
-        nextAction: 'Run the tenant database setup automation with a server-side tenant secret or apply the tenant migrations to this project.',
-      },
-    }
-  }
-
-  await recordTenantMigrationRun(context, {
+  const migrationResult = await runTenantDatabaseMigrations(context, {
     tenantId,
     stepId,
     projectRef: runtimeConfig.projectRef,
-    runnerMode: 'verify_only',
-    status: 'succeeded',
-    errorCode: null,
-    errorSummary: null,
   })
+  if (migrationResult.error) {
+    return {
+      data: null,
+      error: migrationResult.error,
+      summary: migrationResult.summary,
+      details: migrationResult.details,
+    }
+  }
 
   return {
     data: {
       status: 'succeeded',
       postconditions: {
         tenantMigrationsApplied: true,
+        runnerMode: 'database_url',
+        migrationRunId: migrationResult.data.migrationRunId,
+        expectedMigrationsCount: migrationResult.data.expectedMigrationsCount,
+        appliedMigrationsCount: migrationResult.data.appliedMigrationsCount,
+        skippedMigrationsCount: migrationResult.data.skippedMigrationsCount,
+        sourceChecksum: migrationResult.data.sourceChecksum,
         tenantProfileTableReady: true,
         tenantAppConfigTableReady: true,
-        checkedWithServiceRoleSecret: tenantSecret.secretName,
-        checkedWithSecretStorage: tenantSecret.secretStorage,
+        checkedWithSecretStorage: migrationResult.data.secretStorage,
       },
-      summary: 'Tenant database migration shape is ready.',
+      summary: 'Tenant database migrations are applied and runtime objects are ready.',
     },
     error: null,
   }

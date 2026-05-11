@@ -49,6 +49,9 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      - name: Check tenant migration bundle
+        run: npm run check:tenant-migration-bundle
+
       - name: Audit backend contracts
         run: npm run audit:backend-contract
 

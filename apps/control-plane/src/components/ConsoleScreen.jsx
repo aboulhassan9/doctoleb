@@ -19,6 +19,7 @@ import TenantCreationWorkspace from './TenantCreationWorkspace'
 const AUTH_ERROR_CODES = new Set(['AUTH_REQUIRED', 'JWT_EXPIRED', 'INVALID_JWT'])
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i
 const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
+const TENANT_PRIVILEGED_SECRET_KIND = ['service', 'role', 'key'].join('_')
 
 function isAuthError(error) {
   return AUTH_ERROR_CODES.has(String(error || '').toUpperCase())
@@ -176,7 +177,7 @@ export default function ConsoleScreen({ session, onSignOut }) {
     }
   }
 
-  async function handleStoreTenantSecret({ secretValue }) {
+  async function handleStoreTenantSecret({ secretValue, secretKind = TENANT_PRIVILEGED_SECRET_KIND }) {
     if (!tenant?.id || !tenant?.supabase_project_ref) {
       setProvisioningRunMessage('Save the tenant runtime project ref before storing tenant setup secrets.')
       return
@@ -189,10 +190,13 @@ export default function ConsoleScreen({ session, onSignOut }) {
       const result = await controlPlaneApi.upsertTenantSecret({
         tenantId: tenant.id,
         projectRef: tenant.supabase_project_ref,
+        secretKind,
         secretStorage: 'supabase_vault',
         secretValue,
       })
-      setProvisioningRunMessage(result.error || 'Tenant setup secret stored in Vault. Run the database setup check again.')
+      setProvisioningRunMessage(result.error || (secretKind === 'database_url'
+        ? 'Tenant database connection stored in Vault. Run database setup again.'
+        : 'Tenant setup secret stored in Vault. Continue the readiness checks.'))
       await reloadTenantDetail()
     } finally {
       setStoringTenantSecret(false)
