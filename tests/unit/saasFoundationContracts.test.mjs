@@ -440,6 +440,7 @@ describe('SaaS foundation contracts', () => {
     const migration = read('supabase-control-plane/migrations/00010000000022_control_plane_tenant_db_setup_automation.sql');
     const runnerMigration = read('supabase-control-plane/migrations/00010000000023_control_plane_tenant_db_migration_runner.sql');
     const secretRetryMigration = read('supabase-control-plane/migrations/00010000000024_control_plane_tenant_secret_vault_upsert_retry.sql');
+    const secretColumnMigration = read('supabase-control-plane/migrations/00010000000025_control_plane_tenant_secret_vault_upsert_column_qualification.sql');
     const tenantSecrets = read('supabase-control-plane/functions/_shared/tenantSecrets.ts');
     const tenantMigrationRunner = read('supabase-control-plane/functions/_shared/tenantMigrationRunner.ts');
     const tenantMigrationBundle = read('supabase-control-plane/functions/_shared/tenantMigrationBundle.ts');
@@ -483,6 +484,11 @@ describe('SaaS foundation contracts', () => {
     assert.match(secretRetryMigration, /vault\.create_secret/);
     assert.match(secretRetryMigration, /recoversNamedVaultSecret/);
     assert.match(secretRetryMigration, /rawSecretStoredInPublicTable', false/);
+    assert.match(secretColumnMigration, /from public\.tenant_secret_refs as ref/);
+    assert.match(secretColumnMigration, /ref\.tenant_id = p_tenant_id/);
+    assert.match(secretColumnMigration, /ref\.secret_kind = v_secret_kind/);
+    assert.match(secretColumnMigration, /ref\.status = 'active'/);
+    assert.match(secretColumnMigration, /qualifiesTenantSecretColumns/);
 
     assert.match(tenantSecrets, /resolveTenantServiceRoleKey/);
     assert.match(tenantSecrets, /resolveTenantDatabaseUrl/);
