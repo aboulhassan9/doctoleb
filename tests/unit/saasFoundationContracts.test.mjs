@@ -947,7 +947,11 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /seed_first_doctor_admin/);
     assert.match(runner, /runSeedFirstDoctorAdmin/);
     assert.match(runner, /FIRST_DOCTOR_ADMIN_INPUT_REQUIRED/);
-    assert.match(runner, /inviteUserByEmail/);
+    assert.match(runner, /generateLink\(\{/);
+    assert.match(runner, /type: 'invite'/);
+    assert.match(runner, /inviteDeliveryMode: 'manual_link_generated'/);
+    assert.match(runner, /inviteEmailSent: false/);
+    assert.doesNotMatch(runner, /inviteUserByEmail/);
     assert.match(runner, /safeInviteFailureSummary/);
     assert.match(runner, /safeInviteFailureDetails/);
     assert.match(runner, /Tenant Auth rejected the saved service-role key/);

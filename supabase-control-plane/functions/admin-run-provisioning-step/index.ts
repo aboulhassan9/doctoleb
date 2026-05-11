@@ -1100,16 +1100,17 @@ async function runSeedFirstDoctorAdmin(
 
   const tenantClient = createTenantServiceClient(runtimeConfig.supabaseUrl, tenantSecret.key)
   const redirectTo = Deno.env.get('TENANT_FIRST_DOCTOR_INVITE_REDIRECT_URL') || undefined
-  const { data: invited, error: inviteError } = await tenantClient.auth.admin.inviteUserByEmail(
-    firstDoctorEmail,
-    {
+  const { data: invited, error: inviteError } = await tenantClient.auth.admin.generateLink({
+    type: 'invite',
+    email: firstDoctorEmail,
+    options: {
       data: {
         role: 'doctor',
         full_name: firstDoctorDisplayName,
       },
       redirectTo,
     },
-  )
+  })
 
   const invitedAuthUserId = invited?.user?.id
   if (inviteError || !invitedAuthUserId) {
@@ -1158,6 +1159,8 @@ async function runSeedFirstDoctorAdmin(
         firstDoctorAdminInviteCreated: true,
         tenantDoctorSeeded: true,
         tenantSlug: tenant.slug,
+        inviteDeliveryMode: 'manual_link_generated',
+        inviteEmailSent: false,
         domainUserId: payload.data.domainUserId,
         doctorId: payload.data.doctorId,
         tenantProfileId: payload.data.tenantProfileId,
