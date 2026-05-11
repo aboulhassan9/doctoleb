@@ -517,9 +517,9 @@ describe('SaaS foundation contracts', () => {
     assert.match(api, /admin-list-tenant-db-setup/);
     assert.match(api, /admin-revoke-tenant-secret/);
     assert.match(providerPanel, /Store or rotate provider secret in Vault/);
-    assert.match(stepsPanel, /Store database connection in control-plane Vault/);
+    assert.match(stepsPanel, /postgresql:\/\/\.\.\./);
     assert.match(stepsPanel, /secretKind: 'database_url'/);
-    assert.match(stepsPanel, /Latest DB setup run/);
+    assert.match(stepsPanel, /Latest DB setup/);
     assert.match(readme, /tenant_secret_refs/);
     assert.match(readme, /tenant_migration_runs/);
     assert.match(readme, /admin-upsert-tenant-secret/);
@@ -639,10 +639,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(providerPanel, /upsertProviderConnection/);
     assert.match(providerPanel, /archiveProviderConnection/);
     assert.match(providerPanel, /Raw provider tokens, privileged database keys, and management keys never enter/);
-    assert.match(stepsPanel, /idempotency key and undo strategy/);
-    assert.match(stepsPanel, /Open Supabase projects/);
-    assert.match(stepsPanel, /Open Vercel dashboard/);
-    assert.match(stepsPanel, /Open patient web alias/);
+    assert.match(stepsPanel, /Audit log/);
+    assert.match(stepsPanel, /Open Supabase/);
+    assert.match(stepsPanel, /Open Vercel/);
+    assert.match(stepsPanel, /Patient app/);
     assert.match(stepsPanel, /external_resource_url/);
     assert.match(providerHelpers, /TOKENISH_SECRET/);
     assert.match(providerHelpers, /Automation can be enabled only for an active connection/);
@@ -733,7 +733,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(api, /admin-run-provisioning-step/);
     assert.match(consoleScreen, /handleRunProvisioningStep/);
     assert.match(consoleScreen, /runningStepId/);
-    assert.match(stepsPanel, /Run safe check/);
+    assert.match(stepsPanel, /Run setup/);
     assert.match(stepsPanel, /onRunStep/);
     assert.match(stepsPanel, /activate_tenant/);
   });
@@ -781,8 +781,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(consoleScreen, /handleCancelProvisioningJob/);
     assert.match(consoleScreen, /handleCompensateProvisioningStep/);
     assert.match(consoleScreen, /tenant_provisioning_jobs/);
-    assert.match(stepsPanel, /Cancel provisioning job/);
-    assert.match(stepsPanel, /Compensate/);
+    assert.match(stepsPanel, /Cancel setup/);
+    assert.match(stepsPanel, /Undo/);
     assert.match(stepsPanel, /undo_strategy !== 'none'/);
     assert.doesNotMatch(consoleScreen, /from\('tenant_provisioning_/);
   });
@@ -825,8 +825,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(consoleScreen, /tenantSlug: isTenantSlug\(tenantSlug\) \? tenantSlug : undefined/);
     assert.match(consoleScreen, /previousJobId: isUuid\(previousJobId\) \? previousJobId : undefined/);
     assert.match(stepsPanel, /RESUMABLE_JOB_STATUSES/);
-    assert.match(stepsPanel, /Resume provisioning/);
-    assert.match(stepsPanel, /history stays locked for audit/);
+    assert.match(stepsPanel, /Resume/);
+    assert.match(stepsPanel, /Continue setup/);
     assert.match(readme, /admin-resume-provisioning-job/);
     assert.match(ledger, /Cancelled jobs stay terminal for audit/);
   });
@@ -836,19 +836,20 @@ describe('SaaS foundation contracts', () => {
 
     assert.match(panel, /PROVISIONING_STEP_ORDER/);
     assert.match(panel, /create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
-    assert.match(panel, /nextRunnableStepId/);
-    assert.match(panel, /Next action/);
-    assert.match(panel, /guidanceForStep/);
-    assert.match(panel, /\/t\/<tenant-slug>/);
-    assert.match(panel, /isBlocked/);
-    assert.match(panel, /Blocked until the previous readiness step succeeds/);
+    assert.match(panel, /activeJobSteps/);
+    assert.match(panel, /findCurrentStep/);
+    assert.match(panel, /Step \{stepNumber\} \/ \{totalSteps\}/);
+    assert.match(panel, /Details/);
+    assert.match(panel, /Patient app/);
+    assert.match(panel, /Staff app/);
+    assert.match(panel, /Save & run/);
+    assert.match(panel, /Fresh DB/);
     assert.match(panel, /TENANT_SECRET_NAME_PREFIX_PARTS/);
     assert.match(panel, /\['TEN', 'ANT'\]\.join\(''\)/);
     assert.doesNotMatch(panel, /TENANT_SERVICE_ROLE_KEY_/);
-    assert.match(panel, /navigator\.clipboard\.writeText/);
     assert.match(panel, /https:\/\/supabase\.com\/dashboard\/project\/xouqxgwccewvbtkqming\/functions\/secrets/);
-    assert.match(panel, /Privileged tenant keys stay server-side only/);
-    assert.match(panel, /Settings -> API Keys -> Secret keys -> default/);
+    assert.match(panel, /Tenant secret key/);
+    assert.match(panel, /Save & continue/);
   });
 
   it('tenant profile seeding is doctor-independent, service-role only, and runner-backed', () => {
