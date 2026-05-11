@@ -159,6 +159,61 @@ function readPayloadError(payload: unknown) {
     : ''
 }
 
+function safeFailureText(value: unknown, maxLength = 180) {
+  const text = typeof value === 'string'
+    ? value
+    : value == null
+      ? ''
+      : String(value)
+
+  return text
+    .replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted-db-url]')
+    .replace(/\bsb_(?:secret|service_role|publishable)_[A-Za-z0-9_-]+/gi, '[redacted-key]')
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[redacted-jwt]')
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[redacted-email]')
+    .slice(0, maxLength)
+}
+
+function safeInviteFailureSummary(inviteError: unknown) {
+  const message = safeFailureText((inviteError as { message?: unknown } | null)?.message ?? inviteError)
+  const normalized = message.toLowerCase()
+
+  if (/api key|apikey|jwt|token|service|authorization|forbidden|invalid key|not authorized/.test(normalized)) {
+    return 'Tenant Auth rejected the saved service-role key.'
+  }
+
+  if (/already|registered|exists|duplicate/.test(normalized)) {
+    return 'This doctor email already exists in tenant Auth.'
+  }
+
+  if (/email|address/.test(normalized)) {
+    return 'Tenant Auth rejected the doctor email.'
+  }
+
+  return 'Tenant Auth could not create the first doctor/admin invite.'
+}
+
+function safeInviteFailureDetails(
+  inviteError: unknown,
+  tenantSecret: Awaited<ReturnType<typeof resolveTenantServiceRoleKey>>,
+) {
+  const errorObject = inviteError && typeof inviteError === 'object'
+    ? inviteError as { name?: unknown; code?: unknown; status?: unknown; message?: unknown }
+    : null
+
+  return {
+    authErrorName: safeFailureText(errorObject?.name, 80) || null,
+    authErrorCode: safeFailureText(errorObject?.code, 80) || null,
+    authErrorStatus: typeof errorObject?.status === 'number' || typeof errorObject?.status === 'string'
+      ? errorObject.status
+      : null,
+    authErrorSummary: safeFailureText(errorObject?.message ?? inviteError) || 'Tenant Auth did not return an invited user id.',
+    serviceSecretSource: tenantSecret.source,
+    serviceSecretStorage: tenantSecret.secretStorage,
+    serviceSecretRef: tenantSecret.secretRef,
+  }
+}
+
 async function fetchStep(context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>, {
   tenantId,
   stepId,
@@ -1061,7 +1116,8 @@ async function runSeedFirstDoctorAdmin(
     return {
       data: null,
       error: 'FIRST_DOCTOR_ADMIN_INVITE_FAILED',
-      summary: 'Tenant Auth could not create the first doctor/admin invitation.',
+      summary: safeInviteFailureSummary(inviteError),
+      details: safeInviteFailureDetails(inviteError, tenantSecret),
     }
   }
 

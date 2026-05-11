@@ -496,6 +496,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(tenantSecrets, /admin_read_tenant_secret/);
     assert.match(tenantSecrets, /admin_read_vault_secret_ref/);
     assert.match(tenantSecrets, /source: 'supabase_vault'/);
+    assert.match(tenantSecrets, /secretKind: 'service_role_key'[\s\S]*if \(secretData\?\.secretRef\)[\s\S]*if \(envSecret\.key\)/);
+    assert.match(tenantSecrets, /secretKind: 'database_url'[\s\S]*if \(secretData\?\.secretRef\)[\s\S]*if \(envValue\)/);
     assert.match(tenantMigrationBundle, /TENANT_MIGRATION_BUNDLE/);
     assert.match(tenantMigrationBundle, /20240625000000_baseline_core_tables/);
     assert.match(tenantMigrationRunner, /import postgres from 'npm:postgres@/);
@@ -874,9 +876,9 @@ describe('SaaS foundation contracts', () => {
     assert.match(panel, /TENANT_SECRET_NAME_PREFIX_PARTS/);
     assert.match(panel, /\['TEN', 'ANT'\]\.join\(''\)/);
     assert.doesNotMatch(panel, /TENANT_SERVICE_ROLE_KEY_/);
-    assert.match(panel, /https:\/\/supabase\.com\/dashboard\/project\/xouqxgwccewvbtkqming\/functions\/secrets/);
-    assert.match(panel, /Tenant secret key/);
-    assert.match(panel, /Save & continue/);
+    assert.match(panel, /FIRST_DOCTOR_ADMIN_INVITE_FAILED/);
+    assert.match(panel, /Service role key/);
+    assert.match(panel, /Save & retry/);
   });
 
   it('tenant profile seeding is doctor-independent, service-role only, and runner-backed', () => {
@@ -942,6 +944,12 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /runSeedFirstDoctorAdmin/);
     assert.match(runner, /FIRST_DOCTOR_ADMIN_INPUT_REQUIRED/);
     assert.match(runner, /inviteUserByEmail/);
+    assert.match(runner, /safeInviteFailureSummary/);
+    assert.match(runner, /safeInviteFailureDetails/);
+    assert.match(runner, /Tenant Auth rejected the saved service-role key/);
+    assert.match(runner, /serviceSecretSource/);
+    assert.match(runner, /\[redacted-db-url\]/);
+    assert.match(runner, /\[redacted-key\]/);
     assert.match(runner, /\.rpc\('service_seed_first_doctor_admin'/);
     assert.match(runner, /deleteUser\(invitedAuthUserId, true\)/);
     assert.match(runner, /firstDoctorAdminInviteCreated: true/);

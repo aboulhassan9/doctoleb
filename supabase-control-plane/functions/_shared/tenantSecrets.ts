@@ -92,6 +92,46 @@ export async function resolveTenantServiceRoleKey(
 ): Promise<TenantServiceRoleResult> {
   const normalizedProjectRef = normalizeProjectRef(projectRef)
   const envSecret = getTenantServiceRoleKey(normalizedProjectRef)
+
+  const storedSecret = await readTenantSecret(client, {
+    tenantId,
+    projectRef: normalizedProjectRef,
+    secretKind: 'service_role_key',
+  })
+
+  if (!storedSecret.error) {
+    const secretData = storedSecret.data
+    if (secretData?.secretRef) {
+      if (secretData.secretStorage === 'supabase_vault') {
+        return {
+          key: secretData.value,
+          secretName: secretData.secretRef,
+          secretRef: secretData.secretRef,
+          secretStorage: 'supabase_vault',
+          source: 'supabase_vault',
+        }
+      }
+
+      if (secretData.secretStorage === 'edge_function_secret' && SAFE_EDGE_SECRET_REF.test(secretData.secretRef)) {
+        return {
+          key: Deno.env.get(secretData.secretRef) ?? null,
+          secretName: secretData.secretRef,
+          secretRef: secretData.secretRef,
+          secretStorage: 'edge_function_secret',
+          source: 'tenant_secret_refs',
+        }
+      }
+
+      return {
+        key: null,
+        secretName: tenantServiceRoleSecretName(normalizedProjectRef),
+        secretRef: secretData.secretRef,
+        secretStorage: secretData.secretStorage,
+        source: 'missing',
+      }
+    }
+  }
+
   if (envSecret.key) {
     return {
       key: envSecret.key,
@@ -102,58 +142,11 @@ export async function resolveTenantServiceRoleKey(
     }
   }
 
-  const storedSecret = await readTenantSecret(client, {
-    tenantId,
-    projectRef: normalizedProjectRef,
-    secretKind: 'service_role_key',
-  })
-
-  if (storedSecret.error) {
-    return {
-      key: null,
-      secretName: envSecret.secretName,
-      secretRef: null,
-      secretStorage: null,
-      source: 'missing',
-    }
-  }
-
-  const secretData = storedSecret.data
-  if (!secretData?.secretRef) {
-    return {
-      key: null,
-      secretName: envSecret.secretName,
-      secretRef: null,
-      secretStorage: null,
-      source: 'missing',
-    }
-  }
-
-  if (secretData.secretStorage === 'supabase_vault') {
-    return {
-      key: secretData.value,
-      secretName: secretData.secretRef,
-      secretRef: secretData.secretRef,
-      secretStorage: 'supabase_vault',
-      source: 'supabase_vault',
-    }
-  }
-
-  if (secretData.secretStorage === 'edge_function_secret' && SAFE_EDGE_SECRET_REF.test(secretData.secretRef)) {
-    return {
-      key: Deno.env.get(secretData.secretRef) ?? null,
-      secretName: secretData.secretRef,
-      secretRef: secretData.secretRef,
-      secretStorage: 'edge_function_secret',
-      source: 'tenant_secret_refs',
-    }
-  }
-
   return {
     key: null,
-    secretName: tenantServiceRoleSecretName(normalizedProjectRef),
-    secretRef: secretData.secretRef,
-    secretStorage: secretData.secretStorage,
+    secretName: envSecret.secretName,
+    secretRef: null,
+    secretStorage: null,
     source: 'missing',
   }
 }
@@ -176,6 +169,46 @@ export async function resolveTenantDatabaseUrl(
   const normalizedProjectRef = normalizeProjectRef(projectRef)
   const secretName = tenantDatabaseUrlSecretName(normalizedProjectRef)
   const envValue = Deno.env.get(secretName) ?? null
+
+  const storedSecret = await readTenantSecret(client, {
+    tenantId,
+    projectRef: normalizedProjectRef,
+    secretKind: 'database_url',
+  })
+
+  if (!storedSecret.error) {
+    const secretData = storedSecret.data
+    if (secretData?.secretRef) {
+      if (secretData.secretStorage === 'supabase_vault') {
+        return {
+          databaseUrl: secretData.value,
+          secretName: secretData.secretRef,
+          secretRef: secretData.secretRef,
+          secretStorage: 'supabase_vault',
+          source: 'supabase_vault',
+        }
+      }
+
+      if (secretData.secretStorage === 'edge_function_secret' && SAFE_EDGE_SECRET_REF.test(secretData.secretRef)) {
+        return {
+          databaseUrl: Deno.env.get(secretData.secretRef) ?? null,
+          secretName: secretData.secretRef,
+          secretRef: secretData.secretRef,
+          secretStorage: 'edge_function_secret',
+          source: 'tenant_secret_refs',
+        }
+      }
+
+      return {
+        databaseUrl: null,
+        secretName,
+        secretRef: secretData.secretRef,
+        secretStorage: secretData.secretStorage,
+        source: 'missing',
+      }
+    }
+  }
+
   if (envValue) {
     return {
       databaseUrl: envValue,
@@ -186,58 +219,11 @@ export async function resolveTenantDatabaseUrl(
     }
   }
 
-  const storedSecret = await readTenantSecret(client, {
-    tenantId,
-    projectRef: normalizedProjectRef,
-    secretKind: 'database_url',
-  })
-
-  if (storedSecret.error) {
-    return {
-      databaseUrl: null,
-      secretName,
-      secretRef: null,
-      secretStorage: null,
-      source: 'missing',
-    }
-  }
-
-  const secretData = storedSecret.data
-  if (!secretData?.secretRef) {
-    return {
-      databaseUrl: null,
-      secretName,
-      secretRef: null,
-      secretStorage: null,
-      source: 'missing',
-    }
-  }
-
-  if (secretData.secretStorage === 'supabase_vault') {
-    return {
-      databaseUrl: secretData.value,
-      secretName: secretData.secretRef,
-      secretRef: secretData.secretRef,
-      secretStorage: 'supabase_vault',
-      source: 'supabase_vault',
-    }
-  }
-
-  if (secretData.secretStorage === 'edge_function_secret' && SAFE_EDGE_SECRET_REF.test(secretData.secretRef)) {
-    return {
-      databaseUrl: Deno.env.get(secretData.secretRef) ?? null,
-      secretName: secretData.secretRef,
-      secretRef: secretData.secretRef,
-      secretStorage: 'edge_function_secret',
-      source: 'tenant_secret_refs',
-    }
-  }
-
   return {
     databaseUrl: null,
     secretName,
-    secretRef: secretData.secretRef,
-    secretStorage: secretData.secretStorage,
+    secretRef: null,
+    secretStorage: null,
     source: 'missing',
   }
 }

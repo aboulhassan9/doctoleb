@@ -55,7 +55,6 @@ const PROVISIONING_STEP_ORDER = [
   'activate_tenant',
 ]
 const PROVISIONING_STEP_RANK = new Map(PROVISIONING_STEP_ORDER.map((code, index) => [code, index]))
-const CONTROL_PLANE_SECRETS_URL = 'https://supabase.com/dashboard/project/xouqxgwccewvbtkqming/functions/secrets'
 const UPPERCASE_ENV_TOKEN_PATTERN = /\b([A-Z0-9]+(?:_[A-Z0-9]+){4,})\b/
 const TENANT_SECRET_NAME_PREFIX_PARTS = [
   ['TEN', 'ANT'].join(''),
@@ -65,6 +64,7 @@ const TENANT_SECRET_NAME_PREFIX_PARTS = [
 ]
 const TENANT_PRIVILEGED_SECRET_REQUIRED_CODE = ['TEN', 'ANT', '_', 'SER', 'VICE', '_', 'RO', 'LE', '_SECRET_REQUIRED'].join('')
 const TENANT_DATABASE_URL_REQUIRED_CODE = 'TENANT_DATABASE_URL_SECRET_REQUIRED'
+const FIRST_DOCTOR_INVITE_FAILED_CODE = 'FIRST_DOCTOR_ADMIN_INVITE_FAILED'
 
 const QUICK_LINKS = {
   create_supabase_project: [
@@ -126,7 +126,9 @@ function canCompensateStep(step) {
 }
 
 function needsTenantSecret(step) {
-  return step?.last_error_code === TENANT_PRIVILEGED_SECRET_REQUIRED_CODE || Boolean(extractTenantSecret(step))
+  return step?.last_error_code === TENANT_PRIVILEGED_SECRET_REQUIRED_CODE
+    || (step?.step_code === 'seed_first_doctor_admin' && step?.last_error_code === FIRST_DOCTOR_INVITE_FAILED_CODE)
+    || Boolean(extractTenantSecret(step))
 }
 
 function extractTenantSecret(step) {
@@ -150,6 +152,7 @@ function friendlyError(step) {
 
   if (step.last_error_code === TENANT_DATABASE_URL_REQUIRED_CODE) return 'Database URL needed'
   if (step.last_error_code === TENANT_PRIVILEGED_SECRET_REQUIRED_CODE) return 'Secret key needed'
+  if (step.last_error_code === FIRST_DOCTOR_INVITE_FAILED_CODE) return 'Service key needed'
   if (step.last_error_code === 'TENANT_MIGRATIONS_NOT_READY') return 'Database setup needed'
   if (step.last_error_code === 'STEP_PRECONDITION_FAILED') return 'Previous step needed'
   if (step.status === 'failed') return 'Try again'
@@ -286,28 +289,20 @@ function TenantSecretAction({
   return (
     <form onSubmit={saveAndContinue} className="mt-5 grid gap-3">
       <label className="grid gap-2">
-        <span className="text-sm font-black">Tenant secret key</span>
+        <span className="text-sm font-black">Service role key</span>
         <input
           type="password"
           autoComplete="off"
           value={secretValue}
           onChange={(event) => setSecretValue(event.target.value)}
-          placeholder="Tenant secret key"
+          placeholder="Paste privileged tenant key"
           className="rounded-2xl border border-amber-200 bg-white px-4 py-3 font-mono text-sm font-bold outline-none transition focus:border-amber-500"
         />
       </label>
       <div className="flex flex-wrap items-center gap-3">
         <PrimaryButton type="submit" disabled={isBusy}>
-          {isBusy ? 'Working...' : secretValue.trim() ? 'Save & continue' : 'Continue'}
+          {isBusy ? 'Working...' : secretValue.trim() ? 'Save & retry' : 'Retry'}
         </PrimaryButton>
-        <a
-          href={CONTROL_PLANE_SECRETS_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-full bg-white px-4 py-2 text-xs font-black text-amber-900 ring-1 ring-amber-200"
-        >
-          Open secrets
-        </a>
       </div>
     </form>
   )
