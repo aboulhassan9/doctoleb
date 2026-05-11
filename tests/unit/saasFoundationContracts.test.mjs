@@ -1071,6 +1071,20 @@ describe('SaaS foundation contracts', () => {
     assert.match(catalog, /code: 'archived'/);
   });
 
+  it('tenant activation allows no-domain path routing only after resolver smoke checkpoint', () => {
+    const migration = read('supabase-control-plane/migrations/00010000000026_control_plane_no_domain_activation_lifecycle.sql');
+
+    assert.match(migration, /create or replace function public\.enforce_tenant_status_transition/);
+    assert.match(migration, /v_has_active_domain/);
+    assert.match(migration, /v_has_no_domain_runtime/);
+    assert.match(migration, /v_has_no_domain_smoke_checkpoint/);
+    assert.match(migration, /step_code = 'smoke_test_resolver'/);
+    assert.match(migration, /s\.postconditions @> '\{"noDomainPathSmokePassed": true\}'::jsonb/);
+    assert.match(migration, /TENANT_ACTIVATION_REQUIRES_ACTIVE_DOMAIN/);
+    assert.match(migration, /activationAllowsNoDomainPathRouting/);
+    assert.doesNotMatch(migration, /service_role|database_url|secret_ref/);
+  });
+
   it('insurance payments are entitlement-gated and do not use mock coverage math', () => {
     const page = read('apps/clinic-ops/src/pages/CreateBillPage.jsx');
     const payments = read('packages/core/services/payments.js');
