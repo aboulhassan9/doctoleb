@@ -33,6 +33,19 @@ const SAFE_RUNNER_STEPS = new Set([
   'smoke_test_resolver',
   'activate_tenant',
 ])
+const PROVISIONING_STEP_ORDER = [
+  'tenant_draft_created',
+  'provider_connections_selected',
+  'create_supabase_project',
+  'apply_tenant_migrations',
+  'seed_tenant_profile',
+  'seed_first_doctor_admin',
+  'configure_vercel_project',
+  'store_runtime_config',
+  'smoke_test_resolver',
+  'activate_tenant',
+]
+const PROVISIONING_STEP_RANK = new Map(PROVISIONING_STEP_ORDER.map((code, index) => [code, index]))
 const RPC_ERROR_STATUS: Record<string, number> = {
   INVALID_REQUEST: 400,
   STEP_NOT_FOUND: 404,
@@ -186,14 +199,52 @@ async function assertPreviousStepsComplete(
     .eq('provisioning_job_id', currentStep.provisioning_job_id)
     .order('created_at', { ascending: true })
 
-  if (error) return { error: 'STEP_PRECONDITION_FAILED' }
-
-  for (const step of data ?? []) {
-    if (step.id === currentStep.id) return { error: null }
-    if (!TERMINAL_STEP_STATUSES.has(step.status)) return { error: 'STEP_PRECONDITION_FAILED' }
+  if (error) {
+    return {
+      error: 'STEP_PRECONDITION_FAILED',
+      details: {
+        summary: 'Could not read the setup checklist order.',
+        currentStepCode: currentStep.step_code,
+      },
+    }
   }
 
-  return { error: 'STEP_PRECONDITION_FAILED' }
+  const orderedSteps = [...(data ?? [])].sort(compareProvisioningStepsForPreconditions)
+  for (const step of orderedSteps) {
+    if (step.id === currentStep.id) return { error: null }
+    if (!TERMINAL_STEP_STATUSES.has(step.status)) {
+      return {
+        error: 'STEP_PRECONDITION_FAILED',
+        details: {
+          summary: 'Finish the highlighted setup step first.',
+          blockingStepCode: step.step_code,
+          blockingStepStatus: step.status,
+          currentStepCode: currentStep.step_code,
+        },
+      }
+    }
+  }
+
+  return {
+    error: 'STEP_PRECONDITION_FAILED',
+    details: {
+      summary: 'Selected setup step is not part of the active checklist.',
+      currentStepCode: currentStep.step_code,
+    },
+  }
+}
+
+function compareProvisioningStepsForPreconditions(
+  a: Pick<ProvisioningStep, 'step_code' | 'created_at'>,
+  b: Pick<ProvisioningStep, 'step_code' | 'created_at'>,
+) {
+  const rankDiff = stepRank(a.step_code) - stepRank(b.step_code)
+  if (rankDiff !== 0) return rankDiff
+  return String(a.created_at || '').localeCompare(String(b.created_at || ''))
+}
+
+function stepRank(stepCode: string) {
+  return PROVISIONING_STEP_RANK.get(stepCode) ?? Number.MAX_SAFE_INTEGER
 }
 
 function connectionIsAutomationReady(connection: Record<string, unknown> | null, provider: 'supabase' | 'vercel') {
@@ -1159,7 +1210,7 @@ Deno.serve(async (req) => {
   }
 
   const previousSteps = await assertPreviousStepsComplete(context, step)
-  if (previousSteps.error) return errorResponse(previousSteps.error, 409, cors)
+  if (previousSteps.error) return errorResponse(previousSteps.error, 409, cors, previousSteps.details)
 
   const started = await markRunning(context, context.admin.id, step.id)
   const startError = started.error ? 'STEP_RUN_START_FAILED' : readPayloadError(started.data)

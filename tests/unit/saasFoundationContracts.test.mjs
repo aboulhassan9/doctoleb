@@ -694,6 +694,10 @@ describe('SaaS foundation contracts', () => {
 
     assert.match(runner, /requireSuperAdmin\(req, \['operator'\]\)/);
     assert.match(runner, /SAFE_RUNNER_STEPS/);
+    assert.match(runner, /PROVISIONING_STEP_ORDER/);
+    assert.match(runner, /tenant_draft_created[\s\S]*provider_connections_selected[\s\S]*create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
+    assert.match(runner, /compareProvisioningStepsForPreconditions/);
+    assert.match(runner, /PROVISIONING_STEP_RANK/);
     assert.match(runner, /provider_connections_selected/);
     assert.match(runner, /create_supabase_project/);
     assert.match(runner, /runCreateSupabaseProject/);
@@ -725,6 +729,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /TENANT_ACTIVE_DOMAIN_REQUIRED/);
     assert.match(runner, /STEP_NOT_AUTOMATED/);
     assert.match(runner, /STEP_PRECONDITION_FAILED/);
+    assert.match(runner, /blockingStepCode/);
+    assert.match(runner, /currentStepCode/);
     assert.match(runner, /\.rpc\('admin_mark_provisioning_step_running'/);
     assert.match(runner, /\.rpc\('admin_record_provisioning_step_result_atomic'/);
     assert.match(runner, /recordFailure/);
