@@ -986,11 +986,13 @@ describe('SaaS foundation contracts', () => {
 
     assert.match(updateDoctorAdmin, /requireSuperAdmin\(req, \['operator'\]\)/);
     assert.match(updateDoctorAdmin, /resolveTenantServiceRoleKey/);
+    assert.match(updateDoctorAdmin, /runTenantDatabaseMigrations/);
     assert.match(updateDoctorAdmin, /admin_set_provisioning_first_doctor_atomic/);
     assert.match(updateDoctorAdmin, /service_get_first_doctor_admin_contact/);
     assert.match(updateDoctorAdmin, /service_update_first_doctor_admin_contact/);
     assert.match(updateDoctorAdmin, /auth\.admin\.updateUserById/);
     assert.match(updateDoctorAdmin, /email_confirm: true/);
+    assert.match(updateDoctorAdmin, /Run tenant database update before changing doctor login/);
     assert.match(updateDoctorAdmin, /FIRST_DOCTOR_AUTH_UPDATE_FAILED/);
     assert.match(updateDoctorAdmin, /restoreProvisioningJob/);
     assert.doesNotMatch(updateDoctorAdmin, /from\('doctors'\)/);

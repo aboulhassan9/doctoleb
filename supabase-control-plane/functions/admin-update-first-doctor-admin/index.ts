@@ -8,6 +8,7 @@ import {
   requireSuperAdmin,
 } from '../_shared/admin.ts'
 import { CONTROL_PLANE_PROVISIONING_JOB_SELECT } from '../_shared/selects.ts'
+import { runTenantDatabaseMigrations } from '../_shared/tenantMigrationRunner.ts'
 import { resolveTenantServiceRoleKey } from '../_shared/tenantSecrets.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -100,6 +101,19 @@ function readFirstDoctorContact(payload: unknown): FirstDoctorContact | null {
     : null
 }
 
+async function getFirstDoctorContact(tenantClient: ReturnType<typeof createTenantServiceClient>) {
+  const { data, error } = await tenantClient.rpc('service_get_first_doctor_admin_contact')
+  const envelope = readRpcPayload(data)
+  const code = typeof envelope?.error === 'string' ? envelope.error : null
+  const contact = envelope ? readFirstDoctorContact(envelope) : null
+
+  return {
+    contact,
+    error,
+    code,
+  }
+}
+
 async function setProvisioningDoctorInput(
   context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
   jobId: string,
@@ -177,23 +191,39 @@ Deno.serve(async (req) => {
   }
 
   const tenantClient = createTenantServiceClient(tenant.supabase_url, tenantSecret.key)
-  const { data: currentPayload, error: currentError } = await tenantClient.rpc('service_get_first_doctor_admin_contact')
-  const currentEnvelope = readRpcPayload(currentPayload)
-  const currentCode = typeof currentEnvelope?.error === 'string' ? currentEnvelope.error : null
-  const currentContact = currentEnvelope ? readFirstDoctorContact(currentEnvelope) : null
+  let currentLookup = await getFirstDoctorContact(tenantClient)
 
-  if (currentError) {
+  if (currentLookup.error) {
+    const migrationResult = await runTenantDatabaseMigrations(context, {
+      tenantId,
+      stepId: null,
+      projectRef: tenant.supabase_project_ref,
+    })
+
+    if (migrationResult.error) {
+      return errorResponse('FIRST_DOCTOR_ADMIN_CONTACT_RPC_NOT_READY', 409, cors, {
+        summary: 'Run tenant database update before changing doctor login.',
+        setupError: migrationResult.error,
+        setupSummary: migrationResult.summary,
+      })
+    }
+
+    currentLookup = await getFirstDoctorContact(tenantClient)
+  }
+
+  if (currentLookup.error) {
     return errorResponse('FIRST_DOCTOR_ADMIN_CONTACT_RPC_NOT_READY', 409, cors, {
-      summary: 'Run tenant database setup before changing doctor login.',
+      summary: 'Run tenant database update before changing doctor login.',
     })
   }
 
-  if (currentCode || !currentContact) {
-    return errorResponse(currentCode || 'FIRST_DOCTOR_ADMIN_NOT_FOUND', currentCode === 'FIRST_DOCTOR_ADMIN_NOT_FOUND' ? 404 : 409, cors, {
+  if (currentLookup.code || !currentLookup.contact) {
+    return errorResponse(currentLookup.code || 'FIRST_DOCTOR_ADMIN_NOT_FOUND', currentLookup.code === 'FIRST_DOCTOR_ADMIN_NOT_FOUND' ? 404 : 409, cors, {
       summary: 'First doctor admin was not found in the tenant database.',
     })
   }
 
+  const currentContact = currentLookup.contact
   const previousJob = job as ProvisioningJob
   const jobUpdate = await setProvisioningDoctorInput(context, job.id, email, displayName, phone)
   if (jobUpdate.error) return errorResponse('FIRST_DOCTOR_ADMIN_JOB_UPDATE_FAILED', 500, cors)
