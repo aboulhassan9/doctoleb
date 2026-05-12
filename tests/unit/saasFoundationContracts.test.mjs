@@ -281,7 +281,9 @@ describe('SaaS foundation contracts', () => {
     assert.match(workflow, /AUTH_SMOKE_PATIENT_PASSWORD: \$\{\{ secrets\.AUTH_SMOKE_PATIENT_PASSWORD \}\}/);
     assert.match(workflow, /AUTH_SMOKE_CONTROL_OWNER_PASSWORD: \$\{\{ secrets\.AUTH_SMOKE_CONTROL_OWNER_PASSWORD \}\}/);
     assert.match(smoke, /getByLabel\(\/email\/i\)/);
+    assert.match(smoke, /async function selectPasswordLoginMode/);
     assert.match(smoke, /passwordModeButton/);
+    assert.match(smoke, /waitFor\(\{ state: 'visible', timeout: 15_000 \}\)/);
     assert.match(smoke, /getByRole\('button', \{ name: \/\^Password\$\/i \}\)/);
     assert.match(smoke, /getByLabel\(\/\^password\$\/i\)/);
     assert.match(smoke, /verifyPatientBookingEntry/);

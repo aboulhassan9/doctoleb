@@ -101,6 +101,24 @@ async function verifyPatientBookingEntry(page) {
   }
 }
 
+async function selectPasswordLoginMode(page) {
+  await page.getByLabel(/email/i).waitFor({ state: 'visible', timeout: 15_000 });
+
+  const passwordInput = page.getByLabel(/^password$/i);
+  if (await passwordInput.isVisible({ timeout: 500 }).catch(() => false)) {
+    return;
+  }
+
+  const passwordModeButton = page.getByRole('button', { name: /^Password$/i });
+  if (await passwordModeButton.isVisible({ timeout: 15_000 }).catch(() => false)) {
+    await passwordModeButton.click({ timeout: 15_000 });
+  } else {
+    await page.locator('button').filter({ hasText: /^Password$/i }).first().click({ timeout: 15_000 });
+  }
+
+  await passwordInput.waitFor({ state: 'visible', timeout: 15_000 });
+}
+
 async function verifyScenario(browser, scenario) {
   const email = readSecret(scenario.emailEnv);
   const password = readSecret(scenario.passwordEnv);
@@ -118,10 +136,7 @@ async function verifyScenario(browser, scenario) {
 
   try {
     await page.goto(scenario.url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
-    const passwordModeButton = page.getByRole('button', { name: /^Password$/i });
-    if (await passwordModeButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
-      await passwordModeButton.click({ timeout: 5_000 });
-    }
+    await selectPasswordLoginMode(page);
     await page.getByLabel(/email/i).fill(email, { timeout: 15_000 });
     await page.getByLabel(/^password$/i).fill(password, { timeout: 15_000 });
     await page.getByRole('button', { name: scenario.submitName }).click({ timeout: 15_000 });
