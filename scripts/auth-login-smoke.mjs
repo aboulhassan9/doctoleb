@@ -118,6 +118,10 @@ async function verifyScenario(browser, scenario) {
 
   try {
     await page.goto(scenario.url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+    const passwordModeButton = page.getByRole('button', { name: /^Password$/i });
+    if (await passwordModeButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await passwordModeButton.click({ timeout: 5_000 });
+    }
     await page.getByLabel(/email/i).fill(email, { timeout: 15_000 });
     await page.getByLabel(/^password$/i).fill(password, { timeout: 15_000 });
     await page.getByRole('button', { name: scenario.submitName }).click({ timeout: 15_000 });
