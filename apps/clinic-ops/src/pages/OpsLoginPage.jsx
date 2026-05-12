@@ -18,24 +18,20 @@ import { useBrand } from '@/contexts/BrandContext';
  */
 export default function OpsLoginPage() {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, requestEmailOtp, verifyEmailOtp } = useAuth();
   const { showToast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const { displayName } = useBrand();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [loginMode, setLoginMode] = useState('otp');
+  const [otpSentTo, setOtpSentTo] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const patientWebLoginUrl = getPatientWebLoginUrl();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    const { success, error: authError, user } = await signIn(email, password);
-    setLoading(false);
-
+  const finishClinicOpsSignIn = (success, authError, user) => {
     if (!success || authError) {
       setError(authError || 'Invalid credentials');
       return;
@@ -52,6 +48,51 @@ export default function OpsLoginPage() {
       showToast(`Welcome, ${user.first_name || 'Staff'}`, 'success');
       navigate(getHomeRouteForRole(user.role), { replace: true });
     }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const { success, error: authError, user } = await signIn(email, password);
+    setLoading(false);
+    finishClinicOpsSignIn(success, authError, user);
+  };
+
+  const handleOtpRequest = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const { success, error: otpError, email: verifiedEmail } = await requestEmailOtp(email);
+    setLoading(false);
+
+    if (!success || otpError) {
+      setError(otpError || 'Could not send login code.');
+      return;
+    }
+
+    setOtpSentTo(verifiedEmail);
+    setOtpCode('');
+    showToast('Login code sent.', 'success');
+  };
+
+  const handleOtpVerify = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const { success, error: otpError, user } = await verifyEmailOtp(otpSentTo || email, otpCode);
+    setLoading(false);
+    finishClinicOpsSignIn(success, otpError, user);
+  };
+
+  const switchLoginMode = (mode) => {
+    setLoginMode(mode);
+    setError('');
+    setOtpCode('');
+    setOtpSentTo('');
   };
 
   return (
@@ -106,8 +147,91 @@ export default function OpsLoginPage() {
             </motion.div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="mb-5 grid grid-cols-2 rounded-xl bg-slate-200/70 p-1">
+            <button
+              type="button"
+              onClick={() => switchLoginMode('otp')}
+              className={`rounded-lg px-3 py-2 text-xs font-bold transition ${loginMode === 'otp' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+            >
+              Email code
+            </button>
+            <button
+              type="button"
+              onClick={() => switchLoginMode('password')}
+              className={`rounded-lg px-3 py-2 text-xs font-bold transition ${loginMode === 'password' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+            >
+              Password
+            </button>
+          </div>
+
+          {loginMode === 'otp' ? (
+            <form onSubmit={otpSentTo ? handleOtpVerify : handleOtpRequest} className="space-y-4">
+              <div>
+                <label htmlFor="ops-login-email" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Doctor email</label>
+                <input
+                  id="ops-login-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="doctor@clinic.com"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition-all placeholder:text-slate-300"
+                  disabled={loading || Boolean(otpSentTo)}
+                  autoFocus
+                />
+              </div>
+
+              {otpSentTo ? (
+                <div>
+                  <label htmlFor="ops-login-code" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">6-digit code</label>
+                  <input
+                    id="ops-login-code"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    required
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-center text-lg font-black tracking-[0.45em] text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition-all placeholder:text-slate-300"
+                    disabled={loading}
+                  />
+                </div>
+              ) : null}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-bold py-2.5 rounded-lg text-sm transition-all flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <span className="material-symbols-outlined text-base animate-spin">progress_activity</span>
+                    Working...
+                  </>
+                ) : otpSentTo ? (
+                  'Verify code'
+                ) : (
+                  'Send login code'
+                )}
+              </button>
+
+              {otpSentTo ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpSentTo('');
+                    setOtpCode('');
+                    setError('');
+                  }}
+                  className="w-full text-xs font-bold text-slate-400 hover:text-slate-700"
+                  disabled={loading}
+                >
+                  Use another email
+                </button>
+              ) : null}
+            </form>
+          ) : (
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
               <label htmlFor="ops-login-email" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Email</label>
               <input
@@ -163,6 +287,7 @@ export default function OpsLoginPage() {
               )}
             </button>
           </form>
+          )}
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between">

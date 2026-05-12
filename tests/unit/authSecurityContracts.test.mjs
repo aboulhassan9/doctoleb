@@ -47,4 +47,27 @@ describe('auth security contracts', () => {
     assert.match(source, /return buildSessionUserOrSignOut\(profile\)/);
     assert.match(source, /return buildSessionUserOrSignOut\(existingProfile\)/);
   });
+
+  it('clinic ops supports email OTP without creating unknown auth users', () => {
+    const authService = read('packages/core/services/auth.js');
+    const authContext = read('packages/ui/contexts/AuthContext.jsx');
+    const opsLogin = read('apps/clinic-ops/src/pages/OpsLoginPage.jsx');
+    const schemas = read('packages/core/schemas/index.js');
+
+    assert.match(schemas, /export const authOtpRequestSchema/);
+    assert.match(schemas, /export const authOtpVerifySchema/);
+    assert.match(authService, /requestEmailOtp/);
+    assert.match(authService, /signInWithOtp/);
+    assert.match(authService, /shouldCreateUser:\s*false/);
+    assert.match(authService, /verifyEmailOtp/);
+    assert.match(authService, /verifyOtp/);
+    assert.match(authService, /type:\s*'email'/);
+    assert.match(authService, /getProfileForSessionUser\(supabase, session\.user, \{ requireActive: true \}\)/);
+    assert.match(authContext, /requestEmailOtp/);
+    assert.match(authContext, /verifyEmailOtp/);
+    assert.match(opsLogin, /loginMode/);
+    assert.match(opsLogin, /Email code/);
+    assert.match(opsLogin, /Send login code/);
+    assert.match(opsLogin, /Verify code/);
+  });
 });

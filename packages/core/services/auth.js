@@ -1,6 +1,14 @@
 import { supabase } from '@/lib/supabase';
 import { getProfileForSessionUser, buildSessionUser } from '@/lib/authIdentity';
-import { authSignInSchema, authSignUpSchema, forgotPasswordSchema, parseWithSchema, resetPasswordSchema } from '@/schemas';
+import {
+  authOtpRequestSchema,
+  authOtpVerifySchema,
+  authSignInSchema,
+  authSignUpSchema,
+  forgotPasswordSchema,
+  parseWithSchema,
+  resetPasswordSchema,
+} from '@/schemas';
 
 async function waitForProvisionedProfile(authUser, requireActive = false) {
   const maxAttempts = 5;
@@ -25,6 +33,25 @@ async function buildSessionUserOrSignOut(profile) {
   return result;
 }
 
+function getCurrentPageRedirectTo() {
+  if (typeof window === 'undefined') return undefined;
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+function getOtpAuthErrorMessage(authError) {
+  if (!authError) return null;
+
+  if (authError.status === 429 || authError.code === 'over_email_send_rate_limit') {
+    return 'Email login is temporarily rate limited. Please try again in a few minutes.';
+  }
+
+  if (authError.status === 400 || authError.code === 'otp_disabled') {
+    return 'Email code login is not available for this clinic yet.';
+  }
+
+  return 'Could not verify this email code.';
+}
+
 export const authService = {
   setUserSession() {
     // Compatibility no-op. Supabase Auth is the only session source of truth.
@@ -36,6 +63,51 @@ export const authService = {
 
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError) return { data: null, error: 'Invalid email or password' };
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) {
+      await supabase.auth.signOut();
+      return { data: null, error: 'Authenticated session could not be established.' };
+    }
+
+    const { data: profile, error: profileError } = await getProfileForSessionUser(supabase, session.user, { requireActive: true });
+    if (profileError || !profile) {
+      await supabase.auth.signOut();
+      return { data: null, error: 'User profile not found or account is inactive' };
+    }
+
+    return buildSessionUserOrSignOut(profile);
+  },
+
+  async requestEmailOtp(email) {
+    const { data: payload, error: validationError } = parseWithSchema(authOtpRequestSchema, { email });
+    if (validationError) return { data: null, error: validationError };
+
+    const { error: authError } = await supabase.auth.signInWithOtp({
+      email: payload.email,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: getCurrentPageRedirectTo(),
+      },
+    });
+
+    if (authError) {
+      return { data: null, error: getOtpAuthErrorMessage(authError) };
+    }
+
+    return { data: { email: payload.email }, error: null };
+  },
+
+  async verifyEmailOtp(email, token) {
+    const { data: payload, error: validationError } = parseWithSchema(authOtpVerifySchema, { email, token });
+    if (validationError) return { data: null, error: validationError };
+
+    const { error: authError } = await supabase.auth.verifyOtp({
+      email: payload.email,
+      token: payload.token,
+      type: 'email',
+    });
+    if (authError) return { data: null, error: getOtpAuthErrorMessage(authError) };
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) {

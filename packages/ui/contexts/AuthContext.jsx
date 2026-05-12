@@ -151,6 +151,58 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const requestEmailOtp = async (email) => {
+    if (authActionInFlightRef.current) {
+      return { success: false, error: 'Authentication is already in progress.' };
+    }
+
+    authActionInFlightRef.current = true;
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: otpError } = await authService.requestEmailOtp(email);
+      if (otpError) {
+        setError(otpError);
+        return { success: false, error: otpError };
+      }
+
+      return { success: true, email: data.email };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      authActionInFlightRef.current = false;
+      setLoading(false);
+    }
+  };
+
+  const verifyEmailOtp = async (email, token) => {
+    if (authActionInFlightRef.current) {
+      return { success: false, error: 'Authentication is already in progress.' };
+    }
+
+    authActionInFlightRef.current = true;
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: otpError } = await authService.verifyEmailOtp(email, token);
+      if (otpError) {
+        setError(otpError);
+        return { success: false, error: otpError };
+      }
+
+      authService.setUserSession(data.email, data.role, data.patient_id);
+      setUser(data);
+      return { success: true, user: data };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      authActionInFlightRef.current = false;
+      setLoading(false);
+    }
+  };
+
   const signUp = async (email, password, firstName, lastName) => {
     if (authActionInFlightRef.current) {
       return { success: false, error: 'Authentication is already in progress.' };
@@ -203,7 +255,19 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, signIn, signUp, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        signIn,
+        signUp,
+        requestEmailOtp,
+        verifyEmailOtp,
+        logout,
+        isAuthenticated: !!user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -52,6 +52,14 @@ export const authSignInSchema = z.object({
   password: z.string().min(1),
 });
 
+export const authOtpRequestSchema = z.object({
+  email: z.string().trim().email().transform((value) => value.toLowerCase()),
+});
+
+export const authOtpVerifySchema = authOtpRequestSchema.extend({
+  token: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit login code.'),
+});
+
 export const authSignUpSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(8),
