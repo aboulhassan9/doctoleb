@@ -923,9 +923,15 @@ describe('SaaS foundation contracts', () => {
   it('first doctor admin provisioning is input-backed, Auth-backed, idempotent, and reversible', () => {
     const controlMigration = read('supabase-control-plane/migrations/00010000000017_control_plane_first_doctor_admin_inputs.sql');
     const tenantMigration = read('supabase/migrations/20260509023000_first_doctor_admin_seed_service.sql');
+    const tenantContactMigration = read('supabase/migrations/20260512193000_first_doctor_admin_contact_update.sql');
     const createJob = read('supabase-control-plane/functions/admin-create-provisioning-job/index.ts');
+    const getTenant = read('supabase-control-plane/functions/admin-get-tenant/index.ts');
+    const updateDoctorAdmin = read('supabase-control-plane/functions/admin-update-first-doctor-admin/index.ts');
     const selects = read('supabase-control-plane/functions/_shared/selects.ts');
     const runner = read('supabase-control-plane/functions/admin-run-provisioning-step/index.ts');
+    const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
+    const consoleScreen = read('apps/control-plane/src/components/ConsoleScreen.jsx');
+    const doctorAdminPanel = read('apps/control-plane/src/components/FirstDoctorAdminPanel.jsx');
     const panel = read('apps/control-plane/src/components/ProvisioningPanel.jsx');
     const doctorStep = read('apps/control-plane/src/components/provisioning/ProvisioningDoctorStep.jsx');
 
@@ -943,12 +949,22 @@ describe('SaaS foundation contracts', () => {
     assert.match(tenantMigration, /grant execute on function public\.service_seed_first_doctor_admin[\s\S]*to service_role/);
     assert.doesNotMatch(tenantMigration, /grant execute on function public\.service_seed_first_doctor_admin[\s\S]*to anon/i);
     assert.doesNotMatch(tenantMigration, /grant execute on function public\.service_seed_first_doctor_admin[\s\S]*to authenticated/i);
+    assert.match(tenantContactMigration, /service_get_first_doctor_admin_contact/);
+    assert.match(tenantContactMigration, /service_update_first_doctor_admin_contact/);
+    assert.match(tenantContactMigration, /first_doctor_admin_contact_updated/);
+    assert.match(tenantContactMigration, /FIRST_DOCTOR_EMAIL_TAKEN/);
+    assert.match(tenantContactMigration, /grant execute on function public\.service_update_first_doctor_admin_contact[\s\S]*to service_role/);
+    assert.doesNotMatch(tenantContactMigration, /grant execute on function public\.service_update_first_doctor_admin_contact[\s\S]*to anon/i);
+    assert.doesNotMatch(tenantContactMigration, /grant execute on function public\.service_update_first_doctor_admin_contact[\s\S]*to authenticated/i);
 
     assert.match(createJob, /normalizeFirstDoctorAdmin/);
     assert.match(createJob, /admin_set_provisioning_first_doctor_atomic/);
     assert.match(createJob, /FIRST_DOCTOR_ADMIN_CONFIG_FAILED/);
     assert.match(selects, /first_doctor_email/);
     assert.match(selects, /first_doctor_display_name/);
+    assert.match(getTenant, /first_doctor_email/);
+    assert.match(getTenant, /first_doctor_display_name/);
+    assert.match(getTenant, /first_doctor_phone/);
 
     assert.match(runner, /seed_first_doctor_admin/);
     assert.match(runner, /runSeedFirstDoctorAdmin/);
@@ -968,6 +984,27 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /deleteUser\(invitedAuthUserId, true\)/);
     assert.match(runner, /firstDoctorAdminInviteCreated: true/);
 
+    assert.match(updateDoctorAdmin, /requireSuperAdmin\(req, \['operator'\]\)/);
+    assert.match(updateDoctorAdmin, /resolveTenantServiceRoleKey/);
+    assert.match(updateDoctorAdmin, /admin_set_provisioning_first_doctor_atomic/);
+    assert.match(updateDoctorAdmin, /service_get_first_doctor_admin_contact/);
+    assert.match(updateDoctorAdmin, /service_update_first_doctor_admin_contact/);
+    assert.match(updateDoctorAdmin, /auth\.admin\.updateUserById/);
+    assert.match(updateDoctorAdmin, /email_confirm: true/);
+    assert.match(updateDoctorAdmin, /FIRST_DOCTOR_AUTH_UPDATE_FAILED/);
+    assert.match(updateDoctorAdmin, /restoreProvisioningJob/);
+    assert.doesNotMatch(updateDoctorAdmin, /from\('doctors'\)/);
+    assert.doesNotMatch(updateDoctorAdmin, /from\('users'\)/);
+    assert.doesNotMatch(updateDoctorAdmin, /inviteUserByEmail/);
+    assert.doesNotMatch(updateDoctorAdmin, /console\.log/);
+
+    assert.match(api, /updateFirstDoctorAdmin/);
+    assert.match(api, /admin-update-first-doctor-admin/);
+    assert.match(consoleScreen, /FirstDoctorAdminPanel/);
+    assert.match(doctorAdminPanel, /Doctor login/);
+    assert.match(doctorAdminPanel, /Login email/);
+    assert.match(doctorAdminPanel, /Save doctor login/);
+    assert.match(doctorAdminPanel, /OTP uses this email/);
     assert.match(panel, /ProvisioningDoctorStep/);
     assert.match(doctorStep, /First doctor admin/);
     assert.match(panel, /firstDoctorEmail/);

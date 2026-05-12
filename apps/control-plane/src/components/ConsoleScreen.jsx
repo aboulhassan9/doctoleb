@@ -8,6 +8,7 @@ import TenantList from './TenantList'
 import DomainsPanel from './DomainsPanel'
 import AuditPanel from './AuditPanel'
 import TenantControls from './TenantControls'
+import FirstDoctorAdminPanel from './FirstDoctorAdminPanel'
 import BrandingPanel from './BrandingPanel'
 import EntitlementsPanel from './EntitlementsPanel'
 import RuntimeConfigPanel from './RuntimeConfigPanel'
@@ -281,6 +282,7 @@ export default function ConsoleScreen({ session, onSignOut }) {
                   <>
                     <TenantReadinessPanel tenant={tenant} />
                     <TenantControls tenant={tenant} onSaved={() => { void reloadTenants(); void reloadTenantDetail() }} />
+                    <FirstDoctorAdminPanel tenant={tenant} onSaved={() => { void reloadTenants(); void reloadTenantDetail() }} />
                     <RuntimeConfigPanel tenant={tenant} onSaved={() => { void reloadTenants(); void reloadTenantDetail() }} />
                   </>
                 ) : null}

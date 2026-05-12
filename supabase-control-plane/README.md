@@ -76,6 +76,7 @@ supabase-control-plane/
 | `admin-upsert-tenant-secret` Edge Function | Operator-only one-way tenant service/database secret storage into Vault or secret-reference metadata |
 | `admin-list-tenant-db-setup` Edge Function | Super-admin read model for tenant secret-reference flags and migration run history |
 | `admin-revoke-tenant-secret` Edge Function | Operator-only reversible revoke path for tenant setup secrets |
+| `admin-update-first-doctor-admin` Edge Function | Operator-only first doctor login update. Updates tenant Auth and tenant user metadata; never returns tenant service keys |
 | `tenantMigrationBundle.ts` | Generated server-only migration bundle from `supabase/migrations`; never edit by hand |
 
 ## What MUST NOT live here
@@ -129,6 +130,7 @@ supabase functions deploy admin-archive-provider-connection
 supabase functions deploy admin-upsert-tenant-secret
 supabase functions deploy admin-list-tenant-db-setup
 supabase functions deploy admin-revoke-tenant-secret
+supabase functions deploy admin-update-first-doctor-admin
 supabase functions deploy admin-run-provisioning-step
 supabase functions deploy admin-cancel-provisioning-job
 supabase functions deploy admin-resume-provisioning-job

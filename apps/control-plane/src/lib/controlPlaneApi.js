@@ -210,6 +210,10 @@ export const controlPlaneApi = {
     return invokeAdminFunction('admin-set-tenant-runtime-config', payload)
   },
 
+  updateFirstDoctorAdmin(payload) {
+    return invokeAdminFunction('admin-update-first-doctor-admin', payload)
+  },
+
   createProvisioningJob(payload) {
     return invokeAdminFunction('admin-create-provisioning-job', payload)
   },
