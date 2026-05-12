@@ -68,6 +68,24 @@ export async function waitForExpectedPostLogin(page, scenario, { timeout = 45_00
   throw new Error(`${scenario.name}: expected ${expectation} after login, but current path is ${currentUrl.pathname}. Visible page excerpt: ${excerpt(bodyText)}`);
 }
 
+export async function selectPasswordLoginMode(page) {
+  await page.getByLabel(/email/i).waitFor({ state: 'visible', timeout: 15_000 });
+
+  const passwordInput = page.getByLabel(/^password$/i);
+  if (await passwordInput.isVisible({ timeout: 500 }).catch(() => false)) {
+    return;
+  }
+
+  const passwordModeButton = page.getByRole('button', { name: /^Password$/i });
+  if (await passwordModeButton.isVisible({ timeout: 15_000 }).catch(() => false)) {
+    await passwordModeButton.click({ timeout: 15_000 });
+  } else {
+    await page.locator('button').filter({ hasText: /^Password$/i }).first().click({ timeout: 15_000 });
+  }
+
+  await passwordInput.waitFor({ state: 'visible', timeout: 15_000 });
+}
+
 export function isCriticalRequest(request) {
   return ['document', 'script', 'xhr', 'fetch'].includes(request.resourceType());
 }

@@ -273,6 +273,7 @@ describe('SaaS foundation contracts', () => {
     const workflow = read('.github/workflows/ci.yml');
     const pkg = JSON.parse(read('package.json'));
     const smoke = read('scripts/auth-login-smoke.mjs');
+    const helper = read('scripts/lib/browser-smoke-helpers.mjs');
 
     assert.equal(pkg.scripts['smoke:auth:deployed'], 'node scripts/auth-login-smoke.mjs');
     assert.match(workflow, /auth-smoke-vercel:/);
@@ -281,10 +282,11 @@ describe('SaaS foundation contracts', () => {
     assert.match(workflow, /AUTH_SMOKE_PATIENT_PASSWORD: \$\{\{ secrets\.AUTH_SMOKE_PATIENT_PASSWORD \}\}/);
     assert.match(workflow, /AUTH_SMOKE_CONTROL_OWNER_PASSWORD: \$\{\{ secrets\.AUTH_SMOKE_CONTROL_OWNER_PASSWORD \}\}/);
     assert.match(smoke, /getByLabel\(\/email\/i\)/);
-    assert.match(smoke, /async function selectPasswordLoginMode/);
-    assert.match(smoke, /passwordModeButton/);
-    assert.match(smoke, /waitFor\(\{ state: 'visible', timeout: 15_000 \}\)/);
-    assert.match(smoke, /getByRole\('button', \{ name: \/\^Password\$\/i \}\)/);
+    assert.match(smoke, /selectPasswordLoginMode/);
+    assert.match(helper, /async function selectPasswordLoginMode/);
+    assert.match(helper, /passwordModeButton/);
+    assert.match(helper, /waitFor\(\{ state: 'visible', timeout: 15_000 \}\)/);
+    assert.match(helper, /getByRole\('button', \{ name: \/\^Password\$\/i \}\)/);
     assert.match(smoke, /getByLabel\(\/\^password\$\/i\)/);
     assert.match(smoke, /verifyPatientBookingEntry/);
     assert.match(smoke, /\/patient-appointments/);
@@ -1668,6 +1670,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(flowSmoke, /doctor-first-band/);
     assert.match(flowSmoke, /secretary-first-band/);
     assert.match(flowSmoke, /control-plane-first-band/);
+    assert.match(flowSmoke, /selectPasswordLoginMode/);
     assert.match(flowSmoke, /deprecated Setup tab is still visible/);
     assert.match(flowSmoke, /getByRole\('button'[\s\S]+New tenant[\s\S]+click\(\{ timeout: 15_000 \}\)/);
     assert.match(flowSmoke, /getByRole\('heading', \{ name: \/New tenant setup\/i \}\)/);

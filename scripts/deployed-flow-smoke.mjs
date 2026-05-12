@@ -9,6 +9,7 @@ const {
   getMissingSecretNames,
   playwrightOutputDir,
   readSecret,
+  selectPasswordLoginMode,
   waitForExpectedPostLogin,
   writeJsonReport,
 } = await import('./lib/browser-smoke-helpers.mjs');
@@ -157,6 +158,7 @@ async function signIn(page, scenario) {
   }
 
   await page.goto(scenario.url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+  await selectPasswordLoginMode(page);
   await page.getByLabel(/email/i).fill(email, { timeout: 15_000 });
   await page.getByLabel(/^password$/i).fill(password, { timeout: 15_000 });
   await page.getByRole('button', { name: scenario.submitName }).click({ timeout: 15_000 });

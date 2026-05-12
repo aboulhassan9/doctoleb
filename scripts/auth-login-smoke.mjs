@@ -9,6 +9,7 @@ const {
   getMissingSecretNames,
   playwrightOutputDir,
   readSecret,
+  selectPasswordLoginMode,
   waitForExpectedPostLogin,
   writeJsonReport,
 } = await import('./lib/browser-smoke-helpers.mjs');
@@ -99,24 +100,6 @@ async function verifyPatientBookingEntry(page) {
   if (dateDisabled) {
     throw new Error('patient booking appointment date stayed disabled after doctor selection');
   }
-}
-
-async function selectPasswordLoginMode(page) {
-  await page.getByLabel(/email/i).waitFor({ state: 'visible', timeout: 15_000 });
-
-  const passwordInput = page.getByLabel(/^password$/i);
-  if (await passwordInput.isVisible({ timeout: 500 }).catch(() => false)) {
-    return;
-  }
-
-  const passwordModeButton = page.getByRole('button', { name: /^Password$/i });
-  if (await passwordModeButton.isVisible({ timeout: 15_000 }).catch(() => false)) {
-    await passwordModeButton.click({ timeout: 15_000 });
-  } else {
-    await page.locator('button').filter({ hasText: /^Password$/i }).first().click({ timeout: 15_000 });
-  }
-
-  await passwordInput.waitFor({ state: 'visible', timeout: 15_000 });
 }
 
 async function verifyScenario(browser, scenario) {
