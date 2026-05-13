@@ -1099,7 +1099,35 @@ async function runSeedFirstDoctorAdmin(
   }
 
   const tenantClient = createTenantServiceClient(runtimeConfig.supabaseUrl, tenantSecret.key)
-  const redirectTo = Deno.env.get('TENANT_FIRST_DOCTOR_INVITE_REDIRECT_URL') || undefined
+
+  // Build the invite redirect URL from tenant routing config so the first doctor
+  // lands on their tenant's ops login page. Prefer an active custom ops domain;
+  // fall back to /t/<slug> path routing. configure_vercel_project runs earlier in
+  // the pipeline and guarantees one of these is available — if neither resolves
+  // here, fail closed rather than silently using an undefined redirect.
+  const { data: tenantDomains } = await loadTenantDomains(context, tenantId)
+  const activeOpsDomain = (tenantDomains ?? []).find(
+    (domain) => domain.surface === 'ops' && isActiveRoutableDomain(domain),
+  )
+  const noDomainRouting = noDomainPathRoutingForTenant(tenant)
+
+  let redirectTo: string | undefined
+  if (activeOpsDomain) {
+    const hostname = String(activeOpsDomain.hostname || '').trim().toLowerCase()
+    const scheme = isLocalDomain(hostname) ? 'http' : 'https'
+    redirectTo = `${scheme}://${hostname}/login`
+  } else if (noDomainRouting) {
+    redirectTo = `${noDomainRouting.opsUrl}/login`
+  }
+
+  if (!redirectTo) {
+    return {
+      data: null,
+      error: 'FIRST_DOCTOR_INVITE_REDIRECT_UNAVAILABLE',
+      summary: 'Cannot build the first doctor invite redirect: tenant has no active ops domain and no /t/<slug> path routing. Complete configure_vercel_project before seeding the first doctor.',
+    }
+  }
+
   const { data: invited, error: inviteError } = await tenantClient.auth.admin.generateLink({
     type: 'invite',
     email: firstDoctorEmail,
@@ -1112,13 +1140,45 @@ async function runSeedFirstDoctorAdmin(
     },
   })
 
-  const invitedAuthUserId = invited?.user?.id
-  if (inviteError || !invitedAuthUserId) {
-    return {
-      data: null,
-      error: 'FIRST_DOCTOR_ADMIN_INVITE_FAILED',
-      summary: safeInviteFailureSummary(inviteError),
-      details: safeInviteFailureDetails(inviteError, tenantSecret),
+  let invitedAuthUserId = invited?.user?.id
+
+  // Idempotency: if the email already exists in tenant Auth (e.g. from a
+  // previous attempt or manual creation), look up the existing user instead
+  // of failing. This allows safe retries of the seed_first_doctor_admin step.
+  if (inviteError && !invitedAuthUserId) {
+    const errorMessage = String((inviteError as { message?: unknown }).message ?? '').toLowerCase()
+    const isAlreadyRegistered = /already|registered|exists|duplicate/.test(errorMessage)
+
+    if (isAlreadyRegistered) {
+      // Look up the existing Auth user by email through a tenant DB RPC
+      const { data: existingUser, error: lookupError } = await tenantClient
+        .rpc('get_auth_user_id_by_email', { p_email: firstDoctorEmail })
+        .maybeSingle()
+
+      // Fallback: try the admin API if the RPC doesn't exist
+      if (lookupError || !existingUser) {
+        // The user exists per the invite error, but we can't look them up.
+        // Return a clear recovery message instead of a generic failure.
+        return {
+          data: null,
+          error: 'FIRST_DOCTOR_ADMIN_ALREADY_EXISTS',
+          summary: 'This doctor email already exists in tenant Auth. The domain seed step can be retried after verifying the Auth user.',
+          details: safeInviteFailureDetails(inviteError, tenantSecret),
+        }
+      }
+
+      invitedAuthUserId = typeof existingUser === 'string'
+        ? existingUser
+        : (existingUser as { id?: string })?.id
+    }
+
+    if (!invitedAuthUserId) {
+      return {
+        data: null,
+        error: 'FIRST_DOCTOR_ADMIN_INVITE_FAILED',
+        summary: safeInviteFailureSummary(inviteError),
+        details: safeInviteFailureDetails(inviteError, tenantSecret),
+      }
     }
   }
 

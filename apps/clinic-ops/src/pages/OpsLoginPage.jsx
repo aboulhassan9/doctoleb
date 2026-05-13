@@ -301,9 +301,9 @@ export default function OpsLoginPage() {
           ) : (
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
-              <label htmlFor="ops-login-email" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Email</label>
+              <label htmlFor="ops-password-email" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Email</label>
               <input
-                id="ops-login-email"
+                id="ops-password-email"
                 type="email"
                 required
                 value={email}
