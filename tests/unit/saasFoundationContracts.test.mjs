@@ -193,11 +193,13 @@ describe('SaaS foundation contracts', () => {
 
     assert.equal(pkg.scripts['smoke:browser:deployed'], 'node scripts/browser-smoke.mjs');
     assert.match(workflow, /browser-smoke-vercel:/);
-    assert.match(workflow, /needs:\s*\n\s*- deploy-vercel\s*\n\s*- smoke-vercel/);
+    assert.match(workflow, /needs:\s*\n\s*- detect-changes\s*\n\s*- deploy-vercel\s*\n\s*- smoke-vercel/);
     assert.match(workflow, /npx playwright install --with-deps chromium/);
     assert.match(workflow, /npm run smoke:browser:deployed/);
+    assert.match(workflow, /SMOKE_APPS: \$\{\{ needs\.detect-changes\.outputs\.smoke_apps \}\}/);
     assert.match(workflow, /path: output\/playwright\//);
     assert.match(smoke, /chromium\.launch/);
+    assert.match(smoke, /selectedSmokeApps/);
     assert.match(smoke, /doctoleb-patient-web\.vercel\.app/);
     assert.match(smoke, /doctoleb-clinic-ops\.vercel\.app/);
     assert.match(smoke, /doctoleb-control-plane\.vercel\.app/);
@@ -227,7 +229,8 @@ describe('SaaS foundation contracts', () => {
     assert.equal(pkg.scripts['smoke:tenant-resolver'], 'node scripts/tenant-resolver-smoke.mjs');
     assert.match(workflow, /tenant-resolver-smoke:/);
     assert.match(workflow, /npm run smoke:tenant-resolver/);
-    assert.match(workflow, /needs:\s*\n\s*- deploy-vercel\s*\n\s*- smoke-vercel/);
+    assert.match(workflow, /needs:\s*\n\s*- detect-changes\s*\n\s*- deploy-vercel\s*\n\s*- deploy-supabase-functions/);
+    assert.match(workflow, /needs\.detect-changes\.outputs\.run_resolver_smoke == 'true'/);
     assert.match(smoke, /doctoleb-patient-web\.vercel\.app/);
     assert.match(smoke, /doctoleb-clinic-ops\.vercel\.app/);
     assert.match(smoke, /dev\.doctoleb\.com/);
@@ -1704,7 +1707,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(workflow, /deployed-flow-smoke-vercel:/);
     assert.match(workflow, /npm run smoke:flows:deployed/);
     assert.match(workflow, /FLOW_SMOKE_REQUIRED: 'true'/);
-    assert.match(workflow, /needs:\s*\n\s*- deploy-vercel\s*\n\s*- smoke-vercel\s*\n\s*- auth-smoke-vercel/);
+    assert.match(workflow, /needs:\s*\n\s*- detect-changes\s*\n\s*- deploy-vercel\s*\n\s*- smoke-vercel\s*\n\s*- auth-smoke-vercel/);
+    assert.match(workflow, /needs\.detect-changes\.outputs\.run_flow_smoke == 'true'/);
     assert.match(flowSmoke, /patient-first-band/);
     assert.match(flowSmoke, /doctor-first-band/);
     assert.match(flowSmoke, /secretary-first-band/);

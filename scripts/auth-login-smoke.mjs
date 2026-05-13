@@ -59,6 +59,22 @@ const scenarios = Object.freeze([
   },
 ]);
 
+function selectedAuthScenarios() {
+  return new Set(String(process.env.AUTH_SMOKE_SCENARIOS || '')
+    .split(',')
+    .map((scenario) => scenario.trim())
+    .filter(Boolean));
+}
+
+function scenarioMatchesSelection(name, selectedScenarios) {
+  if (selectedScenarios.size === 0) return true;
+  if (selectedScenarios.has(name)) return true;
+  if (selectedScenarios.has('patient') && name === 'patient-web-patient') return true;
+  if (selectedScenarios.has('ops') && name.startsWith('clinic-ops-')) return true;
+  if (selectedScenarios.has('control-plane') && name === 'control-plane-owner') return true;
+  return false;
+}
+
 async function verifyPatientBookingEntry(page) {
   const appointmentsUrl = new URL('/patient-appointments', page.url()).toString();
   await page.goto(appointmentsUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
@@ -149,7 +165,14 @@ async function verifyScenario(browser, scenario) {
 }
 
 async function main() {
-  const missingSecretNames = getMissingSecretNames(scenarios);
+  const selectedScenarios = selectedAuthScenarios();
+  const scenariosToVerify = scenarios.filter((scenario) => scenarioMatchesSelection(scenario.name, selectedScenarios));
+  if (scenariosToVerify.length === 0) {
+    console.error(`AUTH_SMOKE_SCENARIOS did not match any auth smoke scenario: ${[...selectedScenarios].join(', ')}`);
+    process.exit(1);
+  }
+
+  const missingSecretNames = getMissingSecretNames(scenariosToVerify);
   if (missingSecretNames.length > 0) {
     const message = `Missing auth smoke environment variables: ${missingSecretNames.join(', ')}`;
     if (required) {
@@ -168,7 +191,7 @@ async function main() {
   const failures = [];
 
   try {
-    for (const scenario of scenarios) {
+    for (const scenario of scenariosToVerify) {
       try {
         const result = await verifyScenario(browser, scenario);
         report.push(result);

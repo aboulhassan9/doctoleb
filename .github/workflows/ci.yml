@@ -7,7 +7,24 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '17 2 * * 1'
   workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release lane override'
+        required: false
+        default: auto
+        type: choice
+        options:
+          - auto
+          - docs
+          - frontend-patient
+          - frontend-ops
+          - frontend-control-plane
+          - frontend-all
+          - backend
+          - full
 
 permissions:
   contents: read
@@ -19,11 +36,264 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NODE_VERSION: 24
+  SUPABASE_CLI_VERSION: 2.72.7
   VERCEL_CLI_VERSION: 50.1.3
 
 jobs:
-  verify:
-    name: Lint, Build, Audit
+  detect-changes:
+    name: Detect release lane
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      lane: ${{ steps.classify.outputs.lane }}
+      reason: ${{ steps.classify.outputs.reason }}
+      apps: ${{ steps.classify.outputs.apps }}
+      affected_systems: ${{ steps.classify.outputs.affected_systems }}
+      domains: ${{ steps.classify.outputs.domains }}
+      required_proofs: ${{ steps.classify.outputs.required_proofs }}
+      smoke_apps: ${{ steps.classify.outputs.smoke_apps }}
+      auth_scenarios: ${{ steps.classify.outputs.auth_scenarios }}
+      deploy_vercel: ${{ steps.classify.outputs.deploy_vercel }}
+      deploy_supabase_functions: ${{ steps.classify.outputs.deploy_supabase_functions }}
+      control_plane_functions: ${{ steps.classify.outputs.control_plane_functions }}
+      tenant_functions: ${{ steps.classify.outputs.tenant_functions }}
+      run_backend_contract: ${{ steps.classify.outputs.run_backend_contract }}
+      run_db_contracts: ${{ steps.classify.outputs.run_db_contracts }}
+      run_migration_bundle: ${{ steps.classify.outputs.run_migration_bundle }}
+      run_resolver_smoke: ${{ steps.classify.outputs.run_resolver_smoke }}
+      run_admin_cors_smoke: ${{ steps.classify.outputs.run_admin_cors_smoke }}
+      run_browser_smoke: ${{ steps.classify.outputs.run_browser_smoke }}
+      run_auth_smoke: ${{ steps.classify.outputs.run_auth_smoke }}
+      run_flow_smoke: ${{ steps.classify.outputs.run_flow_smoke }}
+      run_csp_smoke: ${{ steps.classify.outputs.run_csp_smoke }}
+      vercel_matrix: ${{ steps.classify.outputs.vercel_matrix }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Classify changed files
+        id: classify
+        run: npm run ci:classify
+        env:
+          RELEASE_TYPE: ${{ github.event_name == 'workflow_dispatch' && inputs.release_type || 'auto' }}
+
+      - name: Summarize lane
+        run: |
+          {
+            echo "### Release lane"
+            echo ""
+            echo "- Lane: \`${{ steps.classify.outputs.lane }}\`"
+            echo "- Reason: ${{ steps.classify.outputs.reason }}"
+            echo "- Affected systems: \`${{ steps.classify.outputs.affected_systems }}\`"
+            echo "- Domains: \`${{ steps.classify.outputs.domains }}\`"
+            echo "- Required proofs: \`${{ steps.classify.outputs.required_proofs }}\`"
+            echo "- Apps: \`${{ steps.classify.outputs.apps }}\`"
+            echo "- Control-plane functions: \`${{ steps.classify.outputs.control_plane_functions }}\`"
+            echo "- Tenant functions: \`${{ steps.classify.outputs.tenant_functions }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  verify-docs:
+    name: Verify docs-only change
+    needs: detect-changes
+    if: needs.detect-changes.outputs.lane == 'docs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Confirm no deploy needed
+        run: echo "Docs-only change. No build or deployment required."
+
+  verify-frontend:
+    name: Verify frontend lane
+    needs: detect-changes
+    if: needs.detect-changes.outputs.lane == 'frontend'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Build affected frontend apps
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra apps <<< "${APPS}"
+          for app in "${apps[@]}"; do
+            case "$app" in
+              patient-web) npm run build:patient ;;
+              clinic-ops) npm run build:ops ;;
+              control-plane) npm run build:control-plane ;;
+              *) echo "::error::Unknown frontend app: $app"; exit 1 ;;
+            esac
+          done
+        env:
+          APPS: ${{ needs.detect-changes.outputs.apps }}
+
+      - name: Guard affected frontend bundles against secret leakage
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra apps <<< "${APPS}"
+          for app in "${apps[@]}"; do
+            BUNDLE_APP="$app" npm run audit:bundle-secrets
+          done
+        env:
+          APPS: ${{ needs.detect-changes.outputs.apps }}
+
+      - name: Audit high-severity dependencies
+        run: npm run audit:high
+
+  verify-backend:
+    name: Verify backend lane
+    needs: detect-changes
+    if: needs.detect-changes.outputs.lane == 'backend'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Build affected consumer apps
+        if: needs.detect-changes.outputs.apps != ''
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra apps <<< "${APPS}"
+          for app in "${apps[@]}"; do
+            case "$app" in
+              patient-web) npm run build:patient ;;
+              clinic-ops) npm run build:ops ;;
+              control-plane) npm run build:control-plane ;;
+              *) echo "::error::Unknown consumer app: $app"; exit 1 ;;
+            esac
+          done
+        env:
+          APPS: ${{ needs.detect-changes.outputs.apps }}
+
+      - name: Guard affected consumer bundles against secret leakage
+        if: needs.detect-changes.outputs.apps != ''
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra apps <<< "${APPS}"
+          for app in "${apps[@]}"; do
+            BUNDLE_APP="$app" npm run audit:bundle-secrets
+          done
+        env:
+          APPS: ${{ needs.detect-changes.outputs.apps }}
+
+      - name: Check tenant migration bundle
+        if: needs.detect-changes.outputs.run_migration_bundle == 'true'
+        run: npm run check:tenant-migration-bundle
+
+      - name: Audit backend contracts
+        if: needs.detect-changes.outputs.run_backend_contract == 'true'
+        run: npm run audit:backend-contract
+
+      - name: Install PostgreSQL client for DB contract checks
+        if: needs.detect-changes.outputs.run_db_contracts == 'true'
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Setup Supabase CLI
+        if: needs.detect-changes.outputs.run_db_contracts == 'true'
+        uses: supabase/setup-cli@v1
+        with:
+          version: ${{ env.SUPABASE_CLI_VERSION }}
+
+      - name: Start disposable local Supabase stack
+        if: needs.detect-changes.outputs.run_db_contracts == 'true'
+        run: supabase start -x realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+
+      - name: Apply tenant migrations to disposable local database
+        if: needs.detect-changes.outputs.run_db_contracts == 'true'
+        run: supabase db reset --local --no-seed
+
+      - name: Export local Supabase contract-test environment
+        if: needs.detect-changes.outputs.run_db_contracts == 'true'
+        run: |
+          set -euo pipefail
+
+          status="$(supabase status -o env)"
+
+          get_env_value() {
+            raw="$(printf '%s\n' "$status" | awk -F= -v key="$1" '$1 == key { print substr($0, length(key) + 2) }' | tail -n 1)"
+            printf '%s' "$raw" | sed -e 's/^"//' -e 's/"$//'
+          }
+
+          db_url="$(get_env_value DB_URL)"
+          api_url="$(get_env_value API_URL)"
+          anon_key="$(get_env_value ANON_KEY)"
+
+          if [ -z "$db_url" ] || [ -z "$api_url" ] || [ -z "$anon_key" ]; then
+            echo "::error::Could not resolve local Supabase DB/API/anon values from supabase status."
+            exit 1
+          fi
+
+          {
+            echo "BACKEND_TEST_DATABASE_URL<<EOF"
+            printf '%s\n' "$db_url"
+            echo "EOF"
+            echo "BACKEND_TEST_SUPABASE_URL<<EOF"
+            printf '%s\n' "$api_url"
+            echo "EOF"
+            echo "BACKEND_TEST_SUPABASE_ANON_KEY<<EOF"
+            printf '%s\n' "$anon_key"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Run backend DB contract checks
+        if: needs.detect-changes.outputs.run_db_contracts == 'true'
+        run: npm run test:backend-db-contract
+        env:
+          BACKEND_DB_CONTRACT_REQUIRED: 'true'
+
+      - name: Stop disposable local Supabase stack
+        if: always() && needs.detect-changes.outputs.run_db_contracts == 'true'
+        run: supabase stop --no-backup || true
+
+      - name: Audit high-severity dependencies
+        run: npm run audit:high
+
+  verify-full:
+    name: Verify full system
+    needs: detect-changes
+    if: needs.detect-changes.outputs.lane == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 40
 
@@ -61,7 +331,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: 2.72.7
+          version: ${{ env.SUPABASE_CLI_VERSION }}
 
       - name: Start disposable local Supabase stack
         run: supabase start -x realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
@@ -122,22 +392,23 @@ jobs:
       - name: Build control-plane app
         run: npm run build:control-plane
 
+      - name: Guard built bundles against secret leakage
+        run: npm run audit:bundle-secrets
+
   deploy-vercel:
     name: Deploy Vercel (${{ matrix.app }})
-    needs: verify
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    needs:
+      - detect-changes
+      - verify-docs
+      - verify-frontend
+      - verify-backend
+      - verify-full
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.deploy_vercel == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - app: patient-web
-            project_id: prj_2MK3W0zlvtVXwHxrKi036CbXwwuQ
-          - app: clinic-ops
-            project_id: prj_sTzoaIuPiwD0zR1kFJi82Gy6Oozg
-          - app: control-plane
-            project_id: prj_PIuy6wTSTvhMsef7dfTg5rOOWXll
+      matrix: ${{ fromJson(needs.detect-changes.outputs.vercel_matrix) }}
 
     env:
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
@@ -168,7 +439,7 @@ jobs:
             exit 1
           fi
           if [ -z "${VERCEL_PROJECT_ID:-}" ]; then
-            echo "::error::Missing VERCEL project id for ${{ matrix.app }}."
+            echo "::error::Missing Vercel project id for ${{ matrix.app }}."
             exit 1
           fi
 
@@ -207,34 +478,60 @@ jobs:
           echo "Queued Vercel deployment: $deployment_url" >> "$GITHUB_STEP_SUMMARY"
           npx --yes vercel@${VERCEL_CLI_VERSION} inspect "$deployment_url" --wait --timeout 35m --token="$VERCEL_TOKEN"
 
+  deploy-supabase-functions:
+    name: Deploy Supabase Edge Functions
+    needs:
+      - detect-changes
+      - verify-docs
+      - verify-frontend
+      - verify-backend
+      - verify-full
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.deploy_supabase_functions == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      CONTROL_PLANE_SUPABASE_PROJECT_REF: ${{ vars.CONTROL_PLANE_SUPABASE_PROJECT_REF || 'xouqxgwccewvbtkqming' }}
+      TENANT_SUPABASE_PROJECT_REF: ${{ vars.TENANT_SUPABASE_PROJECT_REF }}
+      CONTROL_PLANE_FUNCTIONS: ${{ needs.detect-changes.outputs.control_plane_functions }}
+      TENANT_FUNCTIONS: ${{ needs.detect-changes.outputs.tenant_functions }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Deploy selected Supabase functions
+        run: npm run deploy:supabase-functions
+
   smoke-vercel:
     name: Smoke Vercel alias (${{ matrix.app }})
-    needs: deploy-vercel
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    needs:
+      - detect-changes
+      - deploy-vercel
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.deploy_vercel == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - app: patient-web
-            url: https://doctoleb-patient-web.vercel.app/login
-          - app: clinic-ops
-            url: https://doctoleb-clinic-ops.vercel.app/login
-          - app: control-plane
-            url: https://doctoleb-control-plane.vercel.app/
+      matrix: ${{ fromJson(needs.detect-changes.outputs.vercel_matrix) }}
 
     steps:
       - name: Check production alias
         run: |
           set -euo pipefail
-          echo "Checking ${{ matrix.url }}"
+          echo "Checking ${{ matrix.smoke_url }}"
           for attempt in 1 2 3 4 5; do
-            if curl --fail --silent --show-error --location --max-time 30 "${{ matrix.url }}" > /dev/null; then
+            if curl --fail --silent --show-error --location --max-time 30 "${{ matrix.smoke_url }}" > /dev/null; then
               exit 0
             fi
             if [ "$attempt" -eq 5 ]; then
-              echo "::error::Smoke check failed for ${{ matrix.url }} after $attempt attempts."
+              echo "::error::Smoke check failed for ${{ matrix.smoke_url }} after $attempt attempts."
               exit 1
             fi
             sleep 6
@@ -243,9 +540,10 @@ jobs:
   browser-smoke-vercel:
     name: Browser smoke Vercel aliases
     needs:
+      - detect-changes
       - deploy-vercel
       - smoke-vercel
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.deploy_vercel == 'true' && needs.detect-changes.outputs.run_browser_smoke == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -267,6 +565,8 @@ jobs:
 
       - name: Run browser smoke checks
         run: npm run smoke:browser:deployed
+        env:
+          SMOKE_APPS: ${{ needs.detect-changes.outputs.smoke_apps }}
 
       - name: Upload browser smoke artifacts
         if: always()
@@ -279,9 +579,10 @@ jobs:
   csp-smoke-vercel:
     name: CSP report-only smoke
     needs:
+      - detect-changes
       - deploy-vercel
       - smoke-vercel
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.deploy_vercel == 'true' && needs.detect-changes.outputs.run_csp_smoke == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -296,13 +597,16 @@ jobs:
 
       - name: Verify deployed security headers and report-only CSP
         run: npm run smoke:csp:deployed
+        env:
+          SMOKE_APPS: ${{ needs.detect-changes.outputs.smoke_apps }}
 
   control-plane-admin-cors-smoke:
     name: Control-plane admin CORS smoke
     needs:
+      - detect-changes
       - deploy-vercel
-      - smoke-vercel
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+      - deploy-supabase-functions
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.run_admin_cors_smoke == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -321,9 +625,10 @@ jobs:
   tenant-resolver-smoke:
     name: Tenant resolver HTTP smoke
     needs:
+      - detect-changes
       - deploy-vercel
-      - smoke-vercel
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+      - deploy-supabase-functions
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.run_resolver_smoke == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -342,9 +647,11 @@ jobs:
   auth-smoke-vercel:
     name: Auth smoke Vercel aliases
     needs:
+      - detect-changes
       - deploy-vercel
+      - deploy-supabase-functions
       - smoke-vercel
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.run_auth_smoke == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -368,6 +675,7 @@ jobs:
         run: npm run smoke:auth:deployed
         env:
           AUTH_SMOKE_REQUIRED: 'true'
+          AUTH_SMOKE_SCENARIOS: ${{ needs.detect-changes.outputs.auth_scenarios }}
           AUTH_SMOKE_PATIENT_EMAIL: ${{ secrets.AUTH_SMOKE_PATIENT_EMAIL }}
           AUTH_SMOKE_PATIENT_PASSWORD: ${{ secrets.AUTH_SMOKE_PATIENT_PASSWORD }}
           AUTH_SMOKE_DOCTOR_EMAIL: ${{ secrets.AUTH_SMOKE_DOCTOR_EMAIL }}
@@ -390,10 +698,11 @@ jobs:
   deployed-flow-smoke-vercel:
     name: First-band deployed flow smoke
     needs:
+      - detect-changes
       - deploy-vercel
       - smoke-vercel
       - auth-smoke-vercel
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    if: always() && !failure() && !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && needs.detect-changes.outputs.run_flow_smoke == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
 

@@ -143,6 +143,22 @@ const APPS = Object.freeze([
   },
 ]);
 
+function selectedSmokeApps() {
+  return new Set(String(process.env.SMOKE_APPS || '')
+    .split(',')
+    .map((app) => app.trim())
+    .filter(Boolean));
+}
+
+function appMatchesSelection(appName, selectedApps) {
+  if (selectedApps.size === 0) return true;
+  if (selectedApps.has(appName)) return true;
+  if (selectedApps.has('patient-web') && appName.startsWith('patient-web')) return true;
+  if (selectedApps.has('clinic-ops') && appName.startsWith('clinic-ops')) return true;
+  if (selectedApps.has('control-plane') && appName === 'control-plane') return true;
+  return false;
+}
+
 function assertText(bodyText, expectedText, context) {
   if (!bodyText.toLocaleLowerCase().includes(expectedText.toLocaleLowerCase())) {
     throw new Error(`${context}: expected page text to include "${expectedText}".`);
@@ -257,7 +273,13 @@ async function main() {
   const failures = [];
 
   try {
-    for (const appConfig of APPS) {
+    const selectedApps = selectedSmokeApps();
+    const appsToVerify = APPS.filter((appConfig) => appMatchesSelection(appConfig.app, selectedApps));
+    if (appsToVerify.length === 0) {
+      throw new Error(`SMOKE_APPS did not match any browser smoke app: ${[...selectedApps].join(', ')}`);
+    }
+
+    for (const appConfig of appsToVerify) {
       for (const viewportConfig of VIEWPORTS) {
         try {
           const result = await verifyApp(browser, appConfig, viewportConfig);

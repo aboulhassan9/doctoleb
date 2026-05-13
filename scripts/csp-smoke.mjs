@@ -13,6 +13,13 @@ const APPS = Object.freeze([
   },
 ]);
 
+function selectedSmokeApps() {
+  return new Set(String(process.env.SMOKE_APPS || '')
+    .split(',')
+    .map((app) => app.trim())
+    .filter(Boolean));
+}
+
 const REQUIRED_HEADERS = Object.freeze([
   ['x-content-type-options', /nosniff/i],
   ['x-frame-options', /deny/i],
@@ -81,7 +88,17 @@ async function verifyApp({ app, url }) {
 const failures = [];
 const report = [];
 
-for (const app of APPS) {
+const selectedApps = selectedSmokeApps();
+const appsToVerify = selectedApps.size === 0
+  ? APPS
+  : APPS.filter((app) => selectedApps.has(app.app));
+
+if (appsToVerify.length === 0) {
+  console.error(`SMOKE_APPS did not match any CSP smoke app: ${[...selectedApps].join(', ')}`);
+  process.exit(1);
+}
+
+for (const app of appsToVerify) {
   try {
     const result = await verifyApp(app);
     report.push(result);
