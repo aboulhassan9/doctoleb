@@ -8,6 +8,7 @@ import {
   forgotPasswordSchema,
   parseWithSchema,
   resetPasswordSchema,
+  sessionUserResponseSchema,
 } from '@/schemas';
 
 async function waitForProvisionedProfile(authUser, requireActive = false) {
@@ -29,6 +30,16 @@ async function buildSessionUserOrSignOut(profile) {
   const result = await buildSessionUser(supabase, profile);
   if (result.error || !result.data) {
     await supabase.auth.signOut();
+    return result;
+  }
+
+  // F3: validate the session user shape before handing it to the AuthContext.
+  // An unexpected role or missing id signals upstream contract drift — fail
+  // closed with a sign-out instead of letting the UI render in a broken state.
+  const validation = parseWithSchema(sessionUserResponseSchema, result.data);
+  if (validation.error) {
+    await supabase.auth.signOut();
+    return { data: null, error: 'Sign-in returned an unexpected user shape.' };
   }
   return result;
 }

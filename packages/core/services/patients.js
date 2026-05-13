@@ -3,7 +3,7 @@ import { apiCall, apiPaged } from './api';
 import { buildInitials } from '@/lib/authIdentity';
 import { logWarn } from '@/lib/logger';
 import { PATIENT_SELECT_FIELDS, USER_PUBLIC_FIELDS } from '@/lib/selects';
-import { parseWithSchema, patientCreateSchema, patientProfileUpdateSchema, walkInPatientSchema } from '@/schemas';
+import { parseWithSchema, patientCreateSchema, patientProfileUpdateSchema, walkInPatientCreateResponseSchema, walkInPatientSchema } from '@/schemas';
 
 function isMissingFunctionError(error, functionName) {
   return error?.code === 'PGRST202' || error?.message?.includes(functionName);
@@ -239,8 +239,16 @@ export const patientService = {
 
       if (patientError) throw patientError;
 
-      // Return combined object expected by the UI
-      return { data: { ...newPatient, users: newUser, full_name: walkIn.full_name }, error: null };
+      // Return combined object expected by the UI.
+      // F3: validate the response shape so a missing id / users surfaces as a
+      // clean error here instead of crashing the calling form later.
+      const responseData = { ...newPatient, users: newUser, full_name: walkIn.full_name };
+      const responseValidation = parseWithSchema(walkInPatientCreateResponseSchema, responseData);
+      if (responseValidation.error) {
+        logWarn('walkin_response_shape_invalid', responseValidation.error);
+        return { data: null, error: { message: 'Walk-in patient creation returned an unexpected response shape.' } };
+      }
+      return { data: responseData, error: null };
     } catch (error) {
       if (newUserId) {
         const { error: compensationError } = await supabase

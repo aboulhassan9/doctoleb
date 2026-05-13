@@ -3,7 +3,7 @@ import { apiCall, apiPaged } from './api';
 import { APPOINTMENT_SELECT_FIELDS } from '@/lib/selects';
 import { normalizeAppointment } from '@/lib/appointments';
 import { assertTransition } from '@/lib/stateMachines';
-import { appointmentBookingSchema, appointmentCancelSchema, parseWithSchema } from '@/schemas';
+import { appointmentBookingSchema, appointmentBookFromSlotResponseSchema, appointmentCancelSchema, parseWithSchema } from '@/schemas';
 import { bookSlot } from './slots';
 import { notificationCoreService } from './notificationCore';
 
@@ -134,13 +134,19 @@ export const appointmentService = {
     if (fetchError || !bookedAppointment) {
       // Booking succeeded (slot consumed, appointment created) but fetch failed.
       // Return partial success — never tell the user "booking failed" when it didn't.
-      return {
-        data: { id: appointmentId },
-        error: null,
-      };
+      const partial = { id: appointmentId };
+      const partialValidation = parseWithSchema(appointmentBookFromSlotResponseSchema, partial);
+      if (partialValidation.error) {
+        return { data: null, error: 'Appointment booking response was not in the expected shape.' };
+      }
+      return { data: partial, error: null };
     }
 
     const normalizedAppointment = normalizeAppointment(bookedAppointment);
+    const responseValidation = parseWithSchema(appointmentBookFromSlotResponseSchema, normalizedAppointment);
+    if (responseValidation.error) {
+      return { data: null, error: 'Appointment booking response was not in the expected shape.' };
+    }
     const patientName = normalizedAppointment.patientName || 'A patient';
     const scheduledAt = normalizedAppointment.scheduled_at || 'the selected time';
 

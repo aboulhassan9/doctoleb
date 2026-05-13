@@ -127,3 +127,10 @@ export {
   paymentCreateSchema,
   paymentUpdateSchema,
 } from './payments.js';
+
+/* ── Service response shapes (F3) ────────────────────────────────── */
+export {
+  appointmentBookFromSlotResponseSchema,
+  walkInPatientCreateResponseSchema,
+  sessionUserResponseSchema,
+} from './responses.js';
