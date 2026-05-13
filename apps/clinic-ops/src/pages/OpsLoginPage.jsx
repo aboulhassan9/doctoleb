@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,6 +6,47 @@ import { useToast } from '@/contexts/ToastContext';
 import { getHomeRouteForRole } from '@/lib/routes';
 import { getPatientWebLoginUrl, isPatientRole } from '@/lib/appBoundaries';
 import { useBrand } from '@/contexts/BrandContext';
+
+const OTP_PENDING_TTL_MS = 10 * 60 * 1000;
+
+function getPendingOtpStorageKey() {
+  if (typeof window === 'undefined') return 'clinic-ops:pending-otp';
+  return `clinic-ops:pending-otp:${window.location.origin}${window.location.pathname}`;
+}
+
+function loadPendingOtpEmail() {
+  if (typeof window === 'undefined') return '';
+
+  try {
+    const rawValue = window.sessionStorage.getItem(getPendingOtpStorageKey());
+    if (!rawValue) return '';
+
+    const pending = JSON.parse(rawValue);
+    if (!pending?.email || Date.now() - pending.createdAt > OTP_PENDING_TTL_MS) {
+      window.sessionStorage.removeItem(getPendingOtpStorageKey());
+      return '';
+    }
+
+    return pending.email;
+  } catch {
+    window.sessionStorage.removeItem(getPendingOtpStorageKey());
+    return '';
+  }
+}
+
+function savePendingOtpEmail(email) {
+  if (typeof window === 'undefined') return;
+
+  window.sessionStorage.setItem(
+    getPendingOtpStorageKey(),
+    JSON.stringify({ email, createdAt: Date.now() })
+  );
+}
+
+function clearPendingOtpEmail() {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.removeItem(getPendingOtpStorageKey());
+}
 
 /**
  * OpsLoginPage — Clinic Operations Portal login.
@@ -30,6 +71,14 @@ export default function OpsLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const patientWebLoginUrl = getPatientWebLoginUrl();
+
+  useEffect(() => {
+    const pendingEmail = loadPendingOtpEmail();
+    if (!pendingEmail) return;
+
+    setEmail(pendingEmail);
+    setOtpSentTo(pendingEmail);
+  }, []);
 
   const finishClinicOpsSignIn = (success, authError, user) => {
     if (!success || authError) {
@@ -75,6 +124,7 @@ export default function OpsLoginPage() {
 
     setOtpSentTo(verifiedEmail);
     setOtpCode('');
+    savePendingOtpEmail(verifiedEmail);
     showToast('Login code sent.', 'success');
   };
 
@@ -85,6 +135,9 @@ export default function OpsLoginPage() {
 
     const { success, error: otpError, user } = await verifyEmailOtp(otpSentTo || email, otpCode);
     setLoading(false);
+    if (success && !otpError) {
+      clearPendingOtpEmail();
+    }
     finishClinicOpsSignIn(success, otpError, user);
   };
 
@@ -93,6 +146,7 @@ export default function OpsLoginPage() {
     setError('');
     setOtpCode('');
     setOtpSentTo('');
+    clearPendingOtpEmail();
   };
 
   return (
@@ -130,9 +184,13 @@ export default function OpsLoginPage() {
               <span className="material-symbols-outlined text-slate-600 text-xl">shield_person</span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Authorized Access</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-1">Clinic Operations Portal</h1>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">{otpSentTo ? 'Enter login code' : 'Clinic Operations Portal'}</h1>
             <p className="text-sm text-slate-500">
-              Sign in with your staff credentials. Patient accounts should use the <a href={patientWebLoginUrl} className="text-primary hover:underline font-medium">patient portal</a>.
+              {otpSentTo ? (
+                <>Code sent to <span className="font-bold text-slate-700">{otpSentTo}</span>.</>
+              ) : (
+                <>Sign in with your staff credentials. Patient accounts should use the <a href={patientWebLoginUrl} className="text-primary hover:underline font-medium">patient portal</a>.</>
+              )}
             </p>
           </div>
 
@@ -166,23 +224,16 @@ export default function OpsLoginPage() {
 
           {loginMode === 'otp' ? (
             <form onSubmit={otpSentTo ? handleOtpVerify : handleOtpRequest} className="space-y-4">
-              <div>
-                <label htmlFor="ops-login-email" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Doctor email</label>
-                <input
-                  id="ops-login-email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="doctor@clinic.com"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition-all placeholder:text-slate-300"
-                  disabled={loading || Boolean(otpSentTo)}
-                  autoFocus
-                />
-              </div>
-
               {otpSentTo ? (
-                <div>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-emerald-700">mark_email_read</span>
+                    <span className="text-xs font-black uppercase tracking-[0.18em] text-emerald-800">Code sent</span>
+                  </div>
                   <label htmlFor="ops-login-code" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">6-digit code</label>
                   <input
                     id="ops-login-code"
@@ -192,11 +243,27 @@ export default function OpsLoginPage() {
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="000000"
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-center text-lg font-black tracking-[0.45em] text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition-all placeholder:text-slate-300"
+                    className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-4 text-center text-2xl font-black tracking-[0.55em] text-slate-900 transition-all placeholder:text-slate-300 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-100"
                     disabled={loading}
+                    autoFocus
+                  />
+                </motion.div>
+              ) : (
+                <div>
+                  <label htmlFor="ops-login-email" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">Doctor email</label>
+                  <input
+                    id="ops-login-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="doctor@clinic.com"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition-all placeholder:text-slate-300"
+                    disabled={loading}
+                    autoFocus
                   />
                 </div>
-              ) : null}
+              )}
 
               <button
                 type="submit"
@@ -222,6 +289,7 @@ export default function OpsLoginPage() {
                     setOtpSentTo('');
                     setOtpCode('');
                     setError('');
+                    clearPendingOtpEmail();
                   }}
                   className="w-full text-xs font-bold text-slate-400 hover:text-slate-700"
                   disabled={loading}

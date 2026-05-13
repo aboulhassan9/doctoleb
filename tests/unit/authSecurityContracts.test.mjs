@@ -66,6 +66,11 @@ describe('auth security contracts', () => {
     assert.match(authContext, /requestEmailOtp/);
     assert.match(authContext, /verifyEmailOtp/);
     assert.match(opsLogin, /loginMode/);
+    assert.match(opsLogin, /clinic-ops:pending-otp/);
+    assert.match(opsLogin, /sessionStorage\.setItem/);
+    assert.match(opsLogin, /sessionStorage\.removeItem/);
+    assert.match(opsLogin, /Enter login code/);
+    assert.match(opsLogin, /Code sent/);
     assert.match(opsLogin, /Email code/);
     assert.match(opsLogin, /Send login code/);
     assert.match(opsLogin, /Verify code/);
