@@ -14,6 +14,7 @@ import {
 } from '../_shared/selects.ts'
 import { normalizeTenantBranding } from '../_shared/tenantBranding.ts'
 import { verifyProviderCredential } from '../_shared/providerExecution.ts'
+import { patchTenantAuthConfig } from '../_shared/supabaseManagementApi.ts'
 import { resolveTenantServiceRoleKey } from '../_shared/tenantSecrets.ts'
 import { runTenantDatabaseMigrations } from '../_shared/tenantMigrationRunner.ts'
 
@@ -27,6 +28,7 @@ const SAFE_RUNNER_STEPS = new Set([
   'create_supabase_project',
   'apply_tenant_migrations',
   'seed_tenant_profile',
+  'normalize_tenant_auth_settings',
   'seed_first_doctor_admin',
   'configure_vercel_project',
   'store_runtime_config',
@@ -39,6 +41,7 @@ const PROVISIONING_STEP_ORDER = [
   'create_supabase_project',
   'apply_tenant_migrations',
   'seed_tenant_profile',
+  'normalize_tenant_auth_settings',
   'seed_first_doctor_admin',
   'configure_vercel_project',
   'store_runtime_config',
@@ -1055,6 +1058,116 @@ async function runSeedTenantProfile(
   }
 }
 
+async function runNormalizeTenantAuthSettings(
+  context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
+  tenantId: string,
+  job: ProvisioningJob,
+): Promise<StepExecution> {
+  const { data: tenant, error: tenantError } = await context.client
+    .from('tenants')
+    .select('id, slug, supabase_project_ref, supabase_url, supabase_anon_key')
+    .eq('id', tenantId)
+    .maybeSingle()
+
+  const runtimeConfig = tenant ? normalizeSupabaseRuntimeConfig(tenant) : null
+  if (tenantError || !tenant || !runtimeConfig) {
+    return {
+      data: null,
+      error: 'SUPABASE_PROJECT_RUNTIME_CONFIG_REQUIRED',
+      summary: 'Link tenant Supabase runtime config before normalizing tenant Auth settings.',
+    }
+  }
+
+  const supabaseConnection = await loadProviderConnection(context, job.supabase_connection_id)
+  if (!supabaseConnection || !connectionIsAutomationReady(supabaseConnection, 'supabase')) {
+    return {
+      data: null,
+      error: 'PROVIDER_CONNECTION_REQUIRED',
+      summary: 'Active Supabase provider connection with a server-side secret reference is required to normalize tenant Auth settings via the Management API.',
+    }
+  }
+
+  const { data: tenantDomains } = await loadTenantDomains(context, tenantId)
+  const activeOpsDomain = (tenantDomains ?? []).find(
+    (domain) => domain.surface === 'ops' && isActiveRoutableDomain(domain),
+  )
+  const activePatientDomain = (tenantDomains ?? []).find(
+    (domain) => domain.surface === 'patient' && isActiveRoutableDomain(domain),
+  )
+  const noDomainRouting = noDomainPathRoutingForTenant(tenant)
+
+  const allowedRedirects = new Set<string>()
+  const addRedirectsForHost = (hostname: string) => {
+    const host = hostname.trim().toLowerCase()
+    if (!host) return
+    const scheme = isLocalDomain(host) ? 'http' : 'https'
+    allowedRedirects.add(`${scheme}://${host}/login`)
+    allowedRedirects.add(`${scheme}://${host}/reset-password`)
+  }
+  if (activeOpsDomain) addRedirectsForHost(String(activeOpsDomain.hostname || ''))
+  if (activePatientDomain) addRedirectsForHost(String(activePatientDomain.hostname || ''))
+  if (noDomainRouting) {
+    allowedRedirects.add(`${noDomainRouting.opsUrl}/login`)
+    allowedRedirects.add(`${noDomainRouting.opsUrl}/reset-password`)
+    allowedRedirects.add(`${noDomainRouting.patientUrl}/login`)
+    allowedRedirects.add(`${noDomainRouting.patientUrl}/reset-password`)
+  }
+
+  if (allowedRedirects.size === 0) {
+    return {
+      data: null,
+      error: 'TENANT_ROUTING_REQUIRED',
+      summary: 'Cannot normalize tenant Auth settings: tenant has no active routing. Complete configure_vercel_project or runtime config first.',
+    }
+  }
+
+  const siteUrlSource = activeOpsDomain
+    ? (() => {
+      const host = String(activeOpsDomain.hostname || '').trim().toLowerCase()
+      const scheme = isLocalDomain(host) ? 'http' : 'https'
+      return `${scheme}://${host}`
+    })()
+    : noDomainRouting?.opsUrl ?? ''
+
+  const result = await patchTenantAuthConfig(
+    context.client,
+    supabaseConnection,
+    runtimeConfig.projectRef,
+    {
+      mailer_otp_length: 6,
+      mailer_otp_exp: 600,
+      site_url: siteUrlSource,
+      uri_allow_list: Array.from(allowedRedirects).join(','),
+    },
+  )
+
+  if (result.error) {
+    return {
+      data: null,
+      error: result.error,
+      summary: 'Supabase Management API rejected the tenant Auth configuration update.',
+      details: { status: result.status, projectRef: runtimeConfig.projectRef },
+    }
+  }
+
+  return {
+    data: {
+      status: 'succeeded',
+      postconditions: {
+        tenantAuthConfigNormalized: true,
+        mailerOtpLength: 6,
+        mailerOtpExpSeconds: 600,
+        allowedRedirectCount: allowedRedirects.size,
+        appliedFields: result.data.appliedFields,
+      },
+      externalResourceKind: 'supabase_auth_config',
+      externalResourceId: runtimeConfig.projectRef,
+      summary: 'Tenant Auth settings normalized: OTP length 6, expiry 10 min, redirect URLs allowlisted from tenant routing.',
+    },
+    error: null,
+  }
+}
+
 async function runSeedFirstDoctorAdmin(
   context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
   tenantId: string,
@@ -1344,6 +1457,8 @@ Deno.serve(async (req) => {
     execution = await runApplyTenantMigrations(context, tenantId, step.id)
   } else if (step.step_code === 'seed_tenant_profile') {
     execution = await runSeedTenantProfile(context, tenantId, job)
+  } else if (step.step_code === 'normalize_tenant_auth_settings') {
+    execution = await runNormalizeTenantAuthSettings(context, tenantId, job)
   } else if (step.step_code === 'seed_first_doctor_admin') {
     execution = await runSeedFirstDoctorAdmin(context, tenantId, job)
   } else if (step.step_code === 'configure_vercel_project') {

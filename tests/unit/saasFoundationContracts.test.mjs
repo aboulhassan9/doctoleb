@@ -406,6 +406,13 @@ describe('SaaS foundation contracts', () => {
     assert.match(selects, /CONTROL_PLANE_PROVISIONING_STEP_SELECT/);
     assert.match(adr, /customer-owned or partner-owned Supabase\/Vercel account/);
     assert.match(adr, /Browser code never receives provider tokens/);
+
+    const authNormalizeMigration = read('supabase-control-plane/migrations/00010000000027_control_plane_normalize_tenant_auth_settings_step.sql');
+    assert.match(authNormalizeMigration, /create or replace function public\.admin_seed_tenant_provisioning_steps/);
+    assert.match(authNormalizeMigration, /seed_tenant_profile[\s\S]*normalize_tenant_auth_settings[\s\S]*seed_first_doctor_admin/);
+    assert.match(authNormalizeMigration, /tenantAuthConfigNormalized/);
+    assert.match(authNormalizeMigration, /requiresTenantAuthConfigNormalized/);
+    assert.match(authNormalizeMigration, /grant execute on function public\.admin_seed_tenant_provisioning_steps[\s\S]*to service_role/);
   });
 
   it('provider connection admin APIs reject raw secrets and use reversible archive semantics', () => {
@@ -706,7 +713,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /requireSuperAdmin\(req, \['operator'\]\)/);
     assert.match(runner, /SAFE_RUNNER_STEPS/);
     assert.match(runner, /PROVISIONING_STEP_ORDER/);
-    assert.match(runner, /tenant_draft_created[\s\S]*provider_connections_selected[\s\S]*create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
+    assert.match(runner, /tenant_draft_created[\s\S]*provider_connections_selected[\s\S]*create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*normalize_tenant_auth_settings[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
+    assert.match(runner, /runNormalizeTenantAuthSettings/);
+    assert.match(runner, /patchTenantAuthConfig/);
+    assert.match(runner, /mailer_otp_length: 6/);
     assert.match(runner, /compareProvisioningStepsForPreconditions/);
     assert.match(runner, /PROVISIONING_STEP_RANK/);
     assert.match(runner, /provider_connections_selected/);
@@ -873,7 +883,7 @@ describe('SaaS foundation contracts', () => {
     const panel = read('apps/control-plane/src/components/ProvisioningStepsPanel.jsx');
 
     assert.match(panel, /PROVISIONING_STEP_ORDER/);
-    assert.match(panel, /create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
+    assert.match(panel, /create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*normalize_tenant_auth_settings[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
     assert.match(panel, /activeJobSteps/);
     assert.match(panel, /findCurrentStep/);
     assert.match(panel, /Step \{stepNumber\} \/ \{totalSteps\}/);
