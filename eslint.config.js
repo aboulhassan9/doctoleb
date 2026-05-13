@@ -37,4 +37,12 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    // Node-context files at the repo root and local E2E tests use Node
+    // globals (process, etc.), not browser globals.
+    files: ['playwright.config.js', 'tests/e2e/**/*.{js,mjs}'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])
