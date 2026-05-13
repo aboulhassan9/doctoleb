@@ -3,9 +3,7 @@ import { apiCall, apiPaged } from './api';
 import { SECRETARY_SLOT_SELECT_FIELDS } from '@/lib/selects';
 import { manualSlotSchema, parseWithSchema, recurringSlotsSchema } from '@/schemas';
 
-function validationError(error) {
-  return { data: null, error };
-}
+import { validationError } from '@/lib/serviceHelpers';
 
 export const slotService = {
   /** Create a single manual slot */

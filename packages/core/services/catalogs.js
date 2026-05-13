@@ -11,7 +11,8 @@ import {
   VACCINE_SELECT_FIELDS,
   VISIT_TYPE_SELECT_FIELDS,
 } from '@/lib/selects';
-import { catalogEntrySchema, parseWithSchema } from '@/schemas';
+import { catalogEntrySchema } from '@/schemas';
+import { validationError, parse } from '@/lib/serviceHelpers';
 
 const CATALOGS = {
   cities: CITY_SELECT_FIELDS,
@@ -31,16 +32,6 @@ function getCatalogFields(table) {
     throw new Error(`Unsupported catalog: ${table}`);
   }
   return fields;
-}
-
-function validationError(error) {
-  return { data: null, error };
-}
-
-function parse(schema, payload) {
-  const result = parseWithSchema(schema, payload);
-  if (result.error) return { error: result.error };
-  return { data: result.data };
 }
 
 export const catalogService = {

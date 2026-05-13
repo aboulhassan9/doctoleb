@@ -16,13 +16,13 @@ export { useBilling } from './features/useBilling';
 export { useCertificates } from './features/useCertificates';
 export { useEntitlements } from './features/useEntitlements';
 
-// Encounter hooks (clinic-ops — re-exported here for backward compat)
-export { useEncounter } from '@clinic-ops/hooks/useEncounter';
-export { useDoctorEncounterTimeline } from '@clinic-ops/hooks/useDoctorEncounterTimeline';
-export { useEncounterDraft } from '@clinic-ops/hooks/useEncounterDraft';
-export { useEncounterNotes } from '@clinic-ops/hooks/useEncounterNotes';
-export { useEncounterDiagnoses } from '@clinic-ops/hooks/useEncounterDiagnoses';
-export { useEncounterPrescriptions } from '@clinic-ops/hooks/useEncounterPrescriptions';
-export { useEncounterOrders } from '@clinic-ops/hooks/useEncounterOrders';
-export { useEncounterCareTasks } from '@clinic-ops/hooks/useEncounterCareTasks';
-export { useEncounterDocuments } from '@clinic-ops/hooks/useEncounterDocuments';
+// Encounter hooks (moved from clinic-ops to core)
+export { useEncounter } from './features/useEncounter';
+export { useDoctorEncounterTimeline } from './features/useDoctorEncounterTimeline';
+export { useEncounterDraft } from './features/useEncounterDraft';
+export { useEncounterNotes } from './features/useEncounterNotes';
+export { useEncounterDiagnoses } from './features/useEncounterDiagnoses';
+export { useEncounterPrescriptions } from './features/useEncounterPrescriptions';
+export { useEncounterOrders } from './features/useEncounterOrders';
+export { useEncounterCareTasks } from './features/useEncounterCareTasks';
+export { useEncounterDocuments } from './features/useEncounterDocuments';

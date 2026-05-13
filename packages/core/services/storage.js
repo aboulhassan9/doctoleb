@@ -9,9 +9,7 @@ export const STORAGE_BUCKETS = Object.freeze({
 const DEFAULT_SIGNED_URL_TTL_SECONDS = 300;
 const MAX_SIGNED_URL_TTL_SECONDS = 900;
 
-function validationError(error) {
-  return { data: null, error };
-}
+import { validationError } from '@/lib/serviceHelpers';
 
 function normalizeTtl(expiresIn) {
   const ttl = Number(expiresIn);

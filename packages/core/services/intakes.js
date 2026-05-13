@@ -12,9 +12,9 @@ import {
   medicalIntakeCompletionSchema,
   medicalIntakeDraftSchema,
   medicalIntakeReopenSchema,
-  parseWithSchema,
   patientHistorySchemas,
 } from '@/schemas';
+import { validationError, parse } from '@/lib/serviceHelpers';
 
 const HISTORY_TABLES = {
   vaccinations: {
@@ -45,16 +45,6 @@ function getHistoryConfig(kind) {
     throw new Error(`Unsupported intake history kind: ${kind}`);
   }
   return config;
-}
-
-function validationError(error) {
-  return { data: null, error };
-}
-
-function parse(schema, payload) {
-  const result = parseWithSchema(schema, payload);
-  if (result.error) return { error: result.error };
-  return { data: result.data };
 }
 
 function getHistorySchema(kind, { partial = false } = {}) {

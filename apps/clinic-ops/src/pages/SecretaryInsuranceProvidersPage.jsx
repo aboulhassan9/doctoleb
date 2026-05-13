@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@ui/contexts/AuthContext';
 import { useToast } from '@ui/contexts/ToastContext';
 import DashboardLayout from '@ui/components/layouts/DashboardLayout';
-import { Modal, LoadingSkeleton } from '@ui/components/ui';
+import { Modal, LoadingSkeleton, EmptyState } from '@ui/components/ui';
 import { insuranceService } from '@core/services/insurance';
 import { stagger, fadeUp } from '@core/lib/animations';
 
@@ -128,11 +128,11 @@ export default function SecretaryInsuranceProvidersPage() {
         {loading && <LoadingSkeleton rows={5} />}
 
         {!loading && filtered.length === 0 && (
-          <motion.div variants={fadeUp} className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <span className="material-symbols-outlined text-5xl text-slate-300 mb-4 block">verified_user</span>
-            <h3 className="text-lg font-semibold text-slate-700">No insurance providers found</h3>
-            <p className="text-sm text-slate-500 mt-2">Add insurance providers from the Operations Catalogs page.</p>
-          </motion.div>
+          <EmptyState
+            icon="verified_user"
+            title="No insurance providers found"
+            subtitle="Add insurance providers from the Operations Catalogs page."
+          />
         )}
 
         {!loading && filtered.length > 0 && (

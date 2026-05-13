@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { validationError, parse } from '@/lib/serviceHelpers';
 import {
   NOTIFICATION_DELIVERY_SELECT_FIELDS,
   NOTIFICATION_EVENT_SELECT_FIELDS,
@@ -9,7 +10,6 @@ import {
   notificationDeliverySchema,
   notificationDeliveryUpdateSchema,
   notificationEventSchema,
-  parseWithSchema,
   patientDeviceSchema,
 } from '@/schemas';
 import { apiCall, apiPaged } from './api';
@@ -18,18 +18,6 @@ const INBOX_DELIVERY_SELECT_FIELDS = [
   NOTIFICATION_DELIVERY_SELECT_FIELDS,
   `notification_events(${NOTIFICATION_EVENT_SELECT_FIELDS})`,
 ].join(', ');
-
-function validationError(error) {
-  return { data: null, error };
-}
-
-function parse(schema, payload) {
-  const result = parseWithSchema(schema, payload);
-  if (result.error) {
-    return { error: result.error };
-  }
-  return { data: result.data };
-}
 
 function toInboxNotification(delivery) {
   const event = delivery?.notification_events || delivery || {};

@@ -3,17 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@ui/contexts/ToastContext';
 import DashboardLayout from '@ui/components/layouts/DashboardLayout';
-import { Modal, LoadingSkeleton } from '@ui/components/ui';
+import { Modal, LoadingSkeleton, StatusBadge, EmptyState } from '@ui/components/ui';
 import { insuranceService } from '@core/services/insurance';
 import { patientService } from '@core/services/patients';
 import { stagger, fadeUp } from '@core/lib/animations';
 
-const POLICY_STATUSES = {
-  active: { label: 'Active', color: 'bg-emerald-50 text-emerald-700' },
-  expired: { label: 'Expired', color: 'bg-red-50 text-red-500' },
-  suspended: { label: 'Suspended', color: 'bg-amber-50 text-amber-600' },
-  cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-500' },
-};
+
 
 export default function SecretaryPatientInsurancePage() {
   const { patientId } = useParams();
@@ -138,23 +133,24 @@ export default function SecretaryPatientInsurancePage() {
         {loading && <LoadingSkeleton rows={3} />}
 
         {!loading && policies.length === 0 && (
-          <motion.div variants={fadeUp} className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <span className="material-symbols-outlined text-5xl text-slate-300 mb-4 block">shield</span>
-            <h3 className="text-lg font-semibold text-slate-700">No insurance policies</h3>
-            <p className="text-sm text-slate-500 mt-2">Add this patient&apos;s first insurance policy.</p>
-            <button onClick={openCreate}
-              className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-white font-medium text-sm shadow-lg shadow-primary/20 hover:brightness-110 transition-all inline-flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg">add</span>
-              Add First Policy
-            </button>
-          </motion.div>
+          <EmptyState
+            icon="shield"
+            title="No insurance policies"
+            subtitle="Add this patient's first insurance policy."
+            action={
+              <button onClick={openCreate}
+                className="px-5 py-2.5 rounded-xl bg-primary text-white font-medium text-sm shadow-lg shadow-primary/20 hover:brightness-110 transition-all inline-flex items-center gap-2">
+                <span className="material-symbols-outlined text-lg">add</span>
+                Add First Policy
+              </button>
+            }
+          />
         )}
 
         {!loading && policies.length > 0 && (
           <div className="space-y-3">
             {policies.map((policy) => {
               const provider = providerMap[policy.provider_id];
-              const statusDisplay = POLICY_STATUSES[policy.status] || POLICY_STATUSES.active;
               return (
                 <motion.div key={policy.id} variants={fadeUp}
                   className={`bg-white rounded-2xl border p-5 hover:shadow-md transition-all ${
@@ -167,9 +163,7 @@ export default function SecretaryPatientInsurancePage() {
                         {policy.is_primary && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wide">Primary</span>
                         )}
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusDisplay.color}`}>
-                          {statusDisplay.label}
-                        </span>
+                        <StatusBadge status={policy.status} size="sm" />
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-slate-500">
                         {policy.policy_number && (

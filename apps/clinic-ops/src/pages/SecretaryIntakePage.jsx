@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@ui/contexts/AuthContext';
 import { useToast } from '@ui/contexts/ToastContext';
 import DashboardLayout from '@ui/components/layouts/DashboardLayout';
-import { Modal, LoadingSkeleton } from '@ui/components/ui';
+import { Modal, LoadingSkeleton, StatusBadge } from '@ui/components/ui';
 import { intakeService } from '@core/services/intakes';
 import { patientService } from '@core/services/patients';
 import { catalogService } from '@core/services/catalogs';
@@ -18,11 +18,7 @@ const TABS = [
   { id: 'family', label: 'Family History', icon: 'family_restroom' },
 ];
 
-const INTAKE_STATUS_COLORS = {
-  draft: 'bg-amber-50 text-amber-700',
-  completed: 'bg-emerald-50 text-emerald-700',
-  reopened: 'bg-red-50 text-red-600',
-};
+
 
 export default function SecretaryIntakePage() {
   const { patientId } = useParams();
@@ -162,7 +158,7 @@ export default function SecretaryIntakePage() {
             <h1 className="text-2xl font-bold text-slate-900">Medical Intake</h1>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-sm text-slate-500">Patient: <strong>{patientName}</strong></p>
-              {intake && <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${INTAKE_STATUS_COLORS[intakeStatus] || 'bg-slate-100 text-slate-500'}`}>{intakeStatus}</span>}
+              {intake && <StatusBadge status={intakeStatus} size="sm" />}
             </div>
           </div>
           <div className="flex gap-2">

@@ -21,6 +21,19 @@ function readControlPlaneFunctionSources() {
     .join('\n');
 }
 
+// After F1 (schema split), schema definitions live in domain files like
+// `appointments.js`, `clinical.js`, etc. The index.js barrel only re-exports.
+// Tests that assert on `export const ...` declarations need to read all
+// domain files together.
+function readAllSchemas() {
+  const schemasDir = path.join(root, 'packages/core/schemas');
+  return fs
+    .readdirSync(schemasDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.js'))
+    .map((entry) => fs.readFileSync(path.join(schemasDir, entry.name), 'utf8'))
+    .join('\n');
+}
+
 describe('SaaS foundation contracts', () => {
   it('control-plane migration adds plans, entitlements, provisioning jobs, and role-aware super admins', () => {
     const source = read('supabase-control-plane/migrations/00010000000003_saas_foundation.sql');
@@ -1156,7 +1169,7 @@ describe('SaaS foundation contracts', () => {
 
     assert.match(page, /useEntitlements/);
     assert.match(page, /hasPaymentMethodAccess/);
-    assert.match(page, /paymentService\.create\(invoiceData, \{ entitlements \}\)/);
+    assert.match(page, /paymentService\.create\([\s\S]+?\{ entitlements \}\)/);
     assert.doesNotMatch(page, /Mock coverage|Eligibility Active|copay|insuranceCoverage/);
     assert.match(payments, /requirePaymentMethodAccess\(options\.entitlements, data\.payment_method\)/);
     assert.match(billingEntitlements, /ENTITLEMENT_FEATURES\.insuranceBilling/);
@@ -1244,21 +1257,22 @@ describe('SaaS foundation contracts', () => {
   });
 
   it('staff invite statuses match the database constraint', () => {
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
     const page = read('apps/clinic-ops/src/pages/DoctorStaffPage.jsx');
     const migration = read('supabase/migrations/202605060001_tier1_doctor_pivot.sql');
 
+    const statusBadge = read('packages/ui/components/ui/StatusBadge.jsx');
     assert.match(migration, /invite_status in \('none', 'invited', 'accepted', 'disabled'\)/);
     assert.match(schemas, /invite_status: z\.enum\(\['none', 'invited', 'accepted', 'disabled'\]\)/);
     assert.match(schemas, /default\('none'\)/);
-    assert.match(page, /none: \{ label: 'Not Invited'/);
+    assert.match(statusBadge, /none: 'Not Invited'/);
     assert.doesNotMatch(schemas, /not_invited/);
     assert.doesNotMatch(page, /not_invited/);
   });
 
   it('staff role creation is constrained to supported v1 app roles', () => {
     const roles = read('packages/core/lib/roles.js');
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
     const page = read('apps/clinic-ops/src/pages/DoctorStaffPage.jsx');
     const migration = read('supabase/migrations/20260509011000_staff_roles_v1_scope.sql');
 
@@ -1281,7 +1295,7 @@ describe('SaaS foundation contracts', () => {
 
   it('staff onboarding uses the server-side invite lifecycle instead of browser row inserts', () => {
     const service = read('packages/core/services/staff.js');
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
     const page = read('apps/clinic-ops/src/pages/DoctorStaffPage.jsx');
     const migration = read('supabase/migrations/20260509012000_staff_invite_lifecycle.sql');
     const disableMigration = read('supabase/migrations/20260509013000_staff_member_disable_lifecycle.sql');
@@ -1350,7 +1364,7 @@ describe('SaaS foundation contracts', () => {
 
   it('staff invite resend is idempotent, auditable, and server-owned', () => {
     const service = read('packages/core/services/staff.js');
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
     const selects = read('packages/core/lib/selects.js');
     const page = read('apps/clinic-ops/src/pages/DoctorStaffPage.jsx');
     const migration = read('supabase/migrations/20260509030000_staff_invite_resend_lifecycle.sql');
@@ -1410,7 +1424,7 @@ describe('SaaS foundation contracts', () => {
 
   it('accepted staff reactivation is an undoable server-owned lifecycle', () => {
     const service = read('packages/core/services/staff.js');
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
     const selects = read('packages/core/lib/selects.js');
     const page = read('apps/clinic-ops/src/pages/DoctorStaffPage.jsx');
     const migration = read('supabase/migrations/20260509031000_staff_member_reactivation_lifecycle.sql');
@@ -1462,7 +1476,7 @@ describe('SaaS foundation contracts', () => {
 
   it('cancelled pending staff invite reissue is idempotent, auditable, and server-owned', () => {
     const service = read('packages/core/services/staff.js');
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
     const selects = read('packages/core/lib/selects.js');
     const page = read('apps/clinic-ops/src/pages/DoctorStaffPage.jsx');
     const migration = read('supabase/migrations/20260509032000_staff_invite_reissue_lifecycle.sql');
@@ -1508,10 +1522,10 @@ describe('SaaS foundation contracts', () => {
   });
 
   it('clinical note drafts are tenant-DB backed and do not persist PHI in browser storage', () => {
-    const hook = read('apps/clinic-ops/src/hooks/useEncounterDraft.js');
+    const hook = read('packages/core/hooks/features/useEncounterDraft.js');
     const tab = read('apps/clinic-ops/src/components/encounter/EncounterNotesTab.jsx');
     const service = read('packages/core/services/clinical.js');
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
     const selects = read('packages/core/lib/selects.js');
     const migration = read('supabase/migrations/20260509024000_clinical_note_drafts.sql');
     const readGrantMigration = read('supabase/migrations/20260509024500_revoke_clinical_note_draft_read_rpc.sql');
@@ -1562,7 +1576,7 @@ describe('SaaS foundation contracts', () => {
   it('appointment cancellation is a hardened lifecycle RPC with reversible slot release', () => {
     const migration = read('supabase/migrations/20260509020000_harden_cancel_appointment_lifecycle.sql');
     const service = read('packages/core/services/appointments.js');
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
     const patientAppointmentsPage = read('apps/patient-web/src/pages/PatientAppointmentsPage.jsx');
     const doctorAppointmentsPage = read('apps/clinic-ops/src/pages/DoctorAppointmentsPage.jsx');
     const cancelComponent = read('packages/ui/components/appointments/AppointmentCancelInlineConfirm.jsx');
@@ -1589,7 +1603,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(patientAppointmentsPage, /AppointmentCancelInlineConfirm/);
     assert.match(patientAppointmentsPage, /onConfirm=\{handleCancelAppointment\}/);
     assert.match(patientAppointmentsPage, /setCancelConfirmId\(id\)/);
-    assert.match(doctorAppointmentsPage, /AppointmentCancelInlineConfirm/);
+    // After D5 decomposition the day view holds the inline confirm component,
+    // while the orchestrator page owns the cancel handler + refresh state.
+    const doctorDailyView = read('apps/clinic-ops/src/components/doctor/DoctorDailyView.jsx');
+    assert.match(doctorDailyView, /AppointmentCancelInlineConfirm/);
     assert.match(doctorAppointmentsPage, /appointmentService\.cancel\(appointmentId, reason\.trim\(\)\)/);
     assert.match(doctorAppointmentsPage, /setRefreshKey/);
   });

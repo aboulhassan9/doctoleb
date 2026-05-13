@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { insuranceService } from '@core/services/insurance';
 import { useToast } from '@ui/contexts/ToastContext';
 import { useBrand } from '@ui/contexts/BrandContext';
+import { PageHeader, EmptyState, Modal } from '@ui/components/ui';
 
 /**
  * SecretaryClaimTemplatesPage — CRUD for claim_form_templates.
@@ -75,27 +76,28 @@ export default function SecretaryClaimTemplatesPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Claim Form Templates</h1>
-          <p className="text-slate-500 text-sm mt-1">Manage printable claim form templates. Per-provider templates override the generic fallback.</p>
-        </div>
-        <button
-          onClick={openAdd}
-          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
-        >
-          <span className="material-symbols-outlined text-lg">add</span>
-          New Template
-        </button>
-      </div>
+      <PageHeader
+        title="Claim Form Templates"
+        subtitle="Manage printable claim form templates. Per-provider templates override the generic fallback."
+        actions={
+          <button
+            onClick={openAdd}
+            className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-lg">add</span>
+            New Template
+          </button>
+        }
+      />
 
       {loading ? (
         <div className="text-center py-12 text-slate-400">Loading templates…</div>
       ) : templates.length === 0 ? (
-        <div className="text-center py-12">
-          <span className="material-symbols-outlined text-5xl text-slate-300 mb-3 block">description</span>
-          <p className="text-slate-500">No claim templates found. Create one to get started.</p>
-        </div>
+        <EmptyState
+          icon="description"
+          title="No claim templates found"
+          subtitle="Create one to get started."
+        />
       ) : (
         <div className="grid gap-4">
           {templates.map((tpl) => (
@@ -140,18 +142,7 @@ export default function SecretaryClaimTemplatesPage() {
       )}
 
       {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowModal(false)}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl w-full max-w-2xl shadow-xl p-6 m-4 max-h-[85vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold text-slate-800 mb-4">
-              {editing ? 'Edit Template' : 'New Claim Template'}
-            </h2>
-
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editing ? 'Edit Template' : 'New Claim Template'} size="lg">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Template Name</label>
@@ -217,9 +208,7 @@ export default function SecretaryClaimTemplatesPage() {
                 {editing ? 'Update' : 'Create'}
               </button>
             </div>
-          </motion.div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 }

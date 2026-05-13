@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { PageHeader, LoadingSkeleton, EmptyState } from '@/components/ui';
 import { useToast } from '@/contexts/ToastContext';
 import { slotService } from '@/services/slots';
 import { clinicService } from '@/services/clinics';
@@ -52,11 +53,10 @@ export default function PreDoctorSchedulePage() {
   return (
     <DashboardLayout role="pre_doctor">
       <div className="flex-1 p-8 ml-64 overflow-y-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Daily Schedule</h1>
-          <p className="text-slate-500 mt-1 text-sm">Read-only view of today's appointment slots</p>
-        </div>
+        <PageHeader
+          title="Daily Schedule"
+          subtitle="Read-only view of today's appointment slots"
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -112,15 +112,12 @@ export default function PreDoctorSchedulePage() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20 text-slate-400">
-              <div className="animate-spin w-7 h-7 border-2 border-blue-500 border-t-transparent rounded-full mr-3"></div>
-              Loading schedule…
-            </div>
+            <LoadingSkeleton variant="list" rows={5} />
           ) : filteredSlots.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
-              <span className="text-4xl">📭</span>
-              <p className="text-sm font-medium">No slots scheduled for this date</p>
-            </div>
+            <EmptyState
+              icon="event_busy"
+              title="No slots scheduled for this date"
+            />
           ) : (
             <div className="divide-y divide-slate-100">
               {filteredSlots.map((slot, i) => {

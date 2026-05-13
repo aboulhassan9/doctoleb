@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { PageHeader, EmptyState, LoadingSkeleton, ConfirmDialog, Modal } from '@/components/ui';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { slotService } from '@/services/slots';
 import { clinicService } from '@/services/clinics';
 import { getErrorMessage } from '@/lib/errors';
+import { parseWithSchema, manualSlotSchema, recurringSlotsSchema } from '@/schemas';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -94,25 +96,22 @@ export default function SecretarySlotsPage() {
   // ── Manual submit ──────────────────────────────────────────────────────────
   const handleManualSubmit = async (e) => {
     e.preventDefault();
-    if (!manualForm.clinic_id || !manualForm.date || !manualForm.start_time || !manualForm.end_time) {
-      showToast('Please fill all fields', 'error');
-      return;
-    }
-    if (manualForm.start_time >= manualForm.end_time) {
-      showToast('End time must be after start time', 'error');
-      return;
-    }
     if (!user?.doctor_id) {
       showToast('Doctor schedule is not linked to your account yet. Please sign in again or contact the clinic owner.', 'error');
       return;
     }
-    setSaving(true);
-    const { error } = await slotService.createManualSlot({
+    const { data: payload, error: validationError } = parseWithSchema(manualSlotSchema, {
       ...manualForm,
       doctor_id: user.doctor_id,
       created_by: user.id,
       is_active: true,
     });
+    if (validationError) {
+      showToast(validationError, 'error');
+      return;
+    }
+    setSaving(true);
+    const { error } = await slotService.createManualSlot(payload);
     setSaving(false);
     if (error) { showToast(`Failed to create slot: ${getErrorMessage(error, 'Unknown scheduling error')}`, 'error'); return; }
     showToast('Slot created successfully', 'success');
@@ -123,21 +122,12 @@ export default function SecretarySlotsPage() {
   // ── Recurring submit ───────────────────────────────────────────────────────
   const handleRecurringSubmit = async (e) => {
     e.preventDefault();
-    const { clinic_id, start_time, end_time, weekdays, occurrences } = recurringForm;
-    if (!clinic_id || !start_time || !end_time || weekdays.length === 0 || !occurrences) {
-      showToast('Please fill all fields and select at least one weekday', 'error');
-      return;
-    }
-    if (start_time >= end_time) {
-      showToast('End time must be after start time', 'error');
-      return;
-    }
     if (!user?.doctor_id) {
       showToast('Doctor schedule is not linked to your account yet. Please sign in again or contact the clinic owner.', 'error');
       return;
     }
-    setSaving(true);
-    const { error } = await slotService.createRecurringSlots({
+    const { clinic_id, start_time, end_time, weekdays, occurrences } = recurringForm;
+    const { data: payload, error: validationError } = parseWithSchema(recurringSlotsSchema, {
       doctor_id: user.doctor_id,
       clinic_id,
       start_time,
@@ -146,9 +136,15 @@ export default function SecretarySlotsPage() {
       occurrences: Number(occurrences),
       created_by: user.id,
     });
+    if (validationError) {
+      showToast(validationError, 'error');
+      return;
+    }
+    setSaving(true);
+    const { error } = await slotService.createRecurringSlots(payload);
     setSaving(false);
     if (error) { showToast(`Failed to create recurring slots: ${getErrorMessage(error, 'Unknown scheduling error')}`, 'error'); return; }
-    showToast(`${occurrences} recurring slots created`, 'success');
+    showToast(`${payload.occurrences} recurring slots created`, 'success');
     setRecurringForm(BLANK_RECURRING);
     refreshSlots();
   };
@@ -201,11 +197,10 @@ export default function SecretarySlotsPage() {
   return (
     <DashboardLayout role="secretary">
       <div className="flex-1 p-8 ml-64 overflow-y-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Slot Management</h1>
-          <p className="text-slate-500 mt-1 text-sm">Create and manage appointment time slots for the doctor</p>
-        </div>
+        <PageHeader
+          title="Slot Management"
+          subtitle="Create and manage appointment time slots for the doctor"
+        />
 
         {/* Mode Toggle */}
         <div className="flex gap-2 mb-8 p-1.5 bg-white border border-slate-200 rounded-2xl w-fit shadow-sm">
@@ -374,16 +369,13 @@ export default function SecretarySlotsPage() {
               </div>
 
               {loading ? (
-                <div className="flex items-center justify-center py-20 text-slate-400">
-                  <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mr-3"></div>
-                  Loading slots…
-                </div>
+                <LoadingSkeleton variant="list" rows={5} />
               ) : filteredSlots.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
-                  <span className="text-4xl">📭</span>
-                  <p className="text-sm font-medium">No slots found</p>
-                  <p className="text-xs">Create your first slot using the form</p>
-                </div>
+                <EmptyState
+                  icon="event_busy"
+                  title="No slots found"
+                  subtitle="Create your first slot using the form"
+                />
               ) : (
                 <div className="divide-y divide-slate-100">
                   <AnimatePresence>
@@ -441,94 +433,53 @@ export default function SecretarySlotsPage() {
         </div>
 
         {/* ── Edit Modal ────────────────────────────────────────────── */}
-        <AnimatePresence>
-          {editingSlot && (
-            <motion.div
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setEditingSlot(null)}
-            >
-              <motion.div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
-                initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-                onClick={e => e.stopPropagation()}
-              >
-                <h3 className="text-lg font-black text-slate-900 mb-5">✏️ Edit Slot</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Clinic</label>
-                    <select className={inputCls} value={editForm.clinic_id}
-                      onChange={e => setEditForm(p => ({ ...p, clinic_id: e.target.value }))}>
-                      <option value="">Select clinic…</option>
-                      {clinics.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Date</label>
-                    <input type="date" className={inputCls} value={editForm.date}
-                      onChange={e => setEditForm(p => ({ ...p, date: e.target.value }))} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">Start Time</label>
-                      <input type="time" className={inputCls} value={editForm.start_time}
-                        onChange={e => setEditForm(p => ({ ...p, start_time: e.target.value }))} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">End Time</label>
-                      <input type="time" className={inputCls} value={editForm.end_time}
-                        onChange={e => setEditForm(p => ({ ...p, end_time: e.target.value }))} />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-3 mt-6">
-                  <button className={`${btnPrimary} flex-1 justify-center`} onClick={handleEditSave}>Save Changes</button>
-                  <button className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all"
-                    onClick={() => setEditingSlot(null)}>Cancel</button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <Modal isOpen={!!editingSlot} onClose={() => setEditingSlot(null)} title="✏️ Edit Slot" size="sm">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Clinic</label>
+              <select className={inputCls} value={editForm.clinic_id}
+                onChange={e => setEditForm(p => ({ ...p, clinic_id: e.target.value }))}>
+                <option value="">Select clinic…</option>
+                {clinics.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Date</label>
+              <input type="date" className={inputCls} value={editForm.date}
+                onChange={e => setEditForm(p => ({ ...p, date: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Start Time</label>
+                <input type="time" className={inputCls} value={editForm.start_time}
+                  onChange={e => setEditForm(p => ({ ...p, start_time: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">End Time</label>
+                <input type="time" className={inputCls} value={editForm.end_time}
+                  onChange={e => setEditForm(p => ({ ...p, end_time: e.target.value }))} />
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button className={`${btnPrimary} flex-1 justify-center`} onClick={handleEditSave}>Save Changes</button>
+            <button className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all"
+              onClick={() => setEditingSlot(null)}>Cancel</button>
+          </div>
+        </Modal>
 
         {/* ── Deactivate Confirm Modal ───────────────────────────────── */}
-        <AnimatePresence>
-          {deleteConfirm && (
-            <motion.div
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setDeleteConfirm(null)}
-            >
-              <motion.div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center"
-                initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🗑️</div>
-                <h3 className="text-lg font-black text-slate-900 mb-2">Confirm Deactivation</h3>
-                <p className="text-sm text-slate-500 mb-6">
-                  {deleteConfirm.type === 'group'
-                    ? 'This will make all unbooked slots in the recurring group unavailable. They remain in the audit trail and can be restored later.'
-                    : 'This will make the slot unavailable. It remains in the audit trail and can be restored later.'}
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition-all"
-                    onClick={confirmDelete}
-                  >
-                    {deleteConfirm.type === 'group' ? 'Deactivate Group' : 'Deactivate Slot'}
-                  </button>
-                  <button
-                    className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all"
-                    onClick={() => setDeleteConfirm(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <ConfirmDialog
+          isOpen={!!deleteConfirm}
+          title="Confirm Deactivation"
+          message={deleteConfirm?.type === 'group'
+            ? 'This will make all unbooked slots in the recurring group unavailable. They remain in the audit trail and can be restored later.'
+            : 'This will make the slot unavailable. It remains in the audit trail and can be restored later.'}
+          confirmLabel={deleteConfirm?.type === 'group' ? 'Deactivate Group' : 'Deactivate Slot'}
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteConfirm(null)}
+          variant="danger"
+        />
       </div>
     </DashboardLayout>
   );

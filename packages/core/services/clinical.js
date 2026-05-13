@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { validationError, parse } from '@/lib/serviceHelpers';
 import {
   CARE_TASK_SELECT_FIELDS,
   CLINICAL_DOCUMENT_SELECT_FIELDS,
@@ -24,7 +25,6 @@ import {
   documentAttachmentSchema,
   encounterCreateSchema,
   encounterUpdateSchema,
-  parseWithSchema,
   prescriptionSchema,
 } from '@/schemas';
 import { assertTransition } from '@/lib/stateMachines';
@@ -70,18 +70,6 @@ const ORDER_TABLES = {
     ],
   },
 };
-
-function validationError(error) {
-  return { data: null, error };
-}
-
-function parse(schema, payload) {
-  const result = parseWithSchema(schema, payload);
-  if (result.error) {
-    return { error: result.error };
-  }
-  return { data: result.data };
-}
 
 function getOrderConfig(kind) {
   const config = ORDER_TABLES[kind];

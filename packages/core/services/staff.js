@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { STAFF_MEMBER_SELECT_FIELDS } from '@/lib/selects';
 import {
-  parseWithSchema,
   staffInviteReissueSchema,
   staffInviteSchema,
   staffInviteResendSchema,
@@ -11,15 +10,7 @@ import {
 } from '@/schemas';
 import { apiCall, apiPaged } from './api';
 
-function validationError(error) {
-  return { data: null, error };
-}
-
-function parse(schema, payload) {
-  const result = parseWithSchema(schema, payload);
-  if (result.error) return { error: result.error };
-  return { data: result.data };
-}
+import { validationError, parse } from '@/lib/serviceHelpers';
 
 export const staffService = {
   async getAll({ activeOnly = true, page = 1, pageSize = 100 } = {}) {

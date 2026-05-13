@@ -12,3 +12,6 @@ export { default as Modal } from './Modal';
 export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as DataTable } from './DataTable';
 export { default as TopBar } from './TopBar';
+export { default as DatePickerInput } from './DatePickerInput';
+export { default as PhoneInput } from './PhoneInput';
+export { default as SearchableSelect } from './SearchableSelect';

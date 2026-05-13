@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { PageHeader } from '@/components/ui';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { slotService } from '@/services/slots';
@@ -8,6 +9,7 @@ import { patientService } from '@/services/patients';
 import { appointmentService } from '@/services/appointments';
 import { catalogService } from '@/services/catalogs';
 import { getErrorMessage } from '@/lib/errors';
+import { parseWithSchema, walkInPatientSchema } from '@/schemas';
 
 function formatTime(t) {
   if (!t) return '';
@@ -88,10 +90,12 @@ export default function SecretaryBookingPage() {
   // Create new patient on the fly
   const handleCreatePatient = async (e) => {
     e.preventDefault();
-    if (!newPatient.full_name || !newPatient.phone) {
-      showToast('Name and phone are required', 'error'); return;
+    const { data: payload, error: validationError } = parseWithSchema(walkInPatientSchema, newPatient);
+    if (validationError) {
+      showToast(validationError, 'error');
+      return;
     }
-    const { data, error } = await patientService.createWalkIn({ ...newPatient, created_by: user.id });
+    const { data, error } = await patientService.createWalkIn({ ...payload, created_by: user.id });
     if (error) { showToast(`Failed to create patient: ${getErrorMessage(error, 'Unknown patient creation error')}`, 'error'); return; }
     setSelectedPatient(data);
     setShowNewPatientForm(false);
@@ -147,11 +151,10 @@ export default function SecretaryBookingPage() {
   return (
     <DashboardLayout role="secretary">
       <div className="flex-1 p-8 ml-64 overflow-y-auto max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Book Appointment</h1>
-          <p className="text-slate-500 mt-1 text-sm">Book an appointment on behalf of a patient</p>
-        </div>
+        <PageHeader
+          title="Book Appointment"
+          subtitle="Book an appointment on behalf of a patient"
+        />
 
         {/* Progress Steps */}
         <div className="flex items-center gap-3 mb-10">

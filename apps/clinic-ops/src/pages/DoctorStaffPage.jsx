@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@ui/contexts/AuthContext';
 import { useToast } from '@ui/contexts/ToastContext';
 import DashboardLayout from '@ui/components/layouts/DashboardLayout';
-import { Modal, LoadingSkeleton } from '@ui/components/ui';
+import { Modal, LoadingSkeleton, StatusBadge, EmptyState } from '@ui/components/ui';
 import { staffService } from '@core/services/staff';
 import { stagger, fadeUp } from '@core/lib/animations';
 import { createClientRequestId } from '@core/lib/idempotency';
@@ -25,12 +25,7 @@ const STAFF_ROLES = SUPPORTED_STAFF_MEMBER_ROLES.map((value) => ({
   ...STAFF_ROLE_PRESENTATION[value],
 }));
 
-const INVITE_STATUSES = {
-  none: { label: 'Not Invited', color: 'bg-slate-100 text-slate-600' },
-  invited: { label: 'Invited', color: 'bg-blue-50 text-blue-600' },
-  accepted: { label: 'Accepted', color: 'bg-emerald-50 text-emerald-600' },
-  disabled: { label: 'Disabled', color: 'bg-red-50 text-red-500' },
-};
+
 
 const DEFAULT_FORM = {
   display_name: '',
@@ -352,27 +347,27 @@ export default function DoctorStaffPage() {
         )}
 
         {!loading && !error && filtered.length === 0 && (
-          <motion.div variants={fadeUp} className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <span className="material-symbols-outlined text-5xl text-slate-300 mb-4 block">group</span>
-            <h3 className="text-lg font-semibold text-slate-700">No staff members yet</h3>
-            <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-              Add supported v1 team members: secretaries and pre-doctors.
-            </p>
-            <button
-              onClick={openCreate}
-              className="mt-4 px-5 py-2.5 rounded-xl bg-primary text-white font-medium text-sm shadow-lg shadow-primary/20 hover:brightness-110 transition-all inline-flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-lg">person_add</span>
-              Add First Member
-            </button>
-          </motion.div>
+          <EmptyState
+            icon="group"
+            title="No staff members yet"
+            subtitle="Add supported v1 team members: secretaries and pre-doctors."
+            action={
+              <button
+                onClick={openCreate}
+                className="px-5 py-2.5 rounded-xl bg-primary text-white font-medium text-sm shadow-lg shadow-primary/20 hover:brightness-110 transition-all inline-flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">person_add</span>
+                Add First Member
+              </button>
+            }
+          />
         )}
 
         {!loading && !error && filtered.length > 0 && (
           <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filtered.map((member) => {
               const roleDisplay = getRoleDisplay(member.role);
-              const inviteStatus = INVITE_STATUSES[member.invite_status] || INVITE_STATUSES.none;
+              const inviteStatus = member.invite_status || 'none';
               const initials = (member.display_name || '')
                 .split(' ')
                 .map((w) => w[0])
@@ -398,9 +393,7 @@ export default function DoctorStaffPage() {
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${roleDisplay.color}`}>
                           {roleDisplay.label}
                         </span>
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${inviteStatus.color}`}>
-                          {inviteStatus.label}
-                        </span>
+                        <StatusBadge status={inviteStatus} size="sm" />
                       </div>
                     </div>
                     <div className="flex items-center gap-1">

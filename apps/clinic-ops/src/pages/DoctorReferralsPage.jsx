@@ -3,6 +3,7 @@ import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
+import { Modal } from '@/components/ui';
 import { documentService } from '@/services/documents';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -342,19 +343,17 @@ export default function DoctorReferralsPage() {
                     </div>
                 </div>
 
-            {showSuccess && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-8 shadow-2xl flex flex-col items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-green-600 text-4xl">check</span>
-                        </div>
-                        <p className="text-lg font-bold text-slate-900">Referral letter sent successfully!</p>
-                        <button onClick={() => setShowSuccess(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
-                            Close
-                        </button>
-                    </div>
+            <Modal isOpen={showSuccess} onClose={() => setShowSuccess(false)} size="sm">
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-green-600 text-4xl">check</span>
                 </div>
-            )}
+                <p className="text-lg font-bold text-slate-900">Referral letter sent successfully!</p>
+                <button onClick={() => setShowSuccess(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
+                  Close
+                </button>
+              </div>
+            </Modal>
         </DashboardLayout>
     );
 }

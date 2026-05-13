@@ -39,7 +39,28 @@ export default {
         "DEFAULT": "0.25rem",
         "lg": "0.5rem",
         "xl": "0.75rem",
+        "2xl": "var(--radius-card)",
         "full": "9999px"
+      },
+      width: {
+        "sidebar": "var(--sidebar-width)",
+      },
+      height: {
+        "header": "var(--header-height)",
+      },
+      spacing: {
+        "page": "var(--spacing-page)",
+        "card": "var(--spacing-card)",
+        "section": "var(--spacing-section)",
+      },
+      boxShadow: {
+        "card": "var(--shadow-card)",
+        "elevated": "var(--shadow-elevated)",
+      },
+      transitionDuration: {
+        "fast": "150ms",
+        "base": "200ms",
+        "slow": "300ms",
       },
     },
   },

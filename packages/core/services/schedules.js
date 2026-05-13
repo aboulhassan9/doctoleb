@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { DOCTOR_SCHEDULE_TEMPLATE_SELECT_FIELDS, SECRETARY_SLOT_SELECT_FIELDS } from '@/lib/selects';
-import { doctorScheduleTemplateSchema, parseWithSchema } from '@/schemas';
+import { doctorScheduleTemplateSchema } from '@/schemas';
+import { validationError, parse } from '@/lib/serviceHelpers';
 import { apiCall, apiPaged } from './api';
 
 function toDateKey(date) {
@@ -47,16 +48,6 @@ function getSlotKey(slot) {
     String(slot.start_time || '').slice(0, 5),
     String(slot.end_time || '').slice(0, 5),
   ].join('|');
-}
-
-function validationError(error) {
-  return { data: null, error };
-}
-
-function parse(schema, payload) {
-  const result = parseWithSchema(schema, payload);
-  if (result.error) return { error: result.error };
-  return { data: result.data };
 }
 
 export const scheduleService = {

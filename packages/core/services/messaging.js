@@ -11,22 +11,10 @@ import {
   conversationParticipantSchema,
   messageAttachmentSchema,
   messageCreateSchema,
-  parseWithSchema,
 } from '@/schemas';
 import { apiCall, apiPaged } from './api';
 import { STORAGE_BUCKETS, storageService } from './storage';
-
-function validationError(error) {
-  return { data: null, error };
-}
-
-function parse(schema, payload) {
-  const result = parseWithSchema(schema, payload);
-  if (result.error) {
-    return { error: result.error };
-  }
-  return { data: result.data };
-}
+import { validationError, parse } from '@/lib/serviceHelpers';
 
 function isDuplicateClientRequestIdError(error) {
   if (!error) return false;

@@ -9,23 +9,11 @@ import {
 } from '@/lib/selects';
 import {
   patientConsentSchema,
-  parseWithSchema,
   tenantAppConfigUpdateSchema,
   tenantProfileUpdateSchema,
 } from '@/schemas';
 import { apiCall, apiPaged } from './api';
-
-function validationError(error) {
-  return { data: null, error };
-}
-
-function parse(schema, payload) {
-  const result = parseWithSchema(schema, payload);
-  if (result.error) {
-    return { error: result.error };
-  }
-  return { data: result.data };
-}
+import { validationError, parse } from '@/lib/serviceHelpers';
 
 const FEATURE_FLAG_AUDIENCES = new Set(['public', 'patient', 'staff', 'admin']);
 

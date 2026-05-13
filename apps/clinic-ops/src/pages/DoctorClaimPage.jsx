@@ -5,6 +5,7 @@ import { patientService } from '@core/services/patients';
 import { useToast } from '@ui/contexts/ToastContext';
 import { useBrand } from '@ui/contexts/BrandContext';
 import { openPrintableHtml, replaceHtmlTokens } from '@core/lib/html';
+import { StatusBadge, PageHeader } from '@ui/components/ui';
 
 /**
  * DoctorClaimPage — Generate, preview, and print insurance claims.
@@ -130,18 +131,18 @@ export default function DoctorClaimPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Insurance Claims</h1>
-          <p className="text-slate-500 text-sm mt-1">Generate, preview, and print insurance claim forms.</p>
-        </div>
-        {step !== 'select-patient' && (
-          <button onClick={reset} className="text-sm text-primary hover:underline flex items-center gap-1">
-            <span className="material-symbols-outlined text-base">arrow_back</span>
-            Start Over
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Insurance Claims"
+        subtitle="Generate, preview, and print insurance claim forms."
+        actions={
+          step !== 'select-patient' && (
+            <button onClick={reset} className="text-sm text-primary hover:underline flex items-center gap-1">
+              <span className="material-symbols-outlined text-base">arrow_back</span>
+              Start Over
+            </button>
+          )
+        }
+      />
 
       {/* Step Indicator */}
       <div className="flex items-center gap-2 mb-8">
@@ -347,12 +348,7 @@ export default function DoctorClaimPage() {
                       <tr key={c.id} className="border-t border-slate-100">
                         <td className="py-2 px-4 text-slate-600">{new Date(c.created_at).toLocaleDateString()}</td>
                         <td className="py-2 px-4">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            c.status === 'approved' ? 'bg-green-100 text-green-700' :
-                            c.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                            c.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
-                            'bg-slate-100 text-slate-600'
-                          }`}>{c.status}</span>
+                          <StatusBadge status={c.status} size="sm" />
                         </td>
                         <td className="py-2 px-4 text-slate-700">${c.amount || 0}</td>
                         <td className="py-2 px-4 text-slate-500 truncate max-w-[200px]">{c.diagnosis_text || '—'}</td>

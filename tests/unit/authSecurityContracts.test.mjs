@@ -9,6 +9,15 @@ function read(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8');
 }
 
+function readAllSchemas() {
+  const schemasDir = path.join(root, 'packages/core/schemas');
+  return fs
+    .readdirSync(schemasDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.js'))
+    .map((entry) => fs.readFileSync(path.join(schemasDir, entry.name), 'utf8'))
+    .join('\n');
+}
+
 function extractCurrentUserErrorBranch(source) {
   const branchStart = source.indexOf('if (currentUserError) {', source.indexOf("event === 'SIGNED_IN'"));
   const branchEnd = source.indexOf('if (data) {', branchStart);
@@ -52,7 +61,7 @@ describe('auth security contracts', () => {
     const authService = read('packages/core/services/auth.js');
     const authContext = read('packages/ui/contexts/AuthContext.jsx');
     const opsLogin = read('apps/clinic-ops/src/pages/OpsLoginPage.jsx');
-    const schemas = read('packages/core/schemas/index.js');
+    const schemas = readAllSchemas();
 
     assert.match(schemas, /export const authOtpRequestSchema/);
     assert.match(schemas, /export const authOtpVerifySchema/);
