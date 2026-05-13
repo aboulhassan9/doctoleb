@@ -14,7 +14,12 @@ import {
 } from '../_shared/selects.ts'
 import { normalizeTenantBranding } from '../_shared/tenantBranding.ts'
 import { verifyProviderCredential } from '../_shared/providerExecution.ts'
-import { patchTenantAuthConfig } from '../_shared/supabaseManagementApi.ts'
+import {
+  createProject,
+  getProject,
+  listProjectApiKeys,
+  patchTenantAuthConfig,
+} from '../_shared/supabaseManagementApi.ts'
 import { resolveTenantServiceRoleKey } from '../_shared/tenantSecrets.ts'
 import { runTenantDatabaseMigrations } from '../_shared/tenantMigrationRunner.ts'
 
@@ -75,6 +80,11 @@ const RPC_ERROR_STATUS: Record<string, number> = {
   TENANT_MIGRATIONS_NOT_READY: 409,
   TENANT_MIGRATION_FAILED: 409,
   TENANT_MIGRATION_RUN_FAILED: 500,
+  SUPABASE_PROJECT_INITIALIZING: 503,
+  SUPABASE_PROJECT_CREATE_FAILED: 502,
+  SUPABASE_PROJECT_KEYS_UNAVAILABLE: 503,
+  PROVIDER_ORG_REQUIRED: 409,
+  TENANT_PROJECT_REF_PERSIST_FAILED: 500,
   TENANT_MIGRATION_RUN_RECORD_FAILED: 500,
   TENANT_MIGRATION_ITEM_RECORD_FAILED: 500,
   TENANT_PROFILE_SEED_RPC_NOT_READY: 409,
@@ -324,7 +334,7 @@ async function loadProviderConnection(
   if (!id) return null
   const { data, error } = await context.client
     .from('provisioning_provider_connections')
-    .select('id, provider, status, is_automation_enabled, secret_storage, secret_ref')
+    .select('id, provider, status, is_automation_enabled, secret_storage, secret_ref, external_org_id')
     .eq('id', id)
     .maybeSingle()
 
@@ -870,41 +880,261 @@ function normalizeText(value: unknown, max = 160) {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
 }
 
+const DB_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_'
+const DEFAULT_SUPABASE_REGION = 'us-east-2'
+
+function generateStrongDbPassword(): string {
+  const bytes = new Uint8Array(40)
+  crypto.getRandomValues(bytes)
+  let out = ''
+  for (const byte of bytes) {
+    out += DB_PASSWORD_ALPHABET[byte % DB_PASSWORD_ALPHABET.length]
+  }
+  return out
+}
+
+function projectNameForTenant(tenant: { slug?: string | null; display_name?: string | null }): string {
+  const slug = String(tenant.slug || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 24)
+  const display = String(tenant.display_name || '').trim().slice(0, 24)
+  const base = display ? `doctoleb-${slug || display}` : `doctoleb-${slug || 'tenant'}`
+  return base.slice(0, 56)
+}
+
+async function persistTenantProjectRef(
+  context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
+  tenantId: string,
+  fields: { supabase_project_ref: string; supabase_url: string; supabase_anon_key?: string | null },
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { error } = await context.client
+    .from('tenants')
+    .update(fields)
+    .eq('id', tenantId)
+
+  if (error) return { ok: false, error: 'TENANT_PROJECT_REF_PERSIST_FAILED' }
+  return { ok: true }
+}
+
+async function storeTenantDatabaseUrlSecret(
+  context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
+  tenantId: string,
+  projectRef: string,
+  dbPassword: string,
+): Promise<void> {
+  // Store the tenant DB connection string (with the generated password) in
+  // Supabase Vault via the existing tenant-secret RPC. Used by
+  // apply_tenant_migrations to connect over the database URL runner mode.
+  const databaseUrl = `postgresql://postgres:${encodeURIComponent(dbPassword)}@db.${projectRef}.supabase.co:5432/postgres`
+  await context.client.rpc('admin_store_tenant_secret_ref', {
+    p_tenant_id: tenantId,
+    p_project_ref: projectRef,
+    p_secret_kind: 'database_url',
+    p_secret_storage: 'supabase_vault',
+    p_secret_value: databaseUrl,
+    p_secret_ref: null,
+    p_actor_id: context.admin.id,
+  })
+}
+
+async function storeTenantServiceRoleSecret(
+  context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
+  tenantId: string,
+  projectRef: string,
+  serviceRoleKey: string,
+): Promise<void> {
+  await context.client.rpc('admin_store_tenant_secret_ref', {
+    p_tenant_id: tenantId,
+    p_project_ref: projectRef,
+    p_secret_kind: 'service_role_key',
+    p_secret_storage: 'supabase_vault',
+    p_secret_value: serviceRoleKey,
+    p_secret_ref: null,
+    p_actor_id: context.admin.id,
+  })
+}
+
 async function runCreateSupabaseProject(
   context: NonNullable<Awaited<ReturnType<typeof requireSuperAdmin>>['data']>,
   tenantId: string,
+  job: ProvisioningJob,
 ): Promise<StepExecution> {
-  const { data: tenant, error } = await context.client
+  const { data: tenant, error: tenantError } = await context.client
     .from('tenants')
-    .select('id, supabase_project_ref, supabase_url, supabase_anon_key')
+    .select('id, slug, display_name, plan, supabase_project_ref, supabase_url, supabase_anon_key')
     .eq('id', tenantId)
     .maybeSingle()
 
-  const runtimeConfig = tenant ? normalizeSupabaseRuntimeConfig(tenant) : null
-
-  if (error || !runtimeConfig) {
+  if (tenantError || !tenant) {
     return {
       data: null,
-      error: 'SUPABASE_PROJECT_RUNTIME_CONFIG_REQUIRED',
-      summary: 'Link an existing tenant Supabase project through runtime config before completing this step.',
+      error: 'TENANT_NOT_FOUND',
+      summary: 'Tenant row could not be loaded for create_supabase_project.',
     }
   }
 
-  return {
-    data: {
-      status: 'succeeded',
-      postconditions: {
-        projectRefStoredInRuntimeConfig: true,
-        provisioningMode: 'operator_supplied_project_ref',
-        supabaseProjectRef: runtimeConfig.projectRef,
-        supabaseUrlHost: runtimeConfig.supabaseUrlHost,
+  const fullyWiredConfig = normalizeSupabaseRuntimeConfig(tenant)
+  const supabaseConnection = await loadProviderConnection(context, job.supabase_connection_id)
+  const automationMode = job.automation_mode || 'manual'
+  const canAutomate = (automationMode === 'assisted' || automationMode === 'automatic')
+    && connectionIsAutomationReady(supabaseConnection, 'supabase')
+
+  // Manual mode: keep historical behavior — operator supplied the runtime config
+  // out-of-band and this step just verifies it.
+  if (!canAutomate) {
+    if (!fullyWiredConfig) {
+      return {
+        data: null,
+        error: 'SUPABASE_PROJECT_RUNTIME_CONFIG_REQUIRED',
+        summary: 'Link an existing tenant Supabase project through runtime config, or enable automation by attaching a Supabase provider connection.',
+      }
+    }
+    return {
+      data: {
+        status: 'succeeded',
+        postconditions: {
+          projectRefStoredInRuntimeConfig: true,
+          provisioningMode: 'operator_supplied_project_ref',
+          supabaseProjectRef: fullyWiredConfig.projectRef,
+          supabaseUrlHost: fullyWiredConfig.supabaseUrlHost,
+        },
+        externalResourceKind: 'supabase_project',
+        externalResourceId: tenant.supabase_project_ref,
+        externalResourceUrl: fullyWiredConfig.supabaseUrl,
+        summary: 'Existing tenant Supabase project is linked and recorded for provisioning.',
       },
-      externalResourceKind: 'supabase_project',
-      externalResourceId: tenant.supabase_project_ref,
-      externalResourceUrl: runtimeConfig.supabaseUrl,
-      summary: 'Existing tenant Supabase project is linked and recorded for provisioning.',
-    },
-    error: null,
+      error: null,
+    }
+  }
+
+  // Automated path. Idempotent: if tenant has a project_ref already, verify
+  // status and finish wiring. Otherwise create a new project.
+  if (tenant.supabase_project_ref) {
+    const projectResult = await getProject(context.client, supabaseConnection!, tenant.supabase_project_ref)
+    if (projectResult.error || !projectResult.data) {
+      return {
+        data: null,
+        error: projectResult.error ?? 'SUPABASE_PROJECT_KEYS_UNAVAILABLE',
+        summary: 'Supabase Management API rejected the project lookup.',
+        details: { status: projectResult.status, projectRef: tenant.supabase_project_ref },
+      }
+    }
+
+    if (projectResult.data.status !== 'ACTIVE_HEALTHY') {
+      return {
+        data: null,
+        error: 'SUPABASE_PROJECT_INITIALIZING',
+        summary: `Supabase project ${tenant.supabase_project_ref} is still ${projectResult.data.status}. Retry this step in ~60s.`,
+        details: { projectRef: tenant.supabase_project_ref, status: projectResult.data.status },
+      }
+    }
+
+    if (!fullyWiredConfig) {
+      const keysResult = await listProjectApiKeys(context.client, supabaseConnection!, tenant.supabase_project_ref)
+      if (keysResult.error || !keysResult.data) {
+        return {
+          data: null,
+          error: keysResult.error ?? 'SUPABASE_PROJECT_KEYS_UNAVAILABLE',
+          summary: 'Could not fetch tenant project API keys from Supabase Management API.',
+        }
+      }
+
+      const anonKey = keysResult.data.find((k) => k.name === 'anon')?.apiKey
+      const serviceRoleKey = keysResult.data.find((k) => k.name === 'service_role')?.apiKey
+      if (!anonKey || !serviceRoleKey) {
+        return {
+          data: null,
+          error: 'SUPABASE_PROJECT_KEYS_UNAVAILABLE',
+          summary: 'Supabase Management API response did not include both anon and service_role keys.',
+        }
+      }
+
+      const persisted = await persistTenantProjectRef(context, tenantId, {
+        supabase_project_ref: tenant.supabase_project_ref,
+        supabase_url: projectResult.data.supabaseUrl,
+        supabase_anon_key: anonKey,
+      })
+      if (!persisted.ok) {
+        return { data: null, error: persisted.error, summary: 'Failed to persist tenant runtime config.' }
+      }
+
+      await storeTenantServiceRoleSecret(context, tenantId, tenant.supabase_project_ref, serviceRoleKey)
+    }
+
+    return {
+      data: {
+        status: 'succeeded',
+        postconditions: {
+          projectRefStoredInRuntimeConfig: true,
+          provisioningMode: 'automated_via_management_api',
+          supabaseProjectRef: tenant.supabase_project_ref,
+          supabaseUrlHost: `${tenant.supabase_project_ref}.supabase.co`,
+          projectStatus: projectResult.data.status,
+          anonKeyStored: true,
+          serviceRoleKeySecretStored: true,
+        },
+        externalResourceKind: 'supabase_project',
+        externalResourceId: tenant.supabase_project_ref,
+        externalResourceUrl: projectResult.data.supabaseUrl,
+        summary: 'Tenant Supabase project is active and runtime config (anon + service role) is persisted.',
+      },
+      error: null,
+    }
+  }
+
+  // No project ref yet — create one.
+  const organizationId = typeof supabaseConnection?.external_org_id === 'string'
+    ? supabaseConnection.external_org_id.trim()
+    : ''
+  if (!organizationId) {
+    return {
+      data: null,
+      error: 'PROVIDER_ORG_REQUIRED',
+      summary: 'Supabase provider connection is missing external_org_id; cannot pick which org to create the project in.',
+    }
+  }
+
+  const dbPassword = generateStrongDbPassword()
+  const projectName = projectNameForTenant(tenant)
+  const planForSupabase: 'free' | 'pro' = (tenant.plan === 'enterprise' || tenant.plan === 'pro') ? 'pro' : 'free'
+
+  const created = await createProject(context.client, supabaseConnection!, {
+    name: projectName,
+    organizationId,
+    region: DEFAULT_SUPABASE_REGION,
+    dbPass: dbPassword,
+    plan: planForSupabase,
+  })
+
+  if (created.error || !created.data) {
+    return {
+      data: null,
+      error: created.error === 'PROVIDER_AUTH_FAILED'
+        ? 'PROVIDER_AUTH_FAILED'
+        : 'SUPABASE_PROJECT_CREATE_FAILED',
+      summary: 'Supabase Management API rejected the project creation request.',
+      details: { status: created.status, plan: planForSupabase, region: DEFAULT_SUPABASE_REGION },
+    }
+  }
+
+  const persisted = await persistTenantProjectRef(context, tenantId, {
+    supabase_project_ref: created.data.ref,
+    supabase_url: created.data.supabaseUrl,
+  })
+  if (!persisted.ok) {
+    return {
+      data: null,
+      error: persisted.error,
+      summary: 'Supabase project was created but the tenant row update failed. Retry the step.',
+      details: { projectRef: created.data.ref },
+    }
+  }
+
+  await storeTenantDatabaseUrlSecret(context, tenantId, created.data.ref, dbPassword)
+
+  return {
+    data: null,
+    error: 'SUPABASE_PROJECT_INITIALIZING',
+    summary: `Created Supabase project ${created.data.ref}. Retry this step in ~60s to fetch API keys once the project is healthy.`,
+    details: { projectRef: created.data.ref, status: created.data.status, plan: planForSupabase },
   }
 }
 
@@ -1452,7 +1682,7 @@ Deno.serve(async (req) => {
   if (step.step_code === 'provider_connections_selected') {
     execution = await runProviderConnectionsSelected(context, job)
   } else if (step.step_code === 'create_supabase_project') {
-    execution = await runCreateSupabaseProject(context, tenantId)
+    execution = await runCreateSupabaseProject(context, tenantId, job)
   } else if (step.step_code === 'apply_tenant_migrations') {
     execution = await runApplyTenantMigrations(context, tenantId, step.id)
   } else if (step.step_code === 'seed_tenant_profile') {

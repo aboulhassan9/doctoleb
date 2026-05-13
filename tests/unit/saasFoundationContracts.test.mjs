@@ -717,6 +717,11 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /runNormalizeTenantAuthSettings/);
     assert.match(runner, /patchTenantAuthConfig/);
     assert.match(runner, /mailer_otp_length: 6/);
+    assert.match(runner, /createProject,\s*\n\s*getProject,\s*\n\s*listProjectApiKeys/);
+    assert.match(runner, /generateStrongDbPassword/);
+    assert.match(runner, /SUPABASE_PROJECT_INITIALIZING/);
+    assert.match(runner, /provisioningMode: 'automated_via_management_api'/);
+    assert.match(runner, /admin_store_tenant_secret_ref/);
     assert.match(runner, /compareProvisioningStepsForPreconditions/);
     assert.match(runner, /PROVISIONING_STEP_RANK/);
     assert.match(runner, /provider_connections_selected/);
