@@ -4,7 +4,7 @@
  * These micro-functions standardize the { data, error } response contract
  * used across all services. Previously duplicated in 11 service files.
  */
-import { parseWithSchema } from '@/schemas';
+import { parseWithSchema } from '../schemas/index.js';
 
 /**
  * Return a standard validation-error envelope.

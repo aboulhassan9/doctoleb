@@ -1,4 +1,4 @@
-import { isFutureClinicDateTime } from './time';
+import { isFutureClinicDateTime } from './time.js';
 
 export const APPOINTMENT_STATUS = Object.freeze({
   SCHEDULED: 'scheduled',
