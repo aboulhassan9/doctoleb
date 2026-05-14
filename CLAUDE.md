@@ -353,6 +353,91 @@ Helpers exposed: `nullableTrimmedString(maxLength)`, `nullablePhone`, `nullableN
 
 ---
 
+## Testing (`tests/unit/`)
+
+### Suite layout
+
+```
+tests/unit/
+  schemas/                     # Zod schema unit tests
+  lib/                         # Pure helper tests (userDisplay, appointmentsLib, entitlements, serviceHelpers, …)
+  services/                    # Service-layer tests using the supabase mock
+    __helpers__/
+      supabaseMock.mjs         # Chainable supabase-js fake
+    auth.test.mjs
+    appointments.test.mjs
+    patients.test.mjs
+    clinical.test.mjs
+    messaging.test.mjs
+    payments.test.mjs
+```
+
+Run with `npm run test:unit`. Add new test files anywhere under `tests/unit/**/*.test.mjs` — the runner picks them up automatically.
+
+### Service-layer mock pattern
+
+Services import from `../lib/supabase.js` which exports a Proxy-backed singleton. To unit-test a service, swap the singleton's underlying client for a fake:
+
+```js
+import { createSupabaseMock } from './__helpers__/supabaseMock.mjs';
+import { __setSupabaseClientForTest } from '../../../packages/core/lib/supabase.js';
+import { someService } from '../../../packages/core/services/some.js';
+
+let mock, previousClient;
+
+beforeEach(() => {
+  mock = createSupabaseMock();
+  previousClient = __setSupabaseClientForTest(mock.client);
+});
+
+afterEach(() => {
+  __setSupabaseClientForTest(previousClient);
+});
+
+it('does the thing', async () => {
+  mock.onFrom('table', () => ({ data: { id: '...' }, error: null }));
+  mock.onRpc('rpc_name', () => ({ data: 'x', error: null }));
+  mock.onAuth('signInWithPassword', () => ({ data: { user: {} }, error: null }));
+
+  const result = await someService.method(payload);
+  // mock.calls.{from,rpc,auth} record what the service actually did:
+  assert.ok(mock.calls.rpc.some((c) => c.name === 'rpc_name'));
+});
+```
+
+The mock helper records every chain modifier (`select`, `eq`, `insert`, etc.) on `mock.calls.from[i].modifiers`, so tests can assert on the FULL filter sequence — e.g., "the recovery query filtered by `client_request_id`".
+
+### Service-file import rule (required for testability)
+
+Service files in `packages/core/services/*.js` MUST use relative imports for everything inside `packages/core`:
+
+```js
+// ✅ Correct — works in Vite AND node:test
+import { supabase } from '../lib/supabase.js';
+import { apiCall } from './api.js';
+import { paymentCreateSchema } from '../schemas/index.js';
+
+// ❌ Wrong — Vite resolves, but node:test cannot resolve @ aliases
+import { supabase } from '@/lib/supabase';
+import { apiCall } from './api';
+```
+
+The `@/lib`, `@/schemas`, `@/services` aliases still work for **page-level** imports in `apps/*`. Only the service layer needs to be relative because that's what unit tests load directly.
+
+### What these tests prove — and what they don't
+
+Be honest about what a green unit-test suite means here:
+
+| Test layer | Catches | Does NOT catch |
+|---|---|---|
+| Schema tests | Bad input shapes (empty strings, wrong types, schema `.refine` rules) | Real DB type coercion, NULL semantics, FK behavior |
+| Pure helper tests (`lib/`) | Logic bugs in pure functions (no DB) | Anything that touches DB or network |
+| Service tests (mock) | (a) Service returns the documented `{ data, error }` envelope shape (b) Schema-rejected inputs short-circuit before DB calls (c) The service calls the right table / RPC with the right arguments (d) Error-mapping branches fire on the documented error shapes (`INTAKE_REQUIRED`, Postgres `23505`, etc.) (e) State-machine transitions and the no-`cancelled` rule for payments | (1) Real Supabase behavior — RLS denials, NOT NULL violations, FK violations, unique-index violations beyond the ones we explicitly mock (2) PostgREST query-string syntax errors (mistyped column → no error in mock; PostgREST → 400) (3) Realistic concurrency / race conditions (the whole reason `book_slot` is an atomic RPC) (4) Drift between `selects.js` and the actual DB schema (5) RPC arg-name mismatches against the actual RPC definitions in `supabase/migrations/` (6) Real network errors / timeouts / partial responses (7) Anything in `notification fire-and-forget` paths beyond "the service didn't throw" |
+
+**Suite-green is a regression guard, not proof of correctness.** A future deeper-validation slice should add: integration tests against a real Supabase test instance for `selects.js` drift + RPC signature checks, property-based tests for the `archive()` no-`cancelled` invariant, and mutation testing to find under-covered branches.
+
+---
+
 ## Per-page patterns
 
 ### Header identity
