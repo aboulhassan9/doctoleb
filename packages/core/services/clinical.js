@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import { validationError, parse } from '@/lib/serviceHelpers';
+import { supabase } from '../lib/supabase.js';
+import { validationError, parse } from '../lib/serviceHelpers.js';
 import {
   CARE_TASK_SELECT_FIELDS,
   CLINICAL_DOCUMENT_SELECT_FIELDS,
@@ -11,7 +11,7 @@ import {
   IMAGING_ORDER_SELECT_FIELDS,
   LAB_ORDER_SELECT_FIELDS,
   PRESCRIPTION_SELECT_FIELDS,
-} from '@/lib/selects';
+} from '../lib/selects.js';
 import {
   careTaskSchema,
   careTaskUpdateSchema,
@@ -26,10 +26,10 @@ import {
   encounterCreateSchema,
   encounterUpdateSchema,
   prescriptionSchema,
-} from '@/schemas';
-import { assertTransition } from '@/lib/stateMachines';
-import { apiCall, apiPaged } from './api';
-import { STORAGE_BUCKETS, storageService } from './storage';
+} from '../schemas/index.js';
+import { assertTransition } from '../lib/stateMachines.js';
+import { apiCall, apiPaged } from './api.js';
+import { STORAGE_BUCKETS, storageService } from './storage.js';
 
 const ORDER_TABLES = {
   lab: {

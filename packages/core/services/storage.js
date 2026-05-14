@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall } from './api';
+import { supabase } from '../lib/supabase.js';
+import { apiCall } from './api.js';
 
 export const STORAGE_BUCKETS = Object.freeze({
   CLINICAL_DOCUMENTS: 'clinical-documents',
@@ -9,7 +9,7 @@ export const STORAGE_BUCKETS = Object.freeze({
 const DEFAULT_SIGNED_URL_TTL_SECONDS = 300;
 const MAX_SIGNED_URL_TTL_SECONDS = 900;
 
-import { validationError } from '@/lib/serviceHelpers';
+import { validationError } from '../lib/serviceHelpers.js';
 
 function normalizeTtl(expiresIn) {
   const ttl = Number(expiresIn);
