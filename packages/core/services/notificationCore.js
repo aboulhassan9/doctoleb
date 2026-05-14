@@ -1,18 +1,18 @@
-import { supabase } from '@/lib/supabase';
-import { validationError, parse } from '@/lib/serviceHelpers';
+import { supabase } from '../lib/supabase.js';
+import { validationError, parse } from '../lib/serviceHelpers.js';
 import {
   NOTIFICATION_DELIVERY_SELECT_FIELDS,
   NOTIFICATION_EVENT_SELECT_FIELDS,
   PATIENT_DEVICE_SELECT_FIELDS,
   REMINDER_RULE_SELECT_FIELDS,
-} from '@/lib/selects';
+} from '../lib/selects.js';
 import {
   notificationDeliverySchema,
   notificationDeliveryUpdateSchema,
   notificationEventSchema,
   patientDeviceSchema,
-} from '@/schemas';
-import { apiCall, apiPaged } from './api';
+} from '../schemas/index.js';
+import { apiCall, apiPaged } from './api.js';
 
 const INBOX_DELIVERY_SELECT_FIELDS = [
   NOTIFICATION_DELIVERY_SELECT_FIELDS,

@@ -1,11 +1,11 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
-import { APPOINTMENT_SELECT_FIELDS } from '@/lib/selects';
-import { normalizeAppointment } from '@/lib/appointments';
-import { assertTransition } from '@/lib/stateMachines';
-import { appointmentBookingSchema, appointmentBookFromSlotResponseSchema, appointmentCancelSchema, parseWithSchema } from '@/schemas';
-import { bookSlot } from './slots';
-import { notificationCoreService } from './notificationCore';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
+import { APPOINTMENT_SELECT_FIELDS } from '../lib/selects.js';
+import { normalizeAppointment } from '../lib/appointments.js';
+import { assertTransition } from '../lib/stateMachines.js';
+import { appointmentBookingSchema, appointmentBookFromSlotResponseSchema, appointmentCancelSchema, parseWithSchema } from '../schemas/index.js';
+import { bookSlot } from './slots.js';
+import { notificationCoreService } from './notificationCore.js';
 
 export const appointmentService = {
   async getAll(options = {}) {

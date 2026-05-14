@@ -1,9 +1,9 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
-import { SECRETARY_SLOT_SELECT_FIELDS } from '@/lib/selects';
-import { manualSlotSchema, parseWithSchema, recurringSlotsSchema } from '@/schemas';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
+import { SECRETARY_SLOT_SELECT_FIELDS } from '../lib/selects.js';
+import { manualSlotSchema, parseWithSchema, recurringSlotsSchema } from '../schemas/index.js';
 
-import { validationError } from '@/lib/serviceHelpers';
+import { validationError } from '../lib/serviceHelpers.js';
 
 export const slotService = {
   /** Create a single manual slot */
