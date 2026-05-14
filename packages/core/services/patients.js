@@ -1,9 +1,9 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
-import { buildInitials } from '@/lib/authIdentity';
-import { logWarn } from '@/lib/logger';
-import { PATIENT_SELECT_FIELDS, USER_PUBLIC_FIELDS } from '@/lib/selects';
-import { parseWithSchema, patientCreateSchema, patientProfileUpdateSchema, walkInPatientCreateResponseSchema, walkInPatientSchema } from '@/schemas';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
+import { buildInitials } from '../lib/authIdentity.js';
+import { logWarn } from '../lib/logger.js';
+import { PATIENT_SELECT_FIELDS, USER_PUBLIC_FIELDS } from '../lib/selects.js';
+import { parseWithSchema, patientCreateSchema, patientProfileUpdateSchema, walkInPatientCreateResponseSchema, walkInPatientSchema } from '../schemas/index.js';
 
 function isMissingFunctionError(error, functionName) {
   return error?.code === 'PGRST202' || error?.message?.includes(functionName);
