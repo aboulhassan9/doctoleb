@@ -76,6 +76,27 @@ export function getSupabaseClient() {
   return _client;
 }
 
+/**
+ * TEST-ONLY: replace the configured Supabase client with a mock for unit tests.
+ *
+ * Production code MUST go through `configureSupabaseClient({ url, anonKey })`
+ * which calls `createClient()` against a real Supabase project. This setter
+ * exists so service-layer unit tests can inject a chainable fake client
+ * (see tests/unit/services/__helpers__/supabaseMock.mjs) without standing up
+ * a network or refactoring every service to accept a client parameter.
+ *
+ * Returns the previous client (or null) so callers can restore it.
+ *
+ * @param {object|null} client - Mock client matching the supabase-js shape.
+ * @returns {object|null}
+ */
+export function __setSupabaseClientForTest(client) {
+  const previous = _client;
+  _client = client;
+  _config = client ? { url: 'test', anonKey: 'test' } : null;
+  return previous;
+}
+
 // ── Compatibility shim ──
 //
 // Existing services and contexts import `supabase` directly:

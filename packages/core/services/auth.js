@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import { getProfileForSessionUser, buildSessionUser } from '@/lib/authIdentity';
+import { supabase } from '../lib/supabase.js';
+import { getProfileForSessionUser, buildSessionUser } from '../lib/authIdentity.js';
 import {
   authOtpRequestSchema,
   authOtpVerifySchema,
@@ -9,7 +9,7 @@ import {
   parseWithSchema,
   resetPasswordSchema,
   sessionUserResponseSchema,
-} from '@/schemas';
+} from '../schemas/index.js';
 
 async function waitForProvisionedProfile(authUser, requireActive = false) {
   const maxAttempts = 5;
