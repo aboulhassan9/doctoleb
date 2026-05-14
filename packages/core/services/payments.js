@@ -1,10 +1,10 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
-import { BILLABLE_SERVICE_FIELDS, PAYMENT_SELECT_FIELDS, USER_CONTACT_FIELDS } from '@/lib/selects';
-import { EntitlementError } from '@/lib/entitlements';
-import { requirePaymentMethodAccess } from '@/lib/billingEntitlements';
-import { assertTransition } from '@/lib/stateMachines';
-import { parseWithSchema, paymentCreateSchema, paymentUpdateSchema } from '@/schemas';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
+import { BILLABLE_SERVICE_FIELDS, PAYMENT_SELECT_FIELDS, USER_CONTACT_FIELDS } from '../lib/selects.js';
+import { EntitlementError } from '../lib/entitlements.js';
+import { requirePaymentMethodAccess } from '../lib/billingEntitlements.js';
+import { assertTransition } from '../lib/stateMachines.js';
+import { parseWithSchema, paymentCreateSchema, paymentUpdateSchema } from '../schemas/index.js';
 
 export const paymentService = {
   async getAll(options = {}) {
