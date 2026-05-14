@@ -116,12 +116,14 @@ export function createSupabaseMock() {
       };
       const baseChain = makeQueryChain(trackedHandler);
 
-      // Tag modifier calls so tests can assert sequence/filters used.
+      // Tag modifier calls so tests can assert sequence/filters used. Every
+      // modifier returns the SAME trackedChain (not the untracked baseChain)
+      // so all subsequent calls in the chain keep recording.
+      const trackedChain = { ...baseChain };
       const wrap = (originalMethod) => (...args) => {
         callEntry.modifiers.push({ method: originalMethod, args });
-        return baseChain;
+        return trackedChain;
       };
-      const trackedChain = { ...baseChain };
       for (const method of [
         'select', 'insert', 'update', 'upsert', 'delete',
         'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'in', 'is', 'not',

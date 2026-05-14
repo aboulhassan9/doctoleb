@@ -1,20 +1,20 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase.js';
 import {
   CONVERSATION_PARTICIPANT_SELECT_FIELDS,
   CONVERSATION_SELECT_FIELDS,
   MESSAGE_ATTACHMENT_SELECT_FIELDS,
   MESSAGE_READ_RECEIPT_SELECT_FIELDS,
   MESSAGE_SELECT_FIELDS,
-} from '@/lib/selects';
+} from '../lib/selects.js';
 import {
   conversationCreateSchema,
   conversationParticipantSchema,
   messageAttachmentSchema,
   messageCreateSchema,
-} from '@/schemas';
-import { apiCall, apiPaged } from './api';
-import { STORAGE_BUCKETS, storageService } from './storage';
-import { validationError, parse } from '@/lib/serviceHelpers';
+} from '../schemas/index.js';
+import { apiCall, apiPaged } from './api.js';
+import { STORAGE_BUCKETS, storageService } from './storage.js';
+import { validationError, parse } from '../lib/serviceHelpers.js';
 
 function isDuplicateClientRequestIdError(error) {
   if (!error) return false;
