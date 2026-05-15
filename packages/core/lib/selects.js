@@ -806,3 +806,32 @@ export const PATIENT_CONSENT_SELECT_FIELDS = [
   'updated_at',
   `consent_documents(${CONSENT_DOCUMENT_SELECT_FIELDS})`,
 ].join(', ');
+
+export const DOCUMENT_TEMPLATE_SELECT_FIELDS = [
+  'id',
+  'name',
+  'template_type',
+  'description',
+  'sections',
+  'is_default',
+  'created_by',
+  'is_archived',
+  'archived_at',
+  'archived_by',
+  'created_at',
+  'updated_at',
+].join(', ');
+
+export const MEDICATION_CATALOG_SELECT_FIELDS = [
+  'id',
+  'name',
+  'generic_name',
+  'dosage_forms',
+  'common_dosages',
+  'notes',
+  'is_archived',
+  'archived_at',
+  'archived_by',
+  'created_at',
+  'updated_at',
+].join(', ');

@@ -1,6 +1,6 @@
 {
   "$comment": "Snapshot of public-schema columns for the live clinic-website Supabase project (gezmfmskhmjgnquoyosq). Used by scripts/audit-selects-drift.mjs to verify that every column referenced in packages/core/lib/selects.js exists in the live DB. Refresh by re-running the snapshot SQL after any migration lands — see docs/runbooks/refresh-schema-snapshot.md.",
-  "$generatedAt": "2026-05-13",
+  "$generatedAt": "2026-05-15",
   "$generatedFrom": "gezmfmskhmjgnquoyosq",
   "schema": {
     "users": ["id","email","role","first_name","last_name","phone","avatar_url","initials","is_active","created_at","updated_at","auth_user_id"],
@@ -26,7 +26,7 @@
     "content_pages": ["id","slug","title","body_md","audience","status","published_at","created_by","created_at","updated_at"],
     "conversations": ["id","patient_id","subject","conversation_type","status","created_by","closed_at","is_archived","archived_at","archived_by","created_at","updated_at"],
     "feature_flags": ["id","code","name","description","is_enabled","target_roles","target_platforms","config","created_at","updated_at","audience"],
-    "prescriptions": ["id","encounter_id","patient_id","doctor_id","medication_name","dosage","route","frequency","duration","instructions","start_date","end_date","status","prescribed_by","is_archived","archived_at","archived_by","created_at","updated_at"],
+    "prescriptions": ["id","encounter_id","patient_id","doctor_id","medication_name","dosage","route","frequency","duration","instructions","start_date","end_date","status","prescribed_by","is_archived","archived_at","archived_by","created_at","updated_at","medication_catalog_id"],
     "staff_members": ["id","user_id","doctor_id","role","display_name","phone","email","invite_status","reports_to","hire_date","is_active","created_at","updated_at","invite_client_request_id","disabled_at","disabled_by","disabled_previous_invite_status","invite_resent_at","invite_resent_by","invite_resend_count","reactivated_at","reactivated_by","reactivation_count","invite_reissued_at","invite_reissued_by","invite_reissue_count"],
     "surgery_types": ["id","code","name","body_system","is_system","is_active","created_at","updated_at"],
     "clinical_notes": ["id","encounter_id","patient_id","doctor_id","author_user_id","note_type","content","visibility","is_archived","archived_at","archived_by","created_at","updated_at"],
@@ -47,6 +47,8 @@
     "tenant_app_config": ["id","profile_id","app_name","app_tagline","splash_logo_url","icon_url","primary_color","secondary_color","maintenance_message","min_supported_version","force_update_version","enabled_locales","support_phone","support_email","created_at","updated_at"],
     "clinical_documents": ["id","patient_id","encounter_id","doctor_id","document_type","title","content","file_url","status","created_by","finalized_at","is_archived","archived_at","archived_by","created_at","updated_at","client_request_id","finalized_by","voided_at","voided_by","void_reason"],
     "doctor_specialties": ["id","doctor_id","specialty_id","is_primary","created_at","updated_at"],
+    "document_templates": ["id","name","template_type","description","sections","is_default","created_by","is_archived","archived_at","archived_by","created_at","updated_at"],
+    "medication_catalog": ["id","name","generic_name","dosage_forms","common_dosages","notes","is_archived","archived_at","archived_by","created_at","updated_at"],
     "insurance_providers": ["id","code","name","phone","email","website_url","is_system","is_active","created_at","updated_at"],
     "message_attachments": ["id","message_id","uploaded_by","file_url","file_name","mime_type","file_size_bytes","storage_bucket","storage_path","created_at","updated_at"],
     "notification_events": ["id","user_id","patient_id","title","body","event_type","related_type","related_id","severity","status","scheduled_for","created_by","created_at","updated_at","client_request_id","source"],
