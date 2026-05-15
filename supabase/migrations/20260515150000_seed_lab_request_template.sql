@@ -1,0 +1,130 @@
+-- Slice 6 — Seed built-in Lab Request Form default template.
+-- See docs/plans/clinical-documents-and-medication-catalog.md § 14 Slice 6.
+--
+-- This migration:
+--   1. Inserts the Lab Request Form template with is_default = true.
+--   2. Uses ON CONFLICT DO NOTHING for idempotency (safe to re-run).
+--   3. created_by is resolved dynamically (same pattern as slice 5).
+--
+-- The JSONB sections match the companion spec at:
+--   docs/specs/default-templates/lab-request.json
+
+do $$
+declare
+  v_created_by uuid;
+begin
+  -- Resolve created_by: first user with doctor role, or first user period.
+  select u.id into v_created_by
+    from public.users u
+    join public.doctors d on d.user_id = u.id
+   order by u.created_at asc
+   limit 1;
+
+  if v_created_by is null then
+    select id into v_created_by
+      from public.users
+     order by created_at asc
+     limit 1;
+  end if;
+
+  if v_created_by is null then
+    raise notice 'No users found — skipping lab request template seed.';
+    return;
+  end if;
+
+  -- ── Lab Request Form ───────────────────────────────────────────
+  insert into public.document_templates (
+    name,
+    template_type,
+    description,
+    sections,
+    is_default,
+    created_by
+  ) values (
+    'Lab Request Form',
+    'lab_request',
+    'Standard lab request form with a checkbox grid for common investigations. Auto-fills patient and doctor details. When linked to a lab order, matching tests are pre-checked.',
+    '[
+      {
+        "key": "patient_info",
+        "title": "Patient Information",
+        "fields": [
+          {"key": "patient_name", "label": "Patient Name", "type": "text", "autofill": "patient.full_name", "required": true},
+          {"key": "patient_dob", "label": "Date of Birth", "type": "date", "autofill": "patient.date_of_birth"},
+          {"key": "patient_gender", "label": "Gender", "type": "select", "autofill": "patient.gender", "options": ["Male", "Female", "Other"]},
+          {"key": "patient_phone", "label": "Phone", "type": "text", "autofill": "patient.phone"}
+        ]
+      },
+      {
+        "key": "ordering_info",
+        "title": "Ordering Information",
+        "fields": [
+          {"key": "ordering_doctor", "label": "Ordering Doctor", "type": "text", "autofill": "doctor.full_name", "required": true},
+          {"key": "doctor_specialization", "label": "Specialization", "type": "text", "autofill": "doctor.specialization"},
+          {"key": "clinic_name", "label": "Clinic", "type": "text", "autofill": "clinic.name"},
+          {"key": "order_date", "label": "Date", "type": "date", "autofill": "document.created_at"}
+        ]
+      },
+      {
+        "key": "clinical_context",
+        "title": "Clinical Context",
+        "fields": [
+          {"key": "chief_complaint", "label": "Chief Complaint", "type": "textarea", "autofill": "encounter.chief_complaint"},
+          {"key": "clinical_indication", "label": "Clinical Indication / Reason for Tests", "type": "textarea", "required": true},
+          {"key": "fasting_required", "label": "Fasting Required", "type": "select", "options": ["Yes", "No", "Not Applicable"]}
+        ]
+      },
+      {
+        "key": "examination_requested",
+        "title": "Examinations Requested",
+        "fields": [
+          {
+            "key": "tests",
+            "label": "Select Tests",
+            "type": "checkbox_grid",
+            "groups": [
+              {"label": "Hematology", "items": ["CBC", "ESR", "Reticulocyte Count", "Peripheral Smear", "Coagulation (PT/INR)", "aPTT", "D-Dimer", "Fibrinogen"]},
+              {"label": "Chemistry", "items": ["FBS / Fasting Glucose", "RBS / Random Glucose", "HbA1c", "Lipid Panel", "BUN / Urea", "Creatinine", "eGFR", "Uric Acid", "Electrolytes (Na/K/Cl)", "Calcium", "Magnesium", "Phosphorus"]},
+              {"label": "Liver Function", "items": ["ALT (SGPT)", "AST (SGOT)", "ALP", "GGT", "Total Bilirubin", "Direct Bilirubin", "Albumin", "Total Protein"]},
+              {"label": "Thyroid", "items": ["TSH", "Free T4", "Free T3", "Anti-TPO", "Thyroglobulin"]},
+              {"label": "Cardiac Markers", "items": ["Troponin I", "CK-MB", "BNP / NT-proBNP", "LDH"]},
+              {"label": "Inflammatory / Autoimmune", "items": ["CRP", "RF (Rheumatoid Factor)", "ANA", "Anti-dsDNA", "Complement C3", "Complement C4"]},
+              {"label": "Endocrine", "items": ["Cortisol", "Prolactin", "FSH", "LH", "Estradiol", "Testosterone", "DHEA-S", "Insulin", "PTH", "Vitamin D (25-OH)"]},
+              {"label": "Serology / Infectious", "items": ["HBsAg", "Anti-HCV", "HIV 1/2", "RPR / VDRL", "CMV IgG/IgM", "EBV Panel", "H. Pylori Ab", "Blood Culture"]},
+              {"label": "Urinalysis", "items": ["Urine Routine", "Urine Culture", "Urine Microalbumin", "24h Urine Protein", "24h Urine Creatinine"]},
+              {"label": "Vitamins & Minerals", "items": ["Vitamin B12", "Folate", "Ferritin", "Iron Studies (TIBC)", "Zinc"]},
+              {"label": "Tumor Markers", "items": ["PSA", "CA-125", "CA 19-9", "CEA", "AFP"]}
+            ]
+          }
+        ]
+      },
+      {
+        "key": "additional_tests",
+        "title": "Additional Tests",
+        "fields": [
+          {"key": "other_tests", "label": "Other Tests (not listed above)", "type": "textarea"},
+          {"key": "special_instructions", "label": "Special Instructions", "type": "textarea"}
+        ]
+      },
+      {
+        "key": "urgency_section",
+        "title": "Priority",
+        "fields": [
+          {"key": "urgency", "label": "Priority", "type": "select", "options": ["Routine", "Urgent", "STAT"]}
+        ]
+      },
+      {
+        "key": "signature",
+        "title": "Signature",
+        "fields": [
+          {"key": "doctor_signature", "label": "Doctor Signature", "type": "signature"}
+        ]
+      }
+    ]'::jsonb,
+    true,
+    v_created_by
+  )
+  on conflict do nothing;
+
+end;
+$$;

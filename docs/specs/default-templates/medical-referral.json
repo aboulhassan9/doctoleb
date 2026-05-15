@@ -1,0 +1,149 @@
+{
+  "name": "Medical Referral Letter",
+  "template_type": "referral",
+  "description": "Standard medical referral letter for specialist consultation. Auto-fills patient and doctor details from encounter context.",
+  "is_default": true,
+  "sections": [
+    {
+      "key": "patient_info",
+      "title": "Patient Information",
+      "fields": [
+        {
+          "key": "patient_name",
+          "label": "Patient Name",
+          "type": "text",
+          "autofill": "patient.full_name",
+          "required": true
+        },
+        {
+          "key": "patient_dob",
+          "label": "Date of Birth",
+          "type": "date",
+          "autofill": "patient.date_of_birth"
+        },
+        {
+          "key": "patient_gender",
+          "label": "Gender",
+          "type": "select",
+          "autofill": "patient.gender",
+          "options": ["Male", "Female", "Other"]
+        },
+        {
+          "key": "patient_phone",
+          "label": "Phone",
+          "type": "text",
+          "autofill": "patient.phone"
+        }
+      ]
+    },
+    {
+      "key": "referral_details",
+      "title": "Referral Details",
+      "fields": [
+        {
+          "key": "referring_doctor",
+          "label": "Referring Doctor",
+          "type": "text",
+          "autofill": "doctor.full_name",
+          "required": true
+        },
+        {
+          "key": "referring_specialization",
+          "label": "Specialization",
+          "type": "text",
+          "autofill": "doctor.specialization"
+        },
+        {
+          "key": "referred_to",
+          "label": "Referred To (Doctor / Facility)",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "referred_specialty",
+          "label": "Referred Specialty",
+          "type": "text"
+        },
+        {
+          "key": "urgency",
+          "label": "Urgency",
+          "type": "select",
+          "options": ["Routine", "Urgent", "Emergency"]
+        }
+      ]
+    },
+    {
+      "key": "clinical_summary",
+      "title": "Clinical Summary",
+      "fields": [
+        {
+          "key": "chief_complaint",
+          "label": "Chief Complaint",
+          "type": "textarea",
+          "autofill": "encounter.chief_complaint"
+        },
+        {
+          "key": "diagnosis",
+          "label": "Diagnosis / Impression",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "key": "relevant_history",
+          "label": "Relevant History & Findings",
+          "type": "textarea"
+        },
+        {
+          "key": "current_medications",
+          "label": "Current Medications",
+          "type": "textarea"
+        }
+      ]
+    },
+    {
+      "key": "reason_for_referral",
+      "title": "Reason for Referral",
+      "fields": [
+        {
+          "key": "reason",
+          "label": "Reason for Referral",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "key": "specific_request",
+          "label": "Specific Request / Question",
+          "type": "textarea"
+        }
+      ]
+    },
+    {
+      "key": "additional_notes",
+      "title": "Additional Notes",
+      "fields": [
+        {
+          "key": "notes",
+          "label": "Additional Notes",
+          "type": "textarea"
+        },
+        {
+          "key": "attachments_note",
+          "label": "Attached Documents",
+          "type": "static_text",
+          "content": "Please see any attached lab results, imaging, or previous reports."
+        }
+      ]
+    },
+    {
+      "key": "signature",
+      "title": "Signature",
+      "fields": [
+        {
+          "key": "doctor_signature",
+          "label": "Doctor Signature",
+          "type": "signature"
+        }
+      ]
+    }
+  ]
+}

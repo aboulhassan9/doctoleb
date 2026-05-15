@@ -1,0 +1,164 @@
+{
+  "name": "Medical Report",
+  "template_type": "report",
+  "description": "Standard medical report documenting clinical findings, diagnosis, and treatment recommendations. Auto-fills patient and doctor details from encounter context.",
+  "is_default": true,
+  "sections": [
+    {
+      "key": "patient_info",
+      "title": "Patient Information",
+      "fields": [
+        {
+          "key": "patient_name",
+          "label": "Patient Name",
+          "type": "text",
+          "autofill": "patient.full_name",
+          "required": true
+        },
+        {
+          "key": "patient_dob",
+          "label": "Date of Birth",
+          "type": "date",
+          "autofill": "patient.date_of_birth"
+        },
+        {
+          "key": "patient_gender",
+          "label": "Gender",
+          "type": "select",
+          "autofill": "patient.gender",
+          "options": ["Male", "Female", "Other"]
+        },
+        {
+          "key": "patient_phone",
+          "label": "Phone",
+          "type": "text",
+          "autofill": "patient.phone"
+        },
+        {
+          "key": "patient_email",
+          "label": "Email",
+          "type": "text",
+          "autofill": "patient.email"
+        }
+      ]
+    },
+    {
+      "key": "encounter_details",
+      "title": "Encounter Details",
+      "fields": [
+        {
+          "key": "encounter_date",
+          "label": "Date of Visit",
+          "type": "date",
+          "autofill": "encounter.started_at"
+        },
+        {
+          "key": "chief_complaint",
+          "label": "Chief Complaint",
+          "type": "textarea",
+          "autofill": "encounter.chief_complaint"
+        },
+        {
+          "key": "examining_doctor",
+          "label": "Examining Doctor",
+          "type": "text",
+          "autofill": "doctor.full_name",
+          "required": true
+        },
+        {
+          "key": "doctor_specialization",
+          "label": "Specialization",
+          "type": "text",
+          "autofill": "doctor.specialization"
+        }
+      ]
+    },
+    {
+      "key": "clinical_findings",
+      "title": "Clinical Findings",
+      "fields": [
+        {
+          "key": "history_of_present_illness",
+          "label": "History of Present Illness",
+          "type": "textarea"
+        },
+        {
+          "key": "physical_examination",
+          "label": "Physical Examination",
+          "type": "textarea"
+        },
+        {
+          "key": "vital_signs",
+          "label": "Vital Signs",
+          "type": "textarea"
+        }
+      ]
+    },
+    {
+      "key": "diagnosis_section",
+      "title": "Diagnosis",
+      "fields": [
+        {
+          "key": "primary_diagnosis",
+          "label": "Primary Diagnosis",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "key": "secondary_diagnoses",
+          "label": "Secondary / Differential Diagnoses",
+          "type": "textarea"
+        }
+      ]
+    },
+    {
+      "key": "treatment_plan",
+      "title": "Treatment & Recommendations",
+      "fields": [
+        {
+          "key": "treatment",
+          "label": "Treatment Plan",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "key": "medications_prescribed",
+          "label": "Medications Prescribed",
+          "type": "textarea"
+        },
+        {
+          "key": "follow_up",
+          "label": "Follow-up Instructions",
+          "type": "textarea"
+        },
+        {
+          "key": "referrals",
+          "label": "Referrals / Further Investigations",
+          "type": "textarea"
+        }
+      ]
+    },
+    {
+      "key": "additional_notes",
+      "title": "Additional Notes",
+      "fields": [
+        {
+          "key": "notes",
+          "label": "Additional Notes",
+          "type": "textarea"
+        }
+      ]
+    },
+    {
+      "key": "signature",
+      "title": "Signature",
+      "fields": [
+        {
+          "key": "doctor_signature",
+          "label": "Doctor Signature",
+          "type": "signature"
+        }
+      ]
+    }
+  ]
+}
