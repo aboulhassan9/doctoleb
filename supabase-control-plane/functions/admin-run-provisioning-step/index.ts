@@ -27,6 +27,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 const DEFAULT_PATIENT_WEB_URL = 'https://doctoleb-patient-web.vercel.app'
 const DEFAULT_CLINIC_OPS_URL = 'https://doctoleb-clinic-ops.vercel.app'
+// Keep this aligned with packages/core/schemas/auth.js and the ops login UI.
 const TENANT_EMAIL_OTP_LENGTH = 8
 const TERMINAL_STEP_STATUSES = new Set(['succeeded', 'skipped', 'cancelled', 'rolled_back'])
 const SAFE_RUNNER_STEPS = new Set([
