@@ -475,6 +475,20 @@ export const DIAGNOSIS_SELECT_FIELDS = [
   `diseases(${DISEASE_SELECT_FIELDS})`,
 ].join(', ');
 
+export const MEDICATION_CATALOG_SELECT_FIELDS = [
+  'id',
+  'name',
+  'generic_name',
+  'dosage_forms',
+  'common_dosages',
+  'notes',
+  'is_archived',
+  'archived_at',
+  'archived_by',
+  'created_at',
+  'updated_at',
+].join(', ');
+
 export const PRESCRIPTION_SELECT_FIELDS = [
   'id',
   'encounter_id',
@@ -490,9 +504,11 @@ export const PRESCRIPTION_SELECT_FIELDS = [
   'end_date',
   'status',
   'prescribed_by',
+  'medication_catalog_id',
   'is_archived',
   'created_at',
   'updated_at',
+  `medication_catalog(${MEDICATION_CATALOG_SELECT_FIELDS})`,
 ].join(', ');
 
 export const LAB_ORDER_SELECT_FIELDS = [
@@ -822,16 +838,3 @@ export const DOCUMENT_TEMPLATE_SELECT_FIELDS = [
   'updated_at',
 ].join(', ');
 
-export const MEDICATION_CATALOG_SELECT_FIELDS = [
-  'id',
-  'name',
-  'generic_name',
-  'dosage_forms',
-  'common_dosages',
-  'notes',
-  'is_archived',
-  'archived_at',
-  'archived_by',
-  'created_at',
-  'updated_at',
-].join(', ');

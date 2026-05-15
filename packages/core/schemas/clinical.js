@@ -80,6 +80,7 @@ export const prescriptionSchema = z.object({
   end_date: z.string().optional().nullable(),
   status: z.enum(['draft', 'active', 'stopped', 'completed', 'cancelled']).optional().default('active'),
   prescribed_by: z.string().uuid(),
+  medication_catalog_id: z.string().uuid().optional().nullable(),
 });
 
 export const clinicalOrderSchema = z.object({

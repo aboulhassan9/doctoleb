@@ -135,3 +135,15 @@ export {
   walkInPatientCreateResponseSchema,
   sessionUserResponseSchema,
 } from './responses.js';
+
+/* ── Document Templates & Medication Catalog ─────────────────────── */
+export {
+  documentTemplateCreateSchema,
+  documentTemplateUpdateSchema,
+  medicationCatalogCreateSchema,
+  medicationCatalogUpdateSchema,
+  templateFieldSchema,
+  templateSectionSchema,
+  TEMPLATE_FIELD_TYPES,
+  TEMPLATE_TYPES,
+} from './documentTemplates.js';
