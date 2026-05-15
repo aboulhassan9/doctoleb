@@ -147,7 +147,7 @@ describe('authService.verifyEmailOtp', () => {
     mock.onFrom('doctors', () => ({ data: { id: DOCTOR_ID }, error: null }));
     mock.onFrom('patients', () => ({ data: null, error: null }));
 
-    const result = await authService.verifyEmailOtp('maya@example.com', '123456');
+    const result = await authService.verifyEmailOtp('maya@example.com', '12345678');
     assert.equal(result.error, null);
     assert.equal(result.data.id, PROFILE_ID);
     assert.equal(result.data.role, 'doctor');
@@ -155,7 +155,7 @@ describe('authService.verifyEmailOtp', () => {
 
   it('signs out and returns an error if Supabase rejects the token', async () => {
     mock.onAuth('verifyOtp', () => ({ data: null, error: { message: 'invalid token' } }));
-    const result = await authService.verifyEmailOtp('maya@example.com', '999999');
+    const result = await authService.verifyEmailOtp('maya@example.com', '99999999');
     assert.equal(result.data, null);
     assert.notEqual(result.error, null);
   });

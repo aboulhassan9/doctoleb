@@ -80,6 +80,7 @@ describe('auth security contracts', () => {
     assert.match(opsLogin, /sessionStorage\.removeItem/);
     assert.match(opsLogin, /Enter login code/);
     assert.match(opsLogin, /Code sent/);
+    assert.match(opsLogin, /EMAIL_OTP_CODE_LENGTH/);
     assert.match(opsLogin, /Email code/);
     assert.match(opsLogin, /Send login code/);
     assert.match(opsLogin, /Verify code/);

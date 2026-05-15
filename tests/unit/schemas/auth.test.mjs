@@ -57,19 +57,19 @@ describe('auth schemas', () => {
   });
 
   describe('authOtpVerifySchema', () => {
-    it('accepts a 6-digit token paired with an email', () => {
+    it('accepts an 8-digit token paired with an email', () => {
       const { data, error } = parseWithSchema(authOtpVerifySchema, {
         email: 'doctor@clinic.com',
-        token: '123456',
+        token: '12345678',
       });
       assert.equal(error, null);
-      assert.equal(data.token, '123456');
+      assert.equal(data.token, '12345678');
     });
 
-    it('rejects a token that is too short', () => {
+    it('rejects a 6-digit token that no longer matches the tenant Auth config', () => {
       const { error } = parseWithSchema(authOtpVerifySchema, {
         email: 'doctor@clinic.com',
-        token: '123',
+        token: '123456',
       });
       assert.notEqual(error, null);
     });
@@ -77,7 +77,7 @@ describe('auth schemas', () => {
     it('rejects a non-numeric token', () => {
       const { error } = parseWithSchema(authOtpVerifySchema, {
         email: 'doctor@clinic.com',
-        token: 'abcdef',
+        token: 'abcdefgh',
       });
       assert.notEqual(error, null);
     });

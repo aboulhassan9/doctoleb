@@ -1,7 +1,7 @@
 -- DoctoLeb Control Plane · normalize_tenant_auth_settings provisioning step
 -- Inserts a new step between seed_tenant_profile and seed_first_doctor_admin
 -- so newly provisioned tenants get their Supabase Auth config normalized
--- (OTP length 6, redirect URL allowlist, site URL) before the first doctor
+-- (OTP length 8, redirect URL allowlist, site URL) before the first doctor
 -- invite is sent. The runner Edge Function uses the tenant's Supabase provider
 -- connection PAT to call the Supabase Management API. No raw tokens are
 -- stored in control-plane tables.
@@ -190,4 +190,4 @@ revoke execute on function public.admin_seed_tenant_provisioning_steps(uuid, uui
 grant execute on function public.admin_seed_tenant_provisioning_steps(uuid, uuid, text, uuid, uuid) to service_role;
 
 comment on function public.admin_seed_tenant_provisioning_steps(uuid, uuid, text, uuid, uuid) is
-  'Seeds the canonical provisioning step ledger for a tenant job. As of 2026-05-13 this includes normalize_tenant_auth_settings between seed_tenant_profile and seed_first_doctor_admin so first-doctor invite emails use a normalized Supabase Auth config (OTP length 6, redirect URL allowlist).';
+  'Seeds the canonical provisioning step ledger for a tenant job. As of 2026-05-13 this includes normalize_tenant_auth_settings between seed_tenant_profile and seed_first_doctor_admin so first-doctor invite emails use a normalized Supabase Auth config (OTP length 8, redirect URL allowlist).';

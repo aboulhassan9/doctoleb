@@ -9,7 +9,7 @@
 
 Calls `PATCH /v1/projects/{ref}/config/auth` on the tenant's Supabase project to normalize Auth settings before the first-doctor invite goes out. Currently sets:
 
-- `mailer_otp_length`: **6** (matches the OTP input UI in `OpsLoginPage.jsx`)
+- `mailer_otp_length`: **8** (matches the OTP input UI in `OpsLoginPage.jsx`)
 - `mailer_otp_exp`: **600 seconds** (10-minute OTP validity)
 - `site_url`: the active ops domain (or `/t/<slug>` no-domain fallback)
 - `uri_allow_list`: every `/login` and `/reset-password` URL the tenant can be reached at across both surfaces and routing modes
@@ -38,7 +38,7 @@ The migration only changes what's seeded for NEW jobs. Existing jobs have a ledg
 ### Fastest path: one-time dashboard fix
 
 1. Open the tenant's Supabase dashboard project (for assad: `https://supabase.com/dashboard/project/rpfhdbtyzuznhfcudrgt`)
-2. Auth → Providers → Email → set OTP Length to 6
+2. Auth → Providers → Email → set OTP Length to 8
 3. Done
 
 This is the recommended path for tenants that already exist and don't yet have a provider connection wired up.

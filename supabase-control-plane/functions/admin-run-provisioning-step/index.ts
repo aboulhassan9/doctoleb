@@ -27,6 +27,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
 const DEFAULT_PATIENT_WEB_URL = 'https://doctoleb-patient-web.vercel.app'
 const DEFAULT_CLINIC_OPS_URL = 'https://doctoleb-clinic-ops.vercel.app'
+const TENANT_EMAIL_OTP_LENGTH = 8
 const TERMINAL_STEP_STATUSES = new Set(['succeeded', 'skipped', 'cancelled', 'rolled_back'])
 const SAFE_RUNNER_STEPS = new Set([
   'provider_connections_selected',
@@ -1364,7 +1365,7 @@ async function runNormalizeTenantAuthSettings(
     supabaseConnection,
     runtimeConfig.projectRef,
     {
-      mailer_otp_length: 6,
+      mailer_otp_length: TENANT_EMAIL_OTP_LENGTH,
       mailer_otp_exp: 600,
       site_url: siteUrlSource,
       uri_allow_list: Array.from(allowedRedirects).join(','),
@@ -1385,14 +1386,14 @@ async function runNormalizeTenantAuthSettings(
       status: 'succeeded',
       postconditions: {
         tenantAuthConfigNormalized: true,
-        mailerOtpLength: 6,
+        mailerOtpLength: TENANT_EMAIL_OTP_LENGTH,
         mailerOtpExpSeconds: 600,
         allowedRedirectCount: allowedRedirects.size,
         appliedFields: result.data.appliedFields,
       },
       externalResourceKind: 'supabase_auth_config',
       externalResourceId: runtimeConfig.projectRef,
-      summary: 'Tenant Auth settings normalized: OTP length 6, expiry 10 min, redirect URLs allowlisted from tenant routing.',
+      summary: `Tenant Auth settings normalized: OTP length ${TENANT_EMAIL_OTP_LENGTH}, expiry 10 min, redirect URLs allowlisted from tenant routing.`,
     },
     error: null,
   }

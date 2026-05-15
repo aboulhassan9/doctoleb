@@ -729,7 +729,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /tenant_draft_created[\s\S]*provider_connections_selected[\s\S]*create_supabase_project[\s\S]*apply_tenant_migrations[\s\S]*seed_tenant_profile[\s\S]*normalize_tenant_auth_settings[\s\S]*seed_first_doctor_admin[\s\S]*configure_vercel_project[\s\S]*store_runtime_config[\s\S]*smoke_test_resolver[\s\S]*activate_tenant/);
     assert.match(runner, /runNormalizeTenantAuthSettings/);
     assert.match(runner, /patchTenantAuthConfig/);
-    assert.match(runner, /mailer_otp_length: 6/);
+    assert.match(runner, /mailer_otp_length: TENANT_EMAIL_OTP_LENGTH/);
+    assert.match(runner, /TENANT_EMAIL_OTP_LENGTH = 8/);
     assert.match(runner, /createProject,\s*\n\s*getProject,\s*\n\s*listProjectApiKeys/);
     assert.match(runner, /generateStrongDbPassword/);
     assert.match(runner, /SUPABASE_PROJECT_INITIALIZING/);

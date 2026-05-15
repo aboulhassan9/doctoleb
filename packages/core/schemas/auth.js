@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const EMAIL_OTP_CODE_LENGTH = 8;
+
 export const authSignInSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(1),
@@ -10,7 +12,10 @@ export const authOtpRequestSchema = z.object({
 });
 
 export const authOtpVerifySchema = authOtpRequestSchema.extend({
-  token: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit login code.'),
+  token: z
+    .string()
+    .trim()
+    .regex(new RegExp(`^\\d{${EMAIL_OTP_CODE_LENGTH}}$`), `Enter the ${EMAIL_OTP_CODE_LENGTH}-digit login code.`),
 });
 
 export const authSignUpSchema = z.object({

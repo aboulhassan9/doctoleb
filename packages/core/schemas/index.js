@@ -11,6 +11,7 @@ export { parseWithSchema } from './helpers.js';
 
 /* ── Auth ────────────────────────────────────────────────────────── */
 export {
+  EMAIL_OTP_CODE_LENGTH,
   authSignInSchema,
   authOtpRequestSchema,
   authOtpVerifySchema,

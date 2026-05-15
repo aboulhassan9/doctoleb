@@ -6,8 +6,10 @@ import { useToast } from '@/contexts/ToastContext';
 import { getHomeRouteForRole } from '@/lib/routes';
 import { getPatientWebLoginUrl, isPatientRole } from '@/lib/appBoundaries';
 import { useBrand } from '@/contexts/BrandContext';
+import { EMAIL_OTP_CODE_LENGTH } from '@core/schemas';
 
 const OTP_PENDING_TTL_MS = 10 * 60 * 1000;
+const OTP_CODE_PLACEHOLDER = '0'.repeat(EMAIL_OTP_CODE_LENGTH);
 
 function getPendingOtpStorageKey() {
   if (typeof window === 'undefined') return 'clinic-ops:pending-otp';
@@ -234,16 +236,16 @@ export default function OpsLoginPage() {
                     <span className="material-symbols-outlined text-emerald-700">mark_email_read</span>
                     <span className="text-xs font-black uppercase tracking-[0.18em] text-emerald-800">Code sent</span>
                   </div>
-                  <label htmlFor="ops-login-code" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">6-digit code</label>
+                  <label htmlFor="ops-login-code" className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">{EMAIL_OTP_CODE_LENGTH}-digit code</label>
                   <input
                     id="ops-login-code"
                     inputMode="numeric"
-                    pattern="[0-9]{6}"
+                    pattern={`[0-9]{${EMAIL_OTP_CODE_LENGTH}}`}
                     required
                     value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="000000"
-                    className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-4 text-center text-2xl font-black tracking-[0.55em] text-slate-900 transition-all placeholder:text-slate-300 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, EMAIL_OTP_CODE_LENGTH))}
+                    placeholder={OTP_CODE_PLACEHOLDER}
+                    className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-4 text-center text-2xl font-black tracking-[0.35em] text-slate-900 transition-all placeholder:text-slate-300 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-100"
                     disabled={loading}
                     autoFocus
                   />

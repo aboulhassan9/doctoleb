@@ -3,7 +3,6 @@
 // No PHI; this is a pre-sales contact form for doctors interested in DoctoLeb.
 
 const CONTROL_PLANE_URL = import.meta.env.VITE_CONTROL_PLANE_SUPABASE_URL
-  || 'https://xouqxgwccewvbtkqming.supabase.co'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -11,6 +10,9 @@ export async function submitMarketingLead({ email, clinicName, doctorName, messa
   const trimmedEmail = typeof email === 'string' ? email.trim() : ''
   if (!EMAIL_RE.test(trimmedEmail) || trimmedEmail.length > 200) {
     return { ok: false, error: 'INVALID_EMAIL' }
+  }
+  if (!CONTROL_PLANE_URL) {
+    return { ok: false, error: 'SERVICE_UNCONFIGURED' }
   }
 
   try {

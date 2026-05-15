@@ -53,7 +53,7 @@ Send a one-time code email.
 
 Verify a code from the OTP email and finish sign-in.
 
-- **Input schema:** `authOtpVerifySchema` (email + 6-digit token).
+- **Input schema:** `authOtpVerifySchema` (email + 8-digit token).
 - **Same post-auth flow as `signIn`** (profile fetch + session build).
 - **Returns:** identical envelope.
 
