@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | LOCKED — ready for execution |
-| **Version** | 2.0.0 (2026-05-15) |
+| **Status** | LOCKED — claimed-DONE rows corrected with real commits |
+| **Version** | 2.0.2 (2026-05-15) |
 | **Doc owner** | Engineering — review on every slice merge |
 | **Plan owner** | Project owner (sign-off on open questions before unblocking dependent slices) |
 | **Implementation owner** | Each slice has a named owner once assigned; see § 14 |
@@ -55,7 +55,7 @@ You **must** stop and request human input if any of the following are true. Do n
 | **LOCKED** | Plan is approved by the project owner; only the decision log can update without a new version bump |
 | **SHIPPED** | The plan's definition of done (§ 20) is met; this doc is moved to `docs/archive/` |
 
-This document is **LOCKED** as of 2.0.0.
+This document is **LOCKED** as of 2.0.2.
 
 ### 0.4. Execution status — Progress & Handoff
 
@@ -64,16 +64,47 @@ This document is **LOCKED** as of 2.0.0.
 | Slice | Status | Commit | Tests | Notes |
 |---|---|---|---|---|
 | **S1** Foundation migrations + RLS | ✅ DONE 2026-05-15 | `8928863` | 498 pass, 0 fail | Migration applied to `gezmfmskhmjgnquoyosq`. Both new tables visible. Snapshot fixture refreshed (60 → 62 tables). |
-| **S2** Services + schemas | ⏭️ NEXT | — | — | Unblocked. No prerequisites pending. Start with `docs/runbooks/agent-execution-recipes.md § 3`. |
+| **S2** Services + schemas | ✅ DONE 2026-05-15 | `1ca6197` | AT-2.1–AT-2.4 pass | Services, schemas, selects, and medication catalog contracts landed with real tests. Decision log records schema-file placement. |
 | **S3** Starter medication seed | 🟡 BLOCKED on OQ-1 | — | — | Needs `docs/medication-catalog-starter.md` approved by project owner / medical lead before merge. Engineering can begin the migration scaffolding but cannot ship rows. |
-| **S4** PDF render Edge Function | ⏸ QUEUED | — | — | Depends on S2 (templateService). |
-| **S5** Built-in default templates | ⏸ QUEUED | — | — | Depends on S1 (table) + S4 (render path). |
-| **S6** Lab Request template + auto-fill | ⏸ QUEUED | — | — | Depends on S5. |
-| **S7** Template editor UI | ⏸ QUEUED | — | — | Depends on S2 + S4. |
-| **S8** Medication autocomplete | ⏸ QUEUED | — | — | Depends on S2. |
+| **S4** PDF render Edge Function | ✅ DONE 2026-05-15 | `0207f91` | AT-4.1–AT-4.5 pass + `npm run test:pdfa` | Real PDF/A-2b fixture is validated with veraPDF in local/CI gates; logo timeout is exercised by a slow-fetch abort test. Node mirror remains documented for layout/operator unit tests. |
+| **S5** Built-in default templates | ✅ DONE 2026-05-15 | `9f1d19f` | AT-5.1–AT-5.3 pass | Default medical referral/report seeds, delete guard coverage, and generated tenant migration bundle landed together. |
+| **S6** Lab Request template + auto-fill | ✅ DONE 2026-05-15 | `9f1d19f` | AT-6.1–AT-6.3 pass | Lab request seed and auto-fill mapping landed with the same migration-bundle commit as S5. Section-key rename is accepted in the decision log. |
+| **S7** Template editor UI | ⏭️ NEXT | — | — | S2 and S4 are now closed; start from the current services/render contracts, not the old placeholder status. |
+| **S8** Medication autocomplete | ✅ DONE 2026-05-15 | `30aac97` | AT-8.1–AT-8.4 pass | Prescription autocomplete UI, dosage-form fill, duplicate-case protection, and blank-name skip behavior landed with tests. |
 | **S9** Legacy page sunset | ⏸ QUEUED | — | — | Depends on S7 + flag flip per tenant. |
 
-**Suite at last green gate:** 498 tests / 116 suites / 0 failures · lint clean · `audit:selects-drift` ✅ · `audit:rpc-signatures` ✅ · `build:ops` clean (6.95s).
+**Last trusted corrective gate:** S1, S2, S4, S5, S6, and S8 now have real commits and plan log entries. S3, S7, and S9 remain open by design.
+
+#### 2026-05-15 reviewer correction — claimed-DONE audit closed
+
+This correction uses this plan's own definition of DONE: acceptance criteria pass, code merged on `main`, real commit hash recorded, master log updated, and non-trivial decisions documented. Placeholder labels such as `slice2_delivery` are not Git SHAs and must not be used as evidence.
+
+| Slice | Corrected status | Evidence | Residual risk |
+|---|---|---|---|
+| S1 | ✅ DONE | `8928863`; AT-1.1–AT-1.3 green. | None for this audit. |
+| S2 | ✅ DONE | `1ca6197`; AT-2.1–AT-2.4 green; decision log updated. | S3 starter medication list still needs clinical approval before seeding rows. |
+| S4 | ✅ DONE | `0207f91`; real veraPDF gate; real logo timeout test; CI runs `npm run test:pdfa`. | Unit renderer mirror remains for deterministic layout tests; this is now explicit, not hidden. |
+| S5 | ✅ DONE | `9f1d19f`; AT-5.1–AT-5.3 green; migration bundle refreshed. | None for this audit. |
+| S6 | ✅ DONE | `9f1d19f`; AT-6.1–AT-6.3 green; section-key rename logged. | None for this audit. |
+| S8 | ✅ DONE | `30aac97`; AT-8.1–AT-8.4 green. | UI still depends on S3 for approved starter catalog rows. |
+
+#### Corrective verification completed
+
+| Gate | Result |
+|---|---|
+| `npm run verify` | PASS |
+| `node --test tests/unit/edge/renderClinicalDocument.test.mjs` | 31 pass, 0 fail |
+| `npm run test:pdfa` | PASS — veraPDF validates the generated referral fixture as PDF/A-2b |
+| `npm run test:unit` | 639 tests / 148 suites, 0 failures |
+| `npm run lint` | PASS |
+| `npm run build` | PASS |
+| `npm run check:tenant-migration-bundle` | PASS |
+| `npm run audit:backend-contract` | PASS with existing tracked warnings only |
+| `npm run audit:bundle-secrets` | PASS |
+| `npm run audit:selects-drift` | PASS |
+| `npm run audit:rpc-signatures` | PASS |
+| `npm run audit:high` | PASS |
+| `npm run test:backend-db-contract` | PASS for configured checks; live DB subchecks skipped locally because no DB env was set |
 
 #### Slice 1 — what was produced
 
@@ -895,6 +926,11 @@ Every architectural decision that's hard to reverse is recorded here. **Add to t
 | 2026-05-15 | Per-tenant catalog, no global / RxNorm cross-link in v1 | Global catalog (cheaper to seed), RxNorm sync (richer data) | Lebanon formulary diverges from US-centric RxNorm; per-tenant self-population matches the spec and avoids vendor lock-in |
 | 2026-05-15 | Feature flag (`templates_engine`) gates the new UI, legacy pages remain | Hard cut-over | Lower risk; lets us shadow-test with one tenant; ADR-005 aligns with this pattern |
 | 2026-05-15 | QR code in every PDF points to a stub verification endpoint in v1 | Skip QR until endpoint is real | Forward-compatibility: documents generated today are verifiable tomorrow |
+| 2026-05-15 | Medication template/catalog schemas live in `packages/core/schemas/documentTemplates.js` | Create separate `medicationCatalog.js` schema file | The document-template and medication-catalog service contracts share the same clinical-document input surface; keeping them together avoids a duplicate schema barrel while S2 is still small. |
+| 2026-05-15 | S4 PDF/A acceptance uses real veraPDF plus shared helper coverage | Keep the old metadata-only proxy | The old proxy could pass while a PDF/A validator failed. `npm run test:pdfa` now generates a fixture and validates it with veraPDF; CI backend/full lanes install Java and run the same gate. |
+| 2026-05-15 | PDF rendering embeds bundled Noto Sans fonts and a bundled sRGB ICC profile | Use `StandardFonts` and metadata-only PDF/A tagging | Standard PDF fonts are not embedded and fail veraPDF. Bundled assets keep the Edge Function deterministic and avoid PHI-bearing third-party font/image calls. |
+| 2026-05-15 | Render unit tests keep a Node-compatible mirror for deterministic layout assertions | Try to run the Deno Edge Function directly in Node unit tests | Node unit tests need operator-level PDF assertions and fast mocks. The shared `pdfA.js`, font/ICC assets, `logoFetch.js`, and real veraPDF fixture now cover the production-sensitive parts; the mirror is explicit rather than hidden. |
+| 2026-05-15 | Lab request template uses concise section keys (`patient_info`, `ordering_info`, `clinical_context`, `additional_tests`, `urgency_section`) | Revert to the longer original names from the draft plan | The concise keys match the shipped template JSON and auto-fill tests, reduce field-name noise, and preserve the same rendered sections. |
 
 ---
 
@@ -983,6 +1019,8 @@ The product surface is "done" when:
 |---|---|---|---|
 | 1.0.0 | 2026-05-15 | Senior plan author | Initial plan, 600 lines, slice 1–9 |
 | 2.0.0 | 2026-05-15 | Senior plan author | Reading-order budget, stop signals, success criteria (quantitative), risk register, observability, security threat model, performance budgets, decision log, rollback per slice, AT IDs, master plan log entries, world-class PDF export spec extracted to companion file, agent execution recipes extracted |
+| 2.0.1 | 2026-05-15 | Codex | Reviewer audit corrected false DONE claims; S2/S4/S5/S6/S8 moved back to not-plan-DONE pending real commits and decision-log evidence. |
+| 2.0.2 | 2026-05-15 | Codex | Closed the claimed-DONE correction: S2, S4, S5, S6, and S8 now have real commits, real acceptance-test evidence, CI PDF/A validation, and decision-log entries. |
 
 ---
 
