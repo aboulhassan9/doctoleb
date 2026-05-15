@@ -63,7 +63,7 @@ This document is **LOCKED** as of 2.0.0.
 
 | Slice | Status | Commit | Tests | Notes |
 |---|---|---|---|---|
-| **S1** Foundation migrations + RLS | ✅ DONE 2026-05-15 | `<S1-commit>` | 498 pass, 0 fail | Migration applied to `gezmfmskhmjgnquoyosq`. Both new tables visible. Snapshot fixture refreshed (60 → 62 tables). |
+| **S1** Foundation migrations + RLS | ✅ DONE 2026-05-15 | `8928863` | 498 pass, 0 fail | Migration applied to `gezmfmskhmjgnquoyosq`. Both new tables visible. Snapshot fixture refreshed (60 → 62 tables). |
 | **S2** Services + schemas | ⏭️ NEXT | — | — | Unblocked. No prerequisites pending. Start with `docs/runbooks/agent-execution-recipes.md § 3`. |
 | **S3** Starter medication seed | 🟡 BLOCKED on OQ-1 | — | — | Needs `docs/medication-catalog-starter.md` approved by project owner / medical lead before merge. Engineering can begin the migration scaffolding but cannot ship rows. |
 | **S4** PDF render Edge Function | ⏸ QUEUED | — | — | Depends on S2 (templateService). |
