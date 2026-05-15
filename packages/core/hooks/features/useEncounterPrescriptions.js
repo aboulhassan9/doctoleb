@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { clinicalService } from '@/services/clinical';
+import { medicationCatalogService } from '@core/services/medicationCatalog';
 import { useToast } from '@/contexts/ToastContext';
 import { logError } from '@/lib/logger';
 import { normalizeEncounterScope } from './encounterScope';
@@ -60,6 +61,16 @@ export function useEncounterPrescriptions(scope) {
       if (err) throw new Error(err);
 
       showToast('Prescription added.', 'success');
+
+      // Fire-and-forget: auto-populate the medication catalog with the
+      // medication name if it doesn't already exist. Silently swallow errors.
+      // This NEVER blocks the save — the prescription is already persisted.
+      if (payload.medication_name && !payload.medication_catalog_id) {
+        medicationCatalogService.upsertIfMissing(payload.medication_name).catch(() => {
+          // Silently ignore — the catalog auto-insert is best-effort.
+        });
+      }
+
       await fetch();
       return true;
     } catch (err) {
