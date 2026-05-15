@@ -22,7 +22,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   webServer: {
-    command: `npx vite preview --config apps/marketing/vite.config.js --port ${PORT} --strictPort`,
+    command: `npx vite preview --config apps/marketing/vite.config.js --host 127.0.0.1 --port ${PORT} --strictPort`,
     port: PORT,
     timeout: 90_000,
     reuseExistingServer: !process.env.CI,

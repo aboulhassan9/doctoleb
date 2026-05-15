@@ -16,8 +16,8 @@ test.describe('marketing landing page', () => {
     await expect(page.getByRole('link', { name: /Start your clinic/i }).first()).toBeVisible()
 
     // Trust band
-    await expect(page.getByText(/Per-clinic database/i)).toBeVisible()
-    await expect(page.getByText(/Zero-PHI control plane/i)).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Per-clinic database' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Zero-PHI control plane' })).toBeVisible()
 
     // Features
     await expect(page.getByRole('heading', { name: /Smart scheduling/i })).toBeVisible()
