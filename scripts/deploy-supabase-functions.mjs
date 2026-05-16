@@ -6,6 +6,10 @@ import path from 'node:path';
 const SUPABASE_CLI_VERSION = process.env.SUPABASE_CLI_VERSION || '2.72.7';
 const CONTROL_PLANE_PROJECT_REF = process.env.CONTROL_PLANE_SUPABASE_PROJECT_REF || 'xouqxgwccewvbtkqming';
 const TENANT_PROJECT_REF = process.env.TENANT_SUPABASE_PROJECT_REF || '';
+const CONTROL_PLANE_PUBLIC_FUNCTIONS = new Set([
+  'marketing-capture-lead',
+  'tenant-resolve',
+]);
 
 function parseCsv(value) {
   return String(value || '')
@@ -46,7 +50,7 @@ function stageFunctions({ sourceRoot, functionNames }) {
 
 function runSupabaseDeploy({ stageRoot, functionName, projectRef }) {
   const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  const result = spawnSync(command, [
+  const args = [
     '--yes',
     `supabase@${SUPABASE_CLI_VERSION}`,
     'functions',
@@ -54,7 +58,13 @@ function runSupabaseDeploy({ stageRoot, functionName, projectRef }) {
     functionName,
     '--project-ref',
     projectRef,
-  ], {
+  ];
+
+  if (CONTROL_PLANE_PUBLIC_FUNCTIONS.has(functionName)) {
+    args.push('--no-verify-jwt');
+  }
+
+  const result = spawnSync(command, args, {
     cwd: stageRoot,
     stdio: 'inherit',
     env: process.env,

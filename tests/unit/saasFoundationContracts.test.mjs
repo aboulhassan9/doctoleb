@@ -238,6 +238,7 @@ describe('SaaS foundation contracts', () => {
     const workflow = read('.github/workflows/ci.yml');
     const pkg = JSON.parse(read('package.json'));
     const smoke = read('scripts/tenant-resolver-smoke.mjs');
+    const deployFunctions = read('scripts/deploy-supabase-functions.mjs');
 
     assert.equal(pkg.scripts['smoke:tenant-resolver'], 'node scripts/tenant-resolver-smoke.mjs');
     assert.match(workflow, /tenant-resolver-smoke:/);
@@ -254,6 +255,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(smoke, /assertNoSecretMarkers/);
     assert.match(smoke, /supabaseAnonKey/);
     assert.match(smoke, /gezmfmskhmjgnquoyosq/);
+    assert.match(deployFunctions, /CONTROL_PLANE_PUBLIC_FUNCTIONS/);
+    assert.match(deployFunctions, /'tenant-resolve'/);
+    assert.match(deployFunctions, /'marketing-capture-lead'/);
+    assert.match(deployFunctions, /--no-verify-jwt/);
   });
 
   it('CI scans every Vercel bundle for secrets and patient/ops fallback leakage', () => {
