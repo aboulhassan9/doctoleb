@@ -268,6 +268,7 @@ export default function ReportViewerPage() {
 
   return (
     <DashboardLayout role="doctor">
+      <a href="#report-content" className="skip-link">Skip to report content</a>
       <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-6 p-6 print-area">
         <motion.div variants={fadeUp} className="no-print">
           <PageHeader
@@ -411,7 +412,7 @@ export default function ReportViewerPage() {
         )}
 
         {/* Chart */}
-        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5" role="region" aria-label="Report chart">
+        <motion.div id="report-content" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5" role="region" aria-label="Report chart">
           {running ? (
             <LoadingSkeleton rows={6} />
           ) : (

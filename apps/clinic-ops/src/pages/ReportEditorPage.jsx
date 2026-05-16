@@ -211,14 +211,15 @@ const EDITOR_STEPS = [
   { key: 'display',   label: 'Display' },
 ];
 
-function StepProgress({ steps, current }) {
+function StepProgress({ steps, current, onStepClick }) {
   return (
     <div className="flex items-center gap-1 overflow-x-auto pb-1" role="navigation" aria-label="Report editor steps">
       {steps.map((s, i) => {
         const isComplete = i < current;
         const isCurrent = i === current;
-        return (
-          <div key={s.key} className="flex items-center gap-1" aria-current={isCurrent ? 'step' : undefined}>
+        const canNavigate = isComplete || isCurrent;
+        const inner = (
+          <>
             <div
               className={`flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold shrink-0 ${
                 isComplete
@@ -237,6 +238,22 @@ function StepProgress({ steps, current }) {
             >
               {s.label}
             </span>
+          </>
+        );
+        return (
+          <div key={s.key} className="flex items-center gap-1" aria-current={isCurrent ? 'step' : undefined}>
+            {canNavigate && onStepClick ? (
+              <button
+                type="button"
+                onClick={() => onStepClick(i)}
+                className="flex items-center gap-1 cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                aria-label={`Go to step: ${s.label}`}
+              >
+                {inner}
+              </button>
+            ) : (
+              <div className="flex items-center gap-1">{inner}</div>
+            )}
             {i < steps.length - 1 && (
               <div className={`h-0.5 w-4 ${isComplete ? 'bg-blue-600' : 'bg-slate-200'}`} />
             )}
@@ -731,7 +748,10 @@ export default function ReportEditorPage() {
       <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-6 p-6">
         {/* Step progress indicator */}
         <motion.div variants={fadeUp}>
-          <StepProgress steps={EDITOR_STEPS} current={currentStep} />
+          <StepProgress steps={EDITOR_STEPS} current={currentStep} onStepClick={(i) => {
+            const el = document.getElementById(`step-${EDITOR_STEPS[i].key}`);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }} />
         </motion.div>
 
         {/* Quick-start templates (only for new reports) */}
@@ -811,7 +831,7 @@ export default function ReportEditorPage() {
         )}
 
         {/* Step 1 — Report details */}
-        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <motion.div id="step-details" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">1. Report details</h2>
           <FormField label="Report name" name="report-name" value={name} onChange={setName} error={!name.trim() ? 'A name is required' : ''} />
           <div className="grid gap-4 sm:grid-cols-2">
@@ -823,7 +843,7 @@ export default function ReportEditorPage() {
         </motion.div>
 
         {/* Step 2 — Data */}
-        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <motion.div id="step-data" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">2. What data</h2>
           <FormField
             label="Data source"
@@ -840,7 +860,7 @@ export default function ReportEditorPage() {
         </motion.div>
 
         {/* Step 3 — Break down by (group-by) */}
-        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <motion.div id="step-groupby" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">3. Break down by</h2>
             <button
@@ -897,7 +917,7 @@ export default function ReportEditorPage() {
         </motion.div>
 
         {/* Step 4 — Measure (aggregations) */}
-        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <motion.div id="step-measure" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">4. What to measure</h2>
             <button
@@ -965,7 +985,7 @@ export default function ReportEditorPage() {
         </motion.div>
 
         {/* Step 5 — Filters */}
-        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <motion.div id="step-filters" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">5. Filters (optional)</h2>
             <button
@@ -1075,7 +1095,7 @@ export default function ReportEditorPage() {
         </motion.div>
 
         {/* Step 6 — Sort, limit, chart */}
-        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <motion.div id="step-display" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">6. Sort &amp; display</h2>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-700">Sort by</span>
