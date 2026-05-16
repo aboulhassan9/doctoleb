@@ -124,3 +124,10 @@ html.dark .fixed.inset-0 {
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
 }
+
+/* Indeterminate progress bar animation for report preview loading */
+@keyframes slide-progress {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(150%); }
+  100% { transform: translateX(-100%); }
+}

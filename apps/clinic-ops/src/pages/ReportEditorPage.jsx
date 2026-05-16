@@ -283,6 +283,7 @@ export default function ReportEditorPage() {
   const [previewRows, setPreviewRows] = useState(null);
   const [previewError, setPreviewError] = useState('');
   const [previewing, setPreviewing] = useState(false);
+  const [autoPreviewEnabled, setAutoPreviewEnabled] = useState(true);
 
   const availableColumns = REPORT_DATA_SOURCE_COLUMNS[dataSource] || [];
   const columnTypeMap = REPORT_DATA_SOURCE_COLUMN_TYPES[dataSource] || {};
@@ -387,13 +388,19 @@ export default function ReportEditorPage() {
 
   const isDirty = initialValuesRef.current != null && initialValuesRef.current !== editorSnapshot;
 
-  // ── Auto-preview with debounce ──
+  // ── Auto-preview with debounce + throttle ──
   // When the definition changes and is valid, automatically run preview
-  // after a 1.5s debounce. Avoids hammering the RPC on every keystroke.
+  // after a 3s debounce. Throttle: if a preview is already running, we
+  // mark a pending ref and re-trigger after the current run completes.
+  // The user can opt out via the auto-preview toggle checkbox.
+  const AUTO_PREVIEW_DEBOUNCE_MS = 3000;
   const debounceRef = useRef(null);
   const autoPreviewVersionRef = useRef(0);
+  const pendingAutoPreviewRef = useRef(false);
 
   const triggerAutoPreview = useCallback(() => {
+    if (!autoPreviewEnabled) return;
+
     autoPreviewVersionRef.current += 1;
     const version = autoPreviewVersionRef.current;
 
@@ -401,8 +408,12 @@ export default function ReportEditorPage() {
     debounceRef.current = setTimeout(async () => {
       // Skip if a newer trigger came in while we waited
       if (version !== autoPreviewVersionRef.current) return;
-      // Skip if already manually previewing
-      if (previewing) return;
+      // Throttle: if already running, mark pending and skip this round.
+      // The running preview's completion handler will re-trigger.
+      if (previewing) {
+        pendingAutoPreviewRef.current = true;
+        return;
+      }
 
       const definition = buildDefinition();
       const parsed = analyticalReportDefinitionSchema.safeParse(definition);
@@ -420,15 +431,21 @@ export default function ReportEditorPage() {
         setPreviewError('');
       }
       setPreviewing(false);
-    }, 1500);
-  }, [previewing]);
+
+      // If a preview was throttled while this one ran, re-trigger now.
+      if (pendingAutoPreviewRef.current) {
+        pendingAutoPreviewRef.current = false;
+        triggerAutoPreview();
+      }
+    }, AUTO_PREVIEW_DEBOUNCE_MS);
+  }, [previewing, autoPreviewEnabled]);
 
   // Re-trigger auto-preview whenever definition-shaping state changes.
   useEffect(() => {
-    if (loading) return; // don't auto-preview while loading existing report
+    if (loading || !autoPreviewEnabled) return;
     triggerAutoPreview();
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [dataSource, groupBy, aggregations, filters, orderBy, limit, vizType, name, headerSubtitle, triggerAutoPreview, loading]);
+  }, [dataSource, groupBy, aggregations, filters, orderBy, limit, vizType, name, headerSubtitle, triggerAutoPreview, loading, autoPreviewEnabled]);
 
   // ── Load existing report when editing ──
   useEffect(() => {
@@ -1103,12 +1120,27 @@ export default function ReportEditorPage() {
         </motion.div>
 
         {/* Preview — auto-refreshes when definition changes */}
-        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3 relative overflow-hidden">
+          {/* Indeterminate progress bar while preview is running */}
+          {previewing && (
+            <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100 overflow-hidden" aria-hidden="true">
+              <div className="h-full bg-slate-500 animate-[slide-progress_1.5s_ease-in-out_infinite]" style={{ width: '40%' }} />
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Preview</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={autoPreviewEnabled}
+                  onChange={(e) => setAutoPreviewEnabled(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-slate-300 text-slate-800 focus:ring-slate-500"
+                />
+                Auto-preview
+              </label>
               {previewing && (
-                <span className="text-xs text-slate-500 animate-pulse">Auto-refreshing…</span>
+                <span className="text-sm text-slate-600 font-medium animate-pulse" aria-live="polite">Refreshing…</span>
               )}
               <button
                 type="button"
@@ -1121,7 +1153,9 @@ export default function ReportEditorPage() {
             </div>
           </div>
           <p className="text-xs text-slate-500">
-            Preview auto-refreshes when you change settings (with a short delay). You can also click "Run now" for an immediate refresh.
+            {autoPreviewEnabled
+              ? 'Preview auto-refreshes when you change settings (3s delay). You can also click "Run now" for an immediate refresh.'
+              : 'Auto-preview is off. Click "Run now" to preview manually, or enable auto-preview above.'}
           </p>
           {previewError && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{previewError}</div>

@@ -28,6 +28,7 @@ import { useAuth } from '@ui/contexts/AuthContext';
 import { analyticalReportService } from '@core/services/analyticalReports';
 import { resolveColumnLabel } from '@core/lib/reportLabels';
 import { toCsv } from '@core/lib/csv';
+import '@ui/styles/print-report.css';
 import { timeAgo } from '@core/lib/dateUtils';
 import { stagger, fadeUp } from '@core/lib/animations';
 
@@ -262,15 +263,6 @@ export default function ReportViewerPage() {
 
   return (
     <DashboardLayout role="doctor">
-      {/* Print-specific CSS — hides sidebar, filters, actions, run history */}
-      <style>{`
-        @media print {
-          [class*="sidebar"], [class*="Sidebar"], nav, .no-print { display: none !important; }
-          .print-area { width: 100% !important; margin: 0 !important; padding: 20px !important; box-shadow: none !important; border: none !important; }
-          .print-break { page-break-before: always; }
-        }
-      `}</style>
-
       <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-6 p-6 print-area">
         <motion.div variants={fadeUp} className="no-print">
           <PageHeader

@@ -1,0 +1,33 @@
+/**
+ * Print styles for the analytical report viewer.
+ *
+ * These rules complement the global @media print block in src/index.css.
+ * The global block hides sidebars and makes main content fill the page;
+ * this file adds report-specific hiding (.no-print) and layout (.print-area,
+ * .print-break) so the printed output contains only the chart/table data.
+ *
+ * Imported at module level by ReportViewerPage — no inline <style> needed.
+ */
+@media print {
+  /* Hide navigation, sidebars, filter panels, run history, and action buttons */
+  [class*="sidebar"],
+  [class*="Sidebar"],
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Expand the report content area to fill the printed page */
+  .print-area {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Force a page break before the detail-table section */
+  .print-break {
+    page-break-before: always;
+  }
+}
