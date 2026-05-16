@@ -261,6 +261,7 @@ export default function ReportEditorPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const initialValuesRef = useRef(null);
 
   // ── Report metadata ──
   const [name, setName] = useState('');
@@ -744,7 +745,9 @@ export default function ReportEditorPage() {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowCancelConfirm(true)}
+                  onClick={() => {
+                    if (isDirty) { setShowCancelConfirm(true); } else { navigate('/reports'); }
+                  }}
                   className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50"
                   aria-label="Cancel editing"
                 >

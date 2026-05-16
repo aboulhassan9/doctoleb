@@ -52,6 +52,7 @@ export default function ReportViewerPage() {
 
   // Archive
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [showBackConfirm, setShowBackConfirm] = useState(false);
   const [archiving, setArchiving] = useState(false);
 
   // Drill-down — each entry is { column, operator, value, label }
@@ -319,7 +320,9 @@ export default function ReportViewerPage() {
                 )}
                 <button
                   type="button"
-                  onClick={() => navigate('/reports')}
+                  onClick={() => {
+                    if (running) { setShowBackConfirm(true); } else { navigate('/reports'); }
+                  }}
                   className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50"
                   aria-label="Back to reports library"
                 >
@@ -479,6 +482,18 @@ export default function ReportViewerPage() {
         variant="danger"
         onConfirm={handleArchive}
         onCancel={() => setShowArchiveConfirm(false)}
+      />
+
+      {/* Back confirmation — warns when a report is still running */}
+      <ConfirmDialog
+        isOpen={showBackConfirm}
+        title="Leave while report is running?"
+        message="The report is still executing. Leaving now will not cancel the run, but you will not see the results."
+        confirmLabel="Leave anyway"
+        cancelLabel="Stay here"
+        variant="warning"
+        onConfirm={() => { setShowBackConfirm(false); navigate('/reports'); }}
+        onCancel={() => setShowBackConfirm(false)}
       />
     </DashboardLayout>
   );
