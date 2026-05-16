@@ -58,6 +58,33 @@ function safeErrorSummary(error: unknown) {
     .slice(0, 900) || 'Tenant database migration failed.'
 }
 
+function classifyMigrationRunFailure(error: unknown) {
+  const errorSummary = safeErrorSummary(error)
+  const normalized = errorSummary.toLowerCase()
+
+  if (/authentication failed|password=.*failed|invalid password|28p01/.test(normalized)) {
+    return {
+      error: 'TENANT_DATABASE_AUTH_FAILED',
+      summary: 'Tenant database rejected the saved Postgres password.',
+      errorSummary,
+    }
+  }
+
+  if (/timeout|timed out|econnrefused|enotfound|getaddrinfo|connection refused|network/.test(normalized)) {
+    return {
+      error: 'TENANT_DATABASE_CONNECTION_FAILED',
+      summary: 'Tenant database connection could not be opened from the server runner.',
+      errorSummary,
+    }
+  }
+
+  return {
+    error: 'TENANT_MIGRATION_RUN_FAILED',
+    summary: 'Tenant database setup failed before migrations could complete.',
+    errorSummary,
+  }
+}
+
 function normalizeProjectRef(value: unknown) {
   const ref = typeof value === 'string' ? value.trim().toLowerCase() : ''
   return SAFE_PROJECT_REF.test(ref) ? ref : ''
@@ -555,7 +582,7 @@ export async function runTenantDatabaseMigrations(
       error: null,
     }
   } catch (error) {
-    const errorSummary = safeErrorSummary(error)
+    const failure = classifyMigrationRunFailure(error)
     await finishMigrationRun(context, {
       runId,
       status: 'failed',
@@ -563,17 +590,17 @@ export async function runTenantDatabaseMigrations(
       appliedMigrationsCount,
       failedMigrationVersion: failedMigration?.version ?? null,
       failedMigrationName: failedMigration?.name ?? null,
-      errorCode: 'TENANT_MIGRATION_RUN_FAILED',
-      errorSummary,
+      errorCode: failure.error,
+      errorSummary: failure.errorSummary,
     })
 
     return {
       data: null,
-      error: 'TENANT_MIGRATION_RUN_FAILED',
-      summary: 'Tenant database setup failed before migrations could complete.',
+      error: failure.error,
+      summary: failure.summary,
       details: {
         migrationRunId: runId,
-        errorSummary,
+        errorSummary: failure.errorSummary,
         projectRef: normalizedProjectRef,
       },
     }

@@ -68,6 +68,8 @@ const TENANT_SECRET_NAME_PREFIX_PARTS = [
 ]
 const TENANT_PRIVILEGED_SECRET_REQUIRED_CODE = ['TEN', 'ANT', '_', 'SER', 'VICE', '_', 'RO', 'LE', '_SECRET_REQUIRED'].join('')
 const TENANT_DATABASE_URL_REQUIRED_CODE = 'TENANT_DATABASE_URL_SECRET_REQUIRED'
+const TENANT_DATABASE_AUTH_FAILED_CODE = 'TENANT_DATABASE_AUTH_FAILED'
+const TENANT_DATABASE_CONNECTION_FAILED_CODE = 'TENANT_DATABASE_CONNECTION_FAILED'
 const FIRST_DOCTOR_INVITE_FAILED_CODE = 'FIRST_DOCTOR_ADMIN_INVITE_FAILED'
 
 const QUICK_LINKS = {
@@ -161,6 +163,8 @@ function friendlyError(step) {
   if (!step?.last_error_code && !step?.last_error_summary) return ''
 
   if (step.last_error_code === TENANT_DATABASE_URL_REQUIRED_CODE) return 'Database URL needed'
+  if (step.last_error_code === TENANT_DATABASE_AUTH_FAILED_CODE) return 'DB password rejected'
+  if (step.last_error_code === TENANT_DATABASE_CONNECTION_FAILED_CODE) return 'DB connection failed'
   if (step.last_error_code === TENANT_PRIVILEGED_SECRET_REQUIRED_CODE) return 'Secret key needed'
   if (step.last_error_code === FIRST_DOCTOR_INVITE_FAILED_CODE) return 'Service key needed'
   if (step.last_error_code === 'TENANT_MIGRATIONS_NOT_READY') return 'Database setup needed'

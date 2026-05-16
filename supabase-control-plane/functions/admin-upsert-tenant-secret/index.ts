@@ -7,6 +7,7 @@ import {
   readJsonBody,
   requireSuperAdmin,
 } from '../_shared/admin.ts'
+import postgres from 'npm:postgres@3.4.3'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const PROJECT_REF = /^[a-z0-9]{20}$/
@@ -43,6 +44,63 @@ function normalizeDatabaseUrlSecret(value: string, projectRef: string) {
     return parsed.href
   } catch (_error) {
     return ''
+  }
+}
+
+function safeDatabaseErrorSummary(error: unknown) {
+  const raw = error instanceof Error ? error.message : String(error || '')
+  return raw
+    .replace(/postgres(?:ql)?:\/\/[^\s'"]+/gi, '[redacted-database-url]')
+    .replace(/\b(password|secret|token|key)=?[^\s,;]*/gi, '$1=[redacted]')
+    .slice(0, 500) || 'Tenant database connection failed.'
+}
+
+function classifyDatabaseConnectionError(error: unknown) {
+  const summary = safeDatabaseErrorSummary(error)
+  const normalized = summary.toLowerCase()
+
+  if (/authentication failed|password=.*failed|invalid password|28p01/.test(normalized)) {
+    return {
+      code: 'TENANT_DATABASE_AUTH_FAILED',
+      status: 400,
+      summary: 'Tenant database rejected this Postgres password.',
+      errorSummary: summary,
+    }
+  }
+
+  if (/timeout|timed out|econnrefused|enotfound|getaddrinfo|connection refused|network/.test(normalized)) {
+    return {
+      code: 'TENANT_DATABASE_CONNECTION_FAILED',
+      status: 409,
+      summary: 'The server could not connect to this tenant database URL.',
+      errorSummary: summary,
+    }
+  }
+
+  return {
+    code: 'TENANT_DATABASE_CONNECTION_FAILED',
+    status: 409,
+    summary: 'The tenant database URL could not be verified.',
+    errorSummary: summary,
+  }
+}
+
+async function verifyDatabaseUrlSecret(databaseUrl: string) {
+  const sql = postgres(databaseUrl, {
+    max: 1,
+    prepare: false,
+    connect_timeout: 10,
+    idle_timeout: 5,
+    onnotice: () => {},
+  })
+
+  try {
+    await sql`select 1 as ok`
+    return { error: null }
+  } catch (error) {
+    return { error: classifyDatabaseConnectionError(error) }
+  } finally {
+    await sql.end({ timeout: 5 }).catch(() => {})
   }
 }
 
@@ -137,6 +195,14 @@ Deno.serve(async (req) => {
       })
     }
     secretValue = normalizedDatabaseUrl
+
+    const verification = await verifyDatabaseUrlSecret(secretValue)
+    if (verification.error) {
+      return errorResponse(verification.error.code, verification.error.status, cors, {
+        summary: verification.error.summary,
+        errorSummary: verification.error.errorSummary,
+      })
+    }
   }
 
   const { data, error } = await context.client.rpc('admin_store_tenant_secret_ref', {

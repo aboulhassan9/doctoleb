@@ -538,6 +538,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(tenantMigrationRunner, /public\.analytical_report_versions/);
     assert.match(tenantMigrationRunner, /public\.analytical_report_runs/);
     assert.match(tenantMigrationRunner, /public\.run_analytical_report\(jsonb,jsonb\)/);
+    assert.match(tenantMigrationRunner, /TENANT_DATABASE_AUTH_FAILED/);
+    assert.match(tenantMigrationRunner, /TENANT_DATABASE_CONNECTION_FAILED/);
     assert.match(tenantMigrationRunner, /admin_upsert_tenant_migration_item/);
     assert.match(tenantMigrationRunner, /admin_finish_tenant_migration_run/);
     assert.doesNotMatch(tenantMigrationRunner, /console\.(log|error|warn)\([^)]*(databaseUrl|connectionString|secretValue)/);
@@ -552,6 +554,9 @@ describe('SaaS foundation contracts', () => {
     assert.match(storeProviderSecret, /admin_store_provider_secret_ref/);
     assert.match(storeTenantSecret, /admin_store_tenant_secret_ref/);
     assert.match(storeTenantSecret, /normalizeDatabaseUrlSecret/);
+    assert.match(storeTenantSecret, /verifyDatabaseUrlSecret/);
+    assert.match(storeTenantSecret, /TENANT_DATABASE_AUTH_FAILED/);
+    assert.match(storeTenantSecret, /TENANT_DATABASE_CONNECTION_FAILED/);
     assert.match(storeTenantSecret, /DATABASE_URL_PROTOCOLS/);
     assert.match(storeTenantSecret, /parsed\.href/);
     assert.match(storeTenantSecret, /INVALID_DATABASE_URL/);
@@ -580,6 +585,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(stepsPanel, /if \(storeResult\?\.error\) return/);
     assert.match(stepsPanel, /Update database/);
     assert.match(stepsPanel, /Safe upgrade/);
+    assert.match(stepsPanel, /DB password rejected/);
     assert.match(stepsPanel, /Latest DB setup/);
     assert.match(readme, /tenant_secret_refs/);
     assert.match(readme, /tenant_migration_runs/);
