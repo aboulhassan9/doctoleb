@@ -338,6 +338,7 @@ export default function ReportViewerPage() {
               {boundFilters.map((f) => (
                 <FormField
                   key={f.bind}
+                  name={f.bind}
                   label={resolveColumnLabel(definition.dataSource, f.column) || f.bind}
                   value={filterArgs[f.bind] ?? ''}
                   onChange={(v) => setFilterArgs((prev) => ({ ...prev, [f.bind]: v }))}

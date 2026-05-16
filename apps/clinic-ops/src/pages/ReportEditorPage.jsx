@@ -861,6 +861,7 @@ export default function ReportEditorPage() {
             <div key={idx} className="grid gap-3 sm:grid-cols-[2fr_2fr_auto] items-end">
               <FormField
                 label="Column"
+                name={`groupby-${idx}-column`}
                 type="select"
                 value={g.column}
                 onChange={(v) => setGroupBy((p) => p.map((x, i) => {
@@ -873,6 +874,8 @@ export default function ReportEditorPage() {
               />
               <FormField
                 label={supportsGran ? 'Time bucket' : 'Time bucket (not applicable)'}
+                name={`groupby-granularity-${idx}`}
+                name={`groupby-${idx}-granularity`}
                 type="select"
                 value={g.granularity || ''}
                 onChange={(v) => setGroupBy((p) => p.map((x, i) => (i === idx ? { ...x, granularity: v } : x)))}
@@ -918,6 +921,8 @@ export default function ReportEditorPage() {
             <div key={idx} className="grid gap-3 sm:grid-cols-[2fr_2fr_2fr_auto] items-end">
               <FormField
                 label="Measure"
+                name={`agg-fn-${idx}`}
+                name={`agg-${idx}-fn`}
                 type="select"
                 value={a.fn}
                 onChange={(v) => setAggregations((p) => p.map((x, i) => {
@@ -934,6 +939,8 @@ export default function ReportEditorPage() {
               />
               <FormField
                 label={a.fn === 'count' ? 'Column (not needed)' : 'Column'}
+                name={`agg-column-${idx}`}
+                name={`agg-${idx}-column`}
                 type="select"
                 value={a.column || ''}
                 onChange={(v) => setAggregations((p) => p.map((x, i) => (i === idx
@@ -943,6 +950,8 @@ export default function ReportEditorPage() {
               />
               <FormField
                 label="Result name"
+                name={`agg-as-${idx}`}
+                name={`agg-${idx}-as`}
                 value={a.as}
                 onChange={(v) => setAggregations((p) => p.map((x, i) => (i === idx ? { ...x, as: slugifyAlias(v, x.as) } : x)))}
               />
@@ -989,6 +998,7 @@ export default function ReportEditorPage() {
                 <div className="grid gap-3 sm:grid-cols-[2fr_2fr_2fr_auto] items-end">
                   <FormField
                     label="Column"
+                    name={`filter-${idx}-column`}
                     type="select"
                     value={f.column}
                     onChange={(v) => setFilters((p) => p.map((x, i) => {
@@ -1002,6 +1012,7 @@ export default function ReportEditorPage() {
                   />
                   <FormField
                     label="Condition"
+                    name={`filter-${idx}-operator`}
                     type="select"
                     value={f.operator}
                     onChange={(v) => setFilters((p) => p.map((x, i) => (i === idx ? { ...x, operator: v, value: '' } : x)))}
@@ -1010,6 +1021,7 @@ export default function ReportEditorPage() {
                   {showEnumSelect ? (
                     <FormField
                       label={bound ? 'Default value' : 'Value'}
+                      name={`filter-${idx}-value`}
                       type="select"
                       value={f.value || ''}
                       onChange={(v) => setFilters((p) => p.map((x, i) => (i === idx ? { ...x, value: v } : x)))}
@@ -1018,6 +1030,8 @@ export default function ReportEditorPage() {
                   ) : showEnumMulti ? (
                     <FormField
                       label={bound ? 'Default values (comma-separated)' : 'Values (comma-separated)'}
+                      name={`filter-value-multi-${idx}`}
+                      name={`filter-${idx}-value`}
                       value={noValue ? '' : (f.value || '')}
                       onChange={(v) => setFilters((p) => p.map((x, i) => (i === idx ? { ...x, value: v } : x)))}
                       hint={isEnumColumn ? `Allowed: ${enumVals.join(', ')}` : undefined}
@@ -1025,6 +1039,8 @@ export default function ReportEditorPage() {
                   ) : (
                     <FormField
                       label={noValue ? 'Value (not needed)' : (bound ? 'Default value' : 'Value')}
+                      name={`filter-value-${idx}`}
+                      name={`filter-${idx}-value`}
                       value={noValue ? '' : (f.value || '')}
                       onChange={(v) => setFilters((p) => p.map((x, i) => (i === idx ? { ...x, value: v } : x)))}
                     />
@@ -1082,6 +1098,8 @@ export default function ReportEditorPage() {
             <div key={idx} className="grid gap-3 sm:grid-cols-[2fr_2fr_auto] items-end">
               <FormField
                 label="Sort field"
+                name={`orderby-ref-${idx}`}
+                name={`orderby-${idx}-ref`}
                 type="select"
                 value={o.ref}
                 onChange={(v) => setOrderBy((p) => p.map((x, i) => (i === idx ? { ...x, ref: v } : x)))}
@@ -1089,6 +1107,8 @@ export default function ReportEditorPage() {
               />
               <FormField
                 label="Direction"
+                name={`orderby-dir-${idx}`}
+                name={`orderby-${idx}-dir`}
                 type="select"
                 value={o.dir}
                 onChange={(v) => setOrderBy((p) => p.map((x, i) => (i === idx ? { ...x, dir: v } : x)))}
@@ -1106,6 +1126,7 @@ export default function ReportEditorPage() {
           <div className="grid gap-4 sm:grid-cols-2 pt-2">
             <FormField
               label="Chart type"
+              name="viz-type"
               type="select"
               value={vizType}
               onChange={setVizType}
@@ -1113,6 +1134,7 @@ export default function ReportEditorPage() {
             />
             <FormField
               label="Max rows"
+              name="max-rows"
               type="number"
               value={String(limit)}
               onChange={(v) => setLimit(v)}
