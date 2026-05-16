@@ -813,13 +813,13 @@ export default function ReportEditorPage() {
         {/* Step 1 — Report details */}
         <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">1. Report details</h2>
-          <FormField label="Report name" value={name} onChange={setName} error={!name.trim() ? 'A name is required' : ''} />
+          <FormField label="Report name" name="report-name" value={name} onChange={setName} error={!name.trim() ? 'A name is required' : ''} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Category" type="select" value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
-            <FormField label="Who can see it" type="select" value={audience} onChange={setAudience} options={AUDIENCE_OPTIONS} />
+            <FormField label="Category" name="category" type="select" value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
+            <FormField label="Who can see it" name="audience" type="select" value={audience} onChange={setAudience} options={AUDIENCE_OPTIONS} />
           </div>
-          <FormField label="Description" type="textarea" value={description} onChange={setDescription} />
-          <FormField label="Chart subtitle (optional)" value={headerSubtitle} onChange={setHeaderSubtitle} />
+          <FormField label="Description" name="description" type="textarea" value={description} onChange={setDescription} />
+          <FormField label="Chart subtitle (optional)" name="header-subtitle" value={headerSubtitle} onChange={setHeaderSubtitle} />
         </motion.div>
 
         {/* Step 2 — Data */}
@@ -827,6 +827,7 @@ export default function ReportEditorPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">2. What data</h2>
           <FormField
             label="Data source"
+            name="data-source"
             type="select"
             value={dataSource}
             onChange={handleDataSourceChange}

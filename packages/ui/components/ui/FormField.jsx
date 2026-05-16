@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { INPUT_CLASS, SELECT_CLASS, TEXTAREA_CLASS } from '@/lib/styles';
 
 /**
@@ -24,7 +25,8 @@ export default function FormField({
   children,
   ...rest
 }) {
-  const id = `field-${name}`;
+  const reactId = useId();
+  const id = name ? `field-${name}` : reactId;
 
   const renderInput = () => {
     if (children) return children;

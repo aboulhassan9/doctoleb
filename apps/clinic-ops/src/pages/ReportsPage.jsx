@@ -117,9 +117,11 @@ export default function ReportsPage() {
         </motion.div>
 
         {/* Category filter row */}
-        <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
+        <motion.div variants={fadeUp} role="tablist" aria-label="Report categories" className="flex flex-wrap gap-2">
           <button
             type="button"
+            role="tab"
+            aria-selected={activeCategory === null}
             onClick={() => handleCategoryChange(null)}
             className={`rounded-full px-3 py-1 text-xs font-medium ${
               activeCategory === null
@@ -133,6 +135,8 @@ export default function ReportsPage() {
             <button
               key={cat}
               type="button"
+              role="tab"
+              aria-selected={activeCategory === cat}
               onClick={() => handleCategoryChange(cat)}
               className={`rounded-full px-3 py-1 text-xs font-medium ${
                 activeCategory === cat
@@ -178,13 +182,21 @@ export default function ReportsPage() {
                         key={r.id}
                         type="button"
                         onClick={() => navigate(`/reports/${r.id}`)}
-                        className="rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-blue-300 hover:shadow-sm transition"
+                        className={`rounded-xl border bg-white p-4 text-left hover:shadow-sm transition ${
+                          r.is_default
+                            ? 'border-blue-200 border-l-4 hover:border-blue-300'
+                            : 'border-slate-200 hover:border-blue-300'
+                        }`}
                       >
                         <div className="flex items-center justify-between">
                           <h3 className="text-sm font-semibold text-slate-900">{r.name}</h3>
-                          {r.is_default && (
-                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
+                          {r.is_default ? (
+                            <span className="rounded bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
                               Built-in
+                            </span>
+                          ) : (
+                            <span className="rounded bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500">
+                              Custom
                             </span>
                           )}
                         </div>

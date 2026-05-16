@@ -114,6 +114,17 @@ function NoData({ message = 'No data for this report.' }) {
   );
 }
 
+function formatKpiValue(value) {
+  if (value == null) return '—';
+  if (typeof value !== 'number') return String(value);
+  if (Number.isNaN(value)) return '—';
+  // Use compact notation for large numbers (≥10 000), standard grouping otherwise
+  const options = Math.abs(value) >= 10_000
+    ? { notation: 'compact', maximumFractionDigits: 1 }
+    : { useGrouping: true, maximumFractionDigits: 2 };
+  return Intl.NumberFormat('en', options).format(value);
+}
+
 function KpiCard({ rows, definition, labelMap }) {
   const measureKey = pickPrimaryMeasureKey(definition);
   const value = rows[0]?.[measureKey];
@@ -124,7 +135,7 @@ function KpiCard({ rows, definition, labelMap }) {
         {label}
       </div>
       <div className="mt-2 text-4xl font-bold text-slate-900">
-        {value == null ? '—' : String(value)}
+        {formatKpiValue(value)}
       </div>
     </div>
   );
@@ -319,10 +330,14 @@ function LineViz({ rows, definition, onDrillDown, labelMap, chartHeight = 320 })
  * PieViz — single dimension, single measure share. Clicking a slice triggers
  * drill-down on the group-by value.
  */
+const PIE_LABEL_THRESHOLD = 8;
+
 function PieViz({ rows, definition, onDrillDown, labelMap, chartHeight = 320 }) {
   const groupKey = pickPrimaryGroupKey(definition);
   const measureKey = pickPrimaryMeasureKey(definition);
   if (!groupKey || !measureKey || !rows.length) return <NoData />;
+
+  const tooManySlices = rows.length > PIE_LABEL_THRESHOLD;
 
   const handleSliceClick = onDrillDown
     ? (entry) => {
@@ -337,6 +352,11 @@ function PieViz({ rows, definition, onDrillDown, labelMap, chartHeight = 320 }) 
       }
     : undefined;
 
+  const renderLabel = tooManySlices
+    ? false
+    : ({ name, percent }) =>
+        `${labelMap?.[groupKey] ? `${labelMap[groupKey]}: ` : ''}${name} (${(percent * 100).toFixed(0)}%)`;
+
   return (
     <ResponsiveContainer width="100%" height={chartHeight}>
       <PieChart>
@@ -344,10 +364,8 @@ function PieViz({ rows, definition, onDrillDown, labelMap, chartHeight = 320 }) 
           data={rows}
           dataKey={measureKey}
           nameKey={groupKey}
-          outerRadius={120}
-          label={({ name, percent }) =>
-            `${labelMap?.[groupKey] ? `${labelMap[groupKey]}: ` : ''}${name} (${(percent * 100).toFixed(0)}%)`
-          }
+          outerRadius={tooManySlices ? 100 : 120}
+          label={renderLabel}
           onClick={handleSliceClick}
           cursor={onDrillDown ? 'pointer' : undefined}
         >
