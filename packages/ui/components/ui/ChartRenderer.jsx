@@ -142,6 +142,9 @@ function ReportTable({ rows, definition, labelMap, onDrillDown }) {
   return (
     <div className="overflow-auto rounded border border-slate-200">
       <table className="w-full text-sm">
+        <caption className="sr-only">
+          {definition?.header?.title || 'Report data table'}
+        </caption>
         <thead className="bg-slate-50">
           <tr>
             {columns.map((c) => (
@@ -172,6 +175,7 @@ function ReportTable({ rows, definition, labelMap, onDrillDown }) {
                           value: r[c],
                           dataSource: definition.dataSource,
                         })}
+                        aria-label={`Drill down on ${labelMap?.[c] || c}: ${cellValue}`}
                         title={`Drill down on ${labelMap?.[c] || c}: ${cellValue}`}
                       >
                         {cellValue}

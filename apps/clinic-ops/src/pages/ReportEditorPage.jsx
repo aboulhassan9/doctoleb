@@ -25,6 +25,7 @@ import { motion } from 'framer-motion';
 import DashboardLayout from '@ui/components/layouts/DashboardLayout';
 import {
   PageHeader, LoadingSkeleton, EmptyState, FormField, ChartRenderer, ChartErrorBoundary,
+  ConfirmDialog,
 } from '@ui/components/ui';
 import { useAuth } from '@ui/contexts/AuthContext';
 import { useToast } from '@ui/contexts/ToastContext';
@@ -259,6 +260,7 @@ export default function ReportEditorPage() {
   const [fetchError, setFetchError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // ── Report metadata ──
   const [name, setName] = useState('');
@@ -347,6 +349,42 @@ export default function ReportEditorPage() {
     }
     return keys;
   }, [groupBy, aggregations]);
+
+  const editorSnapshot = useMemo(() => JSON.stringify({
+    name,
+    description,
+    category,
+    audience,
+    dataSource,
+    groupBy,
+    aggregations,
+    filters,
+    orderBy,
+    limit: String(limit),
+    vizType,
+    headerSubtitle,
+  }), [
+    name,
+    description,
+    category,
+    audience,
+    dataSource,
+    groupBy,
+    aggregations,
+    filters,
+    orderBy,
+    limit,
+    vizType,
+    headerSubtitle,
+  ]);
+
+  useEffect(() => {
+    if (!loading && initialValuesRef.current == null) {
+      initialValuesRef.current = editorSnapshot;
+    }
+  }, [loading, editorSnapshot]);
+
+  const isDirty = initialValuesRef.current != null && initialValuesRef.current !== editorSnapshot;
 
   // ── Auto-preview with debounce ──
   // When the definition changes and is valid, automatically run preview
@@ -706,7 +744,7 @@ export default function ReportEditorPage() {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => navigate('/reports')}
+                  onClick={() => setShowCancelConfirm(true)}
                   className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50"
                   aria-label="Cancel editing"
                 >
@@ -1096,6 +1134,17 @@ export default function ReportEditorPage() {
           )}
         </motion.div>
       </motion.div>
+      {/* Cancel confirmation — warns about unsaved changes */}
+      <ConfirmDialog
+        isOpen={showCancelConfirm}
+        title="Discard unsaved changes?"
+        message="You have made changes that haven't been saved. Leaving now will lose all your edits."
+        confirmLabel="Discard changes"
+        cancelLabel="Keep editing"
+        variant="danger"
+        onConfirm={() => { setShowCancelConfirm(false); navigate('/reports'); }}
+        onCancel={() => setShowCancelConfirm(false)}
+      />
     </DashboardLayout>
   );
 }

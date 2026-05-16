@@ -105,6 +105,19 @@ async function buildVersionInsertPayload(payload) {
   };
 }
 
+// ── Retry constants for concurrent-publish race ─────────────────────
+//
+// The partial unique index on (report_id, is_current, status) guarantees
+// that only one "published + current" version exists per report. When two
+// sessions publish concurrently, one loses the insert race and gets a
+// unique-constraint violation. The winner's version is already current, so
+// the loser simply retries the full supersede→insert sequence and succeeds
+// on the next attempt (superseding the winner's version first).
+
+const PUBLISH_RETRY_MAX = 3;
+const PUBLISH_RETRY_BASE_DELAY_MS = 200;
+const UNIQUE_CONSTRAINT_RE = /duplicate key|unique constraint/i;
+
 // ── Service surface ─────────────────────────────────────────────────
 
 export const analyticalReportService = {
@@ -238,27 +251,11 @@ export const analyticalReportService = {
   },
 
   /**
-   * Publish a new version of a report as the current one.
-   *
-   * Used by the editor for BOTH "save a brand-new report" (version 1) and
-   * "save an edit to an existing report" (version N+1). The flow:
-   *   1. Find the highest existing version_number.
-   *   2. Supersede the current published version — flip `is_current` to
-   *      false + `status` to 'superseded'. This must happen BEFORE the
-   *      insert because the partial unique index allows only one
-   *      `is_current = true AND status = 'published'` row per report.
-   *   3. Insert the new version as published + current.
-   *
-   * There is a small window between step 2 and step 3 where the report
-   * has no current version. The partial unique index still guarantees
-   * correctness — a true concurrent publish loses the insert race and the
-   * caller simply retries. Atomicity-via-RPC is a deliberate follow-up if
-   * concurrent editing of one report ever becomes common.
+   * Single attempt of the supersede→insert sequence for publishNewVersion.
+   * Separated so the retry wrapper can re-run the full sequence when a
+   * concurrent publish wins the insert race.
    */
-  async publishNewVersion(reportId, definition, { publishedBy } = {}) {
-    if (!reportId) return validationError('Report id is required.');
-    if (!publishedBy) return validationError('publishedBy is required.');
-
+  async _publishNewVersionAttempt(reportId, definition, publishedBy) {
     const { data: latest, error: latestErr } = await supabase
       .from('analytical_report_versions')
       .select('version_number')
@@ -294,6 +291,48 @@ export const analyticalReportService = {
       created_by: publishedBy,
       published_by: publishedBy,
     });
+  },
+
+  /**
+   * Publish a new version of a report as the current one.
+   *
+   * Used by the editor for BOTH "save a brand-new report" (version 1) and
+   * "save an edit to an existing report" (version N+1). The flow:
+   *   1. Find the highest existing version_number.
+   *   2. Supersede the current published version — flip `is_current` to
+   *      false + `status` to 'superseded'. This must happen BEFORE the
+   *      insert because the partial unique index allows only one
+   *      `is_current = true AND status = 'published'` row per report.
+   *   3. Insert the new version as published + current.
+   *
+   * There is a small window between step 2 and step 3 where the report
+   * has no current version. The partial unique index still guarantees
+   * correctness — a true concurrent publish loses the insert race and
+   * gets a unique-constraint violation. This method retries up to
+   * PUBLISH_RETRY_MAX times with exponential backoff so the loser
+   * eventually supersedes the winner's version and succeeds.
+   * Atomicity-via-RPC remains a deliberate follow-up if concurrent
+   * editing of one report ever becomes common.
+   */
+  async publishNewVersion(reportId, definition, { publishedBy } = {}) {
+    if (!reportId) return validationError('Report id is required.');
+    if (!publishedBy) return validationError('publishedBy is required.');
+
+    let lastResult;
+    for (let attempt = 1; attempt <= PUBLISH_RETRY_MAX; attempt++) {
+      lastResult = await analyticalReportService._publishNewVersionAttempt(
+        reportId, definition, publishedBy,
+      );
+      if (!lastResult.error) return lastResult;
+      if (!UNIQUE_CONSTRAINT_RE.test(lastResult.error)) return lastResult;
+      // Unique-constraint violation — concurrent publish won the race.
+      // Wait with exponential backoff before retrying the full sequence.
+      if (attempt < PUBLISH_RETRY_MAX) {
+        const delay = PUBLISH_RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+    return lastResult;
   },
 
   // ── Runs ──

@@ -335,6 +335,99 @@ describe('analyticalReportService.publishNewVersion', () => {
     assert.equal(insertedVersion?.is_current, true);
     assert.equal(insertedVersion?.version_number, 3);
   });
+
+  it('retries on unique-constraint violation and succeeds on second attempt', async () => {
+    let attemptCount = 0;
+
+    // First attempt: insert fails with unique-constraint violation.
+    // Second attempt: full sequence succeeds.
+    mock.onFrom('analytical_report_versions', ({ callEntry }) => {
+      const methods = callEntry.modifiers.map((m) => m.method);
+      attemptCount++;
+
+      if (methods.includes('insert')) {
+        if (attemptCount <= 4) {
+          // First attempt's insert (4th call in the sequence) fails
+          return {
+            data: null,
+            error: { message: 'duplicate key value violates unique constraint "idx_report_versions_current_published"' },
+          };
+        }
+        // Second attempt's insert succeeds
+        return {
+          data: { id: VERSION_ID, report_id: REPORT_ID, version_number: 3, status: 'published' },
+          error: null,
+        };
+      }
+      if (methods.includes('update')) {
+        return { data: null, error: null };
+      }
+      if (methods.includes('limit')) {
+        return { data: [{ version_number: 2 }], error: null };
+      }
+      // current-version lookup
+      return { data: { id: 'old-version' }, error: null };
+    });
+
+    const { data, error } = await analyticalReportService.publishNewVersion(
+      REPORT_ID,
+      VALID_DEFINITION,
+      { publishedBy: USER_ID },
+    );
+
+    assert.equal(error, null);
+    assert.equal(data.version_number, 3);
+    assert.ok(attemptCount >= 8, `expected at least 8 calls (2 full sequences of 4), got ${attemptCount}`);
+  });
+
+  it('returns unique-constraint error after exhausting retries', async () => {
+    // Every insert fails with unique-constraint violation.
+    mock.onFrom('analytical_report_versions', ({ callEntry }) => {
+      const methods = callEntry.modifiers.map((m) => m.method);
+
+      if (methods.includes('insert')) {
+        return {
+          data: null,
+          error: { message: 'duplicate key value violates unique constraint' },
+        };
+      }
+      if (methods.includes('update')) {
+        return { data: null, error: null };
+      }
+      if (methods.includes('limit')) {
+        return { data: [{ version_number: 2 }], error: null };
+      }
+      return { data: { id: 'old-version' }, error: null };
+    });
+
+    const { data, error } = await analyticalReportService.publishNewVersion(
+      REPORT_ID,
+      VALID_DEFINITION,
+      { publishedBy: USER_ID },
+    );
+
+    assert.equal(data, null);
+    assert.match(error, /duplicate key/i);
+  });
+
+  it('returns non-unique-constraint errors immediately without retry', async () => {
+    // First call (latest version lookup) returns a non-unique error.
+    mock.onFrom('analytical_report_versions', () => ({
+      data: null,
+      error: { message: 'network error: connection refused' },
+    }));
+
+    const { data, error } = await analyticalReportService.publishNewVersion(
+      REPORT_ID,
+      VALID_DEFINITION,
+      { publishedBy: USER_ID },
+    );
+
+    assert.equal(data, null);
+    assert.match(error, /network error/i);
+    // Only one call — no retry for non-unique-constraint errors.
+    assert.equal(mock.calls.from.length, 1);
+  });
 });
 
 describe('analyticalReportService.runByReport', () => {
