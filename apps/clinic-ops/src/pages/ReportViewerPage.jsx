@@ -406,13 +406,17 @@ export default function ReportViewerPage() {
         )}
 
         {error && (
-          <motion.div variants={fadeUp} className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          <motion.div variants={fadeUp} className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700" role="alert" aria-live="polite">
             {error}
           </motion.div>
         )}
 
+        <div aria-live="polite" className="sr-only">
+          {running ? 'Running report...' : error ? `Report failed: ${error}` : rows.length > 0 ? `Report completed with ${rows.length} results` : ''}
+        </div>
+
         {/* Chart */}
-        <motion.div id="report-content" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5" role="region" aria-label="Report chart">
+        <motion.div id="report-content" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5" role="region" aria-label="Report chart" aria-busy={running || undefined}>
           {running ? (
             <LoadingSkeleton rows={6} />
           ) : (

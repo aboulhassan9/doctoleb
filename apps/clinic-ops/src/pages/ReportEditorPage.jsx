@@ -25,7 +25,7 @@ import { motion } from 'framer-motion';
 import DashboardLayout from '@ui/components/layouts/DashboardLayout';
 import {
   PageHeader, LoadingSkeleton, EmptyState, FormField, ChartRenderer, ChartErrorBoundary,
-  ConfirmDialog,
+  ConfirmDialog, DatePickerInput,
 } from '@ui/components/ui';
 import { useAuth } from '@ui/contexts/AuthContext';
 import { useToast } from '@ui/contexts/ToastContext';
@@ -118,6 +118,22 @@ const AUDIENCE_OPTIONS = [
   { value: 'public_safe', label: 'Public-safe' },
 ];
 
+function toDateInputValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+const RELATIVE_DATE_SHORTCUTS = [
+  { label: 'Today',          getValue: () => toDateInputValue(new Date()) },
+  { label: 'Start of week',  getValue: () => { const d = new Date(); d.setDate(d.getDate() - d.getDay()); return toDateInputValue(d); } },
+  { label: 'Start of month', getValue: () => { const d = new Date(); d.setDate(1); return toDateInputValue(d); } },
+  { label: '30 days ago',    getValue: () => { const d = new Date(); d.setDate(d.getDate() - 30); return toDateInputValue(d); } },
+  { label: 'Start of quarter', getValue: () => { const d = new Date(); d.setMonth(Math.floor(d.getMonth() / 3) * 3); d.setDate(1); return toDateInputValue(d); } },
+  { label: 'Start of year',  getValue: () => `${new Date().getFullYear()}-01-01` },
+];
+
 
 /** Legacy alias — used in places where dataSource isn't available (e.g. sort refs). */
 function prettyColumn(col) {
@@ -144,6 +160,7 @@ function slugifyAlias(input, fallback) {
 const QUICK_START_TEMPLATES = [
   {
     label: 'Appointments this month by doctor',
+    description: 'Bar chart of appointment counts grouped by doctor - spot workload imbalances.',
     definition: {
       schemaVersion: '1',
       dataSource: 'appointments',
@@ -158,6 +175,7 @@ const QUICK_START_TEMPLATES = [
   },
   {
     label: 'Monthly revenue trend',
+    description: 'Line chart of completed payment totals over time - track cash flow.',
     definition: {
       schemaVersion: '1',
       dataSource: 'payments',
@@ -172,6 +190,7 @@ const QUICK_START_TEMPLATES = [
   },
   {
     label: 'Top diagnoses this quarter',
+    description: 'Ranked bar chart of the most frequent ICD codes - identify common conditions.',
     definition: {
       schemaVersion: '1',
       dataSource: 'diagnoses',
@@ -186,6 +205,7 @@ const QUICK_START_TEMPLATES = [
   },
   {
     label: 'Care tasks by priority',
+    description: 'Pie chart of open care tasks split by priority level - focus on urgent items.',
     definition: {
       schemaVersion: '1',
       dataSource: 'care_tasks',
@@ -765,9 +785,12 @@ export default function ReportEditorPage() {
                   key={t.label}
                   type="button"
                   onClick={() => applyTemplate(t)}
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 text-left"
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-left hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition"
                 >
-                  {t.label}
+                  <span className="text-sm font-medium text-slate-700">{t.label}</span>
+                  {t.description && (
+                    <p className="mt-1 text-xs text-slate-500">{t.description}</p>
+                  )}
                 </button>
               ))}
             </div>
@@ -1006,9 +1029,12 @@ export default function ReportEditorPage() {
             const allowedOps = operatorsForColumn(f.column);
             const enumVals = enumValuesForColumn(f.column);
             const isEnumColumn = Boolean(enumVals);
+            const isDateColumn = columnTypeMap[f.column]?.type === 'timestamp' || columnTypeMap[f.column]?.type === 'date';
             // For enum columns with eq/neq/in/not_in, show a select instead of text
             const showEnumSelect = isEnumColumn && !noValue && (f.operator === 'eq' || f.operator === 'neq');
             const showEnumMulti = isEnumColumn && !noValue && (f.operator === 'in' || f.operator === 'not_in');
+            // For timestamp / date columns, show a date picker + relative shortcuts
+            const showDatePicker = isDateColumn && !noValue && !isEnumColumn;
             return (
               <div key={idx} className="rounded-lg border border-slate-150 bg-slate-50 p-3 space-y-2">
                 <div className="grid gap-3 sm:grid-cols-[2fr_2fr_2fr_auto] items-end">
@@ -1051,6 +1077,29 @@ export default function ReportEditorPage() {
                       onChange={(v) => setFilters((p) => p.map((x, i) => (i === idx ? { ...x, value: v } : x)))}
                       hint={isEnumColumn ? `Allowed: ${enumVals.join(', ')}` : undefined}
                     />
+                  ) : showDatePicker ? (
+                    <div className="space-y-1.5">
+                      <DatePickerInput
+                        label={bound ? 'Default value' : 'Value'}
+                        name={`filter-${idx}-value`}
+                        value={f.value || ''}
+                        onChange={(e) => setFilters((p) => p.map((x, i) => (i === idx ? { ...x, value: e.target.value } : x)))}
+                      />
+                      {!bound && (
+                        <div className="flex flex-wrap gap-1">
+                          {RELATIVE_DATE_SHORTCUTS.map(({ label, getValue }) => (
+                            <button
+                              key={label}
+                              type="button"
+                              onClick={() => setFilters((p) => p.map((x, i) => (i === idx ? { ...x, value: getValue() } : x)))}
+                              className="rounded px-1.5 py-0.5 text-xs text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition"
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <FormField
                       label={noValue ? 'Value (not needed)' : (bound ? 'Default value' : 'Value')}

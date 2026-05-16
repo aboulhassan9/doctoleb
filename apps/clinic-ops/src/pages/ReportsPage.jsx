@@ -47,6 +47,7 @@ export default function ReportsPage() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [duplicatingId, setDuplicatingId] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -84,6 +85,55 @@ export default function ReportsPage() {
     setActiveCategory(cat);
     setPage(1);
   };
+
+  async function handleDuplicate(report) {
+    if (!user?.id || duplicatingId) return;
+    setDuplicatingId(report.id);
+    setError('');
+    let newReportId = null;
+    try {
+      const { data: version, error: versionErr } = await analyticalReportService.getCurrentVersion(report.id);
+      if (versionErr || !version) {
+        setError(versionErr || 'Report has no published version to duplicate.');
+        setDuplicatingId(null);
+        return;
+      }
+
+      const { data: newReport, error: createErr } = await analyticalReportService.create({
+        name: `${report.name} (copy)`,
+        description: report.description || null,
+        category: report.category,
+        audience: report.audience || 'staff',
+        is_default: false,
+        created_by: user.id,
+      });
+      if (createErr || !newReport) {
+        setError(createErr || 'Failed to create duplicated report.');
+        setDuplicatingId(null);
+        return;
+      }
+      newReportId = newReport.id;
+
+      const { error: publishErr } = await analyticalReportService.publishNewVersion(
+        newReportId,
+        version.definition,
+        { publishedBy: user.id },
+      );
+      if (publishErr) {
+        await analyticalReportService.archive(newReportId, user.id);
+        setError(publishErr);
+        setDuplicatingId(null);
+        return;
+      }
+      navigate(`/reports/${newReportId}`);
+    } catch (e) {
+      if (newReportId) {
+        await analyticalReportService.archive(newReportId, user.id);
+      }
+      setError(e?.message || 'Unexpected error duplicating report.');
+      setDuplicatingId(null);
+    }
+  }
 
   // Group reports by category for the library layout (matches doctor's
   // mental model better than a flat list once the catalog grows).
@@ -178,32 +228,50 @@ export default function ReportsPage() {
                   </h2>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {grouped[cat].map((r) => (
-                      <button
+                      <div
                         key={r.id}
-                        type="button"
-                        onClick={() => navigate(`/reports/${r.id}`)}
-                        className={`rounded-xl border bg-white p-4 text-left hover:shadow-sm transition ${
+                        className={`rounded-xl border bg-white p-4 hover:shadow-sm transition ${
                           r.is_default
                             ? 'border-blue-200 border-l-4 hover:border-blue-300'
                             : 'border-slate-200 hover:border-blue-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-semibold text-slate-900">{r.name}</h3>
-                          {r.is_default ? (
-                            <span className="rounded bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
-                              Built-in
-                            </span>
-                          ) : (
-                            <span className="rounded bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500">
-                              Custom
-                            </span>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/reports/${r.id}`)}
+                          className="w-full text-left cursor-pointer"
+                          aria-label={`View report: ${r.name}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-semibold text-slate-900">{r.name}</h3>
+                            {r.is_default ? (
+                              <span className="rounded bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                                Built-in
+                              </span>
+                            ) : (
+                              <span className="rounded bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500">
+                                Custom
+                              </span>
+                            )}
+                          </div>
+                          {r.description && (
+                            <p className="mt-2 line-clamp-2 text-xs text-slate-500">{r.description}</p>
                           )}
-                        </div>
-                        {r.description && (
-                          <p className="mt-2 line-clamp-2 text-xs text-slate-500">{r.description}</p>
+                        </button>
+                        {canAuthor && (
+                          <div className="mt-2 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicate(r)}
+                              disabled={duplicatingId === r.id}
+                              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-500 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                              aria-label={`Duplicate report: ${r.name}`}
+                            >
+                              {duplicatingId === r.id ? 'Copying...' : 'Duplicate'}
+                            </button>
+                          </div>
                         )}
-                      </button>
+                      </div>
                     ))}
                   </div>
                 </section>

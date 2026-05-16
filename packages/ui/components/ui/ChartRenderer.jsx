@@ -33,6 +33,9 @@ import { resolveColumnLabel } from '@core/lib/reportLabels';
 // Brand-aligned palette. Picked for accessibility (each color has > 3:1
 // contrast against white and against the neighboring color in the
 // sequence) and for printing.
+const ANIMATION_ROW_THRESHOLD = 100;
+const ANIMATION_DURATION_MS = 400;
+
 const CHART_COLORS = [
   '#2563eb', // blue-600
   '#16a34a', // green-600
@@ -260,6 +263,8 @@ function BarViz({ rows, definition, stacked = false, onDrillDown, labelMap, char
             stackId={stacked ? 'a' : undefined}
             onClick={handleBarClick}
             cursor={onDrillDown ? 'pointer' : undefined}
+            isAnimationActive={rows.length <= ANIMATION_ROW_THRESHOLD}
+            animationDuration={ANIMATION_DURATION_MS}
           />
         ))}
       </BarChart>
@@ -319,6 +324,8 @@ function LineViz({ rows, definition, onDrillDown, labelMap, chartHeight = 320 })
             strokeWidth={2}
             dot={{ r: 3, onClick: handlePointClick, cursor: onDrillDown ? 'pointer' : undefined }}
             activeDot={{ r: 5, onClick: handlePointClick, cursor: onDrillDown ? 'pointer' : undefined }}
+            isAnimationActive={rows.length <= ANIMATION_ROW_THRESHOLD}
+            animationDuration={ANIMATION_DURATION_MS}
           />
         ))}
       </LineChart>
@@ -368,6 +375,8 @@ function PieViz({ rows, definition, onDrillDown, labelMap, chartHeight = 320 }) 
           label={renderLabel}
           onClick={handleSliceClick}
           cursor={onDrillDown ? 'pointer' : undefined}
+          isAnimationActive={rows.length <= ANIMATION_ROW_THRESHOLD}
+          animationDuration={ANIMATION_DURATION_MS}
         >
           {rows.map((_, idx) => (
             <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
