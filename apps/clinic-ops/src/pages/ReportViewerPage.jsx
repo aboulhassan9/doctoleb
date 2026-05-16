@@ -214,7 +214,12 @@ export default function ReportViewerPage() {
 
   // ── CSV export ──
   function handleExportCsv() {
-    const csv = toCsv(rows);
+    const headerMap = definition?.dataSource
+      ? Object.fromEntries(
+          Object.keys(rows[0] || {}).map((k) => [k, resolveColumnLabel(definition.dataSource, k)])
+        )
+      : null;
+    const csv = toCsv(rows, headerMap);
     if (!csv) return;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -333,10 +338,10 @@ export default function ReportViewerPage() {
               {boundFilters.map((f) => (
                 <FormField
                   key={f.bind}
-                  label={f.bind}
+                  label={resolveColumnLabel(definition.dataSource, f.column) || f.bind}
                   value={filterArgs[f.bind] ?? ''}
                   onChange={(v) => setFilterArgs((prev) => ({ ...prev, [f.bind]: v }))}
-                  aria-label={`Filter: ${f.bind}`}
+                  aria-label={`Filter: ${resolveColumnLabel(definition.dataSource, f.column) || f.bind}`}
                 />
               ))}
             </div>

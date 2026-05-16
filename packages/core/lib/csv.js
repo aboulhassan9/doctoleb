@@ -25,10 +25,14 @@ function escapeCsvField(value) {
  * appearance — so a sparse row never silently drops a column another row
  * has. Returns '' for an empty / non-array input.
  *
+ * An optional `headerMap` translates column keys to human-readable labels
+ * in the header row. Keys not in the map keep their raw name.
+ *
  * @param {Array<Record<string, unknown>>} rows
+ * @param {Record<string, string>} [headerMap] — column key → display label
  * @returns {string}
  */
-export function toCsv(rows) {
+export function toCsv(rows, headerMap = null) {
   if (!Array.isArray(rows) || rows.length === 0) return '';
 
   const columns = [];
@@ -44,7 +48,8 @@ export function toCsv(rows) {
   }
   if (columns.length === 0) return '';
 
-  const lines = [columns.map(escapeCsvField).join(',')];
+  const headerLabels = columns.map((c) => headerMap?.[c] || c);
+  const lines = [headerLabels.map(escapeCsvField).join(',')];
   for (const row of rows) {
     lines.push(columns.map((c) => escapeCsvField(row?.[c])).join(','));
   }

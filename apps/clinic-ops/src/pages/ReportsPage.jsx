@@ -48,28 +48,42 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 12;
 
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
-      const { data, error: err } = await analyticalReportService.list({
+      const { data, meta, error: err } = await analyticalReportService.list({
         category: activeCategory,
-        page: 1,
-        pageSize: 100,
+        page,
+        pageSize: PAGE_SIZE,
       });
       if (!alive) return;
       if (err) {
         setError(err);
         setReports([]);
+        setTotalPages(0);
+        setTotalCount(0);
       } else {
         setReports(data || []);
+        setTotalPages(meta?.pagination?.totalPages ?? 0);
+        setTotalCount(meta?.pagination?.totalItems ?? 0);
         setError('');
       }
       setLoading(false);
     })();
     return () => { alive = false; };
-  }, [activeCategory]);
+  }, [activeCategory, page]);
+
+  /** Reset to page 1 when category filter changes. */
+  const handleCategoryChange = (cat) => {
+    setActiveCategory(cat);
+    setPage(1);
+  };
 
   // Group reports by category for the library layout (matches doctor's
   // mental model better than a flat list once the catalog grows).
@@ -106,7 +120,7 @@ export default function ReportsPage() {
         <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setActiveCategory(null)}
+            onClick={() => handleCategoryChange(null)}
             className={`rounded-full px-3 py-1 text-xs font-medium ${
               activeCategory === null
                 ? 'bg-blue-600 text-white'
@@ -119,7 +133,7 @@ export default function ReportsPage() {
             <button
               key={cat}
               type="button"
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => handleCategoryChange(cat)}
               className={`rounded-full px-3 py-1 text-xs font-medium ${
                 activeCategory === cat
                   ? 'bg-blue-600 text-white'
@@ -151,37 +165,63 @@ export default function ReportsPage() {
               : 'Ask a doctor or admin to set up the first saved report.'}
           />
         ) : (
-          <motion.div variants={fadeUp} className="space-y-8">
-            {CATEGORY_ORDER.filter((c) => grouped[c]?.length).map((cat) => (
-              <section key={cat} className="space-y-3">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  {CATEGORY_LABELS[cat]}
-                </h2>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {grouped[cat].map((r) => (
-                    <button
-                      key={r.id}
-                      type="button"
-                      onClick={() => navigate(`/reports/${r.id}`)}
-                      className="rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-blue-300 hover:shadow-sm transition"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold text-slate-900">{r.name}</h3>
-                        {r.is_default && (
-                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
-                            Built-in
-                          </span>
+          <>
+            <motion.div variants={fadeUp} className="space-y-8">
+              {CATEGORY_ORDER.filter((c) => grouped[c]?.length).map((cat) => (
+                <section key={cat} className="space-y-3">
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    {CATEGORY_LABELS[cat]}
+                  </h2>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {grouped[cat].map((r) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => navigate(`/reports/${r.id}`)}
+                        className="rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-blue-300 hover:shadow-sm transition"
+                      >
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-semibold text-slate-900">{r.name}</h3>
+                          {r.is_default && (
+                            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
+                              Built-in
+                            </span>
+                          )}
+                        </div>
+                        {r.description && (
+                          <p className="mt-2 line-clamp-2 text-xs text-slate-500">{r.description}</p>
                         )}
-                      </div>
-                      {r.description && (
-                        <p className="mt-2 line-clamp-2 text-xs text-slate-500">{r.description}</p>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </motion.div>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </motion.div>
+
+            {totalPages > 1 && (
+              <motion.div variants={fadeUp} className="flex items-center justify-between pt-4 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-slate-600">
+                  Page {page} of {totalPages} · {totalCount} reports
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </motion.div>
+            )}
+          </>
         )}
       </motion.div>
     </DashboardLayout>

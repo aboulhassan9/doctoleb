@@ -202,7 +202,7 @@ function ReportTable({ rows, definition, labelMap, onDrillDown }) {
  * BarViz — categorical x-axis, numeric y-axis. Supports stacked variant.
  * Clicking a bar triggers drill-down on the group-by value.
  */
-function BarViz({ rows, definition, stacked = false, onDrillDown, labelMap }) {
+function BarViz({ rows, definition, stacked = false, onDrillDown, labelMap, chartHeight = 320 }) {
   const groupKey = pickPrimaryGroupKey(definition);
   const measures = definition?.aggregations?.map((a) => a.as) || [];
   if (!groupKey || !measures.length) return <NoData />;
@@ -221,7 +221,7 @@ function BarViz({ rows, definition, stacked = false, onDrillDown, labelMap }) {
     : undefined;
 
   return (
-    <ResponsiveContainer width="100%" height={320}>
+    <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart data={rows} margin={{ top: 8, right: 24, left: 0, bottom: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
         <XAxis
@@ -260,7 +260,7 @@ function BarViz({ rows, definition, stacked = false, onDrillDown, labelMap }) {
  * LineViz — time-series or ordinal x-axis. Clicking a data point triggers
  * drill-down on the group-by value.
  */
-function LineViz({ rows, definition, onDrillDown, labelMap }) {
+function LineViz({ rows, definition, onDrillDown, labelMap, chartHeight = 320 }) {
   const groupKey = pickPrimaryGroupKey(definition);
   const measures = definition?.aggregations?.map((a) => a.as) || [];
   if (!groupKey || !measures.length) return <NoData />;
@@ -279,7 +279,7 @@ function LineViz({ rows, definition, onDrillDown, labelMap }) {
     : undefined;
 
   return (
-    <ResponsiveContainer width="100%" height={320}>
+    <ResponsiveContainer width="100%" height={chartHeight}>
       <LineChart data={rows} margin={{ top: 8, right: 24, left: 0, bottom: 8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
         <XAxis
@@ -319,7 +319,7 @@ function LineViz({ rows, definition, onDrillDown, labelMap }) {
  * PieViz — single dimension, single measure share. Clicking a slice triggers
  * drill-down on the group-by value.
  */
-function PieViz({ rows, definition, onDrillDown, labelMap }) {
+function PieViz({ rows, definition, onDrillDown, labelMap, chartHeight = 320 }) {
   const groupKey = pickPrimaryGroupKey(definition);
   const measureKey = pickPrimaryMeasureKey(definition);
   if (!groupKey || !measureKey || !rows.length) return <NoData />;
@@ -338,7 +338,7 @@ function PieViz({ rows, definition, onDrillDown, labelMap }) {
     : undefined;
 
   return (
-    <ResponsiveContainer width="100%" height={320}>
+    <ResponsiveContainer width="100%" height={chartHeight}>
       <PieChart>
         <Pie
           data={rows}
@@ -375,7 +375,7 @@ function PieViz({ rows, definition, onDrillDown, labelMap }) {
  * so every sub-renderer shows human-friendly headers, axis labels, and
  * legend entries instead of raw column keys.
  */
-export default function ChartRenderer({ definition, rows, onDrillDown }) {
+export default function ChartRenderer({ definition, rows, onDrillDown, chartHeight = 320 }) {
   const safeRows = Array.isArray(rows) ? rows : [];
   const type = definition?.visualization?.type || 'table';
   const labelMap = definition ? buildColumnLabelMap(definition) : {};
@@ -386,10 +386,10 @@ export default function ChartRenderer({ definition, rows, onDrillDown }) {
 
   switch (type) {
     case 'kpi':         return <KpiCard rows={safeRows} definition={definition} labelMap={labelMap} />;
-    case 'bar':         return <BarViz rows={safeRows} definition={definition} onDrillDown={onDrillDown} labelMap={labelMap} />;
-    case 'stacked_bar': return <BarViz rows={safeRows} definition={definition} stacked onDrillDown={onDrillDown} labelMap={labelMap} />;
-    case 'line':        return <LineViz rows={safeRows} definition={definition} onDrillDown={onDrillDown} labelMap={labelMap} />;
-    case 'pie':         return <PieViz rows={safeRows} definition={definition} onDrillDown={onDrillDown} labelMap={labelMap} />;
+    case 'bar':         return <BarViz rows={safeRows} definition={definition} onDrillDown={onDrillDown} labelMap={labelMap} chartHeight={chartHeight} />;
+    case 'stacked_bar': return <BarViz rows={safeRows} definition={definition} stacked onDrillDown={onDrillDown} labelMap={labelMap} chartHeight={chartHeight} />;
+    case 'line':        return <LineViz rows={safeRows} definition={definition} onDrillDown={onDrillDown} labelMap={labelMap} chartHeight={chartHeight} />;
+    case 'pie':         return <PieViz rows={safeRows} definition={definition} onDrillDown={onDrillDown} labelMap={labelMap} chartHeight={chartHeight} />;
     case 'table':
     default:            return <ReportTable rows={safeRows} definition={definition} labelMap={labelMap} onDrillDown={onDrillDown} />;
   }
