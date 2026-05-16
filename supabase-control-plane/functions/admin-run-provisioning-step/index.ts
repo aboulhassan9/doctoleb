@@ -30,6 +30,7 @@ const DEFAULT_CLINIC_OPS_URL = 'https://doctoleb-clinic-ops.vercel.app'
 // Keep this aligned with packages/core/schemas/auth.js and the ops login UI.
 const TENANT_EMAIL_OTP_LENGTH = 8
 const TERMINAL_STEP_STATUSES = new Set(['succeeded', 'skipped', 'cancelled', 'rolled_back'])
+const DATABASE_UPGRADE_STEP_STATUSES = new Set(['succeeded', 'skipped'])
 const SAFE_RUNNER_STEPS = new Set([
   'provider_connections_selected',
   'create_supabase_project',
@@ -1661,6 +1662,37 @@ Deno.serve(async (req) => {
   const { data: job, error: jobError } = await fetchJob(context, step.provisioning_job_id)
   if (jobError) return errorResponse('PROVISIONING_JOB_LOOKUP_FAILED', 500, cors)
   if (!job) return errorResponse('PROVISIONING_JOB_NOT_FOUND', 404, cors)
+
+  if (step.step_code === 'apply_tenant_migrations' && DATABASE_UPGRADE_STEP_STATUSES.has(step.status)) {
+    const previousSteps = await assertPreviousStepsComplete(context, step)
+    if (previousSteps.error) return errorResponse(previousSteps.error, 409, cors, previousSteps.details)
+
+    const execution = await runApplyTenantMigrations(context, tenantId, step.id)
+    if (execution.error) {
+      return errorResponse(execution.error, statusForError(execution.error), cors, {
+        summary: execution.summary,
+        alreadyFinal: true,
+        upgradeRun: true,
+        ...(execution.details ?? {}),
+      })
+    }
+
+    return jsonResponse({
+      data: {
+        step,
+        job,
+        alreadyFinal: true,
+        upgradeRun: true,
+        result: {
+          stepCode: step.step_code,
+          status: execution.data.status,
+          summary: execution.data.summary,
+        },
+        postconditions: execution.data.postconditions,
+      },
+      error: null,
+    }, 200, cors)
+  }
 
   if (TERMINAL_STEP_STATUSES.has(step.status)) {
     return jsonResponse({ data: { step, job, alreadyFinal: true }, error: null }, 200, cors)

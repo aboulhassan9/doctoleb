@@ -534,6 +534,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(tenantMigrationRunner, /prepare: false/);
     assert.match(tenantMigrationRunner, /supabase_migrations\.schema_migrations/);
     assert.match(tenantMigrationRunner, /TENANT_DATABASE_NOT_EMPTY/);
+    assert.match(tenantMigrationRunner, /public\.analytical_reports/);
+    assert.match(tenantMigrationRunner, /public\.analytical_report_versions/);
+    assert.match(tenantMigrationRunner, /public\.analytical_report_runs/);
+    assert.match(tenantMigrationRunner, /public\.run_analytical_report\(jsonb,jsonb\)/);
     assert.match(tenantMigrationRunner, /admin_upsert_tenant_migration_item/);
     assert.match(tenantMigrationRunner, /admin_finish_tenant_migration_run/);
     assert.doesNotMatch(tenantMigrationRunner, /console\.(log|error|warn)\([^)]*(databaseUrl|connectionString|secretValue)/);
@@ -563,6 +567,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(runner, /TENANT_DATABASE_URL_SECRET_REQUIRED/);
     assert.match(runner, /TENANT_MIGRATIONS_NOT_READY/);
     assert.match(runner, /runnerMode: 'database_url'/);
+    assert.match(runner, /DATABASE_UPGRADE_STEP_STATUSES/);
+    assert.match(runner, /upgradeRun: true/);
     assert.match(api, /admin-store-provider-secret/);
     assert.match(api, /admin-upsert-tenant-secret/);
     assert.match(api, /admin-list-tenant-db-setup/);
@@ -572,6 +578,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(stepsPanel, /secretKind: 'database_url'/);
     assert.match(stepsPanel, /const storeResult = await onStoreTenantSecret\?\.\(\{ secretValue: value, secretKind: 'database_url' \}\)/);
     assert.match(stepsPanel, /if \(storeResult\?\.error\) return/);
+    assert.match(stepsPanel, /Update database/);
+    assert.match(stepsPanel, /Safe upgrade/);
     assert.match(stepsPanel, /Latest DB setup/);
     assert.match(readme, /tenant_secret_refs/);
     assert.match(readme, /tenant_migration_runs/);

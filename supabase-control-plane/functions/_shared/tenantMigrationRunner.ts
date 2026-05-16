@@ -44,6 +44,10 @@ const REQUIRED_RUNTIME_OBJECTS = [
   'public.tenant_app_config',
   'public.service_seed_tenant_profile(text,text,jsonb)',
   'public.service_seed_first_doctor_admin(uuid,text,text,text,uuid)',
+  'public.analytical_reports',
+  'public.analytical_report_versions',
+  'public.analytical_report_runs',
+  'public.run_analytical_report(jsonb,jsonb)',
 ]
 
 function safeErrorSummary(error: unknown) {

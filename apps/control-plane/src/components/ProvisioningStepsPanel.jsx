@@ -117,6 +117,12 @@ function findCurrentStep(steps) {
   return steps.find((step) => !isStepFinal(step)) || null
 }
 
+function findCompletedDatabaseStep(steps) {
+  return steps.find((step) => (
+    step.step_code === 'apply_tenant_migrations' && ['succeeded', 'skipped'].includes(step.status)
+  )) || null
+}
+
 function canCancelJob(job) {
   return job?.id && !FINAL_JOB_STATUSES.has(job.status)
 }
@@ -228,6 +234,9 @@ function DatabaseSetupAction({
   onStoreTenantSecret,
   runningStepId,
   storingTenantSecret,
+  actionLabel = 'Run setup',
+  savedActionLabel = 'Save & run',
+  badgeLabel = 'Fresh DB',
 }) {
   const [databaseUrl, setDatabaseUrl] = useState('')
   const isBusy = runningStepId === step.id || storingTenantSecret
@@ -258,9 +267,9 @@ function DatabaseSetupAction({
       </label>
       <div className="flex flex-wrap items-center gap-3">
         <PrimaryButton type="submit" disabled={isBusy}>
-          {isBusy ? 'Working...' : databaseUrl.trim() ? 'Save & run' : 'Run setup'}
+          {isBusy ? 'Working...' : databaseUrl.trim() ? savedActionLabel : actionLabel}
         </PrimaryButton>
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-cyan-900 ring-1 ring-cyan-200">Fresh DB</span>
+        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-cyan-900 ring-1 ring-cyan-200">{badgeLabel}</span>
       </div>
     </form>
   )
@@ -406,6 +415,31 @@ function DoneCard() {
   )
 }
 
+function DatabaseUpgradeCard({
+  step,
+  onRunStep,
+  onStoreTenantSecret,
+  runningStepId,
+  storingTenantSecret,
+}) {
+  return (
+    <div className="rounded-[2rem] bg-cyan-50 p-6 ring-2 ring-cyan-200">
+      <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">Database</p>
+      <h3 className="mt-2 text-2xl font-black text-cyan-950">Update schema</h3>
+      <DatabaseSetupAction
+        step={step}
+        onRunStep={onRunStep}
+        onStoreTenantSecret={onStoreTenantSecret}
+        runningStepId={runningStepId}
+        storingTenantSecret={storingTenantSecret}
+        actionLabel="Update database"
+        savedActionLabel="Save & update"
+        badgeLabel="Safe upgrade"
+      />
+    </div>
+  )
+}
+
 function AdvancedDetails({
   steps,
   migrationRuns,
@@ -471,6 +505,7 @@ export default function ProvisioningStepsPanel({
 }) {
   const currentSteps = activeJobSteps(steps, job)
   const currentStep = findCurrentStep(currentSteps)
+  const completedDatabaseStep = findCompletedDatabaseStep(currentSteps)
   const currentStepIndex = currentStep ? currentSteps.findIndex((step) => step.id === currentStep.id) : -1
   const completedCount = currentSteps.filter((step) => step.status === 'succeeded' || step.status === 'skipped').length
   const totalSteps = currentSteps.length
@@ -507,7 +542,18 @@ export default function ProvisioningStepsPanel({
       ) : jobCanResume ? (
         <PausedSetupCard job={job} onResumeJob={onResumeJob} resumingJob={resumingJob} />
       ) : totalSteps > 0 ? (
-        <DoneCard />
+        <>
+          <DoneCard />
+          {completedDatabaseStep ? (
+            <DatabaseUpgradeCard
+              step={completedDatabaseStep}
+              onRunStep={onRunStep}
+              onStoreTenantSecret={onStoreTenantSecret}
+              runningStepId={runningStepId}
+              storingTenantSecret={storingTenantSecret}
+            />
+          ) : null}
+        </>
       ) : (
         <p className="rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-500">No setup steps yet.</p>
       )}
