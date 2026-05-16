@@ -1,0 +1,326 @@
+Project "DoctoLeb SaaS Tenant Provisioning Process ERD" {
+  database_type: "PostgreSQL"
+  Note: "Process ERD: SaaS admin creates a tenant draft, links provider/project metadata, stores secret references, runs migrations, writes domains and entitlements, and audits activation."
+}
+
+Table security.super_admins {
+  id uuid [pk]
+  auth_user_id uuid [not null, unique]
+  display_name text
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  last_login_at timestamptz
+  role text [not null]
+
+  Note: 'Allowed SaaS admin identities.'
+}
+
+Table security.edge_rate_limit_buckets {
+  id bigserial [pk]
+  route text [not null]
+  key_hash text [not null]
+  window_start timestamptz [not null]
+  window_seconds integer [not null]
+  request_count integer [not null]
+  expires_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Server-side rate limit counters.'
+}
+
+Table registry.tenants {
+  id uuid [pk]
+  slug text [not null, unique]
+  display_name text [not null]
+  status text [not null]
+  plan text
+  release_channel text [not null]
+  supabase_project_ref text [not null]
+  supabase_url text [not null]
+  supabase_anon_key text [not null]
+  schema_version text
+  notes text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Zero-PHI tenant registry entry.'
+}
+
+Table registry.tenant_domains {
+  id uuid [pk]
+  tenant_id uuid [not null]
+  hostname text [not null]
+  surface text [not null]
+  status text [not null]
+  dns_status text
+  ssl_status text
+  verification_token text
+  verified_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Hostnames mapped to tenant surfaces.'
+}
+
+Table plans.plans {
+  code text [pk]
+  name text [not null]
+  status text [not null]
+  billing_mode text [not null]
+  price_label text
+  stripe_product_lookup_key text
+  description text
+  sort_order integer [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'SaaS subscription plan definitions.'
+}
+
+Table plans.plan_entitlements {
+  id uuid [pk]
+  plan_code text [not null]
+  feature_code text [not null]
+  is_enabled boolean [not null]
+  limits jsonb [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Feature defaults included in a SaaS plan.'
+}
+
+Table plans.tenant_entitlements {
+  id uuid [pk]
+  tenant_id uuid [not null]
+  feature_code text [not null]
+  source text [not null]
+  is_enabled boolean [not null]
+  limits jsonb [not null]
+  reason text
+  expires_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Feature overrides granted to one tenant.'
+}
+
+Table provisioning.provisioning_provider_connections {
+  id uuid [pk]
+  provider text [not null]
+  display_name text [not null]
+  owner_scope text [not null]
+  auth_method text [not null]
+  status text [not null]
+  is_automation_enabled boolean [not null]
+  external_account_id text
+  external_account_slug text
+  external_team_id text
+  external_org_id text
+  capabilities jsonb [not null]
+  secret_storage text [not null]
+  secret_ref text
+  secret_last_rotated_at timestamptz
+  last_verified_at timestamptz
+  last_error_code text
+  last_error_summary text
+  created_by uuid
+  updated_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  archived_at timestamptz
+
+  Note: 'Stored provider account metadata and secret ref.'
+}
+
+Table provisioning.tenant_provisioning_jobs {
+  id uuid [pk]
+  tenant_id uuid
+  requested_slug text [not null]
+  requested_display_name text [not null]
+  requested_plan text [not null]
+  requested_domains jsonb [not null]
+  initial_branding jsonb [not null]
+  status text [not null]
+  checklist jsonb [not null]
+  assigned_admin_id uuid
+  last_error text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  completed_at timestamptz
+  client_request_id text
+  supabase_connection_id uuid
+  vercel_connection_id uuid
+  automation_mode text [not null]
+  automation_status text [not null]
+  provider_state jsonb [not null]
+  cancel_requested_at timestamptz
+  first_doctor_email text
+  first_doctor_display_name text
+  first_doctor_phone text
+
+  Note: 'Tenant setup job requested by SaaS admin.'
+}
+
+Table provisioning.tenant_provisioning_steps {
+  id uuid [pk]
+  provisioning_job_id uuid [not null]
+  tenant_id uuid
+  step_code text [not null]
+  provider text
+  status text [not null]
+  idempotency_key text [not null]
+  external_resource_kind text
+  external_resource_id text
+  external_resource_url text
+  preconditions jsonb [not null]
+  postconditions jsonb [not null]
+  undo_strategy text
+  undo_payload jsonb [not null]
+  attempt_count integer [not null]
+  last_error_code text
+  last_error_summary text
+  started_at timestamptz
+  completed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Reversible step in the setup ledger.'
+}
+
+Table provisioning.tenant_secret_refs {
+  id uuid [pk]
+  tenant_id uuid [not null]
+  project_ref text [not null]
+  secret_kind text [not null]
+  secret_storage text [not null]
+  secret_ref text [not null]
+  status text [not null]
+  secret_last_rotated_at timestamptz [not null]
+  last_verified_at timestamptz
+  last_error_code text
+  last_error_summary text
+  created_by uuid
+  updated_by uuid
+  revoked_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Server-only secret reference for a tenant.'
+}
+
+Table provisioning.tenant_migration_runs {
+  id uuid [pk]
+  tenant_id uuid [not null]
+  provisioning_step_id uuid
+  project_ref text [not null]
+  runner_mode text [not null]
+  status text [not null]
+  migration_source text [not null]
+  source_checksum text
+  expected_migrations_count integer [not null]
+  applied_migrations_count integer [not null]
+  failed_migration_version text
+  failed_migration_name text
+  last_error_code text
+  last_error_summary text
+  started_at timestamptz
+  completed_at timestamptz
+  created_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Tenant database setup run status.'
+}
+
+Table provisioning.tenant_migration_items {
+  id uuid [pk]
+  run_id uuid [not null]
+  sequence_no integer [not null]
+  version text [not null]
+  name text [not null]
+  checksum text
+  status text [not null]
+  error_code text
+  error_summary text
+  started_at timestamptz
+  completed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'One migration item inside a migration run.'
+}
+
+Table audit.tenant_events {
+  id uuid [pk]
+  tenant_id uuid
+  event_type text [not null]
+  actor_id uuid
+  metadata jsonb [not null]
+  created_at timestamptz [not null]
+
+  Note: 'Safe SaaS event log for tenant lifecycle actions.'
+}
+
+TableGroup "registry" [color: #4F46E5] {
+  registry.tenants
+  registry.tenant_domains
+
+  Note: 'Tenant registry and routing metadata.'
+}
+TableGroup "security" [color: #E11D48] {
+  security.super_admins
+  security.edge_rate_limit_buckets
+
+  Note: 'Server-only secrets and secure references.'
+}
+TableGroup "plans" [color: #16A34A] {
+  plans.plans
+  plans.plan_entitlements
+  plans.tenant_entitlements
+
+  Note: 'Plans, entitlements, and feature access.'
+}
+TableGroup "provisioning" [color: #F97316] {
+  provisioning.provisioning_provider_connections
+  provisioning.tenant_provisioning_jobs
+  provisioning.tenant_provisioning_steps
+  provisioning.tenant_secret_refs
+  provisioning.tenant_migration_runs
+  provisioning.tenant_migration_items
+
+  Note: 'Tenant setup, migrations, and activation.'
+}
+TableGroup "audit" [color: #64748B] {
+  audit.tenant_events
+
+  Note: 'Audit and lifecycle events.'
+}
+
+Note relationship_story {
+  'Relation: admin runs provisioning job; steps create tenant, secrets, migrations, domains, and audit.'
+}
+
+Note relationship_legend {
+  'Ref format: left foreign key > right owner. Line color follows the left table area.'
+}
+
+Ref: plans.plan_entitlements.plan_code > plans.plans.code [color: #16A34A]
+Ref: plans.tenant_entitlements.tenant_id > registry.tenants.id [color: #16A34A]
+Ref: registry.tenant_domains.tenant_id > registry.tenants.id [color: #4F46E5]
+Ref: provisioning.provisioning_provider_connections.created_by > security.super_admins.id [color: #F97316]
+Ref: provisioning.provisioning_provider_connections.updated_by > security.super_admins.id [color: #F97316]
+Ref: provisioning.tenant_provisioning_jobs.assigned_admin_id > security.super_admins.id [color: #F97316]
+Ref: provisioning.tenant_provisioning_jobs.tenant_id > registry.tenants.id [color: #F97316]
+Ref: provisioning.tenant_provisioning_jobs.supabase_connection_id > provisioning.provisioning_provider_connections.id [color: #F97316]
+Ref: provisioning.tenant_provisioning_jobs.vercel_connection_id > provisioning.provisioning_provider_connections.id [color: #F97316]
+Ref: provisioning.tenant_provisioning_steps.provisioning_job_id > provisioning.tenant_provisioning_jobs.id [color: #F97316]
+Ref: provisioning.tenant_provisioning_steps.tenant_id > registry.tenants.id [color: #F97316]
+Ref: provisioning.tenant_secret_refs.tenant_id > registry.tenants.id [color: #F97316]
+Ref: provisioning.tenant_secret_refs.created_by > security.super_admins.id [color: #F97316]
+Ref: provisioning.tenant_secret_refs.updated_by > security.super_admins.id [color: #F97316]
+Ref: provisioning.tenant_migration_runs.tenant_id > registry.tenants.id [color: #F97316]
+Ref: provisioning.tenant_migration_runs.provisioning_step_id > provisioning.tenant_provisioning_steps.id [color: #F97316]
+Ref: provisioning.tenant_migration_runs.created_by > security.super_admins.id [color: #F97316]
+Ref: provisioning.tenant_migration_items.run_id > provisioning.tenant_migration_runs.id [color: #F97316]
+Ref: audit.tenant_events.tenant_id > registry.tenants.id [color: #64748B]

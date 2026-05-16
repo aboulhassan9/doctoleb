@@ -1,0 +1,2427 @@
+{
+  "id": "diagram_16_billing_insurance_process",
+  "name": "DoctoLeb Billing And Insurance Process ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_16_billing_insurance_process_identity_doctors",
+      "name": "doctors",
+      "schema": "identity",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_department",
+          "name": "department",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_specialization",
+          "name": "specialization",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_license_number",
+          "name": "license_number",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_bio",
+          "name": "bio",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_availability",
+          "name": "availability",
+          "type": {
+            "id": "json",
+            "name": "json"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_consultation_fee",
+          "name": "consultation_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_identity_doctors_provisioning_client_request_id",
+          "name": "provisioning_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_identity_doctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_identity_doctors_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Doctor/provider profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_identity"
+    },
+    {
+      "id": "table_16_billing_insurance_process_patient_record_patients",
+      "name": "patients",
+      "schema": "patient_record",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_date_of_birth",
+          "name": "date_of_birth",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_sex",
+          "name": "sex",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_blood_type",
+          "name": "blood_type",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_medical_history",
+          "name": "medical_history",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_emergency_contact",
+          "name": "emergency_contact",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_emergency_phone",
+          "name": "emergency_phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_insurance_id",
+          "name": "insurance_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_intake_completed_at",
+          "name": "intake_completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_established_at",
+          "name": "established_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_full_name",
+          "name": "full_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patients_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_patient_record_patients_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_patient_record_patients_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Clinical patient profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_patient_record"
+    },
+    {
+      "id": "table_16_billing_insurance_process_patient_record_patient_insurance_policies",
+      "name": "patient_insurance_policies",
+      "schema": "patient_record",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_provider_id",
+          "name": "provider_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_policy_number",
+          "name": "policy_number",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_policyholder_name",
+          "name": "policyholder_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_valid_from",
+          "name": "valid_from",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_valid_to",
+          "name": "valid_to",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_is_primary",
+          "name": "is_primary",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_patient_record_patient_insurance_policies_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_patient_record_patient_insurance_policies_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 684,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Patient insurance policy details.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_patient_record"
+    },
+    {
+      "id": "table_16_billing_insurance_process_reference_visit_types",
+      "name": "visit_types",
+      "schema": "reference",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_default_duration_minutes",
+          "name": "default_duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_default_fee",
+          "name": "default_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_requires_intake",
+          "name": "requires_intake",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_billable_service_id",
+          "name": "billable_service_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_reference_visit_types_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_reference_visit_types_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_reference_visit_types_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Visit type, duration, and billing defaults.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_reference"
+    },
+    {
+      "id": "table_16_billing_insurance_process_scheduling_appointments",
+      "name": "appointments",
+      "schema": "scheduling",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_scheduled_at",
+          "name": "scheduled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_duration_minutes",
+          "name": "duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_reason",
+          "name": "reason",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_slot_id",
+          "name": "slot_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_booked_by",
+          "name": "booked_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_scheduling_appointments_visit_type_id",
+          "name": "visit_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_scheduling_appointments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_scheduling_appointments_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 262,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Booked visit between patient and doctor.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_scheduling"
+    },
+    {
+      "id": "table_16_billing_insurance_process_clinical_encounters",
+      "name": "encounters",
+      "schema": "clinical",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_visit_type_id",
+          "name": "visit_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_started_at",
+          "name": "started_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_ended_at",
+          "name": "ended_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_chief_complaint",
+          "name": "chief_complaint",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_summary",
+          "name": "summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_clinical_encounters_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_clinical_encounters_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_clinical_encounters_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 262,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Clinical visit record opened from an appointment.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_clinical"
+    },
+    {
+      "id": "table_16_billing_insurance_process_billing_payments",
+      "name": "payments",
+      "schema": "billing",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_amount",
+          "name": "amount",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_currency",
+          "name": "currency",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_status",
+          "name": "status",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_payment_method",
+          "name": "payment_method",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_transaction_id",
+          "name": "transaction_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_payments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_billing_payments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_billing_payments_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2204,
+      "y": 262,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Payment record linked to patient, doctor, or visit.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_billing"
+    },
+    {
+      "id": "table_16_billing_insurance_process_billing_insurance_providers",
+      "name": "insurance_providers",
+      "schema": "billing",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_website_url",
+          "name": "website_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_providers_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_billing_insurance_providers_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_billing_insurance_providers_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2204,
+      "y": 684,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Insurance company reference records.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_billing"
+    },
+    {
+      "id": "table_16_billing_insurance_process_billing_doctor_insurance_contracts",
+      "name": "doctor_insurance_contracts",
+      "schema": "billing",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_provider_id",
+          "name": "provider_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_doctor_provider_code",
+          "name": "doctor_provider_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_contract_number",
+          "name": "contract_number",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_valid_from",
+          "name": "valid_from",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_valid_to",
+          "name": "valid_to",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_billing_doctor_insurance_contracts_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_billing_doctor_insurance_contracts_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2204,
+      "y": 1074,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Doctor agreements with insurance providers.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_billing"
+    },
+    {
+      "id": "table_16_billing_insurance_process_billing_claim_form_templates",
+      "name": "claim_form_templates",
+      "schema": "billing",
+      "order": 9,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_provider_id",
+          "name": "provider_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_template_format",
+          "name": "template_format",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_template_body",
+          "name": "template_body",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_preview_image_url",
+          "name": "preview_image_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_claim_form_templates_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_billing_claim_form_templates_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_billing_claim_form_templates_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2204,
+      "y": 1464,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Reusable insurance claim form definitions.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_billing"
+    },
+    {
+      "id": "table_16_billing_insurance_process_billing_insurance_claims",
+      "name": "insurance_claims",
+      "schema": "billing",
+      "order": 10,
+      "fields": [
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_policy_id",
+          "name": "policy_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_template_id",
+          "name": "template_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_amount",
+          "name": "amount",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_amount_paid_by_insurer",
+          "name": "amount_paid_by_insurer",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_amount_paid_by_patient",
+          "name": "amount_paid_by_patient",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_diagnosis_code",
+          "name": "diagnosis_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_claim_form_pdf_url",
+          "name": "claim_form_pdf_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_printed_at",
+          "name": "printed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_submitted_at",
+          "name": "submitted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_paid_at",
+          "name": "paid_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633786
+        },
+        {
+          "id": "field_16_billing_insurance_process_billing_insurance_claims_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633786
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_16_billing_insurance_process_billing_insurance_claims_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_16_billing_insurance_process_billing_insurance_claims_id"
+          ],
+          "createdAt": 1778757633786,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2204,
+      "y": 1886,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633786,
+      "comments": "Insurance claim raised from a clinical visit.",
+      "expanded": false,
+      "parentAreaId": "area_16_billing_insurance_process_billing"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_16_billing_insurance_process_0",
+      "name": "appointments_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_16_billing_insurance_process_scheduling_appointments",
+      "targetTableId": "table_16_billing_insurance_process_identity_doctors",
+      "sourceFieldId": "field_16_billing_insurance_process_scheduling_appointments_doctor_id",
+      "targetFieldId": "field_16_billing_insurance_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_1",
+      "name": "appointments_patient_id_patients_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_16_billing_insurance_process_scheduling_appointments",
+      "targetTableId": "table_16_billing_insurance_process_patient_record_patients",
+      "sourceFieldId": "field_16_billing_insurance_process_scheduling_appointments_patient_id",
+      "targetFieldId": "field_16_billing_insurance_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_2",
+      "name": "appointments_visit_type_id_visit_types_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "reference",
+      "sourceTableId": "table_16_billing_insurance_process_scheduling_appointments",
+      "targetTableId": "table_16_billing_insurance_process_reference_visit_types",
+      "sourceFieldId": "field_16_billing_insurance_process_scheduling_appointments_visit_type_id",
+      "targetFieldId": "field_16_billing_insurance_process_reference_visit_types_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_3",
+      "name": "encounters_appointment_id_appointments_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_16_billing_insurance_process_clinical_encounters",
+      "targetTableId": "table_16_billing_insurance_process_scheduling_appointments",
+      "sourceFieldId": "field_16_billing_insurance_process_clinical_encounters_appointment_id",
+      "targetFieldId": "field_16_billing_insurance_process_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_4",
+      "name": "encounters_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_16_billing_insurance_process_clinical_encounters",
+      "targetTableId": "table_16_billing_insurance_process_identity_doctors",
+      "sourceFieldId": "field_16_billing_insurance_process_clinical_encounters_doctor_id",
+      "targetFieldId": "field_16_billing_insurance_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_5",
+      "name": "encounters_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_16_billing_insurance_process_clinical_encounters",
+      "targetTableId": "table_16_billing_insurance_process_patient_record_patients",
+      "sourceFieldId": "field_16_billing_insurance_process_clinical_encounters_patient_id",
+      "targetFieldId": "field_16_billing_insurance_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_6",
+      "name": "encounters_visit_type_id_visit_types_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "reference",
+      "sourceTableId": "table_16_billing_insurance_process_clinical_encounters",
+      "targetTableId": "table_16_billing_insurance_process_reference_visit_types",
+      "sourceFieldId": "field_16_billing_insurance_process_clinical_encounters_visit_type_id",
+      "targetFieldId": "field_16_billing_insurance_process_reference_visit_types_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_7",
+      "name": "payments_patient_id_patients_id",
+      "sourceSchema": "billing",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_16_billing_insurance_process_billing_payments",
+      "targetTableId": "table_16_billing_insurance_process_patient_record_patients",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_payments_patient_id",
+      "targetFieldId": "field_16_billing_insurance_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_8",
+      "name": "payments_doctor_id_doctors_id",
+      "sourceSchema": "billing",
+      "targetSchema": "identity",
+      "sourceTableId": "table_16_billing_insurance_process_billing_payments",
+      "targetTableId": "table_16_billing_insurance_process_identity_doctors",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_payments_doctor_id",
+      "targetFieldId": "field_16_billing_insurance_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_9",
+      "name": "payments_appointment_id_appointments_id",
+      "sourceSchema": "billing",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_16_billing_insurance_process_billing_payments",
+      "targetTableId": "table_16_billing_insurance_process_scheduling_appointments",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_payments_appointment_id",
+      "targetFieldId": "field_16_billing_insurance_process_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_10",
+      "name": "doctor_insurance_contracts_doctor_id_doctors_id",
+      "sourceSchema": "billing",
+      "targetSchema": "identity",
+      "sourceTableId": "table_16_billing_insurance_process_billing_doctor_insurance_contracts",
+      "targetTableId": "table_16_billing_insurance_process_identity_doctors",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_doctor_id",
+      "targetFieldId": "field_16_billing_insurance_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_11",
+      "name": "doctor_insurance_contracts_provider_id_insurance_providers_id",
+      "sourceSchema": "billing",
+      "targetSchema": "billing",
+      "sourceTableId": "table_16_billing_insurance_process_billing_doctor_insurance_contracts",
+      "targetTableId": "table_16_billing_insurance_process_billing_insurance_providers",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_doctor_insurance_contracts_provider_id",
+      "targetFieldId": "field_16_billing_insurance_process_billing_insurance_providers_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_12",
+      "name": "patient_insurance_policies_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_16_billing_insurance_process_patient_record_patient_insurance_policies",
+      "targetTableId": "table_16_billing_insurance_process_patient_record_patients",
+      "sourceFieldId": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_patient_id",
+      "targetFieldId": "field_16_billing_insurance_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_13",
+      "name": "patient_insurance_policies_provider_id_insurance_providers_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "billing",
+      "sourceTableId": "table_16_billing_insurance_process_patient_record_patient_insurance_policies",
+      "targetTableId": "table_16_billing_insurance_process_billing_insurance_providers",
+      "sourceFieldId": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_provider_id",
+      "targetFieldId": "field_16_billing_insurance_process_billing_insurance_providers_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_14",
+      "name": "claim_form_templates_provider_id_insurance_providers_id",
+      "sourceSchema": "billing",
+      "targetSchema": "billing",
+      "sourceTableId": "table_16_billing_insurance_process_billing_claim_form_templates",
+      "targetTableId": "table_16_billing_insurance_process_billing_insurance_providers",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_claim_form_templates_provider_id",
+      "targetFieldId": "field_16_billing_insurance_process_billing_insurance_providers_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_15",
+      "name": "insurance_claims_patient_id_patients_id",
+      "sourceSchema": "billing",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_16_billing_insurance_process_billing_insurance_claims",
+      "targetTableId": "table_16_billing_insurance_process_patient_record_patients",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_insurance_claims_patient_id",
+      "targetFieldId": "field_16_billing_insurance_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_16",
+      "name": "insurance_claims_doctor_id_doctors_id",
+      "sourceSchema": "billing",
+      "targetSchema": "identity",
+      "sourceTableId": "table_16_billing_insurance_process_billing_insurance_claims",
+      "targetTableId": "table_16_billing_insurance_process_identity_doctors",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_insurance_claims_doctor_id",
+      "targetFieldId": "field_16_billing_insurance_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_17",
+      "name": "insurance_claims_policy_id_patient_insurance_policies_id",
+      "sourceSchema": "billing",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_16_billing_insurance_process_billing_insurance_claims",
+      "targetTableId": "table_16_billing_insurance_process_patient_record_patient_insurance_policies",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_insurance_claims_policy_id",
+      "targetFieldId": "field_16_billing_insurance_process_patient_record_patient_insurance_policies_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_18",
+      "name": "insurance_claims_template_id_claim_form_templates_id",
+      "sourceSchema": "billing",
+      "targetSchema": "billing",
+      "sourceTableId": "table_16_billing_insurance_process_billing_insurance_claims",
+      "targetTableId": "table_16_billing_insurance_process_billing_claim_form_templates",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_insurance_claims_template_id",
+      "targetFieldId": "field_16_billing_insurance_process_billing_claim_form_templates_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    },
+    {
+      "id": "rel_16_billing_insurance_process_19",
+      "name": "insurance_claims_encounter_id_encounters_id",
+      "sourceSchema": "billing",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_16_billing_insurance_process_billing_insurance_claims",
+      "targetTableId": "table_16_billing_insurance_process_clinical_encounters",
+      "sourceFieldId": "field_16_billing_insurance_process_billing_insurance_claims_encounter_id",
+      "targetFieldId": "field_16_billing_insurance_process_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633786
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_16_billing_insurance_process_identity",
+      "name": "identity",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#2563EB",
+      "order": 0
+    },
+    {
+      "id": "area_16_billing_insurance_process_patient_record",
+      "name": "patient_record",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 914,
+      "color": "#0D9488",
+      "order": 1
+    },
+    {
+      "id": "area_16_billing_insurance_process_reference",
+      "name": "reference",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#64748B",
+      "order": 2
+    },
+    {
+      "id": "area_16_billing_insurance_process_scheduling",
+      "name": "scheduling",
+      "x": 1318,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#D97706",
+      "order": 3
+    },
+    {
+      "id": "area_16_billing_insurance_process_clinical",
+      "name": "clinical",
+      "x": 1744,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#E11D48",
+      "order": 4
+    },
+    {
+      "id": "area_16_billing_insurance_process_billing",
+      "name": "billing",
+      "x": 2170,
+      "y": 190,
+      "width": 340,
+      "height": 2148,
+      "color": "#059669",
+      "order": 5
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_16_billing_insurance_process_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_16_billing_insurance_process_story",
+      "content": "appointment and encounter use policy, contract, and template to create payment or claim.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.786Z",
+  "updatedAt": "2026-05-14T11:20:33.786Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 2676,
+    "height": 2458
+  }
+}

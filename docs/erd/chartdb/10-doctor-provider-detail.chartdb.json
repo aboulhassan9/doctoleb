@@ -1,0 +1,2674 @@
+{
+  "id": "diagram_10_doctor_provider_detail",
+  "name": "DoctoLeb Doctor Provider Detail ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_10_doctor_provider_detail_identity_users",
+      "name": "users",
+      "schema": "identity",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_email",
+          "name": "email",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_role",
+          "name": "role",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_first_name",
+          "name": "first_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_last_name",
+          "name": "last_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_phone",
+          "name": "phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_avatar_url",
+          "name": "avatar_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_initials",
+          "name": "initials",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "5"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_users_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_identity_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_identity_users_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Application identity and role profile.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_identity"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_identity_doctors",
+      "name": "doctors",
+      "schema": "identity",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_department",
+          "name": "department",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_specialization",
+          "name": "specialization",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_license_number",
+          "name": "license_number",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_bio",
+          "name": "bio",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_availability",
+          "name": "availability",
+          "type": {
+            "id": "json",
+            "name": "json"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_consultation_fee",
+          "name": "consultation_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctors_provisioning_client_request_id",
+          "name": "provisioning_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_identity_doctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_identity_doctors_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 684,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Provider profile. The main doctor is the row referenced by runtime.tenant_profile.doctor_id.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_identity"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_identity_staff_members",
+      "name": "staff_members",
+      "schema": "identity",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_role",
+          "name": "role",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_invite_status",
+          "name": "invite_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_reports_to",
+          "name": "reports_to",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_hire_date",
+          "name": "hire_date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_invite_client_request_id",
+          "name": "invite_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_disabled_at",
+          "name": "disabled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_disabled_by",
+          "name": "disabled_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_disabled_previous_invite_status",
+          "name": "disabled_previous_invite_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_invite_resent_at",
+          "name": "invite_resent_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_invite_resent_by",
+          "name": "invite_resent_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_invite_resend_count",
+          "name": "invite_resend_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_reactivated_at",
+          "name": "reactivated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_reactivated_by",
+          "name": "reactivated_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_reactivation_count",
+          "name": "reactivation_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_invite_reissued_at",
+          "name": "invite_reissued_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_invite_reissued_by",
+          "name": "invite_reissued_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_staff_members_invite_reissue_count",
+          "name": "invite_reissue_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_identity_staff_members_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_identity_staff_members_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1106,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Doctor team seat. doctor_id points to the provider this staff member supports.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_identity"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_identity_predoctors",
+      "name": "predoctors",
+      "schema": "identity",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_identity_predoctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_predoctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_predoctors_supervisor_id",
+          "name": "supervisor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_predoctors_university",
+          "name": "university",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_predoctors_year_of_study",
+          "name": "year_of_study",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_predoctors_status",
+          "name": "status",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_predoctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_predoctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_identity_predoctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_identity_predoctors_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1528,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Assistant/pre-doctor supervised by a doctor for prechecks and preparation.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_identity"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_identity_doctor_specialties",
+      "name": "doctor_specialties",
+      "schema": "identity",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctor_specialties_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctor_specialties_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctor_specialties_specialty_id",
+          "name": "specialty_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctor_specialties_is_primary",
+          "name": "is_primary",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctor_specialties_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_identity_doctor_specialties_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_identity_doctor_specialties_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_identity_doctor_specialties_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1854,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Join table between doctors and specialties.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_identity"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_reference_specialties",
+      "name": "specialties",
+      "schema": "reference",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_reference_specialties_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_reference_specialties_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_reference_specialties_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_reference_specialties_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_reference_specialties_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_reference_specialties_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_reference_specialties_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_reference_specialties_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_reference_specialties_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_reference_specialties_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Doctor specialty lookup values.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_reference"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_scheduling_clinics",
+      "name": "clinics",
+      "schema": "scheduling",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_address",
+          "name": "address",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_location_type",
+          "name": "location_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_city_id",
+          "name": "city_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_working_hours",
+          "name": "working_hours",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_is_primary",
+          "name": "is_primary",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_latitude",
+          "name": "latitude",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "precision": 10,
+          "scale": 7
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_longitude",
+          "name": "longitude",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743,
+          "precision": 10,
+          "scale": 7
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_map_url",
+          "name": "map_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_floor",
+          "name": "floor",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_room",
+          "name": "room",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_clinics_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_scheduling_clinics_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_scheduling_clinics_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Clinic location where visits happen.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_scheduling"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_scheduling_doctor_schedule_templates",
+      "name": "doctor_schedule_templates",
+      "schema": "scheduling",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_weekday",
+          "name": "weekday",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_start_time",
+          "name": "start_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_end_time",
+          "name": "end_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_slot_duration_minutes",
+          "name": "slot_duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_effective_from",
+          "name": "effective_from",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_effective_to",
+          "name": "effective_to",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_scheduling_doctor_schedule_templates_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 684,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Recurring doctor availability pattern.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_scheduling"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_scheduling_secretary_slots",
+      "name": "secretary_slots",
+      "schema": "scheduling",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_date",
+          "name": "date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_start_time",
+          "name": "start_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_end_time",
+          "name": "end_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_recurrence_group_id",
+          "name": "recurrence_group_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_scheduling_secretary_slots_schedule_template_id",
+          "name": "schedule_template_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_scheduling_secretary_slots_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_scheduling_secretary_slots_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 1106,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Bookable slot created from schedule or staff.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_scheduling"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_runtime_tenant_profile",
+      "name": "tenant_profile",
+      "schema": "runtime",
+      "order": 9,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_tenant_slug",
+          "name": "tenant_slug",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_timezone",
+          "name": "timezone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_default_locale",
+          "name": "default_locale",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_schema_version",
+          "name": "schema_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_profile_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_runtime_tenant_profile_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_runtime_tenant_profile_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 262,
+      "width": 260,
+      "color": "#7C3AED",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Tenant owner profile. doctor_id identifies the main doctor this app belongs to.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_runtime"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_runtime_tenant_app_config",
+      "name": "tenant_app_config",
+      "schema": "runtime",
+      "order": 10,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_profile_id",
+          "name": "profile_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_app_name",
+          "name": "app_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_app_tagline",
+          "name": "app_tagline",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_splash_logo_url",
+          "name": "splash_logo_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_icon_url",
+          "name": "icon_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_primary_color",
+          "name": "primary_color",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_secondary_color",
+          "name": "secondary_color",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_maintenance_message",
+          "name": "maintenance_message",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_min_supported_version",
+          "name": "min_supported_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_force_update_version",
+          "name": "force_update_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_enabled_locales",
+          "name": "enabled_locales",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_support_phone",
+          "name": "support_phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_support_email",
+          "name": "support_email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_runtime_tenant_app_config_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_runtime_tenant_app_config_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_runtime_tenant_app_config_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 652,
+      "width": 260,
+      "color": "#7C3AED",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Runtime app branding and behavior config.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_runtime"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_billing_insurance_providers",
+      "name": "insurance_providers",
+      "schema": "billing",
+      "order": 11,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_website_url",
+          "name": "website_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_insurance_providers_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_billing_insurance_providers_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_billing_insurance_providers_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 262,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Insurance company reference records.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_billing"
+    },
+    {
+      "id": "table_10_doctor_provider_detail_billing_doctor_insurance_contracts",
+      "name": "doctor_insurance_contracts",
+      "schema": "billing",
+      "order": 12,
+      "fields": [
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_provider_id",
+          "name": "provider_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_doctor_provider_code",
+          "name": "doctor_provider_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_contract_number",
+          "name": "contract_number",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_valid_from",
+          "name": "valid_from",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_valid_to",
+          "name": "valid_to",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        },
+        {
+          "id": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633743
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_10_doctor_provider_detail_billing_doctor_insurance_contracts_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_id"
+          ],
+          "createdAt": 1778757633743,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 652,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633743,
+      "comments": "Doctor agreements with insurance providers.",
+      "expanded": false,
+      "parentAreaId": "area_10_doctor_provider_detail_billing"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_10_doctor_provider_detail_0",
+      "name": "doctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_doctors",
+      "targetTableId": "table_10_doctor_provider_detail_identity_users",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_doctors_user_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_1",
+      "name": "staff_members_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_staff_members",
+      "targetTableId": "table_10_doctor_provider_detail_identity_users",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_staff_members_user_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_2",
+      "name": "staff_members_doctor_id_doctors_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_staff_members",
+      "targetTableId": "table_10_doctor_provider_detail_identity_doctors",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_staff_members_doctor_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_3",
+      "name": "staff_members_reports_to_staff_members_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_staff_members",
+      "targetTableId": "table_10_doctor_provider_detail_identity_staff_members",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_staff_members_reports_to",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_staff_members_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_4",
+      "name": "staff_members_disabled_by_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_staff_members",
+      "targetTableId": "table_10_doctor_provider_detail_identity_users",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_staff_members_disabled_by",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_5",
+      "name": "staff_members_invite_resent_by_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_staff_members",
+      "targetTableId": "table_10_doctor_provider_detail_identity_users",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_staff_members_invite_resent_by",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_6",
+      "name": "staff_members_invite_reissued_by_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_staff_members",
+      "targetTableId": "table_10_doctor_provider_detail_identity_users",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_staff_members_invite_reissued_by",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_7",
+      "name": "staff_members_reactivated_by_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_staff_members",
+      "targetTableId": "table_10_doctor_provider_detail_identity_users",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_staff_members_reactivated_by",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_8",
+      "name": "predoctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_predoctors",
+      "targetTableId": "table_10_doctor_provider_detail_identity_users",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_predoctors_user_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_9",
+      "name": "predoctors_supervisor_id_doctors_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_predoctors",
+      "targetTableId": "table_10_doctor_provider_detail_identity_doctors",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_predoctors_supervisor_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_10",
+      "name": "doctor_specialties_doctor_id_doctors_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_doctor_specialties",
+      "targetTableId": "table_10_doctor_provider_detail_identity_doctors",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_doctor_specialties_doctor_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_11",
+      "name": "doctor_specialties_specialty_id_specialties_id",
+      "sourceSchema": "identity",
+      "targetSchema": "reference",
+      "sourceTableId": "table_10_doctor_provider_detail_identity_doctor_specialties",
+      "targetTableId": "table_10_doctor_provider_detail_reference_specialties",
+      "sourceFieldId": "field_10_doctor_provider_detail_identity_doctor_specialties_specialty_id",
+      "targetFieldId": "field_10_doctor_provider_detail_reference_specialties_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_12",
+      "name": "doctor_schedule_templates_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_scheduling_doctor_schedule_templates",
+      "targetTableId": "table_10_doctor_provider_detail_identity_doctors",
+      "sourceFieldId": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_doctor_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_13",
+      "name": "doctor_schedule_templates_clinic_id_clinics_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_10_doctor_provider_detail_scheduling_doctor_schedule_templates",
+      "targetTableId": "table_10_doctor_provider_detail_scheduling_clinics",
+      "sourceFieldId": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_clinic_id",
+      "targetFieldId": "field_10_doctor_provider_detail_scheduling_clinics_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_14",
+      "name": "secretary_slots_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_scheduling_secretary_slots",
+      "targetTableId": "table_10_doctor_provider_detail_identity_doctors",
+      "sourceFieldId": "field_10_doctor_provider_detail_scheduling_secretary_slots_doctor_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_15",
+      "name": "secretary_slots_clinic_id_clinics_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_10_doctor_provider_detail_scheduling_secretary_slots",
+      "targetTableId": "table_10_doctor_provider_detail_scheduling_clinics",
+      "sourceFieldId": "field_10_doctor_provider_detail_scheduling_secretary_slots_clinic_id",
+      "targetFieldId": "field_10_doctor_provider_detail_scheduling_clinics_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_16",
+      "name": "secretary_slots_created_by_users_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_scheduling_secretary_slots",
+      "targetTableId": "table_10_doctor_provider_detail_identity_users",
+      "sourceFieldId": "field_10_doctor_provider_detail_scheduling_secretary_slots_created_by",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_17",
+      "name": "secretary_slots_schedule_template_id_doctor_schedule_templates_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_10_doctor_provider_detail_scheduling_secretary_slots",
+      "targetTableId": "table_10_doctor_provider_detail_scheduling_doctor_schedule_templates",
+      "sourceFieldId": "field_10_doctor_provider_detail_scheduling_secretary_slots_schedule_template_id",
+      "targetFieldId": "field_10_doctor_provider_detail_scheduling_doctor_schedule_templates_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_18",
+      "name": "tenant_profile_doctor_id_doctors_id",
+      "sourceSchema": "runtime",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_runtime_tenant_profile",
+      "targetTableId": "table_10_doctor_provider_detail_identity_doctors",
+      "sourceFieldId": "field_10_doctor_provider_detail_runtime_tenant_profile_doctor_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_19",
+      "name": "tenant_app_config_profile_id_tenant_profile_id",
+      "sourceSchema": "runtime",
+      "targetSchema": "runtime",
+      "sourceTableId": "table_10_doctor_provider_detail_runtime_tenant_app_config",
+      "targetTableId": "table_10_doctor_provider_detail_runtime_tenant_profile",
+      "sourceFieldId": "field_10_doctor_provider_detail_runtime_tenant_app_config_profile_id",
+      "targetFieldId": "field_10_doctor_provider_detail_runtime_tenant_profile_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_20",
+      "name": "doctor_insurance_contracts_doctor_id_doctors_id",
+      "sourceSchema": "billing",
+      "targetSchema": "identity",
+      "sourceTableId": "table_10_doctor_provider_detail_billing_doctor_insurance_contracts",
+      "targetTableId": "table_10_doctor_provider_detail_identity_doctors",
+      "sourceFieldId": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_doctor_id",
+      "targetFieldId": "field_10_doctor_provider_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    },
+    {
+      "id": "rel_10_doctor_provider_detail_21",
+      "name": "doctor_insurance_contracts_provider_id_insurance_providers_id",
+      "sourceSchema": "billing",
+      "targetSchema": "billing",
+      "sourceTableId": "table_10_doctor_provider_detail_billing_doctor_insurance_contracts",
+      "targetTableId": "table_10_doctor_provider_detail_billing_insurance_providers",
+      "sourceFieldId": "field_10_doctor_provider_detail_billing_doctor_insurance_contracts_provider_id",
+      "targetFieldId": "field_10_doctor_provider_detail_billing_insurance_providers_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633743
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_10_doctor_provider_detail_identity",
+      "name": "identity",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 1956,
+      "color": "#2563EB",
+      "order": 0
+    },
+    {
+      "id": "area_10_doctor_provider_detail_reference",
+      "name": "reference",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 428,
+      "color": "#64748B",
+      "order": 1
+    },
+    {
+      "id": "area_10_doctor_provider_detail_scheduling",
+      "name": "scheduling",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 1368,
+      "color": "#D97706",
+      "order": 2
+    },
+    {
+      "id": "area_10_doctor_provider_detail_runtime",
+      "name": "runtime",
+      "x": 1318,
+      "y": 190,
+      "width": 340,
+      "height": 914,
+      "color": "#7C3AED",
+      "order": 3
+    },
+    {
+      "id": "area_10_doctor_provider_detail_billing",
+      "name": "billing",
+      "x": 1744,
+      "y": 190,
+      "width": 340,
+      "height": 882,
+      "color": "#059669",
+      "order": 4
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_10_doctor_provider_detail_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_10_doctor_provider_detail_story",
+      "content": "main doctor = runtime.tenant_profile.doctor_id -> identity.doctors.id. Team = staff_members.doctor_id and predoctors.supervisor_id -> that doctor. Schedule, clinic, branding, and contracts attach to the same provider.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.743Z",
+  "updatedAt": "2026-05-14T11:20:33.743Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 2250,
+    "height": 2266
+  }
+}

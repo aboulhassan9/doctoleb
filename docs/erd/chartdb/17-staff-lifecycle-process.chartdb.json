@@ -1,0 +1,1693 @@
+{
+  "id": "diagram_17_staff_lifecycle_process",
+  "name": "DoctoLeb Staff Lifecycle Process ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_17_staff_lifecycle_process_identity_auth_users",
+      "name": "auth_users",
+      "schema": "identity",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_17_staff_lifecycle_process_identity_auth_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_17_staff_lifecycle_process_identity_auth_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_17_staff_lifecycle_process_identity_auth_users_id"
+          ],
+          "createdAt": 1778757633789,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633789,
+      "comments": "Supabase Auth identity for login.",
+      "expanded": false,
+      "parentAreaId": "area_17_staff_lifecycle_process_identity"
+    },
+    {
+      "id": "table_17_staff_lifecycle_process_identity_users",
+      "name": "users",
+      "schema": "identity",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_email",
+          "name": "email",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_role",
+          "name": "role",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_first_name",
+          "name": "first_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_last_name",
+          "name": "last_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_phone",
+          "name": "phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_avatar_url",
+          "name": "avatar_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_initials",
+          "name": "initials",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "5"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_users_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_17_staff_lifecycle_process_identity_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_17_staff_lifecycle_process_identity_users_id"
+          ],
+          "createdAt": 1778757633789,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 364,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633789,
+      "comments": "Application identity and role profile.",
+      "expanded": false,
+      "parentAreaId": "area_17_staff_lifecycle_process_identity"
+    },
+    {
+      "id": "table_17_staff_lifecycle_process_identity_doctors",
+      "name": "doctors",
+      "schema": "identity",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_department",
+          "name": "department",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_specialization",
+          "name": "specialization",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_license_number",
+          "name": "license_number",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633789,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_bio",
+          "name": "bio",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_availability",
+          "name": "availability",
+          "type": {
+            "id": "json",
+            "name": "json"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_consultation_fee",
+          "name": "consultation_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_doctors_provisioning_client_request_id",
+          "name": "provisioning_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_17_staff_lifecycle_process_identity_doctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_17_staff_lifecycle_process_identity_doctors_id"
+          ],
+          "createdAt": 1778757633789,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 786,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633789,
+      "comments": "Doctor/provider profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_17_staff_lifecycle_process_identity"
+    },
+    {
+      "id": "table_17_staff_lifecycle_process_identity_staff_members",
+      "name": "staff_members",
+      "schema": "identity",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_role",
+          "name": "role",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_invite_status",
+          "name": "invite_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_reports_to",
+          "name": "reports_to",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_hire_date",
+          "name": "hire_date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_invite_client_request_id",
+          "name": "invite_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_disabled_at",
+          "name": "disabled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_disabled_by",
+          "name": "disabled_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_disabled_previous_invite_status",
+          "name": "disabled_previous_invite_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_invite_resent_at",
+          "name": "invite_resent_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_invite_resent_by",
+          "name": "invite_resent_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_invite_resend_count",
+          "name": "invite_resend_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_reactivated_at",
+          "name": "reactivated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_reactivated_by",
+          "name": "reactivated_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_reactivation_count",
+          "name": "reactivation_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_invite_reissued_at",
+          "name": "invite_reissued_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_invite_reissued_by",
+          "name": "invite_reissued_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_members_invite_reissue_count",
+          "name": "invite_reissue_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_17_staff_lifecycle_process_identity_staff_members_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_17_staff_lifecycle_process_identity_staff_members_id"
+          ],
+          "createdAt": 1778757633789,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1208,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633789,
+      "comments": "Staff seat, role, and lifecycle state.",
+      "expanded": false,
+      "parentAreaId": "area_17_staff_lifecycle_process_identity"
+    },
+    {
+      "id": "table_17_staff_lifecycle_process_identity_staff_invite_resend_events",
+      "name": "staff_invite_resend_events",
+      "schema": "identity",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_staff_member_id",
+          "name": "staff_member_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_actor_user_id",
+          "name": "actor_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_error_code",
+          "name": "error_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_requested_at",
+          "name": "requested_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_sent_at",
+          "name": "sent_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_failed_at",
+          "name": "failed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_cancelled_at",
+          "name": "cancelled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_17_staff_lifecycle_process_identity_staff_invite_resend_events_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_id"
+          ],
+          "createdAt": 1778757633789,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1630,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633789,
+      "comments": "Audit of repeated staff invite sends.",
+      "expanded": false,
+      "parentAreaId": "area_17_staff_lifecycle_process_identity"
+    },
+    {
+      "id": "table_17_staff_lifecycle_process_identity_staff_invite_reissue_events",
+      "name": "staff_invite_reissue_events",
+      "schema": "identity",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_staff_member_id",
+          "name": "staff_member_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_actor_user_id",
+          "name": "actor_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_previous_auth_user_id",
+          "name": "previous_auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_invited_auth_user_id",
+          "name": "invited_auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_error_code",
+          "name": "error_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_requested_at",
+          "name": "requested_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_sent_at",
+          "name": "sent_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_failed_at",
+          "name": "failed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_cancelled_at",
+          "name": "cancelled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_17_staff_lifecycle_process_identity_staff_invite_reissue_events_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_id"
+          ],
+          "createdAt": 1778757633789,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 2052,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633789,
+      "comments": "Audit of staff invite email changes.",
+      "expanded": false,
+      "parentAreaId": "area_17_staff_lifecycle_process_identity"
+    },
+    {
+      "id": "table_17_staff_lifecycle_process_scheduling_secretary_slots",
+      "name": "secretary_slots",
+      "schema": "scheduling",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_date",
+          "name": "date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_start_time",
+          "name": "start_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_end_time",
+          "name": "end_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_recurrence_group_id",
+          "name": "recurrence_group_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_scheduling_secretary_slots_schedule_template_id",
+          "name": "schedule_template_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_17_staff_lifecycle_process_scheduling_secretary_slots_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_17_staff_lifecycle_process_scheduling_secretary_slots_id"
+          ],
+          "createdAt": 1778757633789,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633789,
+      "comments": "Bookable slot created from schedule or staff.",
+      "expanded": false,
+      "parentAreaId": "area_17_staff_lifecycle_process_scheduling"
+    },
+    {
+      "id": "table_17_staff_lifecycle_process_audit_audit_log",
+      "name": "audit_log",
+      "schema": "audit",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_17_staff_lifecycle_process_audit_audit_log_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_audit_audit_log_table_name",
+          "name": "table_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_audit_audit_log_record_id",
+          "name": "record_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_audit_audit_log_action",
+          "name": "action",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_audit_audit_log_actor_user_id",
+          "name": "actor_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_audit_audit_log_before_data",
+          "name": "before_data",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_audit_audit_log_after_data",
+          "name": "after_data",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633789
+        },
+        {
+          "id": "field_17_staff_lifecycle_process_audit_audit_log_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633789
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_17_staff_lifecycle_process_audit_audit_log_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_17_staff_lifecycle_process_audit_audit_log_id"
+          ],
+          "createdAt": 1778757633789,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633789,
+      "comments": "Audit trail for staff and tenant admin changes.",
+      "expanded": false,
+      "parentAreaId": "area_17_staff_lifecycle_process_audit"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_17_staff_lifecycle_process_0",
+      "name": "users_auth_user_id_auth_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_users",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_auth_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_users_auth_user_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_auth_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_1",
+      "name": "doctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_doctors",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_doctors_user_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_2",
+      "name": "staff_members_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_members_user_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_3",
+      "name": "staff_members_doctor_id_doctors_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_doctors",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_members_doctor_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_4",
+      "name": "staff_members_reports_to_staff_members_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_members_reports_to",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_staff_members_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_5",
+      "name": "staff_members_disabled_by_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_members_disabled_by",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_6",
+      "name": "staff_members_invite_resent_by_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_members_invite_resent_by",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_7",
+      "name": "staff_members_invite_reissued_by_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_members_invite_reissued_by",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_8",
+      "name": "staff_members_reactivated_by_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_members_reactivated_by",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_9",
+      "name": "staff_invite_resend_events_staff_member_id_staff_members_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_invite_resend_events",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_staff_member_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_staff_members_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_10",
+      "name": "staff_invite_resend_events_actor_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_invite_resend_events",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_invite_resend_events_actor_user_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_11",
+      "name": "staff_invite_reissue_events_staff_member_id_staff_members_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_invite_reissue_events",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_staff_members",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_staff_member_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_staff_members_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_12",
+      "name": "staff_invite_reissue_events_actor_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_identity_staff_invite_reissue_events",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_identity_staff_invite_reissue_events_actor_user_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_13",
+      "name": "secretary_slots_created_by_users_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_scheduling_secretary_slots",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_scheduling_secretary_slots_created_by",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_14",
+      "name": "secretary_slots_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_scheduling_secretary_slots",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_doctors",
+      "sourceFieldId": "field_17_staff_lifecycle_process_scheduling_secretary_slots_doctor_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    },
+    {
+      "id": "rel_17_staff_lifecycle_process_15",
+      "name": "audit_log_actor_user_id_users_id",
+      "sourceSchema": "audit",
+      "targetSchema": "identity",
+      "sourceTableId": "table_17_staff_lifecycle_process_audit_audit_log",
+      "targetTableId": "table_17_staff_lifecycle_process_identity_users",
+      "sourceFieldId": "field_17_staff_lifecycle_process_audit_audit_log_actor_user_id",
+      "targetFieldId": "field_17_staff_lifecycle_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633789
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_17_staff_lifecycle_process_identity",
+      "name": "identity",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 2314,
+      "color": "#2563EB",
+      "order": 0
+    },
+    {
+      "id": "area_17_staff_lifecycle_process_scheduling",
+      "name": "scheduling",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#D97706",
+      "order": 1
+    },
+    {
+      "id": "area_17_staff_lifecycle_process_audit",
+      "name": "audit",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 428,
+      "color": "#64748B",
+      "order": 2
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_17_staff_lifecycle_process_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_17_staff_lifecycle_process_story",
+      "content": "auth user becomes staff member; invite events and audit prove lifecycle changes.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.789Z",
+  "updatedAt": "2026-05-14T11:20:33.789Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 1398,
+    "height": 2624
+  }
+}

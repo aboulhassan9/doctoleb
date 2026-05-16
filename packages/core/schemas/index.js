@@ -136,14 +136,63 @@ export {
   sessionUserResponseSchema,
 } from './responses.js';
 
-/* ── Document Templates & Medication Catalog ─────────────────────── */
+/* ── Document Templates ──────────────────────────────────────────── */
 export {
   documentTemplateCreateSchema,
   documentTemplateUpdateSchema,
-  medicationCatalogCreateSchema,
-  medicationCatalogUpdateSchema,
   templateFieldSchema,
   templateSectionSchema,
   TEMPLATE_FIELD_TYPES,
   TEMPLATE_TYPES,
+  TEMPLATE_TYPE_LABELS,
+  TEMPLATE_AUTOFILL_KEYS,
+  MAX_SECTIONS_PER_TEMPLATE,
+  MAX_FIELDS_PER_SECTION,
 } from './documentTemplates.js';
+
+/* ── Medication Catalog ──────────────────────────────────────────── */
+export {
+  medicationCatalogCreateSchema,
+  medicationCatalogUpdateSchema,
+} from './medicationCatalog.js';
+
+/* ── Analytical Reports ──────────────────────────────────────────── */
+export {
+  analyticalReportDefinitionSchema,
+  analyticalReportCreateSchema,
+  analyticalReportVersionCreateSchema,
+  analyticalReportRunRequestSchema,
+  REPORT_DATA_SOURCES,
+  REPORT_DATA_SOURCE_COLUMNS,
+  REPORT_FILTER_OPERATORS,
+  REPORT_AGGREGATION_FUNCTIONS,
+  REPORT_TIME_GRANULARITIES,
+  REPORT_VISUALIZATIONS,
+} from './analyticalReports.js';
+
+/* ── Advanced Report Definitions ────────────────────────────────── */
+export {
+  REPORT_AUTHORING_MODES,
+  REPORT_BINDINGS,
+  REPORT_CANVAS_FIELD_TYPES,
+  REPORT_DIRECTIONS,
+  REPORT_FONT_FAMILIES,
+  REPORT_ORIENTATIONS,
+  REPORT_PAGE_SIZES,
+  REPORT_RENDER_PROFILES,
+  REPORT_SCHEMA_VERSION,
+  REPORT_SUPPORTED_LOCALES,
+  REPORT_TEMPLATE_ASSET_CONTENT_TYPES,
+  REPORT_TEMPLATE_ASSET_MAX_BYTES,
+  REPORT_TEMPLATE_ASSET_MAX_DIMENSION_PX,
+  REPORT_TEMPLATE_ASSET_TYPES,
+  localizedTextSchema,
+  pdfmeTemplateEnvelopeSchema,
+  reportBlockSchema,
+  reportDefinitionSchema,
+  reportFieldGroupSchema,
+  reportFieldSchema,
+  reportRenderJobCreateSchema,
+  reportTemplateAssetCreateSchema,
+  reportTemplateVersionCreateSchema,
+} from './reportDefinitions.js';

@@ -14,6 +14,7 @@
 
 import {
   PDFDocument,
+  PDFImage,
   rgb,
   degrees,
   PDFPage,
@@ -24,6 +25,9 @@ import {
   type RGB,
 } from 'https://esm.sh/pdf-lib@1.17.1';
 import fontkit from 'https://esm.sh/@pdf-lib/fontkit@1.1.1';
+// qrcode-generator: pure-JS QR encoder, returns a module grid we draw with
+// pdf-lib rectangles (vector — no raster, scales cleanly at any zoom).
+import qrcode from 'https://esm.sh/qrcode-generator@1.4.4';
 
 import type { RenderContext, TemplateSection, TemplateField } from './contextLoader.ts';
 import { attachPdfA2bMetadata } from './pdfA.js';
@@ -200,12 +204,110 @@ async function sha256(text: string): Promise<string> {
 
 // ── Autofill resolver (§ 8.10 from parent plan) ──────────────────
 
-function resolveFieldValue(ctx: RenderContext, field: TemplateField): string {
-  // If the document has explicit content overrides, use them
-  const contentValue = ctx.document.content?.[field.key];
-  if (typeof contentValue === 'string' && contentValue.trim()) return contentValue;
+/**
+ * Match a `{{binding.key}}` placeholder. Whitespace inside the braces is
+ * tolerated so doctors can write `{{ patient.full_name }}` from the editor.
+ */
+const COMPOSITE_PLACEHOLDER_RE = /\{\{\s*([a-z][a-z0-9_.]*)\s*\}\}/g;
 
-  // Autofill from context
+/**
+ * Substitute every `{{binding}}` placeholder in `template` with the resolved
+ * autofill value. Unknown bindings (which the schema should have rejected)
+ * are rendered as the literal text `[binding.key]` so they fail visibly in
+ * QA rather than silently disappearing.
+ */
+function renderCompositeTemplate(ctx: RenderContext, template: string): string {
+  return template.replace(COMPOSITE_PLACEHOLDER_RE, (_match, binding) => {
+    const value = resolveAutofill(ctx, binding);
+    if (value) return value;
+    // Empty-but-known binding → empty replacement (clean composite).
+    // Unknown binding → literal placeholder so the bug is visible.
+    return AUTOFILL_KEYS.has(binding) ? '' : `[${binding}]`;
+  });
+}
+
+/**
+ * Conditional-display gate. Returns `true` when the field should render,
+ * `false` when the doctor's `show_if` predicate is configured and does not
+ * match. Comparison is case-insensitive + trimmed because hand-typed
+ * `equals` values from the editor tend to have ad-hoc casing/whitespace.
+ */
+function evaluateShowIf(ctx: RenderContext, field: TemplateField): boolean {
+  const cond = (field as { show_if?: { binding?: string; equals?: string } | null }).show_if;
+  if (!cond || !cond.binding || typeof cond.equals !== 'string') return true;
+  const resolved = resolveAutofill(ctx, cond.binding);
+  if (!resolved) return false;
+  return resolved.trim().toLowerCase() === cond.equals.trim().toLowerCase();
+}
+
+/**
+ * Closed-set named functions for the `derived` field type. Mirrors the
+ * implementation in `packages/core/lib/composite.js` so the editor preview
+ * and the renderer produce identical output. Adding a function here means
+ * adding it to the schema's DERIVATION_FUNCTIONS list AND the JS mirror.
+ */
+function diffYears(fromIso: string, toIso: string): number | null {
+  if (!fromIso || !toIso) return null;
+  const from = new Date(fromIso);
+  const to = new Date(toIso);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return null;
+  let years = to.getUTCFullYear() - from.getUTCFullYear();
+  const m = to.getUTCMonth() - from.getUTCMonth();
+  if (m < 0 || (m === 0 && to.getUTCDate() < from.getUTCDate())) years -= 1;
+  return years;
+}
+
+type DerivationArg = { binding?: string; literal?: string };
+type Derivation = { fn?: string; args?: DerivationArg[] };
+
+function evaluateDerivation(ctx: RenderContext, derivation: Derivation | null | undefined): string {
+  if (!derivation || typeof derivation !== 'object') return '';
+  const { fn, args } = derivation;
+  const resolved = Array.isArray(args)
+    ? args.map((a) => {
+        if (typeof a.binding === 'string') {
+          return resolveAutofill(ctx, a.binding) || '';
+        }
+        if (typeof a.literal === 'string') return a.literal;
+        return '';
+      })
+    : [];
+  switch (fn) {
+    case 'age': {
+      const y = diffYears(resolved[0], new Date().toISOString());
+      return y == null ? '' : String(y);
+    }
+    case 'years_between': {
+      const y = diffYears(resolved[0], resolved[1]);
+      return y == null ? '' : String(y);
+    }
+    case 'concat':
+      return resolved.join('');
+    case 'upper':
+      return (resolved[0] || '').toUpperCase();
+    case 'lower':
+      return (resolved[0] || '').toLowerCase();
+    case 'trim':
+      return (resolved[0] || '').trim();
+    default:
+      return '';
+  }
+}
+
+function resolveFieldValue(ctx: RenderContext, field: TemplateField): string {
+  // If the document carries structured per-field overrides, prefer them.
+  const override = ctx.document.contentOverrides?.[field.key];
+  if (typeof override === 'string' && override.trim()) return override;
+
+  if (field.type === 'composite_text' && typeof field.template === 'string' && field.template.trim()) {
+    return renderCompositeTemplate(ctx, field.template);
+  }
+
+  if (field.type === 'derived') {
+    const d = (field as TemplateField & { derivation?: Derivation | null }).derivation ?? null;
+    return evaluateDerivation(ctx, d);
+  }
+
   if (field.autofill) {
     const resolved = resolveAutofill(ctx, field.autofill);
     if (resolved) return resolved;
@@ -214,11 +316,43 @@ function resolveFieldValue(ctx: RenderContext, field: TemplateField): string {
   return '';
 }
 
+/**
+ * The closed set of autofill keys this renderer knows. Kept in lockstep
+ * with `TEMPLATE_AUTOFILL_KEYS` in `packages/core/schemas/documentTemplates.js`.
+ * Used by `renderCompositeTemplate` to distinguish "known-but-empty" from
+ * "unknown binding."
+ */
+const AUTOFILL_KEYS = new Set<string>([
+  'patient.full_name',
+  'patient.date_of_birth',
+  'patient.sex',
+  'patient.gender',
+  'patient.phone',
+  'patient.email',
+  'doctor.full_name',
+  'doctor.specialization',
+  'doctor.license_number',
+  'clinic.name',
+  'clinic.address',
+  'clinic.phone',
+  'tenant.display_name',
+  'tenant.support_phone',
+  'tenant.support_email',
+  'encounter.chief_complaint',
+  'encounter.summary',
+  'encounter.started_at',
+  'document.created_at',
+]);
+
 function resolveAutofill(ctx: RenderContext, key: string): string {
   const map: Record<string, string | null | undefined> = {
     'patient.full_name': ctx.patient.fullName,
     'patient.date_of_birth': ctx.patient.dateOfBirth,
-    'patient.gender': ctx.patient.gender,
+    // The live column is `patients.sex`. We accept the legacy `patient.gender`
+    // key from already-seeded templates and route it to the same value so
+    // no migration is required for existing tenant data.
+    'patient.sex': ctx.patient.sex,
+    'patient.gender': ctx.patient.sex,
     'patient.phone': ctx.patient.phone,
     'patient.email': ctx.patient.email,
     'doctor.full_name': ctx.doctor.fullName,
@@ -228,11 +362,73 @@ function resolveAutofill(ctx: RenderContext, key: string): string {
     'clinic.address': ctx.clinic.address,
     'clinic.phone': ctx.clinic.phone,
     'tenant.display_name': ctx.tenant.displayName,
+    'tenant.support_phone': ctx.brand.supportPhone,
+    'tenant.support_email': ctx.brand.supportEmail,
     'encounter.chief_complaint': ctx.encounter?.chiefComplaint ?? null,
-    'encounter.started_at': ctx.encounter?.startedAt ? formatDate(ctx.encounter.startedAt, ctx.tenant.timezone) : null,
+    'encounter.summary': ctx.encounter?.summary ?? null,
+    'encounter.started_at': ctx.encounter?.startedAt
+      ? formatDate(ctx.encounter.startedAt, ctx.tenant.timezone)
+      : null,
     'document.created_at': formatDate(ctx.document.createdAt, ctx.tenant.timezone),
   };
   return map[key] ?? '';
+}
+
+// ── Hyperlink detection (§ 8.8 of the parent plan) ───────────────
+
+/**
+ * Conservative patterns: phone (E.164-ish), email, https URL. Anything else
+ * is rendered as plain text. The regex set is intentionally narrow to keep
+ * doctors from accidentally hyperlinking domain-like trailers in clinical
+ * shorthand (e.g. "10mg q.d.").
+ */
+const PHONE_RE = /\+?\d[\d\s().-]{6,}\d/;
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+const HTTPS_RE = /^https:\/\/\S+$/i;
+const MAX_LINKS_PER_PAGE = 5;
+
+function classifyLink(value: string): { kind: 'phone' | 'email' | 'url'; href: string } | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (HTTPS_RE.test(trimmed)) return { kind: 'url', href: trimmed };
+  if (EMAIL_RE.test(trimmed)) return { kind: 'email', href: `mailto:${trimmed}` };
+  if (PHONE_RE.test(trimmed) && /^\+?[\d\s().-]+$/.test(trimmed)) {
+    // Strip whitespace + hyphens for the tel: target; keep the leading +.
+    const tel = trimmed.replace(/[\s().-]/g, '');
+    return { kind: 'phone', href: `tel:${tel}` };
+  }
+  return null;
+}
+
+/**
+ * Attach a clickable URI annotation to a previously-drawn text box.
+ *
+ * pdf-lib doesn't expose a `drawLink` helper at the page level, so we build
+ * the annotation dictionary by hand and append it to the page's
+ * `/Annots` array. The hot-zone uses the same bounds the renderer used for
+ * the underlying drawText call.
+ */
+function attachLinkAnnotation(
+  pdf: PDFDocument,
+  page: PDFPage,
+  rect: { x: number; y: number; width: number; height: number },
+  uri: string,
+) {
+  const annotDict = pdf.context.obj({
+    Type: PDFName.of('Annot'),
+    Subtype: PDFName.of('Link'),
+    Rect: [rect.x, rect.y, rect.x + rect.width, rect.y + rect.height],
+    Border: [0, 0, 0],
+    A: {
+      Type: PDFName.of('Action'),
+      S: PDFName.of('URI'),
+      URI: PDFString.of(uri),
+    },
+  });
+  const annotRef = pdf.context.register(annotDict);
+  const existing = page.node.Annots() ?? pdf.context.obj([]);
+  existing.push(annotRef);
+  page.node.set(PDFName.of('Annots'), existing);
 }
 
 // ── Text wrapping ────────────────────────────────────────────────
@@ -280,21 +476,53 @@ function measureSection(section: TemplateSection, ctx: RenderContext, fonts: Fon
 
 // ── Drawing primitives ───────────────────────────────────────────
 
+/**
+ * The clinic logo (when present) sits on the left of the header band. We
+ * reserve `LOGO_BOX_WIDTH` for it and shift the clinic name to the right so
+ * the two never overlap. If no logo is embedded, the clinic name takes the
+ * full left side.
+ */
+const LOGO_BOX_WIDTH = 52;
+const LOGO_BOX_HEIGHT = 52;
+
 function drawHeader(
-  page: PDFPage, fonts: Fonts, ctx: RenderContext, primaryColor: RGB,
+  page: PDFPage,
+  fonts: Fonts,
+  ctx: RenderContext,
+  primaryColor: RGB,
+  logoImage: PDFImage | null,
 ) {
   const y = PAGE_HEIGHT - MARGIN_TOP;
 
-  // Clinic name
+  // Optional logo on the left. We fit it inside (LOGO_BOX_WIDTH × LOGO_BOX_HEIGHT)
+  // preserving aspect ratio so a wide or tall logo never blows out the band.
+  if (logoImage) {
+    const dims = logoImage.size();
+    const aspect = dims.width / dims.height;
+    let drawW = LOGO_BOX_WIDTH;
+    let drawH = drawW / aspect;
+    if (drawH > LOGO_BOX_HEIGHT) {
+      drawH = LOGO_BOX_HEIGHT;
+      drawW = drawH * aspect;
+    }
+    page.drawImage(logoImage, {
+      x: MARGIN_LEFT,
+      y: y - drawH,
+      width: drawW,
+      height: drawH,
+    });
+  }
+
+  const nameX = logoImage ? MARGIN_LEFT + LOGO_BOX_WIDTH + 12 : MARGIN_LEFT;
+
   page.drawText(ctx.tenant.displayName, {
-    x: MARGIN_LEFT,
+    x: nameX,
     y: y - TYPE.clinicName.size,
     size: TYPE.clinicName.size,
     font: fonts.bold,
     color: primaryColor,
   });
 
-  // Support contact (right-aligned)
   if (ctx.brand.supportPhone) {
     const phoneWidth = fonts.regular.widthOfTextAtSize(ctx.brand.supportPhone, TYPE.clinicTag.size);
     page.drawText(ctx.brand.supportPhone, {
@@ -317,7 +545,6 @@ function drawHeader(
     });
   }
 
-  // Divider line
   const dividerY = y - HEADER_HEIGHT;
   page.drawLine({
     start: { x: MARGIN_LEFT, y: dividerY },
@@ -344,18 +571,35 @@ function drawFooter(
   });
 }
 
-function drawWatermark(
-  page: PDFPage, font: PDFFont, ctx: RenderContext,
-) {
+/**
+ * Center-anchored rotated watermark.
+ *
+ * pdf-lib's `drawText` anchors at the lower-left of the (unrotated) text and
+ * then rotates the whole string about that anchor. To land the visual center
+ * of the text at the page center after a θ rotation, we solve for the
+ * lower-left anchor (x, y) such that the rotated bounding-box center sits at
+ * (W/2, H/2). With θ = -35° this expands to:
+ *   x = W/2 - (w/2)·cosθ + (size/2)·sinθ
+ *   y = H/2 - (w/2)·sinθ - (size/2)·cosθ
+ */
+function drawWatermark(page: PDFPage, font: PDFFont, ctx: RenderContext) {
   const config = WATERMARK_CONFIG[ctx.document.status] || WATERMARK_CONFIG.draft;
   const text = config.textFn(ctx.tenant.displayName);
-  const textWidth = font.widthOfTextAtSize(text, TYPE.watermark.size);
+  const size = TYPE.watermark.size;
+  const textWidth = font.widthOfTextAtSize(text, size);
   const { width, height } = page.getSize();
 
+  const angleRad = -35 * Math.PI / 180;
+  const cosA = Math.cos(angleRad);
+  const sinA = Math.sin(angleRad);
+
+  const anchorX = width / 2 - (textWidth / 2) * cosA + (size / 2) * sinA;
+  const anchorY = height / 2 - (textWidth / 2) * sinA - (size / 2) * cosA;
+
   page.drawText(text, {
-    x: (width - textWidth * Math.cos(35 * Math.PI / 180)) / 2,
-    y: height / 2,
-    size: TYPE.watermark.size,
+    x: anchorX,
+    y: anchorY,
+    size,
     font,
     color: COLORS.textTertiary,
     opacity: config.opacity,
@@ -363,53 +607,100 @@ function drawWatermark(
   });
 }
 
-function drawQrPlaceholder(
-  page: PDFPage, fonts: Fonts, documentId: string,
+/**
+ * Real QR code rendered as vector rectangles via the `qrcode-generator`
+ * module grid. This stays sharp at any zoom level and adds no raster bytes
+ * to the PDF.
+ */
+const QR_BOX_PT = 60;        // visual size on page
+const QR_TYPE_NUMBER = 0;    // 0 = auto-pick smallest QR version that fits
+const QR_ERROR_LEVEL = 'M' as const; // 15% recovery — balances density vs robustness
+
+function drawQrCode(
+  page: PDFPage,
+  fonts: Fonts,
+  documentId: string,
 ) {
-  // QR code position: bottom-right footer, 60×60pt
-  const qrX = PAGE_WIDTH - MARGIN_RIGHT - 60;
+  const verifyUrl = `https://verify.doctoleb.com/v1/${crockfordBase32(documentId)}`;
+  const qr = qrcode(QR_TYPE_NUMBER, QR_ERROR_LEVEL);
+  qr.addData(verifyUrl);
+  qr.make();
+  const moduleCount = qr.getModuleCount();
+  const moduleSize = QR_BOX_PT / moduleCount;
+
+  const qrX = PAGE_WIDTH - MARGIN_RIGHT - QR_BOX_PT;
   const qrY = MARGIN_BOTTOM;
 
-  // Draw QR border placeholder
+  // White quiet zone — required by the QR spec for reliable scanning.
   page.drawRectangle({
     x: qrX,
     y: qrY,
-    width: 60,
-    height: 60,
-    borderColor: COLORS.divider,
-    borderWidth: 0.5,
+    width: QR_BOX_PT,
+    height: QR_BOX_PT,
     color: COLORS.white,
   });
 
-  // Encode the verification URL as text inside the QR area
-  const verifyUrl = `verify.doctoleb.com/v1/${crockfordBase32(documentId)}`;
-  const shortUrl = crockfordBase32(documentId).slice(0, 8);
-  page.drawText(shortUrl, {
-    x: qrX + 4,
-    y: qrY + 26,
-    size: 7,
+  for (let row = 0; row < moduleCount; row++) {
+    for (let col = 0; col < moduleCount; col++) {
+      if (qr.isDark(row, col)) {
+        page.drawRectangle({
+          // QR row 0 is the TOP row visually; pdf y grows upward → flip rows.
+          x: qrX + col * moduleSize,
+          y: qrY + QR_BOX_PT - (row + 1) * moduleSize,
+          width: moduleSize,
+          height: moduleSize,
+          color: COLORS.textPrimary,
+        });
+      }
+    }
+  }
+
+  // Tiny caption under the QR — helps non-technical users know it's scannable.
+  page.drawText('Verify document', {
+    x: qrX,
+    y: qrY - 9,
+    size: 6,
     font: fonts.regular,
-    color: COLORS.textTertiary,
-  });
-  page.drawText('SCAN TO', {
-    x: qrX + 10,
-    y: qrY + 44,
-    size: 6,
-    font: fonts.bold,
-    color: COLORS.textTertiary,
-  });
-  page.drawText('VERIFY', {
-    x: qrX + 14,
-    y: qrY + 36,
-    size: 6,
-    font: fonts.bold,
     color: COLORS.textTertiary,
   });
 }
 
+// ── Logo embedding ───────────────────────────────────────────────
+
+/**
+ * Try to embed the logo bytes into the PDF. Returns `null` (and logs a
+ * non-PHI reason) when the bytes are missing or not embeddable. We never
+ * throw — a missing logo is a soft failure, never a render abort.
+ *
+ * pdf-lib supports PNG and JPEG natively. SVG/WebP are NOT supported and
+ * must be rejected here even though `logoFetch.js` accepted them upstream.
+ */
+async function embedLogo(
+  pdf: PDFDocument,
+  bytes: Uint8Array | null,
+): Promise<PDFImage | null> {
+  if (!bytes || bytes.byteLength === 0) return null;
+  // PNG magic: 89 50 4E 47. JPEG magic: FF D8 FF.
+  const isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+  const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  try {
+    if (isPng) return await pdf.embedPng(bytes);
+    if (isJpeg) return await pdf.embedJpg(bytes);
+  } catch (err) {
+    const reason = err instanceof Error ? err.name : 'unknown';
+    console.warn('[render] logo_embed_failed', { reason });
+    return null;
+  }
+  console.warn('[render] logo_embed_skipped', { reason: 'unsupported_format' });
+  return null;
+}
+
 // ── Main render function ─────────────────────────────────────────
 
-export async function renderPdf(ctx: RenderContext): Promise<{
+export async function renderPdf(
+  ctx: RenderContext,
+  options: { logoBytes?: Uint8Array | null } = {},
+): Promise<{
   bytes: Uint8Array;
   contentHash: string;
   storagePath: string;
@@ -438,6 +729,9 @@ export async function renderPdf(ctx: RenderContext): Promise<{
     pdf.embedFont(assets.boldFont, { subset: true }),
   ]);
   const fonts: Fonts = { regular, bold };
+
+  // Embed the logo once; reuse the same image object on every page.
+  const logoImage = await embedLogo(pdf, options.logoBytes ?? null);
 
   // ── Metadata (§ 10) ──
   const subject = DOCUMENT_TYPE_LABELS[ctx.document.documentType] || 'Clinical Document';
@@ -472,33 +766,124 @@ export async function renderPdf(ctx: RenderContext): Promise<{
   const contentAreaHeight = USABLE_TOP - USABLE_BOTTOM - GAP_AFTER_HEADER;
   let cursorBudget = contentAreaHeight;
 
-  for (const section of ctx.template.sections) {
-    const sectionHeight = measureSection(section, ctx, fonts);
+  /**
+   * Split a tall section at a field boundary so it fits the remaining
+   * budget. Returns the head (this page) and the tail (next page). Never
+   * splits a single field's body. If the section title alone doesn't fit,
+   * pushes the entire section to the next page.
+   *
+   * The tail section reuses the same `key` so duplicate-key detection
+   * doesn't fire on the runtime structure, and its `title` gets a
+   * "(continued)" suffix so doctors see the section is split.
+   */
+  function splitSectionAtFieldBoundary(
+    section: TemplateSection,
+    remainingBudget: number,
+  ): { head: TemplateSection | null; tail: TemplateSection | null; headHeight: number } {
+    const titleHeight = TYPE.sectionTitle.size * 1.25 + 6;
+    // If even the title can't fit, the whole section moves to the next page.
+    if (titleHeight > remainingBudget) {
+      return { head: null, tail: section, headHeight: 0 };
+    }
+    let cursor = titleHeight;
+    const headFields: TemplateField[] = [];
+    let i = 0;
+    for (; i < section.fields.length; i++) {
+      const f = section.fields[i];
+      const fHeight = measureField(f, ctx, fonts);
+      // Stop as soon as adding this field would overflow.
+      if (cursor + fHeight + (headFields.length > 0 ? GAP_BETWEEN_FIELDS : 0) > remainingBudget) {
+        break;
+      }
+      headFields.push(f);
+      cursor += fHeight + (headFields.length > 1 ? GAP_BETWEEN_FIELDS : 0);
+    }
+    if (headFields.length === 0) {
+      // Title fits but no field does — push the whole section instead of
+      // leaving a header-only stub at the bottom of the page.
+      return { head: null, tail: section, headHeight: 0 };
+    }
+    const tailFields = section.fields.slice(i);
+    if (tailFields.length === 0) {
+      // Everything fit; no split needed (caller will not call us in this case
+      // but we handle it defensively).
+      return {
+        head: { ...section, fields: headFields },
+        tail: null,
+        headHeight: cursor,
+      };
+    }
+    return {
+      head: { ...section, fields: headFields },
+      tail: {
+        ...section,
+        title: `${section.title} (continued)`,
+        fields: tailFields,
+      },
+      headHeight: cursor,
+    };
+  }
 
-    if (sectionHeight < contentAreaHeight * 0.7) {
-      // Keep-together section
-      if (sectionHeight + GAP_BETWEEN_SECTIONS > cursorBudget) {
-        pagePlans.push(currentPlan);
-        currentPlan = { sections: [], hasSignature: false };
-        cursorBudget = contentAreaHeight;
-      }
+  // Work queue — sections still to place. We push tails back onto the head
+  // of the queue when a section gets split.
+  const queue: TemplateSection[] = [...ctx.template.sections];
+
+  while (queue.length > 0) {
+    const section = queue.shift()!;
+    const sectionHeight = measureSection(section, ctx, fonts);
+    const needed = sectionHeight + GAP_BETWEEN_SECTIONS;
+
+    if (needed <= cursorBudget) {
+      // Whole section fits on this page.
       currentPlan.sections.push({ section, height: sectionHeight });
-      cursorBudget -= sectionHeight + GAP_BETWEEN_SECTIONS;
+      cursorBudget -= needed;
+      continue;
+    }
+
+    // Doesn't fit. Decide: split, or push to next page.
+    const isLarge = sectionHeight >= contentAreaHeight * 0.7;
+    const hasRoomForSomeFields = cursorBudget > TYPE.sectionTitle.size * 1.25 + 6 + 40;
+
+    if (isLarge && hasRoomForSomeFields) {
+      // Split at the next field boundary.
+      const { head, tail, headHeight } = splitSectionAtFieldBoundary(section, cursorBudget);
+      if (head) {
+        currentPlan.sections.push({ section: head, height: headHeight });
+      }
+      // Always flush the current page after a split.
+      pagePlans.push(currentPlan);
+      currentPlan = { sections: [], hasSignature: false };
+      cursorBudget = contentAreaHeight;
+      if (tail) queue.unshift(tail);
+      continue;
+    }
+
+    // Small-or-medium section that doesn't fit: flush, then place on a
+    // fresh page.
+    if (currentPlan.sections.length > 0) {
+      pagePlans.push(currentPlan);
+      currentPlan = { sections: [], hasSignature: false };
+      cursorBudget = contentAreaHeight;
+    }
+    if (needed > cursorBudget && sectionHeight >= contentAreaHeight * 0.7) {
+      // Even on a fresh page it still doesn't fit — split.
+      const { head, tail, headHeight } = splitSectionAtFieldBoundary(section, cursorBudget);
+      if (head) {
+        currentPlan.sections.push({ section: head, height: headHeight });
+      }
+      pagePlans.push(currentPlan);
+      currentPlan = { sections: [], hasSignature: false };
+      cursorBudget = contentAreaHeight;
+      if (tail) queue.unshift(tail);
     } else {
-      // Large section — allow split (simplified: treat as keep-together for v1)
-      if (sectionHeight + GAP_BETWEEN_SECTIONS > cursorBudget && currentPlan.sections.length > 0) {
-        pagePlans.push(currentPlan);
-        currentPlan = { sections: [], hasSignature: false };
-        cursorBudget = contentAreaHeight;
-      }
       currentPlan.sections.push({ section, height: sectionHeight });
-      cursorBudget -= sectionHeight + GAP_BETWEEN_SECTIONS;
+      cursorBudget -= needed;
     }
   }
 
-  // Signature block
+  // Signature block — never split, always placed on whichever page has room.
   const signatureHeight = 70;
-  if (signatureHeight + GAP_ABOVE_SIGNATURE > cursorBudget) {
+  if (signatureHeight + GAP_ABOVE_SIGNATURE > cursorBudget && currentPlan.sections.length > 0) {
     pagePlans.push(currentPlan);
     currentPlan = { sections: [], hasSignature: true };
   } else {
@@ -506,24 +891,40 @@ export async function renderPdf(ctx: RenderContext): Promise<{
   }
   pagePlans.push(currentPlan);
 
+  // Strip page plans that ended up empty (e.g. a section that perfectly
+  // filled the previous budget pushed an empty currentPlan during the loop).
+  const filteredPlans = pagePlans.filter(
+    (plan) => plan.sections.length > 0 || plan.hasSignature,
+  );
+  // Always render at least one page so the PDF is structurally valid.
+  if (filteredPlans.length === 0) {
+    filteredPlans.push({ sections: [], hasSignature: true });
+  }
+
+  pagePlans.length = 0;
+  pagePlans.push(...filteredPlans);
+
   const totalPages = pagePlans.length;
 
   // ── Second pass: render each page ──
   for (let pageIdx = 0; pageIdx < pagePlans.length; pageIdx++) {
     const plan = pagePlans[pageIdx];
     const page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+    // Per-page link budget — guards against an abusive template that turns
+    // every field into a clickable URI annotation.
+    let linksOnPage = 0;
 
     // Watermark first (behind everything)
     drawWatermark(page, bold, ctx);
 
     // Header
-    drawHeader(page, fonts, ctx, primaryColor);
+    drawHeader(page, fonts, ctx, primaryColor, logoImage);
 
     // Footer (page number) — draw last on every page
     drawFooter(page, fonts, ctx, pageIdx + 1, totalPages);
 
     // QR on every page
-    drawQrPlaceholder(page, fonts, ctx.document.id);
+    drawQrCode(page, fonts, ctx.document.id);
 
     // Content
     let cursorY = USABLE_TOP - GAP_AFTER_HEADER;
@@ -598,11 +999,21 @@ export async function renderPdf(ctx: RenderContext): Promise<{
       // Fields
       for (let fi = 0; fi < section.fields.length; fi++) {
         const field = section.fields[fi];
+        // Conditional skip — `show_if` lets a doctor suppress a field unless
+        // the configured binding matches a literal value (e.g. show
+        // "gestational age" only when patient.sex equals "female").
+        if (!evaluateShowIf(ctx, field)) {
+          continue;
+        }
         const value = resolveFieldValue(ctx, field);
 
-        if (field.type === 'static_text') {
-          // Static text: render content directly
-          const textContent = field.content || value || '';
+        if (field.type === 'static_text' || field.type === 'composite_text') {
+          // Both render as flowing body text. For static_text, `value` came
+          // from `field.content`; for composite_text, `value` is the result
+          // of `renderCompositeTemplate(ctx, field.template)`.
+          const textContent = field.type === 'static_text'
+            ? (field.content || value || '')
+            : (value || '');
           const lines = wrapText(textContent, regular, TYPE.fieldValue.size, CONTENT_WIDTH);
           for (const line of lines) {
             page.drawText(line, {
@@ -643,6 +1054,29 @@ export async function renderPdf(ctx: RenderContext): Promise<{
               color: COLORS.textPrimary,
             });
           }
+
+          // Hyperlink the FIRST line of the value when it matches the
+          // phone / email / URL patterns. Multi-line links are intentionally
+          // out of scope for v1 — clinical values almost always fit on one
+          // line, and a multi-line hot-zone is rarely the right UX.
+          if (
+            linksOnPage < MAX_LINKS_PER_PAGE
+            && lines.length > 0
+            && lines[0] !== '—'
+          ) {
+            const link = classifyLink(lines[0]);
+            if (link) {
+              const lineWidth = regular.widthOfTextAtSize(lines[0], TYPE.fieldValue.size);
+              attachLinkAnnotation(pdf, page, {
+                x: valueX,
+                y: cursorY - 2,
+                width: lineWidth,
+                height: TYPE.fieldValue.size + 2,
+              }, link.href);
+              linksOnPage += 1;
+            }
+          }
+
           cursorY -= Math.max(TYPE.fieldLabel.size * 1.4, lines.length * TYPE.fieldValue.size * 1.4);
         }
 

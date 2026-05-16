@@ -1,0 +1,3714 @@
+{
+  "id": "diagram_11_patient_record_detail",
+  "name": "DoctoLeb Patient Record Detail ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_11_patient_record_detail_identity_users",
+      "name": "users",
+      "schema": "identity",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_identity_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_email",
+          "name": "email",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_role",
+          "name": "role",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_first_name",
+          "name": "first_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_last_name",
+          "name": "last_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_phone",
+          "name": "phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_avatar_url",
+          "name": "avatar_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_initials",
+          "name": "initials",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "5"
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_identity_users_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_identity_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_identity_users_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Application identity and role profile.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_identity"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_patients",
+      "name": "patients",
+      "schema": "patient_record",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_date_of_birth",
+          "name": "date_of_birth",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_sex",
+          "name": "sex",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_blood_type",
+          "name": "blood_type",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_medical_history",
+          "name": "medical_history",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_emergency_contact",
+          "name": "emergency_contact",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_emergency_phone",
+          "name": "emergency_phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_insurance_id",
+          "name": "insurance_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_intake_completed_at",
+          "name": "intake_completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_established_at",
+          "name": "established_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_full_name",
+          "name": "full_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patients_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_patients_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_patients_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Clinical patient profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_patient_consents",
+      "name": "patient_consents",
+      "schema": "patient_record",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_consent_document_id",
+          "name": "consent_document_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_accepted_by_user_id",
+          "name": "accepted_by_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_accepted_at",
+          "name": "accepted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_revoked_at",
+          "name": "revoked_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_ip_address",
+          "name": "ip_address",
+          "type": {
+            "id": "inet",
+            "name": "inet"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_user_agent",
+          "name": "user_agent",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_consents_acceptance_method",
+          "name": "acceptance_method",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_patient_consents_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_patient_consents_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 684,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Patient acceptance of consent documents.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_patient_devices",
+      "name": "patient_devices",
+      "schema": "patient_record",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_platform",
+          "name": "platform",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_push_token",
+          "name": "push_token",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_device_label",
+          "name": "device_label",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_app_version",
+          "name": "app_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_locale",
+          "name": "locale",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_timezone",
+          "name": "timezone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_last_seen_at",
+          "name": "last_seen_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_devices_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_patient_devices_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_patient_devices_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 1106,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Patient device used for push delivery.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_patient_family_history",
+      "name": "patient_family_history",
+      "schema": "patient_record",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_relation_id",
+          "name": "relation_id",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_disease_id",
+          "name": "disease_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_condition_text",
+          "name": "condition_text",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_age_at_onset",
+          "name": "age_at_onset",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_is_deceased",
+          "name": "is_deceased",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_death_cause_disease_id",
+          "name": "death_cause_disease_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_death_cause_text",
+          "name": "death_cause_text",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_recorded_by",
+          "name": "recorded_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_family_history_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_patient_family_history_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_patient_family_history_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 1528,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Family medical history for risk context.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_patient_surgeries",
+      "name": "patient_surgeries",
+      "schema": "patient_record",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_surgery_type_id",
+          "name": "surgery_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_performed_at",
+          "name": "performed_at",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_hospital_name",
+          "name": "hospital_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_surgeon_name",
+          "name": "surgeon_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_recorded_by",
+          "name": "recorded_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_surgeries_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_patient_surgeries_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_patient_surgeries_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 1950,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Past surgery history.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_patient_vaccinations",
+      "name": "patient_vaccinations",
+      "schema": "patient_record",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_vaccine_id",
+          "name": "vaccine_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_given_at",
+          "name": "given_at",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_due_at",
+          "name": "due_at",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_dose_number",
+          "name": "dose_number",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_lot_number",
+          "name": "lot_number",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_administered_by",
+          "name": "administered_by",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_recorded_by",
+          "name": "recorded_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_vaccinations_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_patient_vaccinations_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_patient_vaccinations_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 2372,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Vaccination history.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_medical_intake",
+      "name": "medical_intake",
+      "schema": "patient_record",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_collected_by",
+          "name": "collected_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_completed_by",
+          "name": "completed_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_completed_at",
+          "name": "completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_reopened_by",
+          "name": "reopened_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_reopened_at",
+          "name": "reopened_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_reopen_reason",
+          "name": "reopen_reason",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_occupation_id",
+          "name": "occupation_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_occupation_other",
+          "name": "occupation_other",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_blood_group_id",
+          "name": "blood_group_id",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_marital_status",
+          "name": "marital_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_living_with",
+          "name": "living_with",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_smoking_status",
+          "name": "smoking_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_alcohol_use",
+          "name": "alcohol_use",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_exercise_frequency",
+          "name": "exercise_frequency",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_allergies_text",
+          "name": "allergies_text",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_current_medications_text",
+          "name": "current_medications_text",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_medical_intake_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_medical_intake_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_medical_intake_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 2794,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Structured intake captured for the patient.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_patient_diseases",
+      "name": "patient_diseases",
+      "schema": "patient_record",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_disease_id",
+          "name": "disease_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_severity",
+          "name": "severity",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_diagnosed_at",
+          "name": "diagnosed_at",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_recorded_by",
+          "name": "recorded_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_diseases_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_patient_diseases_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_patient_diseases_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 3216,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Known patient disease history.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_patient_record_patient_insurance_policies",
+      "name": "patient_insurance_policies",
+      "schema": "patient_record",
+      "order": 9,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_provider_id",
+          "name": "provider_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_policy_number",
+          "name": "policy_number",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_policyholder_name",
+          "name": "policyholder_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_valid_from",
+          "name": "valid_from",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_valid_to",
+          "name": "valid_to",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_is_primary",
+          "name": "is_primary",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_patient_record_patient_insurance_policies_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_patient_record_patient_insurance_policies_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_patient_record_patient_insurance_policies_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 3638,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Patient insurance policy details.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_patient_record"
+    },
+    {
+      "id": "table_11_patient_record_detail_reference_blood_groups",
+      "name": "blood_groups",
+      "schema": "reference",
+      "order": 10,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_reference_blood_groups_id",
+          "name": "id",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_blood_groups_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_blood_groups_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_blood_groups_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_blood_groups_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_blood_groups_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_blood_groups_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_reference_blood_groups_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_reference_blood_groups_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Blood group lookup values.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_reference"
+    },
+    {
+      "id": "table_11_patient_record_detail_reference_occupations",
+      "name": "occupations",
+      "schema": "reference",
+      "order": 11,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_reference_occupations_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_occupations_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_occupations_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_occupations_category",
+          "name": "category",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_occupations_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_occupations_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_occupations_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_occupations_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_reference_occupations_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_reference_occupations_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 556,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Occupation lookup values.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_reference"
+    },
+    {
+      "id": "table_11_patient_record_detail_reference_diseases",
+      "name": "diseases",
+      "schema": "reference",
+      "order": 12,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_reference_diseases_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_diseases_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_diseases_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_diseases_icd10_code",
+          "name": "icd10_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_diseases_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_diseases_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_diseases_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_diseases_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_reference_diseases_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_reference_diseases_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 882,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Disease lookup values.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_reference"
+    },
+    {
+      "id": "table_11_patient_record_detail_reference_family_relations",
+      "name": "family_relations",
+      "schema": "reference",
+      "order": 13,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_reference_family_relations_id",
+          "name": "id",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_family_relations_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_family_relations_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_family_relations_sort_order",
+          "name": "sort_order",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_family_relations_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_family_relations_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_family_relations_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_family_relations_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_reference_family_relations_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_reference_family_relations_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 1208,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Family relation lookup values.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_reference"
+    },
+    {
+      "id": "table_11_patient_record_detail_reference_surgery_types",
+      "name": "surgery_types",
+      "schema": "reference",
+      "order": 14,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_reference_surgery_types_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_surgery_types_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_surgery_types_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_surgery_types_body_system",
+          "name": "body_system",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_surgery_types_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_surgery_types_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_surgery_types_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_surgery_types_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_reference_surgery_types_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_reference_surgery_types_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 1534,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Surgery type lookup values.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_reference"
+    },
+    {
+      "id": "table_11_patient_record_detail_reference_vaccines",
+      "name": "vaccines",
+      "schema": "reference",
+      "order": 15,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_typical_doses",
+          "name": "typical_doses",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_reference_vaccines_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_reference_vaccines_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_reference_vaccines_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 1860,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Vaccine lookup values.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_reference"
+    },
+    {
+      "id": "table_11_patient_record_detail_runtime_consent_documents",
+      "name": "consent_documents",
+      "schema": "runtime",
+      "order": 16,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_body_md",
+          "name": "body_md",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_version",
+          "name": "version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_audience",
+          "name": "audience",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_is_required",
+          "name": "is_required",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_published_at",
+          "name": "published_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_runtime_consent_documents_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_runtime_consent_documents_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_runtime_consent_documents_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 262,
+      "width": 260,
+      "color": "#7C3AED",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Consent document shown to patients.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_runtime"
+    },
+    {
+      "id": "table_11_patient_record_detail_billing_insurance_providers",
+      "name": "insurance_providers",
+      "schema": "billing",
+      "order": 17,
+      "fields": [
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_website_url",
+          "name": "website_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        },
+        {
+          "id": "field_11_patient_record_detail_billing_insurance_providers_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633758
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_11_patient_record_detail_billing_insurance_providers_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_11_patient_record_detail_billing_insurance_providers_id"
+          ],
+          "createdAt": 1778757633758,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 262,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633758,
+      "comments": "Insurance company reference records.",
+      "expanded": false,
+      "parentAreaId": "area_11_patient_record_detail_billing"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_11_patient_record_detail_0",
+      "name": "patients_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patients",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patients_user_id",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_1",
+      "name": "patients_archived_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patients",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patients_archived_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_2",
+      "name": "medical_intake_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_medical_intake",
+      "targetTableId": "table_11_patient_record_detail_patient_record_patients",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_medical_intake_patient_id",
+      "targetFieldId": "field_11_patient_record_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_3",
+      "name": "medical_intake_collected_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_medical_intake",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_medical_intake_collected_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_4",
+      "name": "medical_intake_completed_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_medical_intake",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_medical_intake_completed_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_5",
+      "name": "medical_intake_reopened_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_medical_intake",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_medical_intake_reopened_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_6",
+      "name": "medical_intake_archived_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_medical_intake",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_medical_intake_archived_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_7",
+      "name": "medical_intake_occupation_id_occupations_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "reference",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_medical_intake",
+      "targetTableId": "table_11_patient_record_detail_reference_occupations",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_medical_intake_occupation_id",
+      "targetFieldId": "field_11_patient_record_detail_reference_occupations_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_8",
+      "name": "medical_intake_blood_group_id_blood_groups_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "reference",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_medical_intake",
+      "targetTableId": "table_11_patient_record_detail_reference_blood_groups",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_medical_intake_blood_group_id",
+      "targetFieldId": "field_11_patient_record_detail_reference_blood_groups_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_9",
+      "name": "patient_consents_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_consents",
+      "targetTableId": "table_11_patient_record_detail_patient_record_patients",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_consents_patient_id",
+      "targetFieldId": "field_11_patient_record_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_10",
+      "name": "patient_consents_consent_document_id_consent_documents_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "runtime",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_consents",
+      "targetTableId": "table_11_patient_record_detail_runtime_consent_documents",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_consents_consent_document_id",
+      "targetFieldId": "field_11_patient_record_detail_runtime_consent_documents_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_11",
+      "name": "patient_consents_accepted_by_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_consents",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_consents_accepted_by_user_id",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_12",
+      "name": "consent_documents_created_by_users_id",
+      "sourceSchema": "runtime",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_runtime_consent_documents",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_runtime_consent_documents_created_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_13",
+      "name": "patient_devices_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_devices",
+      "targetTableId": "table_11_patient_record_detail_patient_record_patients",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_devices_patient_id",
+      "targetFieldId": "field_11_patient_record_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_14",
+      "name": "patient_devices_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_devices",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_devices_user_id",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_15",
+      "name": "patient_diseases_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_diseases",
+      "targetTableId": "table_11_patient_record_detail_patient_record_patients",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_diseases_patient_id",
+      "targetFieldId": "field_11_patient_record_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_16",
+      "name": "patient_diseases_disease_id_diseases_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "reference",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_diseases",
+      "targetTableId": "table_11_patient_record_detail_reference_diseases",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_diseases_disease_id",
+      "targetFieldId": "field_11_patient_record_detail_reference_diseases_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_17",
+      "name": "patient_diseases_recorded_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_diseases",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_diseases_recorded_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_18",
+      "name": "patient_diseases_archived_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_diseases",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_diseases_archived_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_19",
+      "name": "patient_family_history_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_family_history",
+      "targetTableId": "table_11_patient_record_detail_patient_record_patients",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_family_history_patient_id",
+      "targetFieldId": "field_11_patient_record_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_20",
+      "name": "patient_family_history_relation_id_family_relations_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "reference",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_family_history",
+      "targetTableId": "table_11_patient_record_detail_reference_family_relations",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_family_history_relation_id",
+      "targetFieldId": "field_11_patient_record_detail_reference_family_relations_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_21",
+      "name": "patient_family_history_disease_id_diseases_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "reference",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_family_history",
+      "targetTableId": "table_11_patient_record_detail_reference_diseases",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_family_history_disease_id",
+      "targetFieldId": "field_11_patient_record_detail_reference_diseases_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_22",
+      "name": "patient_family_history_death_cause_disease_id_diseases_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "reference",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_family_history",
+      "targetTableId": "table_11_patient_record_detail_reference_diseases",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_family_history_death_cause_disease_id",
+      "targetFieldId": "field_11_patient_record_detail_reference_diseases_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_23",
+      "name": "patient_family_history_recorded_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_family_history",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_family_history_recorded_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_24",
+      "name": "patient_family_history_archived_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_family_history",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_family_history_archived_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_25",
+      "name": "patient_surgeries_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_surgeries",
+      "targetTableId": "table_11_patient_record_detail_patient_record_patients",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_surgeries_patient_id",
+      "targetFieldId": "field_11_patient_record_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_26",
+      "name": "patient_surgeries_surgery_type_id_surgery_types_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "reference",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_surgeries",
+      "targetTableId": "table_11_patient_record_detail_reference_surgery_types",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_surgeries_surgery_type_id",
+      "targetFieldId": "field_11_patient_record_detail_reference_surgery_types_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_27",
+      "name": "patient_surgeries_recorded_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_surgeries",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_surgeries_recorded_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_28",
+      "name": "patient_surgeries_archived_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_surgeries",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_surgeries_archived_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_29",
+      "name": "patient_vaccinations_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_vaccinations",
+      "targetTableId": "table_11_patient_record_detail_patient_record_patients",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_vaccinations_patient_id",
+      "targetFieldId": "field_11_patient_record_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_30",
+      "name": "patient_vaccinations_vaccine_id_vaccines_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "reference",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_vaccinations",
+      "targetTableId": "table_11_patient_record_detail_reference_vaccines",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_vaccinations_vaccine_id",
+      "targetFieldId": "field_11_patient_record_detail_reference_vaccines_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_31",
+      "name": "patient_vaccinations_recorded_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_vaccinations",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_vaccinations_recorded_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_32",
+      "name": "patient_vaccinations_archived_by_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_vaccinations",
+      "targetTableId": "table_11_patient_record_detail_identity_users",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_vaccinations_archived_by",
+      "targetFieldId": "field_11_patient_record_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_33",
+      "name": "patient_insurance_policies_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_insurance_policies",
+      "targetTableId": "table_11_patient_record_detail_patient_record_patients",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_insurance_policies_patient_id",
+      "targetFieldId": "field_11_patient_record_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    },
+    {
+      "id": "rel_11_patient_record_detail_34",
+      "name": "patient_insurance_policies_provider_id_insurance_providers_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "billing",
+      "sourceTableId": "table_11_patient_record_detail_patient_record_patient_insurance_policies",
+      "targetTableId": "table_11_patient_record_detail_billing_insurance_providers",
+      "sourceFieldId": "field_11_patient_record_detail_patient_record_patient_insurance_policies_provider_id",
+      "targetFieldId": "field_11_patient_record_detail_billing_insurance_providers_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633758
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_11_patient_record_detail_identity",
+      "name": "identity",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#2563EB",
+      "order": 0
+    },
+    {
+      "id": "area_11_patient_record_detail_patient_record",
+      "name": "patient_record",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 3868,
+      "color": "#0D9488",
+      "order": 1
+    },
+    {
+      "id": "area_11_patient_record_detail_reference",
+      "name": "reference",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 2058,
+      "color": "#64748B",
+      "order": 2
+    },
+    {
+      "id": "area_11_patient_record_detail_runtime",
+      "name": "runtime",
+      "x": 1318,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#7C3AED",
+      "order": 3
+    },
+    {
+      "id": "area_11_patient_record_detail_billing",
+      "name": "billing",
+      "x": 1744,
+      "y": 190,
+      "width": 340,
+      "height": 492,
+      "color": "#059669",
+      "order": 4
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_11_patient_record_detail_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_11_patient_record_detail_story",
+      "content": "user becomes patient; intake, consent, history, devices, and insurance extend the record.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.758Z",
+  "updatedAt": "2026-05-14T11:20:33.758Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 2250,
+    "height": 4178
+  }
+}

@@ -7,6 +7,8 @@ export const ENTITLEMENT_FEATURES = Object.freeze({
   aiClinicalSummary: 'ai_clinical_summary',
   biDashboard: 'bi_dashboard',
   advancedReports: 'advanced_reports',
+  templatesEngine: 'templates_engine',
+  analyticalReports: 'analytical_reports',
 });
 
 const SOURCE_PRIORITY = Object.freeze({

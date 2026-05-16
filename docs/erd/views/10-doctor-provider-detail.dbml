@@ -1,0 +1,292 @@
+Project "DoctoLeb Doctor Provider Detail ERD" {
+  database_type: "PostgreSQL"
+  Note: "Detailed ERD: main doctor ownership, team/staff, specialties, schedule, clinic, branding, and contracts."
+}
+
+Table identity.users {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  role varchar(50) [not null]
+  first_name varchar(255)
+  last_name varchar(255)
+  phone varchar(20)
+  avatar_url text
+  initials varchar(5)
+  is_active boolean
+  created_at timestamptz
+  updated_at timestamptz
+  auth_user_id uuid
+
+  Note: 'Application identity and role profile.'
+}
+
+Table identity.doctors {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  department varchar(100)
+  specialization varchar(100)
+  license_number varchar(100) [unique]
+  bio text
+  availability json
+  consultation_fee numeric(10,2)
+  created_at timestamptz
+  updated_at timestamptz
+  provisioning_client_request_id uuid
+
+  Note: 'Provider profile. The main doctor is the row referenced by runtime.tenant_profile.doctor_id.'
+}
+
+Table identity.staff_members {
+  id uuid [pk]
+  user_id uuid [unique]
+  doctor_id uuid [not null]
+  role text [not null]
+  display_name text [not null]
+  phone text
+  email text
+  invite_status text [not null]
+  reports_to uuid
+  hire_date date
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  invite_client_request_id uuid
+  disabled_at timestamptz
+  disabled_by uuid
+  disabled_previous_invite_status text
+  invite_resent_at timestamptz
+  invite_resent_by uuid
+  invite_resend_count integer [not null]
+  reactivated_at timestamptz
+  reactivated_by uuid
+  reactivation_count integer [not null]
+  invite_reissued_at timestamptz
+  invite_reissued_by uuid
+  invite_reissue_count integer [not null]
+
+  Note: 'Doctor team seat. doctor_id points to the provider this staff member supports.'
+}
+
+Table identity.predoctors {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  supervisor_id uuid
+  university varchar(255)
+  year_of_study integer
+  status varchar(50)
+  created_at timestamptz
+  updated_at timestamptz
+
+  Note: 'Assistant/pre-doctor supervised by a doctor for prechecks and preparation.'
+}
+
+Table identity.doctor_specialties {
+  id uuid [pk]
+  doctor_id uuid [not null]
+  specialty_id uuid [not null]
+  is_primary boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Join table between doctors and specialties.'
+}
+
+Table reference.specialties {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  description text
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Doctor specialty lookup values.'
+}
+
+Table scheduling.clinics {
+  id uuid [pk]
+  name text [not null]
+  address text [not null]
+  created_at timestamptz
+  location_type text [not null]
+  city_id uuid
+  phone text
+  working_hours jsonb
+  is_primary boolean [not null]
+  notes text
+  latitude numeric(10,7)
+  longitude numeric(10,7)
+  map_url text
+  floor text
+  room text
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+
+  Note: 'Clinic location where visits happen.'
+}
+
+Table scheduling.doctor_schedule_templates {
+  id uuid [pk]
+  doctor_id uuid [not null]
+  clinic_id uuid [not null]
+  weekday smallint [not null]
+  start_time time [not null]
+  end_time time [not null]
+  slot_duration_minutes integer [not null]
+  is_active boolean [not null]
+  effective_from date
+  effective_to date
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Recurring doctor availability pattern.'
+}
+
+Table scheduling.secretary_slots {
+  id uuid [pk]
+  doctor_id uuid
+  clinic_id uuid
+  date date [not null]
+  start_time time [not null]
+  end_time time [not null]
+  is_active boolean [not null]
+  created_by uuid [not null]
+  recurrence_group_id uuid
+  created_at timestamptz
+  schedule_template_id uuid
+
+  Note: 'Bookable slot created from schedule or staff.'
+}
+
+Table runtime.tenant_profile {
+  id uuid [pk]
+  doctor_id uuid [not null, unique]
+  tenant_slug text [not null, unique]
+  display_name text [not null]
+  timezone text [not null]
+  default_locale text [not null]
+  status text [not null]
+  schema_version text [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Tenant owner profile. doctor_id identifies the main doctor this app belongs to.'
+}
+
+Table runtime.tenant_app_config {
+  id uuid [pk]
+  profile_id uuid [not null, unique]
+  app_name text [not null]
+  app_tagline text
+  splash_logo_url text
+  icon_url text
+  primary_color text
+  secondary_color text
+  maintenance_message text
+  min_supported_version text
+  force_update_version text
+  enabled_locales text[] [not null]
+  support_phone text
+  support_email text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Runtime app branding and behavior config.'
+}
+
+Table billing.doctor_insurance_contracts {
+  id uuid [pk]
+  doctor_id uuid [not null]
+  provider_id uuid [not null]
+  doctor_provider_code text
+  contract_number text
+  valid_from date
+  valid_to date
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Doctor agreements with insurance providers.'
+}
+
+Table billing.insurance_providers {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  phone text
+  email text
+  website_url text
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Insurance company reference records.'
+}
+
+TableGroup "identity" [color: #2563EB] {
+  identity.users
+  identity.doctors
+  identity.staff_members
+  identity.predoctors
+  identity.doctor_specialties
+
+  Note: 'Login users, doctors, staff, and roles.'
+}
+TableGroup "reference" [color: #64748B] {
+  reference.specialties
+
+  Note: 'Lookup data that standardizes forms.'
+}
+TableGroup "scheduling" [color: #D97706] {
+  scheduling.clinics
+  scheduling.doctor_schedule_templates
+  scheduling.secretary_slots
+
+  Note: 'Clinics, availability, slots, and bookings.'
+}
+TableGroup "runtime" [color: #7C3AED] {
+  runtime.tenant_profile
+  runtime.tenant_app_config
+
+  Note: 'Branding, pages, consent, and feature config.'
+}
+TableGroup "billing" [color: #059669] {
+  billing.insurance_providers
+  billing.doctor_insurance_contracts
+
+  Note: 'Payments, insurance, contracts, and claims.'
+}
+
+Note relationship_story {
+  'Relation: main doctor = runtime.tenant_profile.doctor_id -> identity.doctors.id. Team = staff_members.doctor_id and predoctors.supervisor_id -> that doctor. Schedule, clinic, branding, and contracts attach to the same provider.'
+}
+
+Note relationship_legend {
+  'Ref format: left foreign key > right owner. Line color follows the left table area.'
+}
+
+Ref: identity.doctors.user_id > identity.users.id [color: #2563EB]
+Ref: identity.staff_members.user_id > identity.users.id [color: #2563EB]
+Ref: identity.staff_members.doctor_id > identity.doctors.id [color: #2563EB]
+Ref: identity.staff_members.reports_to > identity.staff_members.id [color: #2563EB]
+Ref: identity.staff_members.disabled_by > identity.users.id [color: #2563EB]
+Ref: identity.staff_members.invite_resent_by > identity.users.id [color: #2563EB]
+Ref: identity.staff_members.invite_reissued_by > identity.users.id [color: #2563EB]
+Ref: identity.staff_members.reactivated_by > identity.users.id [color: #2563EB]
+Ref: identity.predoctors.user_id > identity.users.id [color: #2563EB]
+Ref: identity.predoctors.supervisor_id > identity.doctors.id [color: #2563EB]
+Ref: identity.doctor_specialties.doctor_id > identity.doctors.id [color: #2563EB]
+Ref: identity.doctor_specialties.specialty_id > reference.specialties.id [color: #2563EB]
+Ref: scheduling.doctor_schedule_templates.doctor_id > identity.doctors.id [color: #D97706]
+Ref: scheduling.doctor_schedule_templates.clinic_id > scheduling.clinics.id [color: #D97706]
+Ref: scheduling.secretary_slots.doctor_id > identity.doctors.id [color: #D97706]
+Ref: scheduling.secretary_slots.clinic_id > scheduling.clinics.id [color: #D97706]
+Ref: scheduling.secretary_slots.created_by > identity.users.id [color: #D97706]
+Ref: scheduling.secretary_slots.schedule_template_id > scheduling.doctor_schedule_templates.id [color: #D97706]
+Ref: runtime.tenant_profile.doctor_id > identity.doctors.id [color: #7C3AED]
+Ref: runtime.tenant_app_config.profile_id > runtime.tenant_profile.id [color: #7C3AED]
+Ref: billing.doctor_insurance_contracts.doctor_id > identity.doctors.id [color: #059669]
+Ref: billing.doctor_insurance_contracts.provider_id > billing.insurance_providers.id [color: #059669]

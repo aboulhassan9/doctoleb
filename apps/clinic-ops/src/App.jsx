@@ -64,6 +64,12 @@ const SecretaryIntakePage = lazy(() => import('./pages/SecretaryIntakePage'));
 const SecretaryClaimTemplatesPage = lazy(() => import('./pages/SecretaryClaimTemplatesPage'));
 const DoctorClaimPage = lazy(() => import('./pages/DoctorClaimPage'));
 const StaffMessagesPage = lazy(() => import('./pages/StaffMessagesPage'));
+const TemplatesPage = lazy(() => import('./pages/TemplatesPage'));
+const TemplateEditorPage = lazy(() => import('./pages/TemplateEditorPage'));
+const DocumentGeneratePage = lazy(() => import('./pages/DocumentGeneratePage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const ReportViewerPage = lazy(() => import('./pages/ReportViewerPage'));
+const ReportEditorPage = lazy(() => import('./pages/ReportEditorPage'));
 
 function App() {
   const routerBasename = getCurrentTenantBasename();
@@ -123,6 +129,17 @@ function App() {
                       <Route path="/doctor-staff" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.staffAccounts} audience="staff"><DoctorStaffPage /></FeatureProtectedRoute></ProtectedRoute>} />
                       <Route path="/doctor-tenant-settings" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorTenantSettingsPage /></ProtectedRoute>} />
                       <Route path="/doctor-clinical-catalogs" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><DoctorClinicalCatalogsPage /></ProtectedRoute>} />
+                      <Route path="/templates" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.templatesEngine} audience="staff"><TemplatesPage /></FeatureProtectedRoute></ProtectedRoute>} />
+                      <Route path="/templates/:id" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.templatesEngine} audience="staff"><TemplateEditorPage /></FeatureProtectedRoute></ProtectedRoute>} />
+                      <Route path="/templates/:id/generate" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.templatesEngine} audience="staff"><DocumentGeneratePage /></FeatureProtectedRoute></ProtectedRoute>} />
+                      {/* Analytical reports — visible to all clinic-ops staff with the feature on.
+                          Static `/reports/new` + `/reports/:id/edit` are declared before the
+                          dynamic `/reports/:id` so the editor wins the match. Editing is
+                          gated to doctor/admin; viewing is open to all clinic-ops roles. */}
+                      <Route path="/reports" element={<ProtectedRoute allowedRoles={CLINIC_OPS_ROLES} appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.analyticalReports} audience="staff"><ReportsPage /></FeatureProtectedRoute></ProtectedRoute>} />
+                      <Route path="/reports/new" element={<ProtectedRoute allowedRoles={['doctor', 'admin']} appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.analyticalReports} audience="staff"><ReportEditorPage /></FeatureProtectedRoute></ProtectedRoute>} />
+                      <Route path="/reports/:id/edit" element={<ProtectedRoute allowedRoles={['doctor', 'admin']} appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.analyticalReports} audience="staff"><ReportEditorPage /></FeatureProtectedRoute></ProtectedRoute>} />
+                      <Route path="/reports/:id" element={<ProtectedRoute allowedRoles={CLINIC_OPS_ROLES} appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.analyticalReports} audience="staff"><ReportViewerPage /></FeatureProtectedRoute></ProtectedRoute>} />
                       <Route path="/doctor-claims" element={<ProtectedRoute requiredRole="doctor" appSurface={APP_SURFACES.clinicOps}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.insuranceBilling} audience="staff"><DoctorClaimPage /></FeatureProtectedRoute></ProtectedRoute>} />
 
                       {/* Shared messaging — accessible to all clinic-ops staff */}

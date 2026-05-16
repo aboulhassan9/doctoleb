@@ -1,0 +1,3019 @@
+{
+  "id": "diagram_19_saas_tenant_provisioning_process",
+  "name": "DoctoLeb SaaS Tenant Provisioning Process ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_19_saas_tenant_provisioning_process_registry_tenants",
+      "name": "tenants",
+      "schema": "registry",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_slug",
+          "name": "slug",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_plan",
+          "name": "plan",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_release_channel",
+          "name": "release_channel",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_supabase_project_ref",
+          "name": "supabase_project_ref",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_supabase_url",
+          "name": "supabase_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_supabase_anon_key",
+          "name": "supabase_anon_key",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_schema_version",
+          "name": "schema_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenants_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_registry_tenants_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_registry_tenants_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#4F46E5",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Zero-PHI tenant registry entry.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_registry"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_registry_tenant_domains",
+      "name": "tenant_domains",
+      "schema": "registry",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_tenant_id",
+          "name": "tenant_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_hostname",
+          "name": "hostname",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_surface",
+          "name": "surface",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_dns_status",
+          "name": "dns_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_ssl_status",
+          "name": "ssl_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_verification_token",
+          "name": "verification_token",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_verified_at",
+          "name": "verified_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_registry_tenant_domains_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_registry_tenant_domains_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 684,
+      "width": 260,
+      "color": "#4F46E5",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Hostnames mapped to tenant surfaces.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_registry"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_security_super_admins",
+      "name": "super_admins",
+      "schema": "security",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_super_admins_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_super_admins_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_super_admins_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_super_admins_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_super_admins_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_super_admins_last_login_at",
+          "name": "last_login_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_super_admins_role",
+          "name": "role",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_security_super_admins_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_security_super_admins_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Allowed SaaS admin identities.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_security"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets",
+      "name": "edge_rate_limit_buckets",
+      "schema": "security",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_id",
+          "name": "id",
+          "type": {
+            "id": "bigserial",
+            "name": "bigserial"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_route",
+          "name": "route",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_key_hash",
+          "name": "key_hash",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_window_start",
+          "name": "window_start",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_window_seconds",
+          "name": "window_seconds",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_request_count",
+          "name": "request_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_expires_at",
+          "name": "expires_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_security_edge_rate_limit_buckets_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 556,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Server-side rate limit counters.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_security"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_plans_plans",
+      "name": "plans",
+      "schema": "plans",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_billing_mode",
+          "name": "billing_mode",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_price_label",
+          "name": "price_label",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_stripe_product_lookup_key",
+          "name": "stripe_product_lookup_key",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_sort_order",
+          "name": "sort_order",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plans_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_plans_plans_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_plans_plans_code"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#16A34A",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "SaaS subscription plan definitions.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_plans"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_plans_plan_entitlements",
+      "name": "plan_entitlements",
+      "schema": "plans",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_plan_code",
+          "name": "plan_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_feature_code",
+          "name": "feature_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_is_enabled",
+          "name": "is_enabled",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_limits",
+          "name": "limits",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_plans_plan_entitlements_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 652,
+      "width": 260,
+      "color": "#16A34A",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Feature defaults included in a SaaS plan.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_plans"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_plans_tenant_entitlements",
+      "name": "tenant_entitlements",
+      "schema": "plans",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_tenant_id",
+          "name": "tenant_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_feature_code",
+          "name": "feature_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_source",
+          "name": "source",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_is_enabled",
+          "name": "is_enabled",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_limits",
+          "name": "limits",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_reason",
+          "name": "reason",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_expires_at",
+          "name": "expires_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_plans_tenant_entitlements_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 946,
+      "width": 260,
+      "color": "#16A34A",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Feature overrides granted to one tenant.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_plans"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections",
+      "name": "provisioning_provider_connections",
+      "schema": "provisioning",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_provider",
+          "name": "provider",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_owner_scope",
+          "name": "owner_scope",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_auth_method",
+          "name": "auth_method",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_is_automation_enabled",
+          "name": "is_automation_enabled",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_external_account_id",
+          "name": "external_account_id",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_external_account_slug",
+          "name": "external_account_slug",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_external_team_id",
+          "name": "external_team_id",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_external_org_id",
+          "name": "external_org_id",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_capabilities",
+          "name": "capabilities",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_secret_storage",
+          "name": "secret_storage",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_secret_ref",
+          "name": "secret_ref",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_secret_last_rotated_at",
+          "name": "secret_last_rotated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_last_verified_at",
+          "name": "last_verified_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_last_error_code",
+          "name": "last_error_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_last_error_summary",
+          "name": "last_error_summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_updated_by",
+          "name": "updated_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 262,
+      "width": 260,
+      "color": "#F97316",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Stored provider account metadata and secret ref.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_provisioning"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs",
+      "name": "tenant_provisioning_jobs",
+      "schema": "provisioning",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_tenant_id",
+          "name": "tenant_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_requested_slug",
+          "name": "requested_slug",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_requested_display_name",
+          "name": "requested_display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_requested_plan",
+          "name": "requested_plan",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_requested_domains",
+          "name": "requested_domains",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_initial_branding",
+          "name": "initial_branding",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_checklist",
+          "name": "checklist",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_assigned_admin_id",
+          "name": "assigned_admin_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_last_error",
+          "name": "last_error",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_completed_at",
+          "name": "completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_supabase_connection_id",
+          "name": "supabase_connection_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_vercel_connection_id",
+          "name": "vercel_connection_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_automation_mode",
+          "name": "automation_mode",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_automation_status",
+          "name": "automation_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_provider_state",
+          "name": "provider_state",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_cancel_requested_at",
+          "name": "cancel_requested_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_first_doctor_email",
+          "name": "first_doctor_email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_first_doctor_display_name",
+          "name": "first_doctor_display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_first_doctor_phone",
+          "name": "first_doctor_phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 684,
+      "width": 260,
+      "color": "#F97316",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Tenant setup job requested by SaaS admin.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_provisioning"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps",
+      "name": "tenant_provisioning_steps",
+      "schema": "provisioning",
+      "order": 9,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_provisioning_job_id",
+          "name": "provisioning_job_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_tenant_id",
+          "name": "tenant_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_step_code",
+          "name": "step_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_provider",
+          "name": "provider",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_idempotency_key",
+          "name": "idempotency_key",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_external_resource_kind",
+          "name": "external_resource_kind",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_external_resource_id",
+          "name": "external_resource_id",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_external_resource_url",
+          "name": "external_resource_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_preconditions",
+          "name": "preconditions",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_postconditions",
+          "name": "postconditions",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_undo_strategy",
+          "name": "undo_strategy",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_undo_payload",
+          "name": "undo_payload",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_attempt_count",
+          "name": "attempt_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_last_error_code",
+          "name": "last_error_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_last_error_summary",
+          "name": "last_error_summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_started_at",
+          "name": "started_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_completed_at",
+          "name": "completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1106,
+      "width": 260,
+      "color": "#F97316",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Reversible step in the setup ledger.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_provisioning"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs",
+      "name": "tenant_secret_refs",
+      "schema": "provisioning",
+      "order": 10,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_tenant_id",
+          "name": "tenant_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_project_ref",
+          "name": "project_ref",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_secret_kind",
+          "name": "secret_kind",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_secret_storage",
+          "name": "secret_storage",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_secret_ref",
+          "name": "secret_ref",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_secret_last_rotated_at",
+          "name": "secret_last_rotated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_last_verified_at",
+          "name": "last_verified_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_last_error_code",
+          "name": "last_error_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_last_error_summary",
+          "name": "last_error_summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_updated_by",
+          "name": "updated_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_revoked_at",
+          "name": "revoked_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1528,
+      "width": 260,
+      "color": "#F97316",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Server-only secret reference for a tenant.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_provisioning"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs",
+      "name": "tenant_migration_runs",
+      "schema": "provisioning",
+      "order": 11,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_tenant_id",
+          "name": "tenant_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_provisioning_step_id",
+          "name": "provisioning_step_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_project_ref",
+          "name": "project_ref",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_runner_mode",
+          "name": "runner_mode",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_migration_source",
+          "name": "migration_source",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_source_checksum",
+          "name": "source_checksum",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_expected_migrations_count",
+          "name": "expected_migrations_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_applied_migrations_count",
+          "name": "applied_migrations_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_failed_migration_version",
+          "name": "failed_migration_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_failed_migration_name",
+          "name": "failed_migration_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_last_error_code",
+          "name": "last_error_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_last_error_summary",
+          "name": "last_error_summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_started_at",
+          "name": "started_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_completed_at",
+          "name": "completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1950,
+      "width": 260,
+      "color": "#F97316",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Tenant database setup run status.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_provisioning"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items",
+      "name": "tenant_migration_items",
+      "schema": "provisioning",
+      "order": 12,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_run_id",
+          "name": "run_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_sequence_no",
+          "name": "sequence_no",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_version",
+          "name": "version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_checksum",
+          "name": "checksum",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_error_code",
+          "name": "error_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_error_summary",
+          "name": "error_summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_started_at",
+          "name": "started_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_completed_at",
+          "name": "completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 2372,
+      "width": 260,
+      "color": "#F97316",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "One migration item inside a migration run.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_provisioning"
+    },
+    {
+      "id": "table_19_saas_tenant_provisioning_process_audit_tenant_events",
+      "name": "tenant_events",
+      "schema": "audit",
+      "order": 13,
+      "fields": [
+        {
+          "id": "field_19_saas_tenant_provisioning_process_audit_tenant_events_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_audit_tenant_events_tenant_id",
+          "name": "tenant_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_audit_tenant_events_event_type",
+          "name": "event_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_audit_tenant_events_actor_id",
+          "name": "actor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_audit_tenant_events_metadata",
+          "name": "metadata",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        },
+        {
+          "id": "field_19_saas_tenant_provisioning_process_audit_tenant_events_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633797
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_19_saas_tenant_provisioning_process_audit_tenant_events_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_19_saas_tenant_provisioning_process_audit_tenant_events_id"
+          ],
+          "createdAt": 1778757633797,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 262,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633797,
+      "comments": "Safe SaaS event log for tenant lifecycle actions.",
+      "expanded": false,
+      "parentAreaId": "area_19_saas_tenant_provisioning_process_audit"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_0",
+      "name": "plan_entitlements_plan_code_plans_code",
+      "sourceSchema": "plans",
+      "targetSchema": "plans",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_plans_plan_entitlements",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_plans_plans",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_plans_plan_entitlements_plan_code",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_plans_plans_code",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_1",
+      "name": "tenant_entitlements_tenant_id_tenants_id",
+      "sourceSchema": "plans",
+      "targetSchema": "registry",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_plans_tenant_entitlements",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_registry_tenants",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_plans_tenant_entitlements_tenant_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_registry_tenants_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_2",
+      "name": "tenant_domains_tenant_id_tenants_id",
+      "sourceSchema": "registry",
+      "targetSchema": "registry",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_registry_tenant_domains",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_registry_tenants",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_registry_tenant_domains_tenant_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_registry_tenants_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_3",
+      "name": "provisioning_provider_connections_created_by_super_admins_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "security",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_security_super_admins",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_created_by",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_security_super_admins_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_4",
+      "name": "provisioning_provider_connections_updated_by_super_admins_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "security",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_security_super_admins",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_updated_by",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_security_super_admins_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_5",
+      "name": "tenant_provisioning_jobs_assigned_admin_id_super_admins_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "security",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_security_super_admins",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_assigned_admin_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_security_super_admins_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_6",
+      "name": "tenant_provisioning_jobs_tenant_id_tenants_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "registry",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_registry_tenants",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_tenant_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_registry_tenants_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_7",
+      "name": "tenant_provisioning_jobs_supabase_connection_id_provisioning_provider_connections_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "provisioning",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_supabase_connection_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_8",
+      "name": "tenant_provisioning_jobs_vercel_connection_id_provisioning_provider_connections_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "provisioning",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_vercel_connection_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_provisioning_provisioning_provider_connections_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_9",
+      "name": "tenant_provisioning_steps_provisioning_job_id_tenant_provisioning_jobs_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "provisioning",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_provisioning_job_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_jobs_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_10",
+      "name": "tenant_provisioning_steps_tenant_id_tenants_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "registry",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_registry_tenants",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_tenant_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_registry_tenants_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_11",
+      "name": "tenant_secret_refs_tenant_id_tenants_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "registry",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_registry_tenants",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_tenant_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_registry_tenants_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_12",
+      "name": "tenant_secret_refs_created_by_super_admins_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "security",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_security_super_admins",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_created_by",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_security_super_admins_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_13",
+      "name": "tenant_secret_refs_updated_by_super_admins_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "security",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_security_super_admins",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_secret_refs_updated_by",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_security_super_admins_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_14",
+      "name": "tenant_migration_runs_tenant_id_tenants_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "registry",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_registry_tenants",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_tenant_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_registry_tenants_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_15",
+      "name": "tenant_migration_runs_provisioning_step_id_tenant_provisioning_steps_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "provisioning",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_provisioning_step_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_provisioning_steps_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_16",
+      "name": "tenant_migration_runs_created_by_super_admins_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "security",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_security_super_admins",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_created_by",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_security_super_admins_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_17",
+      "name": "tenant_migration_items_run_id_tenant_migration_runs_id",
+      "sourceSchema": "provisioning",
+      "targetSchema": "provisioning",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_items_run_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_provisioning_tenant_migration_runs_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    },
+    {
+      "id": "rel_19_saas_tenant_provisioning_process_18",
+      "name": "tenant_events_tenant_id_tenants_id",
+      "sourceSchema": "audit",
+      "targetSchema": "registry",
+      "sourceTableId": "table_19_saas_tenant_provisioning_process_audit_tenant_events",
+      "targetTableId": "table_19_saas_tenant_provisioning_process_registry_tenants",
+      "sourceFieldId": "field_19_saas_tenant_provisioning_process_audit_tenant_events_tenant_id",
+      "targetFieldId": "field_19_saas_tenant_provisioning_process_registry_tenants_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633797
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_19_saas_tenant_provisioning_process_registry",
+      "name": "registry",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#4F46E5",
+      "order": 0
+    },
+    {
+      "id": "area_19_saas_tenant_provisioning_process_security",
+      "name": "security",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 754,
+      "color": "#E11D48",
+      "order": 1
+    },
+    {
+      "id": "area_19_saas_tenant_provisioning_process_plans",
+      "name": "plans",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 1176,
+      "color": "#16A34A",
+      "order": 2
+    },
+    {
+      "id": "area_19_saas_tenant_provisioning_process_provisioning",
+      "name": "provisioning",
+      "x": 1318,
+      "y": 190,
+      "width": 340,
+      "height": 2634,
+      "color": "#F97316",
+      "order": 3
+    },
+    {
+      "id": "area_19_saas_tenant_provisioning_process_audit",
+      "name": "audit",
+      "x": 1744,
+      "y": 190,
+      "width": 340,
+      "height": 364,
+      "color": "#64748B",
+      "order": 4
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_19_saas_tenant_provisioning_process_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_19_saas_tenant_provisioning_process_story",
+      "content": "admin runs provisioning job; steps create tenant, secrets, migrations, domains, and audit.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.797Z",
+  "updatedAt": "2026-05-14T11:20:33.797Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 2250,
+    "height": 2944
+  }
+}

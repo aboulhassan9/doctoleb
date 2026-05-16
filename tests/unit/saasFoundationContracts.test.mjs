@@ -434,7 +434,7 @@ describe('SaaS foundation contracts', () => {
     const upsert = read('supabase-control-plane/functions/admin-upsert-provider-connection/index.ts');
     const archive = read('supabase-control-plane/functions/admin-archive-provider-connection/index.ts');
     const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
-    const handoff = read('SAAS_FOUNDATION_PHASE_HANDOFF.md');
+    const context = read('docs/CORE_CONTEXT.md');
 
     assert.match(shared, /TOKENISH_SECRET = \/\(eyJ\|sbp_\|vcp_\|sk_live_\|sk_test_\)/);
     assert.match(shared, /EDGE_FUNCTION_SECRET_REF/);
@@ -462,7 +462,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(api, /admin-list-provider-connections/);
     assert.match(api, /admin-upsert-provider-connection/);
     assert.match(api, /admin-archive-provider-connection/);
-    assert.match(handoff, /Provider Connection Metadata APIs/);
+    assert.match(context, /Provider connections/);
+    assert.match(context, /raw provider tokens/);
   });
 
   it('tenant DB setup automation stores only secret references and records migration runs', () => {
@@ -859,7 +860,7 @@ describe('SaaS foundation contracts', () => {
     const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
     const consoleScreen = read('apps/control-plane/src/components/ConsoleScreen.jsx');
     const stepsPanel = read('apps/control-plane/src/components/ProvisioningStepsPanel.jsx');
-    const ledger = read('BACKEND_CONTRACT_LEDGER.md');
+    const context = read('docs/CORE_CONTEXT.md');
     const readme = read('supabase-control-plane/README.md');
 
     assert.match(resumeFunction, /requireSuperAdmin\(req, \['operator'\]\)/);
@@ -895,7 +896,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(stepsPanel, /Resume/);
     assert.match(stepsPanel, /Continue setup/);
     assert.match(readme, /admin-resume-provisioning-job/);
-    assert.match(ledger, /Cancelled jobs stay terminal for audit/);
+    assert.match(context, /Cancelled provisioning jobs stay terminal for audit/);
   });
 
   it('provisioning UI orders steps, locks future actions, and guides missing tenant service secrets', () => {
@@ -1304,7 +1305,7 @@ describe('SaaS foundation contracts', () => {
     const triggerRevoke = read('supabase/migrations/20260509015000_staff_lifecycle_trigger_execute_revoke.sql');
     const edgeFunction = read('supabase/functions/staff-invite/index.ts');
     const disableFunction = read('supabase/functions/staff-member-disable/index.ts');
-    const ledger = read('BACKEND_CONTRACT_LEDGER.md');
+    const context = read('docs/CORE_CONTEXT.md');
 
     assert.match(schemas, /export const staffInviteSchema/);
     assert.match(schemas, /export const staffMemberUpdateSchema/);
@@ -1358,8 +1359,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(disableFunction, /previous_invite_status !== 'accepted'/);
     assert.match(disableFunction, /deleteUser\(authUserId, true\)/);
     assert.match(disableFunction, /ORIGIN_NOT_ALLOWED/);
-    assert.match(ledger, /staff-invite/);
-    assert.match(ledger, /staff-member-disable/);
+    assert.match(context, /staff-invite/);
+    assert.match(context, /staff-member-disable/);
     assert.equal(fs.existsSync(path.join(root, 'supabase/functions/staff-invite-cancel/index.ts')), false);
   });
 
@@ -1371,8 +1372,7 @@ describe('SaaS foundation contracts', () => {
     const migration = read('supabase/migrations/20260509030000_staff_invite_resend_lifecycle.sql');
     const edgeFunction = read('supabase/functions/staff-invite-resend/index.ts');
     const functionsReadme = read('supabase/functions/README.md');
-    const ledger = read('BACKEND_CONTRACT_LEDGER.md');
-    const gapReview = read('DESIGN_CODE_SECURITY_GAP_REVIEW_20260509.md');
+    const context = read('docs/CORE_CONTEXT.md');
 
     assert.match(migration, /create table if not exists public\.staff_invite_resend_events/);
     assert.match(migration, /client_request_id uuid not null/);
@@ -1417,10 +1417,8 @@ describe('SaaS foundation contracts', () => {
     assert.doesNotMatch(page, /from\('staff_members'\)/);
 
     assert.match(functionsReadme, /staff-invite-resend/);
-    assert.match(ledger, /staffService\.resendInvite/);
-    assert.match(ledger, /staff-invite-resend/);
-    assert.match(gapReview, /FIX-022/);
-    assert.match(gapReview, /Resend invite/);
+    assert.match(context, /staff-invite-resend/);
+    assert.match(context, /server-owned and undoable/);
   });
 
   it('accepted staff reactivation is an undoable server-owned lifecycle', () => {
@@ -1431,8 +1429,7 @@ describe('SaaS foundation contracts', () => {
     const migration = read('supabase/migrations/20260509031000_staff_member_reactivation_lifecycle.sql');
     const edgeFunction = read('supabase/functions/staff-member-reactivate/index.ts');
     const functionsReadme = read('supabase/functions/README.md');
-    const ledger = read('BACKEND_CONTRACT_LEDGER.md');
-    const gapReview = read('DESIGN_CODE_SECURITY_GAP_REVIEW_20260509.md');
+    const context = read('docs/CORE_CONTEXT.md');
 
     assert.match(migration, /reactivated_at timestamptz/);
     assert.match(migration, /reactivated_by uuid references public\.users\(id\)/);
@@ -1469,10 +1466,8 @@ describe('SaaS foundation contracts', () => {
     assert.doesNotMatch(page, /from\('staff_members'\)/);
 
     assert.match(functionsReadme, /staff-member-reactivate/);
-    assert.match(ledger, /staffService\.reactivate/);
-    assert.match(ledger, /staff-member-reactivate/);
-    assert.match(gapReview, /FIX-023/);
-    assert.match(gapReview, /reactivation/);
+    assert.match(context, /staff-member-reactivate/);
+    assert.match(context, /server-owned and undoable/);
   });
 
   it('cancelled pending staff invite reissue is idempotent, auditable, and server-owned', () => {
@@ -1760,22 +1755,20 @@ describe('SaaS foundation contracts', () => {
     assert.match(helper, /assertNoRuntimeIssues/);
   });
 
-  it('next phase backlog separates code-owned flow proof from manual provider blockers', () => {
-    const backlog = read('docs/operations/NEXT_PHASE_FLOW_PROOF_BACKLOG_20260509.md');
-    const runbook = read('docs/operations/PRODUCTION_FLOW_PROOF_RUNBOOK_20260509.md');
+  it('core context separates current work from manual provider blockers', () => {
+    const context = read('docs/CORE_CONTEXT.md');
+    const graduationGuide = read('docs/graduation/README.md');
+    const erdGuide = read('docs/graduation/06-erd-and-data-model.md');
 
-    assert.match(backlog, /Execution Band 1 - Prove CI And Deployed Flow Gates/);
-    assert.match(backlog, /Execution Band 2 - Turn Read-Only Smoke Into Reversible Mutation Proof/);
-    assert.match(backlog, /FLOW_SMOKE_MUTATE_STAFF=true/);
-    assert.match(backlog, /FLOW_SMOKE_MUTATE_CONTROL_PLANE=true/);
-    assert.match(backlog, /FLOW_SMOKE_MUTATE_APPOINTMENTS=true/);
-    assert.match(backlog, /No PHI in the control plane/);
-    assert.match(backlog, /Manual Blockers/);
-    assert.match(backlog, /not replace this with a live tenant DB URL/);
-    assert.match(read('docs/operations/PRODUCTION_FLOW_PROOF_RUNBOOK_20260509.md'), /disposable local Supabase stack/);
-    assert.match(backlog, /Supabase leaked-password protection/);
-    assert.match(backlog, /Large-File Cleanup After Browser Baselines/);
-    assert.match(runbook, /NEXT_PHASE_FLOW_PROOF_BACKLOG_20260509\.md/);
+    assert.match(context, /Current Risk Areas/);
+    assert.match(context, /Tenant DB setup automation/);
+    assert.match(context, /Feature gating/);
+    assert.match(context, /Manual provider blockers/);
+    assert.match(context, /real SMTP\/provider configuration/i);
+    assert.match(context, /Stripe, Firebase FCM, Flutter, LiveKit, and AI agents are planned/);
+    assert.match(context, /Do not recreate old tier plans/);
+    assert.match(graduationGuide, /Do not include old tier plans/);
+    assert.match(erdGuide, /focused feature ERDs/);
   });
 
   it('control-plane rate limiting stores only hashed zero-PHI Edge buckets', () => {

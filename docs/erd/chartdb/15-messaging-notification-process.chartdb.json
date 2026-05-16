@@ -1,0 +1,2544 @@
+{
+  "id": "diagram_15_messaging_notification_process",
+  "name": "DoctoLeb Messaging And Notification Process ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_15_messaging_notification_process_identity_users",
+      "name": "users",
+      "schema": "identity",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_identity_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_email",
+          "name": "email",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_role",
+          "name": "role",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_first_name",
+          "name": "first_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_last_name",
+          "name": "last_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_phone",
+          "name": "phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_avatar_url",
+          "name": "avatar_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_initials",
+          "name": "initials",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "5"
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_users_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_identity_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_identity_users_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Application identity and role profile.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_identity"
+    },
+    {
+      "id": "table_15_messaging_notification_process_identity_staff_members",
+      "name": "staff_members",
+      "schema": "identity",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_role",
+          "name": "role",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_invite_status",
+          "name": "invite_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_reports_to",
+          "name": "reports_to",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_hire_date",
+          "name": "hire_date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_invite_client_request_id",
+          "name": "invite_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_disabled_at",
+          "name": "disabled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_disabled_by",
+          "name": "disabled_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_disabled_previous_invite_status",
+          "name": "disabled_previous_invite_status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_invite_resent_at",
+          "name": "invite_resent_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_invite_resent_by",
+          "name": "invite_resent_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_invite_resend_count",
+          "name": "invite_resend_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_reactivated_at",
+          "name": "reactivated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_reactivated_by",
+          "name": "reactivated_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_reactivation_count",
+          "name": "reactivation_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_invite_reissued_at",
+          "name": "invite_reissued_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_invite_reissued_by",
+          "name": "invite_reissued_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_identity_staff_members_invite_reissue_count",
+          "name": "invite_reissue_count",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_identity_staff_members_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_identity_staff_members_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 684,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Staff seat, role, and lifecycle state.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_identity"
+    },
+    {
+      "id": "table_15_messaging_notification_process_patient_record_patients",
+      "name": "patients",
+      "schema": "patient_record",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_date_of_birth",
+          "name": "date_of_birth",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_sex",
+          "name": "sex",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_blood_type",
+          "name": "blood_type",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_medical_history",
+          "name": "medical_history",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_emergency_contact",
+          "name": "emergency_contact",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_emergency_phone",
+          "name": "emergency_phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_insurance_id",
+          "name": "insurance_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_intake_completed_at",
+          "name": "intake_completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_established_at",
+          "name": "established_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_full_name",
+          "name": "full_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patients_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_patient_record_patients_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_patient_record_patients_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Clinical patient profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_patient_record"
+    },
+    {
+      "id": "table_15_messaging_notification_process_patient_record_patient_devices",
+      "name": "patient_devices",
+      "schema": "patient_record",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_platform",
+          "name": "platform",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_push_token",
+          "name": "push_token",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_device_label",
+          "name": "device_label",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_app_version",
+          "name": "app_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_locale",
+          "name": "locale",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_timezone",
+          "name": "timezone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_last_seen_at",
+          "name": "last_seen_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_patient_record_patient_devices_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_patient_record_patient_devices_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_patient_record_patient_devices_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 684,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Patient device used for push delivery.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_patient_record"
+    },
+    {
+      "id": "table_15_messaging_notification_process_messaging_conversations",
+      "name": "conversations",
+      "schema": "messaging",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_subject",
+          "name": "subject",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_conversation_type",
+          "name": "conversation_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_closed_at",
+          "name": "closed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversations_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_messaging_conversations_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_messaging_conversations_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Message thread between patient and clinic users.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_messaging"
+    },
+    {
+      "id": "table_15_messaging_notification_process_messaging_conversation_participants",
+      "name": "conversation_participants",
+      "schema": "messaging",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_conversation_id",
+          "name": "conversation_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_staff_member_id",
+          "name": "staff_member_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_role",
+          "name": "role",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_last_read_at",
+          "name": "last_read_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_conversation_participants_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_messaging_conversation_participants_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_messaging_conversation_participants_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 684,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Users included in a conversation.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_messaging"
+    },
+    {
+      "id": "table_15_messaging_notification_process_messaging_messages",
+      "name": "messages",
+      "schema": "messaging",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_conversation_id",
+          "name": "conversation_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_sender_user_id",
+          "name": "sender_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_sender_patient_id",
+          "name": "sender_patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_body",
+          "name": "body",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_message_type",
+          "name": "message_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_is_internal",
+          "name": "is_internal",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_edited_at",
+          "name": "edited_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_deleted_at",
+          "name": "deleted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_redacted_at",
+          "name": "redacted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_messages_redacted_by",
+          "name": "redacted_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_messaging_messages_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_messaging_messages_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 1074,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Individual message content and sender.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_messaging"
+    },
+    {
+      "id": "table_15_messaging_notification_process_messaging_message_attachments",
+      "name": "message_attachments",
+      "schema": "messaging",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_message_id",
+          "name": "message_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_uploaded_by",
+          "name": "uploaded_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_file_url",
+          "name": "file_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_file_name",
+          "name": "file_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_mime_type",
+          "name": "mime_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_file_size_bytes",
+          "name": "file_size_bytes",
+          "type": {
+            "id": "bigint",
+            "name": "bigint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_storage_bucket",
+          "name": "storage_bucket",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_storage_path",
+          "name": "storage_path",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_attachments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_messaging_message_attachments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_messaging_message_attachments_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 1496,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Files attached to a message.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_messaging"
+    },
+    {
+      "id": "table_15_messaging_notification_process_messaging_message_read_receipts",
+      "name": "message_read_receipts",
+      "schema": "messaging",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_read_receipts_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_read_receipts_message_id",
+          "name": "message_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_read_receipts_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_read_receipts_read_at",
+          "name": "read_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_message_read_receipts_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_messaging_message_read_receipts_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_messaging_message_read_receipts_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 1918,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Read state for each message recipient.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_messaging"
+    },
+    {
+      "id": "table_15_messaging_notification_process_messaging_notification_events",
+      "name": "notification_events",
+      "schema": "messaging",
+      "order": 9,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_body",
+          "name": "body",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_event_type",
+          "name": "event_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_related_type",
+          "name": "related_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_related_id",
+          "name": "related_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_severity",
+          "name": "severity",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_scheduled_for",
+          "name": "scheduled_for",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_events_source",
+          "name": "source",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_messaging_notification_events_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_messaging_notification_events_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 2148,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Notification request before delivery.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_messaging"
+    },
+    {
+      "id": "table_15_messaging_notification_process_messaging_notification_deliveries",
+      "name": "notification_deliveries",
+      "schema": "messaging",
+      "order": 10,
+      "fields": [
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_event_id",
+          "name": "event_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_device_id",
+          "name": "device_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_channel",
+          "name": "channel",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_provider_message_id",
+          "name": "provider_message_id",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_error_message",
+          "name": "error_message",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_sent_at",
+          "name": "sent_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_read_at",
+          "name": "read_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633781
+        },
+        {
+          "id": "field_15_messaging_notification_process_messaging_notification_deliveries_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633781
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_15_messaging_notification_process_messaging_notification_deliveries_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_15_messaging_notification_process_messaging_notification_deliveries_id"
+          ],
+          "createdAt": 1778757633781,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 2570,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633781,
+      "comments": "Delivery attempt for a notification event.",
+      "expanded": false,
+      "parentAreaId": "area_15_messaging_notification_process_messaging"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_15_messaging_notification_process_0",
+      "name": "staff_members_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_identity_staff_members",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_identity_staff_members_user_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_1",
+      "name": "patients_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_patient_record_patients",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_patient_record_patients_user_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_2",
+      "name": "conversations_patient_id_patients_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_conversations",
+      "targetTableId": "table_15_messaging_notification_process_patient_record_patients",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_conversations_patient_id",
+      "targetFieldId": "field_15_messaging_notification_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_3",
+      "name": "conversations_created_by_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_conversations",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_conversations_created_by",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_4",
+      "name": "conversation_participants_conversation_id_conversations_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "messaging",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_conversation_participants",
+      "targetTableId": "table_15_messaging_notification_process_messaging_conversations",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_conversation_participants_conversation_id",
+      "targetFieldId": "field_15_messaging_notification_process_messaging_conversations_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_5",
+      "name": "conversation_participants_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_conversation_participants",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_conversation_participants_user_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_6",
+      "name": "conversation_participants_staff_member_id_staff_members_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_conversation_participants",
+      "targetTableId": "table_15_messaging_notification_process_identity_staff_members",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_conversation_participants_staff_member_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_staff_members_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_7",
+      "name": "conversation_participants_patient_id_patients_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_conversation_participants",
+      "targetTableId": "table_15_messaging_notification_process_patient_record_patients",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_conversation_participants_patient_id",
+      "targetFieldId": "field_15_messaging_notification_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_8",
+      "name": "messages_conversation_id_conversations_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "messaging",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_messages",
+      "targetTableId": "table_15_messaging_notification_process_messaging_conversations",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_messages_conversation_id",
+      "targetFieldId": "field_15_messaging_notification_process_messaging_conversations_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_9",
+      "name": "messages_sender_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_messages",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_messages_sender_user_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_10",
+      "name": "messages_sender_patient_id_patients_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_messages",
+      "targetTableId": "table_15_messaging_notification_process_patient_record_patients",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_messages_sender_patient_id",
+      "targetFieldId": "field_15_messaging_notification_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_11",
+      "name": "messages_redacted_by_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_messages",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_messages_redacted_by",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_12",
+      "name": "message_attachments_message_id_messages_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "messaging",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_message_attachments",
+      "targetTableId": "table_15_messaging_notification_process_messaging_messages",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_message_attachments_message_id",
+      "targetFieldId": "field_15_messaging_notification_process_messaging_messages_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_13",
+      "name": "message_attachments_uploaded_by_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_message_attachments",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_message_attachments_uploaded_by",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_14",
+      "name": "message_read_receipts_message_id_messages_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "messaging",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_message_read_receipts",
+      "targetTableId": "table_15_messaging_notification_process_messaging_messages",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_message_read_receipts_message_id",
+      "targetFieldId": "field_15_messaging_notification_process_messaging_messages_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_15",
+      "name": "message_read_receipts_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_message_read_receipts",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_message_read_receipts_user_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_16",
+      "name": "patient_devices_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_15_messaging_notification_process_patient_record_patient_devices",
+      "targetTableId": "table_15_messaging_notification_process_patient_record_patients",
+      "sourceFieldId": "field_15_messaging_notification_process_patient_record_patient_devices_patient_id",
+      "targetFieldId": "field_15_messaging_notification_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_17",
+      "name": "patient_devices_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_patient_record_patient_devices",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_patient_record_patient_devices_user_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_18",
+      "name": "notification_events_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_notification_events",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_notification_events_user_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_19",
+      "name": "notification_events_patient_id_patients_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_notification_events",
+      "targetTableId": "table_15_messaging_notification_process_patient_record_patients",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_notification_events_patient_id",
+      "targetFieldId": "field_15_messaging_notification_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_20",
+      "name": "notification_events_created_by_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_notification_events",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_notification_events_created_by",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_21",
+      "name": "notification_deliveries_event_id_notification_events_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "messaging",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_notification_deliveries",
+      "targetTableId": "table_15_messaging_notification_process_messaging_notification_events",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_notification_deliveries_event_id",
+      "targetFieldId": "field_15_messaging_notification_process_messaging_notification_events_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_22",
+      "name": "notification_deliveries_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_notification_deliveries",
+      "targetTableId": "table_15_messaging_notification_process_identity_users",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_notification_deliveries_user_id",
+      "targetFieldId": "field_15_messaging_notification_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    },
+    {
+      "id": "rel_15_messaging_notification_process_23",
+      "name": "notification_deliveries_device_id_patient_devices_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_15_messaging_notification_process_messaging_notification_deliveries",
+      "targetTableId": "table_15_messaging_notification_process_patient_record_patient_devices",
+      "sourceFieldId": "field_15_messaging_notification_process_messaging_notification_deliveries_device_id",
+      "targetFieldId": "field_15_messaging_notification_process_patient_record_patient_devices_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633781
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_15_messaging_notification_process_identity",
+      "name": "identity",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#2563EB",
+      "order": 0
+    },
+    {
+      "id": "area_15_messaging_notification_process_patient_record",
+      "name": "patient_record",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#0D9488",
+      "order": 1
+    },
+    {
+      "id": "area_15_messaging_notification_process_messaging",
+      "name": "messaging",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 2832,
+      "color": "#DB2777",
+      "order": 2
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_15_messaging_notification_process_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_15_messaging_notification_process_story",
+      "content": "conversation has participants; messages create attachments, receipts, events, and deliveries.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.781Z",
+  "updatedAt": "2026-05-14T11:20:33.781Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 1398,
+    "height": 3142
+  }
+}

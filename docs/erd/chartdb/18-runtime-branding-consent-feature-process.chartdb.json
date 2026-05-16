@@ -1,0 +1,2434 @@
+{
+  "id": "diagram_18_runtime_branding_consent_feature_process",
+  "name": "DoctoLeb Runtime Branding Consent Feature Process ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_control_plane_registry_tenants",
+      "name": "registry.tenants",
+      "schema": "control_plane",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_slug",
+          "name": "slug",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_plan",
+          "name": "plan",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_release_channel",
+          "name": "release_channel",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_supabase_project_ref",
+          "name": "supabase_project_ref",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_supabase_url",
+          "name": "supabase_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_supabase_anon_key",
+          "name": "supabase_anon_key",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_schema_version",
+          "name": "schema_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_control_plane_registry_tenants_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#0891B2",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Zero-PHI tenant registry entry.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_control_plane"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_control_plane_plans_plans",
+      "name": "plans.plans",
+      "schema": "control_plane",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_billing_mode",
+          "name": "billing_mode",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_price_label",
+          "name": "price_label",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_stripe_product_lookup_key",
+          "name": "stripe_product_lookup_key",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_sort_order",
+          "name": "sort_order",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_control_plane_plans_plans_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_control_plane_plans_plans_code"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 684,
+      "width": 260,
+      "color": "#0891B2",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "SaaS subscription plan definitions.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_control_plane"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements",
+      "name": "plans.plan_entitlements",
+      "schema": "control_plane",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_plan_code",
+          "name": "plan_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_feature_code",
+          "name": "feature_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_is_enabled",
+          "name": "is_enabled",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_limits",
+          "name": "limits",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_control_plane_plans_plan_entitlements_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1074,
+      "width": 260,
+      "color": "#0891B2",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Feature defaults included in a SaaS plan.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_control_plane"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements",
+      "name": "plans.tenant_entitlements",
+      "schema": "control_plane",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_tenant_id",
+          "name": "tenant_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_feature_code",
+          "name": "feature_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_source",
+          "name": "source",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_is_enabled",
+          "name": "is_enabled",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_limits",
+          "name": "limits",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_reason",
+          "name": "reason",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_expires_at",
+          "name": "expires_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_control_plane_plans_tenant_entitlements_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1368,
+      "width": 260,
+      "color": "#0891B2",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Feature overrides granted to one tenant.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_control_plane"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_identity_users",
+      "name": "users",
+      "schema": "identity",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_email",
+          "name": "email",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_role",
+          "name": "role",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_first_name",
+          "name": "first_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_last_name",
+          "name": "last_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_phone",
+          "name": "phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_avatar_url",
+          "name": "avatar_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_initials",
+          "name": "initials",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "5"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_users_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_identity_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_identity_users_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Application identity and role profile.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_identity"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_identity_doctors",
+      "name": "doctors",
+      "schema": "identity",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_department",
+          "name": "department",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_specialization",
+          "name": "specialization",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_license_number",
+          "name": "license_number",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_bio",
+          "name": "bio",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_availability",
+          "name": "availability",
+          "type": {
+            "id": "json",
+            "name": "json"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_consultation_fee",
+          "name": "consultation_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_identity_doctors_provisioning_client_request_id",
+          "name": "provisioning_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_identity_doctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_identity_doctors_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 684,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Doctor/provider profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_identity"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_patient_record_patients",
+      "name": "patients",
+      "schema": "patient_record",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_date_of_birth",
+          "name": "date_of_birth",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_sex",
+          "name": "sex",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_blood_type",
+          "name": "blood_type",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_medical_history",
+          "name": "medical_history",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_emergency_contact",
+          "name": "emergency_contact",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_emergency_phone",
+          "name": "emergency_phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_insurance_id",
+          "name": "insurance_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_intake_completed_at",
+          "name": "intake_completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_established_at",
+          "name": "established_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_full_name",
+          "name": "full_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patients_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_patient_record_patients_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_patient_record_patients_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Clinical patient profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_patient_record"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_patient_record_patient_consents",
+      "name": "patient_consents",
+      "schema": "patient_record",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_consent_document_id",
+          "name": "consent_document_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_accepted_by_user_id",
+          "name": "accepted_by_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_accepted_at",
+          "name": "accepted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_revoked_at",
+          "name": "revoked_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_ip_address",
+          "name": "ip_address",
+          "type": {
+            "id": "inet",
+            "name": "inet"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_user_agent",
+          "name": "user_agent",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_acceptance_method",
+          "name": "acceptance_method",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_patient_record_patient_consents_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 684,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Patient acceptance of consent documents.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_patient_record"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_runtime_tenant_profile",
+      "name": "tenant_profile",
+      "schema": "runtime",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_tenant_slug",
+          "name": "tenant_slug",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_display_name",
+          "name": "display_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_timezone",
+          "name": "timezone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_default_locale",
+          "name": "default_locale",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_schema_version",
+          "name": "schema_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_runtime_tenant_profile_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 262,
+      "width": 260,
+      "color": "#7C3AED",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Tenant clinic identity and public profile.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_runtime"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_runtime_tenant_app_config",
+      "name": "tenant_app_config",
+      "schema": "runtime",
+      "order": 9,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_profile_id",
+          "name": "profile_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_app_name",
+          "name": "app_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_app_tagline",
+          "name": "app_tagline",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_splash_logo_url",
+          "name": "splash_logo_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_icon_url",
+          "name": "icon_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_primary_color",
+          "name": "primary_color",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_secondary_color",
+          "name": "secondary_color",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_maintenance_message",
+          "name": "maintenance_message",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_min_supported_version",
+          "name": "min_supported_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_force_update_version",
+          "name": "force_update_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_enabled_locales",
+          "name": "enabled_locales",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_support_phone",
+          "name": "support_phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_support_email",
+          "name": "support_email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 652,
+      "width": 260,
+      "color": "#7C3AED",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Runtime app branding and behavior config.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_runtime"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_runtime_feature_flags",
+      "name": "feature_flags",
+      "schema": "runtime",
+      "order": 10,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_is_enabled",
+          "name": "is_enabled",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_target_roles",
+          "name": "target_roles",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_target_platforms",
+          "name": "target_platforms",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_config",
+          "name": "config",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_audience",
+          "name": "audience",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_runtime_feature_flags_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_runtime_feature_flags_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1074,
+      "width": 260,
+      "color": "#7C3AED",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Runtime feature switch for the tenant app.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_runtime"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_runtime_content_pages",
+      "name": "content_pages",
+      "schema": "runtime",
+      "order": 11,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_slug",
+          "name": "slug",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_body_md",
+          "name": "body_md",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_audience",
+          "name": "audience",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_published_at",
+          "name": "published_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_runtime_content_pages_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_runtime_content_pages_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1496,
+      "width": 260,
+      "color": "#7C3AED",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Tenant-specific public content page.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_runtime"
+    },
+    {
+      "id": "table_18_runtime_branding_consent_feature_process_runtime_consent_documents",
+      "name": "consent_documents",
+      "schema": "runtime",
+      "order": 12,
+      "fields": [
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_body_md",
+          "name": "body_md",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_version",
+          "name": "version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_audience",
+          "name": "audience",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_is_required",
+          "name": "is_required",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_published_at",
+          "name": "published_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        },
+        {
+          "id": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633793
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_18_runtime_branding_consent_feature_process_runtime_consent_documents_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_id"
+          ],
+          "createdAt": 1778757633793,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1886,
+      "width": 260,
+      "color": "#7C3AED",
+      "isView": false,
+      "createdAt": 1778757633793,
+      "comments": "Consent document shown to patients.",
+      "expanded": false,
+      "parentAreaId": "area_18_runtime_branding_consent_feature_process_runtime"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_0",
+      "name": "doctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_identity_doctors",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_identity_users",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_identity_doctors_user_id",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    },
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_1",
+      "name": "patients_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_patient_record_patients",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_identity_users",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_patient_record_patients_user_id",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    },
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_2",
+      "name": "tenant_profile_doctor_id_doctors_id",
+      "sourceSchema": "runtime",
+      "targetSchema": "identity",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_runtime_tenant_profile",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_identity_doctors",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_doctor_id",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    },
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_3",
+      "name": "tenant_app_config_profile_id_tenant_profile_id",
+      "sourceSchema": "runtime",
+      "targetSchema": "runtime",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_runtime_tenant_app_config",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_runtime_tenant_profile",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_runtime_tenant_app_config_profile_id",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_runtime_tenant_profile_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    },
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_4",
+      "name": "content_pages_created_by_users_id",
+      "sourceSchema": "runtime",
+      "targetSchema": "identity",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_runtime_content_pages",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_identity_users",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_runtime_content_pages_created_by",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    },
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_5",
+      "name": "consent_documents_created_by_users_id",
+      "sourceSchema": "runtime",
+      "targetSchema": "identity",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_runtime_consent_documents",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_identity_users",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_created_by",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    },
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_6",
+      "name": "patient_consents_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_patient_record_patient_consents",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_patient_record_patients",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_patient_id",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    },
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_7",
+      "name": "patient_consents_consent_document_id_consent_documents_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "runtime",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_patient_record_patient_consents",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_runtime_consent_documents",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_consent_document_id",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_runtime_consent_documents_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    },
+    {
+      "id": "rel_18_runtime_branding_consent_feature_process_8",
+      "name": "patient_consents_accepted_by_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_18_runtime_branding_consent_feature_process_patient_record_patient_consents",
+      "targetTableId": "table_18_runtime_branding_consent_feature_process_identity_users",
+      "sourceFieldId": "field_18_runtime_branding_consent_feature_process_patient_record_patient_consents_accepted_by_user_id",
+      "targetFieldId": "field_18_runtime_branding_consent_feature_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633793
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_18_runtime_branding_consent_feature_process_control_plane",
+      "name": "control_plane",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 1598,
+      "color": "#0891B2",
+      "order": 0
+    },
+    {
+      "id": "area_18_runtime_branding_consent_feature_process_identity",
+      "name": "identity",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#2563EB",
+      "order": 1
+    },
+    {
+      "id": "area_18_runtime_branding_consent_feature_process_patient_record",
+      "name": "patient_record",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#0D9488",
+      "order": 2
+    },
+    {
+      "id": "area_18_runtime_branding_consent_feature_process_runtime",
+      "name": "runtime",
+      "x": 1318,
+      "y": 190,
+      "width": 340,
+      "height": 2148,
+      "color": "#7C3AED",
+      "order": 3
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_18_runtime_branding_consent_feature_process_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_18_runtime_branding_consent_feature_process_story",
+      "content": "tenant plan enables runtime config; patients accept tenant consent documents.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.793Z",
+  "updatedAt": "2026-05-14T11:20:33.793Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 1824,
+    "height": 2458
+  }
+}

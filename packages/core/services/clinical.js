@@ -333,6 +333,39 @@ export const clinicalService = {
     return apiPaged(query, { page, pageSize });
   },
 
+  /**
+   * Update a single prescription row. Used (today) by the
+   * useEncounterPrescriptions back-link path that connects a just-saved
+   * free-text prescription to the medication_catalog row the auto-grow
+   * RPC minted. The patch is narrow on purpose — we never want this to
+   * become a write-anywhere hatch.
+   */
+  async updatePrescription(id, patch) {
+    if (!id) return validationError('Prescription id is required.');
+    if (!patch || typeof patch !== 'object') return validationError('Patch object is required.');
+
+    // Closed-set of fields callers may patch through this method. Status
+    // transitions, dosage edits, etc. should go through dedicated state-
+    // machine methods — not this generic update.
+    const ALLOWED = ['medication_catalog_id'];
+    const filtered = {};
+    for (const key of ALLOWED) {
+      if (key in patch) filtered[key] = patch[key];
+    }
+    if (Object.keys(filtered).length === 0) {
+      return validationError('No allowed fields in patch.');
+    }
+
+    return apiCall(
+      supabase
+        .from('prescriptions')
+        .update(filtered)
+        .eq('id', id)
+        .select(PRESCRIPTION_SELECT_FIELDS)
+        .single()
+    );
+  },
+
   async createOrder(kind, payload) {
     const config = getOrderConfig(kind);
     if (!payload?.[config.requiredField]) {

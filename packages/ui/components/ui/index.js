@@ -15,3 +15,5 @@ export { default as TopBar } from './TopBar';
 export { default as DatePickerInput } from './DatePickerInput';
 export { default as PhoneInput } from './PhoneInput';
 export { default as SearchableSelect } from './SearchableSelect';
+export { default as ChartRenderer } from './ChartRenderer';
+export { default as ChartErrorBoundary } from './ChartErrorBoundary';

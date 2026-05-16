@@ -9,6 +9,7 @@ const FEATURE_ROUTE_RULES = Object.freeze([
   { path: '/secretary-insurance-providers', featureCode: ENTITLEMENT_FEATURES.insuranceBilling },
   { path: '/secretary-claim-templates', featureCode: ENTITLEMENT_FEATURES.insuranceBilling },
   { prefix: '/secretary-patient-insurance', featureCode: ENTITLEMENT_FEATURES.insuranceBilling },
+  { prefix: '/templates', featureCode: ENTITLEMENT_FEATURES.templatesEngine },
 ]);
 
 function normalizePathname(value) {

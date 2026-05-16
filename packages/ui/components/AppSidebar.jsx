@@ -26,6 +26,8 @@ const ROLE_CONFIG = {
       { icon: 'outbound',       label: 'Referrals',    path: '/doctor-referrals'         },
       { icon: 'verified_user',  label: 'Certificates', path: '/doctor-certificates'      },
       { icon: 'science',        label: 'Catalogs',     path: '/doctor-clinical-catalogs' },
+      { icon: 'article',        label: 'Templates',    path: '/templates'                },
+      { icon: 'analytics',      label: 'Analytics',    path: '/reports'                  },
       { icon: 'receipt_long',    label: 'Claims',       path: '/doctor-claims'            },
       { icon: 'settings',       label: 'Settings',     path: '/doctor-tenant-settings'   },
     ],

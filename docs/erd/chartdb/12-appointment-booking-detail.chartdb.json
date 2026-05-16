@@ -1,0 +1,3396 @@
+{
+  "id": "diagram_12_appointment_booking_detail",
+  "name": "DoctoLeb Appointment Booking Detail ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_12_appointment_booking_detail_identity_users",
+      "name": "users",
+      "schema": "identity",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_email",
+          "name": "email",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_role",
+          "name": "role",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_first_name",
+          "name": "first_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_last_name",
+          "name": "last_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_phone",
+          "name": "phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_avatar_url",
+          "name": "avatar_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_initials",
+          "name": "initials",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "5"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_users_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_identity_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_identity_users_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Application identity and role profile.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_identity"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_identity_doctors",
+      "name": "doctors",
+      "schema": "identity",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_department",
+          "name": "department",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_specialization",
+          "name": "specialization",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_license_number",
+          "name": "license_number",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_bio",
+          "name": "bio",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_availability",
+          "name": "availability",
+          "type": {
+            "id": "json",
+            "name": "json"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_consultation_fee",
+          "name": "consultation_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_identity_doctors_provisioning_client_request_id",
+          "name": "provisioning_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_identity_doctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_identity_doctors_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 684,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Doctor/provider profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_identity"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_patient_record_patients",
+      "name": "patients",
+      "schema": "patient_record",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_date_of_birth",
+          "name": "date_of_birth",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_sex",
+          "name": "sex",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_blood_type",
+          "name": "blood_type",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_medical_history",
+          "name": "medical_history",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_emergency_contact",
+          "name": "emergency_contact",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_emergency_phone",
+          "name": "emergency_phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_insurance_id",
+          "name": "insurance_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_intake_completed_at",
+          "name": "intake_completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_established_at",
+          "name": "established_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_full_name",
+          "name": "full_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patients_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_patient_record_patients_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_patient_record_patients_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Clinical patient profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_patient_record"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_patient_record_patient_devices",
+      "name": "patient_devices",
+      "schema": "patient_record",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_platform",
+          "name": "platform",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_push_token",
+          "name": "push_token",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_device_label",
+          "name": "device_label",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_app_version",
+          "name": "app_version",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_locale",
+          "name": "locale",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_timezone",
+          "name": "timezone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_last_seen_at",
+          "name": "last_seen_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_patient_record_patient_devices_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_patient_record_patient_devices_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_patient_record_patient_devices_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 684,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Patient device used for push delivery.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_patient_record"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_reference_visit_types",
+      "name": "visit_types",
+      "schema": "reference",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_default_duration_minutes",
+          "name": "default_duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_default_fee",
+          "name": "default_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_requires_intake",
+          "name": "requires_intake",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_billable_service_id",
+          "name": "billable_service_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_reference_visit_types_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_reference_visit_types_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_reference_visit_types_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Visit type, duration, and billing defaults.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_reference"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_scheduling_clinics",
+      "name": "clinics",
+      "schema": "scheduling",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_address",
+          "name": "address",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_location_type",
+          "name": "location_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_city_id",
+          "name": "city_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_working_hours",
+          "name": "working_hours",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_is_primary",
+          "name": "is_primary",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_latitude",
+          "name": "latitude",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "precision": 10,
+          "scale": 7
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_longitude",
+          "name": "longitude",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "precision": 10,
+          "scale": 7
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_map_url",
+          "name": "map_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_floor",
+          "name": "floor",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_room",
+          "name": "room",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_clinics_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_scheduling_clinics_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_scheduling_clinics_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 262,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Clinic location where visits happen.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_scheduling"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_scheduling_doctor_schedule_templates",
+      "name": "doctor_schedule_templates",
+      "schema": "scheduling",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_weekday",
+          "name": "weekday",
+          "type": {
+            "id": "smallint",
+            "name": "smallint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_start_time",
+          "name": "start_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_end_time",
+          "name": "end_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_slot_duration_minutes",
+          "name": "slot_duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_effective_from",
+          "name": "effective_from",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_effective_to",
+          "name": "effective_to",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_scheduling_doctor_schedule_templates_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 684,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Recurring doctor availability pattern.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_scheduling"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_scheduling_secretary_slots",
+      "name": "secretary_slots",
+      "schema": "scheduling",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_date",
+          "name": "date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_start_time",
+          "name": "start_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_end_time",
+          "name": "end_time",
+          "type": {
+            "id": "time",
+            "name": "time"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_recurrence_group_id",
+          "name": "recurrence_group_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_secretary_slots_schedule_template_id",
+          "name": "schedule_template_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_scheduling_secretary_slots_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_scheduling_secretary_slots_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1106,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Bookable slot created from schedule or staff.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_scheduling"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_scheduling_appointments",
+      "name": "appointments",
+      "schema": "scheduling",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_scheduled_at",
+          "name": "scheduled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_duration_minutes",
+          "name": "duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_reason",
+          "name": "reason",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_slot_id",
+          "name": "slot_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_booked_by",
+          "name": "booked_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_scheduling_appointments_visit_type_id",
+          "name": "visit_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_scheduling_appointments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_scheduling_appointments_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1528,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Booked visit between patient and doctor.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_scheduling"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_clinical_encounters",
+      "name": "encounters",
+      "schema": "clinical",
+      "order": 9,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_visit_type_id",
+          "name": "visit_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_started_at",
+          "name": "started_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_ended_at",
+          "name": "ended_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_chief_complaint",
+          "name": "chief_complaint",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_summary",
+          "name": "summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_encounters_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_clinical_encounters_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_clinical_encounters_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 262,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Clinical visit record opened from an appointment.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_clinical"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_clinical_care_tasks",
+      "name": "care_tasks",
+      "schema": "clinical",
+      "order": 10,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_assigned_to",
+          "name": "assigned_to",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_task_type",
+          "name": "task_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_due_at",
+          "name": "due_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_priority",
+          "name": "priority",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_completed_at",
+          "name": "completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_clinical_care_tasks_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_clinical_care_tasks_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_clinical_care_tasks_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 684,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Follow-up task for clinical or operational work.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_clinical"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_billing_payments",
+      "name": "payments",
+      "schema": "billing",
+      "order": 11,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_amount",
+          "name": "amount",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_currency",
+          "name": "currency",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_status",
+          "name": "status",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_payment_method",
+          "name": "payment_method",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_transaction_id",
+          "name": "transaction_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633763,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_billing_payments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_billing_payments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_billing_payments_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2204,
+      "y": 262,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Payment record linked to patient, doctor, or visit.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_billing"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_messaging_notification_events",
+      "name": "notification_events",
+      "schema": "messaging",
+      "order": 12,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_body",
+          "name": "body",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_event_type",
+          "name": "event_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_related_type",
+          "name": "related_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_related_id",
+          "name": "related_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_severity",
+          "name": "severity",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_scheduled_for",
+          "name": "scheduled_for",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_events_source",
+          "name": "source",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_messaging_notification_events_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_messaging_notification_events_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2630,
+      "y": 262,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Notification request before delivery.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_messaging"
+    },
+    {
+      "id": "table_12_appointment_booking_detail_messaging_notification_deliveries",
+      "name": "notification_deliveries",
+      "schema": "messaging",
+      "order": 13,
+      "fields": [
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_event_id",
+          "name": "event_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_device_id",
+          "name": "device_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_channel",
+          "name": "channel",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_provider_message_id",
+          "name": "provider_message_id",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_error_message",
+          "name": "error_message",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_sent_at",
+          "name": "sent_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_read_at",
+          "name": "read_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633763
+        },
+        {
+          "id": "field_12_appointment_booking_detail_messaging_notification_deliveries_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633763
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_12_appointment_booking_detail_messaging_notification_deliveries_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_12_appointment_booking_detail_messaging_notification_deliveries_id"
+          ],
+          "createdAt": 1778757633763,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2630,
+      "y": 684,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633763,
+      "comments": "Delivery attempt for a notification event.",
+      "expanded": false,
+      "parentAreaId": "area_12_appointment_booking_detail_messaging"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_12_appointment_booking_detail_0",
+      "name": "doctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_identity_doctors",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_identity_doctors_user_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_1",
+      "name": "patients_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_patient_record_patients",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_patient_record_patients_user_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_2",
+      "name": "doctor_schedule_templates_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_doctor_schedule_templates",
+      "targetTableId": "table_12_appointment_booking_detail_identity_doctors",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_doctor_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_3",
+      "name": "doctor_schedule_templates_clinic_id_clinics_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_doctor_schedule_templates",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_clinics",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_clinic_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_clinics_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_4",
+      "name": "secretary_slots_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_secretary_slots",
+      "targetTableId": "table_12_appointment_booking_detail_identity_doctors",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_secretary_slots_doctor_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_5",
+      "name": "secretary_slots_clinic_id_clinics_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_secretary_slots",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_clinics",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_secretary_slots_clinic_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_clinics_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_6",
+      "name": "secretary_slots_created_by_users_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_secretary_slots",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_secretary_slots_created_by",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_7",
+      "name": "secretary_slots_schedule_template_id_doctor_schedule_templates_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_secretary_slots",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_doctor_schedule_templates",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_secretary_slots_schedule_template_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_doctor_schedule_templates_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_8",
+      "name": "appointments_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "targetTableId": "table_12_appointment_booking_detail_identity_doctors",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_appointments_doctor_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_9",
+      "name": "appointments_patient_id_patients_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "targetTableId": "table_12_appointment_booking_detail_patient_record_patients",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_appointments_patient_id",
+      "targetFieldId": "field_12_appointment_booking_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_10",
+      "name": "appointments_booked_by_users_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_appointments_booked_by",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_11",
+      "name": "appointments_clinic_id_clinics_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_clinics",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_appointments_clinic_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_clinics_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_12",
+      "name": "appointments_visit_type_id_visit_types_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "reference",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "targetTableId": "table_12_appointment_booking_detail_reference_visit_types",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_appointments_visit_type_id",
+      "targetFieldId": "field_12_appointment_booking_detail_reference_visit_types_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_13",
+      "name": "appointments_slot_id_secretary_slots_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_secretary_slots",
+      "sourceFieldId": "field_12_appointment_booking_detail_scheduling_appointments_slot_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_secretary_slots_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_14",
+      "name": "encounters_appointment_id_appointments_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_encounters",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_encounters_appointment_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_15",
+      "name": "encounters_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_encounters",
+      "targetTableId": "table_12_appointment_booking_detail_patient_record_patients",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_encounters_patient_id",
+      "targetFieldId": "field_12_appointment_booking_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_16",
+      "name": "encounters_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_encounters",
+      "targetTableId": "table_12_appointment_booking_detail_identity_doctors",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_encounters_doctor_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_17",
+      "name": "encounters_clinic_id_clinics_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_encounters",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_clinics",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_encounters_clinic_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_clinics_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_18",
+      "name": "encounters_visit_type_id_visit_types_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "reference",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_encounters",
+      "targetTableId": "table_12_appointment_booking_detail_reference_visit_types",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_encounters_visit_type_id",
+      "targetFieldId": "field_12_appointment_booking_detail_reference_visit_types_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_19",
+      "name": "encounters_created_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_encounters",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_encounters_created_by",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_20",
+      "name": "payments_appointment_id_appointments_id",
+      "sourceSchema": "billing",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_billing_payments",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "sourceFieldId": "field_12_appointment_booking_detail_billing_payments_appointment_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_21",
+      "name": "payments_doctor_id_doctors_id",
+      "sourceSchema": "billing",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_billing_payments",
+      "targetTableId": "table_12_appointment_booking_detail_identity_doctors",
+      "sourceFieldId": "field_12_appointment_booking_detail_billing_payments_doctor_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_22",
+      "name": "payments_patient_id_patients_id",
+      "sourceSchema": "billing",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_12_appointment_booking_detail_billing_payments",
+      "targetTableId": "table_12_appointment_booking_detail_patient_record_patients",
+      "sourceFieldId": "field_12_appointment_booking_detail_billing_payments_patient_id",
+      "targetFieldId": "field_12_appointment_booking_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_23",
+      "name": "care_tasks_appointment_id_appointments_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_care_tasks",
+      "targetTableId": "table_12_appointment_booking_detail_scheduling_appointments",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_care_tasks_appointment_id",
+      "targetFieldId": "field_12_appointment_booking_detail_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_24",
+      "name": "care_tasks_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_care_tasks",
+      "targetTableId": "table_12_appointment_booking_detail_clinical_encounters",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_care_tasks_encounter_id",
+      "targetFieldId": "field_12_appointment_booking_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_25",
+      "name": "care_tasks_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_care_tasks",
+      "targetTableId": "table_12_appointment_booking_detail_patient_record_patients",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_care_tasks_patient_id",
+      "targetFieldId": "field_12_appointment_booking_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_26",
+      "name": "care_tasks_assigned_to_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_care_tasks",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_care_tasks_assigned_to",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_27",
+      "name": "care_tasks_created_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_clinical_care_tasks",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_clinical_care_tasks_created_by",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_28",
+      "name": "patient_devices_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_12_appointment_booking_detail_patient_record_patient_devices",
+      "targetTableId": "table_12_appointment_booking_detail_patient_record_patients",
+      "sourceFieldId": "field_12_appointment_booking_detail_patient_record_patient_devices_patient_id",
+      "targetFieldId": "field_12_appointment_booking_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_29",
+      "name": "patient_devices_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_patient_record_patient_devices",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_patient_record_patient_devices_user_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_30",
+      "name": "notification_events_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_messaging_notification_events",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_messaging_notification_events_user_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_31",
+      "name": "notification_events_patient_id_patients_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_12_appointment_booking_detail_messaging_notification_events",
+      "targetTableId": "table_12_appointment_booking_detail_patient_record_patients",
+      "sourceFieldId": "field_12_appointment_booking_detail_messaging_notification_events_patient_id",
+      "targetFieldId": "field_12_appointment_booking_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_32",
+      "name": "notification_events_created_by_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_messaging_notification_events",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_messaging_notification_events_created_by",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_33",
+      "name": "notification_deliveries_event_id_notification_events_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "messaging",
+      "sourceTableId": "table_12_appointment_booking_detail_messaging_notification_deliveries",
+      "targetTableId": "table_12_appointment_booking_detail_messaging_notification_events",
+      "sourceFieldId": "field_12_appointment_booking_detail_messaging_notification_deliveries_event_id",
+      "targetFieldId": "field_12_appointment_booking_detail_messaging_notification_events_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_34",
+      "name": "notification_deliveries_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_12_appointment_booking_detail_messaging_notification_deliveries",
+      "targetTableId": "table_12_appointment_booking_detail_identity_users",
+      "sourceFieldId": "field_12_appointment_booking_detail_messaging_notification_deliveries_user_id",
+      "targetFieldId": "field_12_appointment_booking_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    },
+    {
+      "id": "rel_12_appointment_booking_detail_35",
+      "name": "notification_deliveries_device_id_patient_devices_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_12_appointment_booking_detail_messaging_notification_deliveries",
+      "targetTableId": "table_12_appointment_booking_detail_patient_record_patient_devices",
+      "sourceFieldId": "field_12_appointment_booking_detail_messaging_notification_deliveries_device_id",
+      "targetFieldId": "field_12_appointment_booking_detail_patient_record_patient_devices_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633763
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_12_appointment_booking_detail_identity",
+      "name": "identity",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#2563EB",
+      "order": 0
+    },
+    {
+      "id": "area_12_appointment_booking_detail_patient_record",
+      "name": "patient_record",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#0D9488",
+      "order": 1
+    },
+    {
+      "id": "area_12_appointment_booking_detail_reference",
+      "name": "reference",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#64748B",
+      "order": 2
+    },
+    {
+      "id": "area_12_appointment_booking_detail_scheduling",
+      "name": "scheduling",
+      "x": 1318,
+      "y": 190,
+      "width": 340,
+      "height": 1790,
+      "color": "#D97706",
+      "order": 3
+    },
+    {
+      "id": "area_12_appointment_booking_detail_clinical",
+      "name": "clinical",
+      "x": 1744,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#E11D48",
+      "order": 4
+    },
+    {
+      "id": "area_12_appointment_booking_detail_billing",
+      "name": "billing",
+      "x": 2170,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#059669",
+      "order": 5
+    },
+    {
+      "id": "area_12_appointment_booking_detail_messaging",
+      "name": "messaging",
+      "x": 2596,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#DB2777",
+      "order": 6
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_12_appointment_booking_detail_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_12_appointment_booking_detail_story",
+      "content": "doctor + patient + slot create appointment, then encounter, payment, task, and notification.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.763Z",
+  "updatedAt": "2026-05-14T11:20:33.763Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 3102,
+    "height": 2100
+  }
+}

@@ -36,6 +36,7 @@
     "ci:watch": "node scripts/github-run-summary.mjs",
     "deploy:supabase-functions": "node scripts/deploy-supabase-functions.mjs",
     "render:erd-views": "node scripts/render-erd-view-svgs.mjs",
+    "generate:chartdb-erd": "node scripts/generate-chartdb-erd-json.mjs",
     "audit:bundle-secrets": "node scripts/bundle-secret-audit.mjs",
     "audit:high": "npm audit --audit-level=high",
     "verify": "npm run lint && npm run build && npm run check:tenant-migration-bundle && npm run test:unit && npm run test:pdfa && npm run audit:backend-contract && npm run audit:selects-drift && npm run audit:rpc-signatures && npm run test:backend-db-contract && npm run audit:high",
@@ -50,6 +51,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.1",
+    "recharts": "^2.15.4",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.4.2"
   },

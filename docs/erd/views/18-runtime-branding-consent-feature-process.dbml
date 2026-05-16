@@ -1,0 +1,270 @@
+Project "DoctoLeb Runtime Branding Consent Feature Process ERD" {
+  database_type: "PostgreSQL"
+  Note: "Process ERD: SaaS feature entitlement is read from the control plane; tenant branding, pages, flags, and consent gate are read/written inside the tenant project."
+}
+
+Table control_plane.registry.tenants {
+  id uuid [pk]
+  slug text [not null, unique]
+  display_name text [not null]
+  status text [not null]
+  plan text
+  release_channel text [not null]
+  supabase_project_ref text [not null]
+  supabase_url text [not null]
+  supabase_anon_key text [not null]
+  schema_version text
+  notes text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Zero-PHI tenant registry entry.'
+}
+
+Table control_plane.plans.plans {
+  code text [pk]
+  name text [not null]
+  status text [not null]
+  billing_mode text [not null]
+  price_label text
+  stripe_product_lookup_key text
+  description text
+  sort_order integer [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'SaaS subscription plan definitions.'
+}
+
+Table control_plane.plans.plan_entitlements {
+  id uuid [pk]
+  plan_code text [not null]
+  feature_code text [not null]
+  is_enabled boolean [not null]
+  limits jsonb [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Feature defaults included in a SaaS plan.'
+}
+
+Table control_plane.plans.tenant_entitlements {
+  id uuid [pk]
+  tenant_id uuid [not null]
+  feature_code text [not null]
+  source text [not null]
+  is_enabled boolean [not null]
+  limits jsonb [not null]
+  reason text
+  expires_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Feature overrides granted to one tenant.'
+}
+
+Table identity.users {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  role varchar(50) [not null]
+  first_name varchar(255)
+  last_name varchar(255)
+  phone varchar(20)
+  avatar_url text
+  initials varchar(5)
+  is_active boolean
+  created_at timestamptz
+  updated_at timestamptz
+  auth_user_id uuid
+
+  Note: 'Application identity and role profile.'
+}
+
+Table identity.doctors {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  department varchar(100)
+  specialization varchar(100)
+  license_number varchar(100) [unique]
+  bio text
+  availability json
+  consultation_fee numeric(10,2)
+  created_at timestamptz
+  updated_at timestamptz
+  provisioning_client_request_id uuid
+
+  Note: 'Doctor/provider profile linked to a user.'
+}
+
+Table patient_record.patients {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  date_of_birth date
+  sex varchar(20)
+  blood_type varchar(10)
+  allergies text
+  medical_history text
+  emergency_contact varchar(255)
+  emergency_phone varchar(20)
+  insurance_id varchar(100)
+  created_at timestamptz
+  updated_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  intake_completed_at timestamptz
+  established_at timestamptz
+  full_name text [not null]
+  phone text [not null]
+  email text
+
+  Note: 'Clinical patient profile linked to a user.'
+}
+
+Table runtime.tenant_profile {
+  id uuid [pk]
+  doctor_id uuid [not null, unique]
+  tenant_slug text [not null, unique]
+  display_name text [not null]
+  timezone text [not null]
+  default_locale text [not null]
+  status text [not null]
+  schema_version text [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Tenant clinic identity and public profile.'
+}
+
+Table runtime.tenant_app_config {
+  id uuid [pk]
+  profile_id uuid [not null, unique]
+  app_name text [not null]
+  app_tagline text
+  splash_logo_url text
+  icon_url text
+  primary_color text
+  secondary_color text
+  maintenance_message text
+  min_supported_version text
+  force_update_version text
+  enabled_locales text[] [not null]
+  support_phone text
+  support_email text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Runtime app branding and behavior config.'
+}
+
+Table runtime.feature_flags {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  description text
+  is_enabled boolean [not null]
+  target_roles text[] [not null]
+  target_platforms text[] [not null]
+  config jsonb [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  audience text [not null]
+
+  Note: 'Runtime feature switch for the tenant app.'
+}
+
+Table runtime.content_pages {
+  id uuid [pk]
+  slug text [not null, unique]
+  title text [not null]
+  body_md text [not null]
+  audience text [not null]
+  status text [not null]
+  published_at timestamptz
+  created_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Tenant-specific public content page.'
+}
+
+Table runtime.consent_documents {
+  id uuid [pk]
+  code text [not null]
+  title text [not null]
+  body_md text [not null]
+  version text [not null]
+  audience text [not null]
+  is_required boolean [not null]
+  is_active boolean [not null]
+  published_at timestamptz
+  created_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Consent document shown to patients.'
+}
+
+Table patient_record.patient_consents {
+  id uuid [pk]
+  patient_id uuid [not null]
+  consent_document_id uuid [not null]
+  accepted_by_user_id uuid
+  accepted_at timestamptz [not null]
+  revoked_at timestamptz
+  ip_address inet
+  user_agent text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  acceptance_method text [not null]
+
+  Note: 'Patient acceptance of consent documents.'
+}
+
+TableGroup "control_plane" [color: #0891B2] {
+  control_plane.registry.tenants
+  control_plane.plans.plans
+  control_plane.plans.plan_entitlements
+  control_plane.plans.tenant_entitlements
+
+  Note: 'SaaS metadata only; no PHI.'
+}
+TableGroup "identity" [color: #2563EB] {
+  identity.users
+  identity.doctors
+
+  Note: 'Login users, doctors, staff, and roles.'
+}
+TableGroup "patient_record" [color: #0D9488] {
+  patient_record.patients
+  patient_record.patient_consents
+
+  Note: 'Patient profile, consent, and history.'
+}
+TableGroup "runtime" [color: #7C3AED] {
+  runtime.tenant_profile
+  runtime.tenant_app_config
+  runtime.feature_flags
+  runtime.content_pages
+  runtime.consent_documents
+
+  Note: 'Branding, pages, consent, and feature config.'
+}
+
+Note relationship_story {
+  'Relation: tenant plan enables runtime config; patients accept tenant consent documents.'
+}
+
+Note relationship_legend {
+  'Ref format: left foreign key > right owner. Line color follows the left table area.'
+}
+
+Ref: identity.doctors.user_id > identity.users.id [color: #2563EB]
+Ref: patient_record.patients.user_id > identity.users.id [color: #0D9488]
+Ref: runtime.tenant_profile.doctor_id > identity.doctors.id [color: #7C3AED]
+Ref: runtime.tenant_app_config.profile_id > runtime.tenant_profile.id [color: #7C3AED]
+Ref: runtime.content_pages.created_by > identity.users.id [color: #7C3AED]
+Ref: runtime.consent_documents.created_by > identity.users.id [color: #7C3AED]
+Ref: patient_record.patient_consents.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_consents.consent_document_id > runtime.consent_documents.id [color: #0D9488]
+Ref: patient_record.patient_consents.accepted_by_user_id > identity.users.id [color: #0D9488]

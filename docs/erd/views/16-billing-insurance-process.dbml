@@ -1,0 +1,267 @@
+Project "DoctoLeb Billing And Insurance Process ERD" {
+  database_type: "PostgreSQL"
+  Note: "Process ERD: appointment/encounter context, payment capture, insurance policy validation, provider contract, claim template, and claim lifecycle."
+}
+
+Table identity.doctors {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  department varchar(100)
+  specialization varchar(100)
+  license_number varchar(100) [unique]
+  bio text
+  availability json
+  consultation_fee numeric(10,2)
+  created_at timestamptz
+  updated_at timestamptz
+  provisioning_client_request_id uuid
+
+  Note: 'Doctor/provider profile linked to a user.'
+}
+
+Table patient_record.patients {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  date_of_birth date
+  sex varchar(20)
+  blood_type varchar(10)
+  allergies text
+  medical_history text
+  emergency_contact varchar(255)
+  emergency_phone varchar(20)
+  insurance_id varchar(100)
+  created_at timestamptz
+  updated_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  intake_completed_at timestamptz
+  established_at timestamptz
+  full_name text [not null]
+  phone text [not null]
+  email text
+
+  Note: 'Clinical patient profile linked to a user.'
+}
+
+Table reference.visit_types {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  default_duration_minutes integer [not null]
+  default_fee numeric(10,2)
+  requires_intake boolean [not null]
+  billable_service_id uuid
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Visit type, duration, and billing defaults.'
+}
+
+Table scheduling.appointments {
+  id uuid [pk]
+  doctor_id uuid [not null]
+  patient_id uuid [not null]
+  scheduled_at timestamptz [not null]
+  duration_minutes integer
+  status text [not null]
+  reason text
+  notes text
+  created_at timestamptz
+  updated_at timestamptz
+  slot_id uuid [not null]
+  booked_by uuid [not null]
+  clinic_id uuid
+  visit_type_id uuid
+
+  Note: 'Booked visit between patient and doctor.'
+}
+
+Table clinical.encounters {
+  id uuid [pk]
+  appointment_id uuid [not null, unique]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  clinic_id uuid
+  visit_type_id uuid
+  status text [not null]
+  started_at timestamptz
+  ended_at timestamptz
+  chief_complaint text
+  summary text
+  created_by uuid
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Clinical visit record opened from an appointment.'
+}
+
+Table billing.payments {
+  id uuid [pk]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  appointment_id uuid
+  amount numeric(10,2) [not null]
+  currency varchar(10)
+  status varchar(50)
+  payment_method varchar(50)
+  transaction_id varchar(255) [unique]
+  created_at timestamptz
+  updated_at timestamptz
+
+  Note: 'Payment record linked to patient, doctor, or visit.'
+}
+
+Table billing.insurance_providers {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  phone text
+  email text
+  website_url text
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Insurance company reference records.'
+}
+
+Table billing.doctor_insurance_contracts {
+  id uuid [pk]
+  doctor_id uuid [not null]
+  provider_id uuid [not null]
+  doctor_provider_code text
+  contract_number text
+  valid_from date
+  valid_to date
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Doctor agreements with insurance providers.'
+}
+
+Table patient_record.patient_insurance_policies {
+  id uuid [pk]
+  patient_id uuid [not null]
+  provider_id uuid [not null]
+  policy_number text [not null]
+  policyholder_name text
+  valid_from date
+  valid_to date
+  is_primary boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Patient insurance policy details.'
+}
+
+Table billing.claim_form_templates {
+  id uuid [pk]
+  provider_id uuid
+  name text [not null]
+  description text
+  template_format text [not null]
+  template_body text [not null]
+  preview_image_url text
+  is_active boolean [not null]
+  is_system boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Reusable insurance claim form definitions.'
+}
+
+Table billing.insurance_claims {
+  id uuid [pk]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  policy_id uuid [not null]
+  template_id uuid
+  amount numeric(10,2) [not null]
+  amount_paid_by_insurer numeric(10,2)
+  amount_paid_by_patient numeric(10,2)
+  diagnosis_code text
+  claim_form_pdf_url text
+  status text [not null]
+  printed_at timestamptz
+  submitted_at timestamptz
+  paid_at timestamptz
+  created_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  encounter_id uuid
+
+  Note: 'Insurance claim raised from a clinical visit.'
+}
+
+TableGroup "identity" [color: #2563EB] {
+  identity.doctors
+
+  Note: 'Login users, doctors, staff, and roles.'
+}
+TableGroup "patient_record" [color: #0D9488] {
+  patient_record.patients
+  patient_record.patient_insurance_policies
+
+  Note: 'Patient profile, consent, and history.'
+}
+TableGroup "reference" [color: #64748B] {
+  reference.visit_types
+
+  Note: 'Lookup data that standardizes forms.'
+}
+TableGroup "scheduling" [color: #D97706] {
+  scheduling.appointments
+
+  Note: 'Clinics, availability, slots, and bookings.'
+}
+TableGroup "clinical" [color: #E11D48] {
+  clinical.encounters
+
+  Note: 'Encounters, notes, documents, and care tasks.'
+}
+TableGroup "billing" [color: #059669] {
+  billing.payments
+  billing.insurance_providers
+  billing.doctor_insurance_contracts
+  billing.claim_form_templates
+  billing.insurance_claims
+
+  Note: 'Payments, insurance, contracts, and claims.'
+}
+
+Note relationship_story {
+  'Relation: appointment and encounter use policy, contract, and template to create payment or claim.'
+}
+
+Note relationship_legend {
+  'Ref format: left foreign key > right owner. Line color follows the left table area.'
+}
+
+Ref: scheduling.appointments.doctor_id > identity.doctors.id [color: #D97706]
+Ref: scheduling.appointments.patient_id > patient_record.patients.id [color: #D97706]
+Ref: scheduling.appointments.visit_type_id > reference.visit_types.id [color: #D97706]
+Ref: clinical.encounters.appointment_id > scheduling.appointments.id [color: #E11D48]
+Ref: clinical.encounters.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.encounters.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.encounters.visit_type_id > reference.visit_types.id [color: #E11D48]
+Ref: billing.payments.patient_id > patient_record.patients.id [color: #059669]
+Ref: billing.payments.doctor_id > identity.doctors.id [color: #059669]
+Ref: billing.payments.appointment_id > scheduling.appointments.id [color: #059669]
+Ref: billing.doctor_insurance_contracts.doctor_id > identity.doctors.id [color: #059669]
+Ref: billing.doctor_insurance_contracts.provider_id > billing.insurance_providers.id [color: #059669]
+Ref: patient_record.patient_insurance_policies.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_insurance_policies.provider_id > billing.insurance_providers.id [color: #0D9488]
+Ref: billing.claim_form_templates.provider_id > billing.insurance_providers.id [color: #059669]
+Ref: billing.insurance_claims.patient_id > patient_record.patients.id [color: #059669]
+Ref: billing.insurance_claims.doctor_id > identity.doctors.id [color: #059669]
+Ref: billing.insurance_claims.policy_id > patient_record.patient_insurance_policies.id [color: #059669]
+Ref: billing.insurance_claims.template_id > billing.claim_form_templates.id [color: #059669]
+Ref: billing.insurance_claims.encounter_id > clinical.encounters.id [color: #059669]

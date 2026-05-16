@@ -57,19 +57,46 @@ export function useEncounterPrescriptions(scope) {
   const addPrescription = useCallback(async (payload) => {
     try {
       setIsSaving(true);
-      const { data, error: err } = await clinicalService.addPrescription(payload);
+      const { data: created, error: err } = await clinicalService.addPrescription(payload);
       if (err) throw new Error(err);
 
       showToast('Prescription added.', 'success');
 
-      // Fire-and-forget: auto-populate the medication catalog with the
-      // medication name if it doesn't already exist. Silently swallow errors.
-      // This NEVER blocks the save — the prescription is already persisted.
-      if (payload.medication_name && !payload.medication_catalog_id) {
-        medicationCatalogService.upsertIfMissing(payload.medication_name).catch(() => {
-          // Silently ignore — the catalog auto-insert is best-effort.
-        });
-      }
+      // Background catalog grow-on-use. The primary save is already
+      // persisted; any failure here must NEVER bubble up to the doctor.
+      //
+      // Two-stage flow:
+      //   1. Mint (or look up) the medication_catalog row for the typed
+      //      name via the SECURITY DEFINER upsert RPC.
+      //   2. Back-link the just-saved prescription to that catalog row id
+      //      so the next renderer pass / report query can resolve through
+      //      the FK instead of a fuzzy name match.
+      //
+      // Both stages are best-effort. The envelope is read explicitly (not
+      // .catch-swallowed) so silent failures are observable in the frontend
+      // log buffer.
+      void (async () => {
+        if (!payload.medication_name || payload.medication_catalog_id || !created?.id) return;
+        try {
+          const { data: catalogId, error: upErr } =
+            await medicationCatalogService.upsertIfMissing(payload.medication_name);
+          if (upErr) {
+            logError('useEncounterPrescriptions.catalogGrow', new Error(upErr));
+            return;
+          }
+          if (!catalogId) return;
+
+          const { error: linkErr } = await clinicalService.updatePrescription(
+            created.id,
+            { medication_catalog_id: catalogId },
+          );
+          if (linkErr) {
+            logError('useEncounterPrescriptions.backLink', new Error(linkErr));
+          }
+        } catch (innerErr) {
+          logError('useEncounterPrescriptions.catalogGrow', innerErr);
+        }
+      })();
 
       await fetch();
       return true;

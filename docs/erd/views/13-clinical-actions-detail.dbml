@@ -1,0 +1,599 @@
+Project "DoctoLeb Clinical Actions Detail ERD" {
+  database_type: "PostgreSQL"
+  Note: "Detailed ERD: after an appointment, the encounter connects notes, drafts, diagnoses, orders, prescriptions, documents, tasks, messaging, notifications, and billing."
+}
+
+Table identity.users {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  role varchar(50) [not null]
+  first_name varchar(255)
+  last_name varchar(255)
+  phone varchar(20)
+  avatar_url text
+  initials varchar(5)
+  is_active boolean
+  created_at timestamptz
+  updated_at timestamptz
+  auth_user_id uuid
+
+  Note: 'Application identity and role profile.'
+}
+
+Table identity.doctors {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  department varchar(100)
+  specialization varchar(100)
+  license_number varchar(100) [unique]
+  bio text
+  availability json
+  consultation_fee numeric(10,2)
+  created_at timestamptz
+  updated_at timestamptz
+  provisioning_client_request_id uuid
+
+  Note: 'Doctor/provider profile linked to a user.'
+}
+
+Table patient_record.patients {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  date_of_birth date
+  sex varchar(20)
+  blood_type varchar(10)
+  allergies text
+  medical_history text
+  emergency_contact varchar(255)
+  emergency_phone varchar(20)
+  insurance_id varchar(100)
+  created_at timestamptz
+  updated_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  intake_completed_at timestamptz
+  established_at timestamptz
+  full_name text [not null]
+  phone text [not null]
+  email text
+
+  Note: 'Clinical patient profile linked to a user.'
+}
+
+Table scheduling.appointments {
+  id uuid [pk]
+  doctor_id uuid [not null]
+  patient_id uuid [not null]
+  scheduled_at timestamptz [not null]
+  duration_minutes integer
+  status text [not null]
+  reason text
+  notes text
+  created_at timestamptz
+  updated_at timestamptz
+  slot_id uuid [not null]
+  booked_by uuid [not null]
+  clinic_id uuid
+  visit_type_id uuid
+
+  Note: 'Booked visit between patient and doctor.'
+}
+
+Table scheduling.clinics {
+  id uuid [pk]
+  name text [not null]
+  address text [not null]
+  created_at timestamptz
+  location_type text [not null]
+  city_id uuid
+  phone text
+  working_hours jsonb
+  is_primary boolean [not null]
+  notes text
+  latitude numeric(10,7)
+  longitude numeric(10,7)
+  map_url text
+  floor text
+  room text
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+
+  Note: 'Clinic location where visits happen.'
+}
+
+Table reference.visit_types {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  default_duration_minutes integer [not null]
+  default_fee numeric(10,2)
+  requires_intake boolean [not null]
+  billable_service_id uuid
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Visit type, duration, and billing defaults.'
+}
+
+Table clinical.encounters {
+  id uuid [pk]
+  appointment_id uuid [not null, unique]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  clinic_id uuid
+  visit_type_id uuid
+  status text [not null]
+  started_at timestamptz
+  ended_at timestamptz
+  chief_complaint text
+  summary text
+  created_by uuid
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Clinical visit record opened from an appointment.'
+}
+
+Table clinical.clinical_note_drafts {
+  id uuid [pk]
+  encounter_id uuid [not null]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  author_user_id uuid [not null]
+  note_type text [not null]
+  content text [not null]
+  status text [not null]
+  expires_at timestamptz [not null]
+  discarded_at timestamptz
+  converted_at timestamptz
+  converted_note_id uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Temporary draft before a clinical note is saved.'
+}
+
+Table clinical.clinical_notes {
+  id uuid [pk]
+  encounter_id uuid [not null]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  author_user_id uuid [not null]
+  note_type text [not null]
+  content text [not null]
+  visibility text [not null]
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Doctor observations saved in the encounter record.'
+}
+
+Table clinical.diagnoses {
+  id uuid [pk]
+  encounter_id uuid [not null]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  disease_id uuid
+  icd10_code text
+  diagnosis_text text
+  diagnosis_type text [not null]
+  status text [not null]
+  onset_date date
+  resolved_at timestamptz
+  notes text
+  recorded_by uuid [not null]
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Diagnosis entries captured during an encounter.'
+}
+
+Table clinical.prescriptions {
+  id uuid [pk]
+  encounter_id uuid [not null]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  medication_name text [not null]
+  dosage text
+  route text
+  frequency text
+  duration text
+  instructions text
+  start_date date
+  end_date date
+  status text [not null]
+  prescribed_by uuid [not null]
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Medication order created by the doctor.'
+}
+
+Table clinical.lab_orders {
+  id uuid [pk]
+  encounter_id uuid [not null]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  title text [not null]
+  instructions text
+  status text [not null]
+  ordered_at timestamptz
+  resulted_at timestamptz
+  result_summary text
+  result_document_id uuid
+  ordered_by uuid [not null]
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Lab request created from an encounter.'
+}
+
+Table clinical.imaging_orders {
+  id uuid [pk]
+  encounter_id uuid [not null]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  imaging_type text [not null]
+  body_area text
+  instructions text
+  status text [not null]
+  ordered_at timestamptz
+  resulted_at timestamptz
+  result_summary text
+  result_document_id uuid
+  ordered_by uuid [not null]
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Imaging request created from an encounter.'
+}
+
+Table clinical.clinical_documents {
+  id uuid [pk]
+  patient_id uuid [not null]
+  encounter_id uuid
+  doctor_id uuid
+  document_type text [not null]
+  title text [not null]
+  content text
+  file_url text
+  status text [not null]
+  created_by uuid [not null]
+  finalized_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  client_request_id uuid
+  finalized_by uuid
+  voided_at timestamptz
+  voided_by uuid
+  void_reason text
+
+  Note: 'Document metadata attached to an encounter.'
+}
+
+Table clinical.document_attachments {
+  id uuid [pk]
+  document_id uuid [not null]
+  patient_id uuid [not null]
+  uploaded_by uuid [not null]
+  file_url text [not null]
+  file_name text [not null]
+  mime_type text
+  file_size_bytes bigint
+  storage_bucket text
+  storage_path text
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Files connected to a clinical document.'
+}
+
+Table clinical.precheck_forms {
+  id uuid [pk]
+  patient_id uuid [not null]
+  predoctor_id uuid
+  blood_pressure varchar(20)
+  heart_rate integer
+  temperature numeric(5,2)
+  weight numeric(8,2)
+  height numeric(8,2)
+  current_medications text
+  allergies text
+  symptoms text
+  status varchar(50)
+  submitted_at timestamptz
+  created_at timestamptz
+  updated_at timestamptz
+  image_url text
+  is_urgent boolean
+
+  Note: 'Predoctor precheck form for a visit.'
+}
+
+Table identity.predoctors {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  supervisor_id uuid
+  university varchar(255)
+  year_of_study integer
+  status varchar(50)
+  created_at timestamptz
+  updated_at timestamptz
+
+  Note: 'Assistant role that prepares prechecks.'
+}
+
+Table clinical.care_tasks {
+  id uuid [pk]
+  patient_id uuid
+  encounter_id uuid
+  appointment_id uuid
+  assigned_to uuid
+  created_by uuid [not null]
+  task_type text [not null]
+  title text [not null]
+  description text
+  due_at timestamptz
+  priority text [not null]
+  status text [not null]
+  completed_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  client_request_id uuid
+
+  Note: 'Follow-up task for clinical or operational work.'
+}
+
+Table messaging.conversations {
+  id uuid [pk]
+  patient_id uuid
+  subject text
+  conversation_type text [not null]
+  status text [not null]
+  created_by uuid
+  closed_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Message thread between patient and clinic users.'
+}
+
+Table messaging.messages {
+  id uuid [pk]
+  conversation_id uuid [not null]
+  sender_user_id uuid
+  sender_patient_id uuid
+  body text [not null]
+  message_type text [not null]
+  is_internal boolean [not null]
+  edited_at timestamptz
+  deleted_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  client_request_id uuid
+  redacted_at timestamptz
+  redacted_by uuid
+
+  Note: 'Individual message content and sender.'
+}
+
+Table billing.payments {
+  id uuid [pk]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  appointment_id uuid
+  amount numeric(10,2) [not null]
+  currency varchar(10)
+  status varchar(50)
+  payment_method varchar(50)
+  transaction_id varchar(255) [unique]
+  created_at timestamptz
+  updated_at timestamptz
+
+  Note: 'Payment record linked to patient, doctor, or visit.'
+}
+
+Table billing.insurance_claims {
+  id uuid [pk]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  policy_id uuid [not null]
+  template_id uuid
+  amount numeric(10,2) [not null]
+  amount_paid_by_insurer numeric(10,2)
+  amount_paid_by_patient numeric(10,2)
+  diagnosis_code text
+  claim_form_pdf_url text
+  status text [not null]
+  printed_at timestamptz
+  submitted_at timestamptz
+  paid_at timestamptz
+  created_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  encounter_id uuid
+
+  Note: 'Insurance claim raised from a clinical visit.'
+}
+
+Table patient_record.patient_insurance_policies {
+  id uuid [pk]
+  patient_id uuid [not null]
+  provider_id uuid [not null]
+  policy_number text [not null]
+  policyholder_name text
+  valid_from date
+  valid_to date
+  is_primary boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Patient insurance policy details.'
+}
+
+TableGroup "identity" [color: #2563EB] {
+  identity.users
+  identity.doctors
+  identity.predoctors
+
+  Note: 'Login users, doctors, staff, and roles.'
+}
+TableGroup "patient_record" [color: #0D9488] {
+  patient_record.patients
+  patient_record.patient_insurance_policies
+
+  Note: 'Patient profile, consent, and history.'
+}
+TableGroup "scheduling" [color: #D97706] {
+  scheduling.appointments
+  scheduling.clinics
+
+  Note: 'Clinics, availability, slots, and bookings.'
+}
+TableGroup "reference" [color: #64748B] {
+  reference.visit_types
+
+  Note: 'Lookup data that standardizes forms.'
+}
+TableGroup "clinical" [color: #E11D48] {
+  clinical.encounters
+  clinical.clinical_note_drafts
+  clinical.clinical_notes
+  clinical.diagnoses
+  clinical.prescriptions
+  clinical.lab_orders
+  clinical.imaging_orders
+  clinical.clinical_documents
+  clinical.document_attachments
+  clinical.precheck_forms
+  clinical.care_tasks
+
+  Note: 'Encounters, notes, documents, and care tasks.'
+}
+TableGroup "messaging" [color: #DB2777] {
+  messaging.conversations
+  messaging.messages
+
+  Note: 'Chat, notifications, receipts, and delivery.'
+}
+TableGroup "billing" [color: #059669] {
+  billing.payments
+  billing.insurance_claims
+
+  Note: 'Payments, insurance, contracts, and claims.'
+}
+
+Note relationship_story {
+  'Relation: appointment opens encounter; encounter owns notes, orders, files, tasks, messages, and billing.'
+}
+
+Note relationship_legend {
+  'Ref format: left foreign key > right owner. Line color follows the left table area.'
+}
+
+Ref: identity.doctors.user_id > identity.users.id [color: #2563EB]
+Ref: patient_record.patients.user_id > identity.users.id [color: #0D9488]
+Ref: scheduling.appointments.doctor_id > identity.doctors.id [color: #D97706]
+Ref: scheduling.appointments.patient_id > patient_record.patients.id [color: #D97706]
+Ref: scheduling.appointments.booked_by > identity.users.id [color: #D97706]
+Ref: scheduling.appointments.clinic_id > scheduling.clinics.id [color: #D97706]
+Ref: scheduling.appointments.visit_type_id > reference.visit_types.id [color: #D97706]
+Ref: clinical.encounters.appointment_id > scheduling.appointments.id [color: #E11D48]
+Ref: clinical.encounters.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.encounters.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.encounters.clinic_id > scheduling.clinics.id [color: #E11D48]
+Ref: clinical.encounters.visit_type_id > reference.visit_types.id [color: #E11D48]
+Ref: clinical.encounters.created_by > identity.users.id [color: #E11D48]
+Ref: clinical.clinical_note_drafts.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.clinical_note_drafts.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.clinical_note_drafts.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.clinical_note_drafts.author_user_id > identity.users.id [color: #E11D48]
+Ref: clinical.clinical_note_drafts.converted_note_id > clinical.clinical_notes.id [color: #E11D48]
+Ref: clinical.clinical_notes.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.clinical_notes.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.clinical_notes.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.clinical_notes.author_user_id > identity.users.id [color: #E11D48]
+Ref: clinical.diagnoses.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.diagnoses.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.diagnoses.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.diagnoses.recorded_by > identity.users.id [color: #E11D48]
+Ref: clinical.prescriptions.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.prescriptions.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.prescriptions.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.prescriptions.prescribed_by > identity.users.id [color: #E11D48]
+Ref: clinical.lab_orders.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.lab_orders.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.lab_orders.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.lab_orders.ordered_by > identity.users.id [color: #E11D48]
+Ref: clinical.lab_orders.result_document_id > clinical.clinical_documents.id [color: #E11D48]
+Ref: clinical.imaging_orders.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.imaging_orders.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.imaging_orders.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.imaging_orders.ordered_by > identity.users.id [color: #E11D48]
+Ref: clinical.imaging_orders.result_document_id > clinical.clinical_documents.id [color: #E11D48]
+Ref: clinical.clinical_documents.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.clinical_documents.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.clinical_documents.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.clinical_documents.created_by > identity.users.id [color: #E11D48]
+Ref: clinical.clinical_documents.finalized_by > identity.users.id [color: #E11D48]
+Ref: clinical.clinical_documents.voided_by > identity.users.id [color: #E11D48]
+Ref: clinical.document_attachments.document_id > clinical.clinical_documents.id [color: #E11D48]
+Ref: clinical.document_attachments.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.document_attachments.uploaded_by > identity.users.id [color: #E11D48]
+Ref: clinical.precheck_forms.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.precheck_forms.predoctor_id > identity.predoctors.id [color: #E11D48]
+Ref: identity.predoctors.user_id > identity.users.id [color: #2563EB]
+Ref: identity.predoctors.supervisor_id > identity.doctors.id [color: #2563EB]
+Ref: clinical.care_tasks.appointment_id > scheduling.appointments.id [color: #E11D48]
+Ref: clinical.care_tasks.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.care_tasks.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.care_tasks.assigned_to > identity.users.id [color: #E11D48]
+Ref: clinical.care_tasks.created_by > identity.users.id [color: #E11D48]
+Ref: messaging.conversations.patient_id > patient_record.patients.id [color: #DB2777]
+Ref: messaging.conversations.created_by > identity.users.id [color: #DB2777]
+Ref: messaging.messages.conversation_id > messaging.conversations.id [color: #DB2777]
+Ref: messaging.messages.sender_user_id > identity.users.id [color: #DB2777]
+Ref: messaging.messages.sender_patient_id > patient_record.patients.id [color: #DB2777]
+Ref: messaging.messages.redacted_by > identity.users.id [color: #DB2777]
+Ref: billing.payments.appointment_id > scheduling.appointments.id [color: #059669]
+Ref: billing.payments.doctor_id > identity.doctors.id [color: #059669]
+Ref: billing.payments.patient_id > patient_record.patients.id [color: #059669]
+Ref: billing.insurance_claims.patient_id > patient_record.patients.id [color: #059669]
+Ref: billing.insurance_claims.doctor_id > identity.doctors.id [color: #059669]
+Ref: billing.insurance_claims.encounter_id > clinical.encounters.id [color: #059669]
+Ref: billing.insurance_claims.policy_id > patient_record.patient_insurance_policies.id [color: #059669]
+Ref: patient_record.patient_insurance_policies.patient_id > patient_record.patients.id [color: #0D9488]

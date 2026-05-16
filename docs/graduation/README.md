@@ -1,34 +1,43 @@
-# DoctoLeb Graduation Documentation
+# DoctoLeb Graduation Guide
 
-## Goal
-This folder explains DoctoLeb as a real multi-tenant SaaS clinic system. The documents are short, visual, and split by topic so they can be used in a graduation report or presentation.
+This folder is the clean report guide. Use it with [Core Context](../CORE_CONTEXT.md) and the curated ERDs in [ERD And Data Model](./06-erd-and-data-model.md).
 
-## Reading Order
-| File | Use It For |
+## Report Structure
+| Chapter | What to show | Source |
+|---|---|---|
+| System overview | SaaS control plane, shared patient/ops apps, tenant Supabase projects. | `docs/CORE_CONTEXT.md` |
+| Tenancy and routing | Host routing plus `/t/:slug` no-domain routing. | `docs/CORE_CONTEXT.md` |
+| Data model | Focused feature ERDs, one per page. | `docs/erd/rendered/*.svg` |
+| Core workflows | Booking, clinical record, predoctor, messaging, billing, staff lifecycle. | `docs/erd/views/12-17*.dbml` |
+| Security | PHI boundary, RLS, server-only secrets, zero-PHI control plane. | `docs/CORE_CONTEXT.md`, `docs/decisions/` |
+| Future work | Flutter, Firebase FCM, Stripe, LiveKit, AI agents, custom domains. | `docs/CORE_CONTEXT.md` |
+
+## ERD Path
+Use the ERD chapter as a story, not an inventory:
+
+1. SaaS tenant creation and routing.
+2. Runtime branding, consent, and features.
+3. Doctor/provider data.
+4. Patient record data.
+5. Appointment booking data.
+6. Clinical record/action data.
+7. Appendix-only support flows: predoctor, messaging, staff lifecycle, billing.
+
+## Figures To Use
+Use only the current curated ERDs. Put the first six in the main report and the last four in the appendix.
+
+| Topic | SVG |
 |---|---|
-| [00-visual-overview.md](./00-visual-overview.md) | One-page system picture with routing examples. |
-| [01-system-design-and-stack.md](./01-system-design-and-stack.md) | Layers, components, technology, and tools. |
-| [02-saas-tenancy-and-data-design.md](./02-saas-tenancy-and-data-design.md) | Control plane, tenant databases, branding, features, and domains. |
-| [03-core-workflows.md](./03-core-workflows.md) | Patient, staff, SaaS admin, chat, and video-call flows. |
-| [04-mobile-ai-realtime-roadmap.md](./04-mobile-ai-realtime-roadmap.md) | Flutter, Firebase FCM, Supabase Realtime, LiveKit, LangGraph, and Gemini. |
-| [05-quality-security-and-deployment.md](./05-quality-security-and-deployment.md) | CI/CD, security, testing, deployment, and operations. |
+| SaaS provisioning | `docs/erd/rendered/19-saas-tenant-provisioning-process.svg` |
+| Runtime branding and consent | `docs/erd/rendered/18-runtime-branding-consent-feature-process.svg` |
+| Doctor/provider | `docs/erd/rendered/10-doctor-provider-detail.svg` |
+| Patient record | `docs/erd/rendered/11-patient-record-detail.svg` |
+| Appointment booking | `docs/erd/rendered/12-appointment-booking-detail.svg` |
+| Clinical actions | `docs/erd/rendered/13-clinical-actions-detail.svg` |
+| Predoctor precheck | `docs/erd/rendered/14-predoctor-precheck-process.svg` |
+| Messaging | `docs/erd/rendered/15-messaging-notification-process.svg` |
+| Staff lifecycle | `docs/erd/rendered/17-staff-lifecycle-process.svg` |
+| Billing and insurance | `docs/erd/rendered/16-billing-insurance-process.svg` |
 
-## Status Legend
-| Label | Meaning |
-|---|---|
-| Current | Implemented now or the deployed foundation exists. |
-| Planned | Designed and documented, but not fully implemented yet. |
-| Deferred | Valid future work, outside the current graduation delivery. |
-
-## Source Baseline
-| Platform | Official Source |
-|---|---|
-| Vercel multi-tenant platform | https://vercel.com/platforms/docs/multi-tenant-platforms/concepts |
-| Supabase RLS | https://supabase.com/docs/guides/database/postgres/row-level-security |
-| Supabase Edge Functions auth | https://supabase.com/docs/guides/functions/auth |
-| Supabase Realtime | https://supabase.com/docs/guides/realtime/postgres-changes |
-| Supabase Flutter | https://supabase.com/docs/reference/dart/introduction |
-| Firebase FCM for Flutter | https://firebase.google.com/docs/cloud-messaging/flutter/get-started |
-| LiveKit tokens/media | https://docs.livekit.io/frontends/reference/tokens-grants/ |
-| LangGraph | https://docs.langchain.com/oss/javascript/langgraph/overview |
-| Gemini API | https://ai.google.dev/gemini-api/docs |
+## Writing Rule
+Keep the graduation report visual and selective. Do not include old tier plans, stale audit dumps, full-schema DBML, or giant all-table ERDs unless an examiner asks for an appendix.

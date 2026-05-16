@@ -1,0 +1,2240 @@
+{
+  "id": "diagram_14_predoctor_precheck_process",
+  "name": "DoctoLeb Predoctor Precheck Process ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_14_predoctor_precheck_process_identity_users",
+      "name": "users",
+      "schema": "identity",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_email",
+          "name": "email",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_role",
+          "name": "role",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_first_name",
+          "name": "first_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_last_name",
+          "name": "last_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_phone",
+          "name": "phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_avatar_url",
+          "name": "avatar_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_initials",
+          "name": "initials",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "5"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_users_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_identity_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_identity_users_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Application identity and role profile.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_identity"
+    },
+    {
+      "id": "table_14_predoctor_precheck_process_identity_doctors",
+      "name": "doctors",
+      "schema": "identity",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_department",
+          "name": "department",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_specialization",
+          "name": "specialization",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_license_number",
+          "name": "license_number",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_bio",
+          "name": "bio",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_availability",
+          "name": "availability",
+          "type": {
+            "id": "json",
+            "name": "json"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_consultation_fee",
+          "name": "consultation_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_doctors_provisioning_client_request_id",
+          "name": "provisioning_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_identity_doctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_identity_doctors_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 684,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Doctor/provider profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_identity"
+    },
+    {
+      "id": "table_14_predoctor_precheck_process_identity_predoctors",
+      "name": "predoctors",
+      "schema": "identity",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_identity_predoctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_predoctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_predoctors_supervisor_id",
+          "name": "supervisor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_predoctors_university",
+          "name": "university",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_predoctors_year_of_study",
+          "name": "year_of_study",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_predoctors_status",
+          "name": "status",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_predoctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_identity_predoctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_identity_predoctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_identity_predoctors_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1106,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Assistant role that prepares prechecks.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_identity"
+    },
+    {
+      "id": "table_14_predoctor_precheck_process_patient_record_patients",
+      "name": "patients",
+      "schema": "patient_record",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_date_of_birth",
+          "name": "date_of_birth",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_sex",
+          "name": "sex",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_blood_type",
+          "name": "blood_type",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_medical_history",
+          "name": "medical_history",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_emergency_contact",
+          "name": "emergency_contact",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_emergency_phone",
+          "name": "emergency_phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_insurance_id",
+          "name": "insurance_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_intake_completed_at",
+          "name": "intake_completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_established_at",
+          "name": "established_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_full_name",
+          "name": "full_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_patient_record_patients_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_patient_record_patients_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_patient_record_patients_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Clinical patient profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_patient_record"
+    },
+    {
+      "id": "table_14_predoctor_precheck_process_scheduling_appointments",
+      "name": "appointments",
+      "schema": "scheduling",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_scheduled_at",
+          "name": "scheduled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_duration_minutes",
+          "name": "duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_reason",
+          "name": "reason",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_slot_id",
+          "name": "slot_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_booked_by",
+          "name": "booked_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_scheduling_appointments_visit_type_id",
+          "name": "visit_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_scheduling_appointments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_scheduling_appointments_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Booked visit between patient and doctor.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_scheduling"
+    },
+    {
+      "id": "table_14_predoctor_precheck_process_clinical_encounters",
+      "name": "encounters",
+      "schema": "clinical",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_visit_type_id",
+          "name": "visit_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_started_at",
+          "name": "started_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_ended_at",
+          "name": "ended_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_chief_complaint",
+          "name": "chief_complaint",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_summary",
+          "name": "summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_encounters_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_clinical_encounters_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_clinical_encounters_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 262,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Clinical visit record opened from an appointment.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_clinical"
+    },
+    {
+      "id": "table_14_predoctor_precheck_process_clinical_precheck_forms",
+      "name": "precheck_forms",
+      "schema": "clinical",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_predoctor_id",
+          "name": "predoctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_blood_pressure",
+          "name": "blood_pressure",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_heart_rate",
+          "name": "heart_rate",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_temperature",
+          "name": "temperature",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "precision": 5,
+          "scale": 2
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_weight",
+          "name": "weight",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "precision": 8,
+          "scale": 2
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_height",
+          "name": "height",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "precision": 8,
+          "scale": 2
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_current_medications",
+          "name": "current_medications",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_symptoms",
+          "name": "symptoms",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_status",
+          "name": "status",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_submitted_at",
+          "name": "submitted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_image_url",
+          "name": "image_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_precheck_forms_is_urgent",
+          "name": "is_urgent",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_clinical_precheck_forms_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_clinical_precheck_forms_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 684,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Predoctor precheck form for a visit.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_clinical"
+    },
+    {
+      "id": "table_14_predoctor_precheck_process_clinical_care_tasks",
+      "name": "care_tasks",
+      "schema": "clinical",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_assigned_to",
+          "name": "assigned_to",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_task_type",
+          "name": "task_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_due_at",
+          "name": "due_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_priority",
+          "name": "priority",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_completed_at",
+          "name": "completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_clinical_care_tasks_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_clinical_care_tasks_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_clinical_care_tasks_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 1106,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Follow-up task for clinical or operational work.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_clinical"
+    },
+    {
+      "id": "table_14_predoctor_precheck_process_messaging_notification_events",
+      "name": "notification_events",
+      "schema": "messaging",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_body",
+          "name": "body",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_event_type",
+          "name": "event_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_related_type",
+          "name": "related_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_related_id",
+          "name": "related_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_severity",
+          "name": "severity",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_scheduled_for",
+          "name": "scheduled_for",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633776
+        },
+        {
+          "id": "field_14_predoctor_precheck_process_messaging_notification_events_source",
+          "name": "source",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633776
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_14_predoctor_precheck_process_messaging_notification_events_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_14_predoctor_precheck_process_messaging_notification_events_id"
+          ],
+          "createdAt": 1778757633776,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 262,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633776,
+      "comments": "Notification request before delivery.",
+      "expanded": false,
+      "parentAreaId": "area_14_predoctor_precheck_process_messaging"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_14_predoctor_precheck_process_0",
+      "name": "doctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_identity_doctors",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_users",
+      "sourceFieldId": "field_14_predoctor_precheck_process_identity_doctors_user_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_1",
+      "name": "predoctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_identity_predoctors",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_users",
+      "sourceFieldId": "field_14_predoctor_precheck_process_identity_predoctors_user_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_2",
+      "name": "predoctors_supervisor_id_doctors_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_identity_predoctors",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_doctors",
+      "sourceFieldId": "field_14_predoctor_precheck_process_identity_predoctors_supervisor_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_3",
+      "name": "patients_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_patient_record_patients",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_users",
+      "sourceFieldId": "field_14_predoctor_precheck_process_patient_record_patients_user_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_4",
+      "name": "appointments_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_scheduling_appointments",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_doctors",
+      "sourceFieldId": "field_14_predoctor_precheck_process_scheduling_appointments_doctor_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_5",
+      "name": "appointments_patient_id_patients_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_14_predoctor_precheck_process_scheduling_appointments",
+      "targetTableId": "table_14_predoctor_precheck_process_patient_record_patients",
+      "sourceFieldId": "field_14_predoctor_precheck_process_scheduling_appointments_patient_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_6",
+      "name": "encounters_appointment_id_appointments_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_encounters",
+      "targetTableId": "table_14_predoctor_precheck_process_scheduling_appointments",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_encounters_appointment_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_7",
+      "name": "encounters_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_encounters",
+      "targetTableId": "table_14_predoctor_precheck_process_patient_record_patients",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_encounters_patient_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_8",
+      "name": "encounters_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_encounters",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_doctors",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_encounters_doctor_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_9",
+      "name": "precheck_forms_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_precheck_forms",
+      "targetTableId": "table_14_predoctor_precheck_process_patient_record_patients",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_precheck_forms_patient_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_10",
+      "name": "precheck_forms_predoctor_id_predoctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_precheck_forms",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_predoctors",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_precheck_forms_predoctor_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_predoctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_11",
+      "name": "care_tasks_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_care_tasks",
+      "targetTableId": "table_14_predoctor_precheck_process_patient_record_patients",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_care_tasks_patient_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_12",
+      "name": "care_tasks_appointment_id_appointments_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_care_tasks",
+      "targetTableId": "table_14_predoctor_precheck_process_scheduling_appointments",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_care_tasks_appointment_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_13",
+      "name": "care_tasks_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_care_tasks",
+      "targetTableId": "table_14_predoctor_precheck_process_clinical_encounters",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_care_tasks_encounter_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_14",
+      "name": "care_tasks_assigned_to_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_care_tasks",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_users",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_care_tasks_assigned_to",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_15",
+      "name": "care_tasks_created_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_clinical_care_tasks",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_users",
+      "sourceFieldId": "field_14_predoctor_precheck_process_clinical_care_tasks_created_by",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_16",
+      "name": "notification_events_patient_id_patients_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_14_predoctor_precheck_process_messaging_notification_events",
+      "targetTableId": "table_14_predoctor_precheck_process_patient_record_patients",
+      "sourceFieldId": "field_14_predoctor_precheck_process_messaging_notification_events_patient_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_17",
+      "name": "notification_events_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_messaging_notification_events",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_users",
+      "sourceFieldId": "field_14_predoctor_precheck_process_messaging_notification_events_user_id",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    },
+    {
+      "id": "rel_14_predoctor_precheck_process_18",
+      "name": "notification_events_created_by_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_14_predoctor_precheck_process_messaging_notification_events",
+      "targetTableId": "table_14_predoctor_precheck_process_identity_users",
+      "sourceFieldId": "field_14_predoctor_precheck_process_messaging_notification_events_created_by",
+      "targetFieldId": "field_14_predoctor_precheck_process_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633776
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_14_predoctor_precheck_process_identity",
+      "name": "identity",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 1272,
+      "color": "#2563EB",
+      "order": 0
+    },
+    {
+      "id": "area_14_predoctor_precheck_process_patient_record",
+      "name": "patient_record",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#0D9488",
+      "order": 1
+    },
+    {
+      "id": "area_14_predoctor_precheck_process_scheduling",
+      "name": "scheduling",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#D97706",
+      "order": 2
+    },
+    {
+      "id": "area_14_predoctor_precheck_process_clinical",
+      "name": "clinical",
+      "x": 1318,
+      "y": 190,
+      "width": 340,
+      "height": 1368,
+      "color": "#E11D48",
+      "order": 3
+    },
+    {
+      "id": "area_14_predoctor_precheck_process_messaging",
+      "name": "messaging",
+      "x": 1744,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#DB2777",
+      "order": 4
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_14_predoctor_precheck_process_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_14_predoctor_precheck_process_story",
+      "content": "appointment context feeds precheck, then creates task and notification follow-up.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.776Z",
+  "updatedAt": "2026-05-14T11:20:33.776Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 2250,
+    "height": 1678
+  }
+}

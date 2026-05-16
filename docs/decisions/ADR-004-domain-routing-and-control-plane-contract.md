@@ -273,7 +273,7 @@ ADR-004 is implemented in six small slices. Each slice ships independently and k
 ### Slice A — Documentation and ADR ✅ (this ADR)
 
 - This file.
-- Cross-references in `PRODUCT.md`, `FRONTEND_APP_SPLIT_PLAN.md`, `BACKEND_CONTRACT_LEDGER.md`, `BACKEND_DUPLICATION_AUDIT.md`, `AGENT_HANDOFF_TIER2_STATUS.md`, `NEXT_STEPS_PLAN.md`.
+- Current cross-reference: `docs/CORE_CONTEXT.md`. Older root plan files were removed during the documentation cleanup; use Git history for historical traces.
 - No executable code change.
 
 ### Slice B — Hostname/Surface Parser
@@ -476,8 +476,8 @@ Rejected, P0.
 Acceptance criteria for "Slice A complete":
 
 - This ADR exists and is committed.
-- `PRODUCT.md`, `FRONTEND_APP_SPLIT_PLAN.md`, `BACKEND_CONTRACT_LEDGER.md`, `BACKEND_DUPLICATION_AUDIT.md`, `AGENT_HANDOFF_TIER2_STATUS.md`, and `NEXT_STEPS_PLAN.md` reference ADR-004 and the resolver/control-plane contract where relevant.
-- `PRODUCT.md` no longer asserts "not multi-tenant SaaS"; it states the database-per-tenant SaaS topology.
+- `docs/CORE_CONTEXT.md` references ADR-004 and the resolver/control-plane contract where relevant. Older root plan files were removed during the documentation cleanup.
+- `docs/CORE_CONTEXT.md` states the current database-per-tenant SaaS topology.
 - `npm run verify` exits 0.
 
 Acceptance criteria for "ADR-004 fully implemented" (Slices A–F):

@@ -6,7 +6,7 @@ import {
 import {
   medicationCatalogCreateSchema,
   medicationCatalogUpdateSchema,
-} from '../schemas/documentTemplates.js';
+} from '../schemas/medicationCatalog.js';
 import { apiCall, apiPaged } from './api.js';
 
 /** Minimum query length to issue a DB search. */

@@ -181,6 +181,35 @@ const TITLE_TO_TESTS = [
  * @param {string} title - The lab_orders.title value
  * @returns {string[]} Array of test item strings matching checkbox_grid items
  */
+/**
+ * Escape a literal pattern string so it can be embedded in a RegExp source.
+ * The mapping table uses safe ASCII patterns today, but punctuation like
+ * `19-9` or `(pt/inr)` would still need escaping if the table evolves.
+ */
+function escapeRe(literal) {
+  return literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Build a word-boundary-aware regex for a pattern. We treat `[A-Za-z0-9]`
+ * characters as part of a word so `alt` matches `alt range` but NOT `salt`
+ * or `default`. Patterns that contain non-word characters (spaces, slashes,
+ * hyphens) bypass the boundary clamp because their punctuation already
+ * disambiguates the match.
+ */
+function patternToRegex(pattern) {
+  const isPureWord = /^[a-z0-9]+$/.test(pattern);
+  const escaped = escapeRe(pattern);
+  return isPureWord
+    ? new RegExp(`(?:^|[^a-z0-9])${escaped}(?:[^a-z0-9]|$)`, 'i')
+    : new RegExp(escaped, 'i');
+}
+
+const COMPILED_PATTERNS = TITLE_TO_TESTS.map((entry) => ({
+  ...entry,
+  regex: patternToRegex(entry.pattern),
+}));
+
 export function resolveLabTests(title) {
   if (!title || typeof title !== 'string') return [];
 
@@ -189,8 +218,8 @@ export function resolveLabTests(title) {
 
   const matched = new Set();
 
-  for (const entry of TITLE_TO_TESTS) {
-    if (lower.includes(entry.pattern)) {
+  for (const entry of COMPILED_PATTERNS) {
+    if (entry.regex.test(lower)) {
       for (const test of entry.tests) {
         matched.add(test);
       }

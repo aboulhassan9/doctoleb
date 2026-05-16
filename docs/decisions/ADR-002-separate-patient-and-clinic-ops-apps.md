@@ -144,4 +144,4 @@ Rejected. Use one Supabase tenant project per clinic/tenant, with RLS/RPC author
 
 ## Follow-Up Work
 
-Track implementation in `FRONTEND_APP_SPLIT_PLAN.md`.
+Current implementation context is summarized in `docs/CORE_CONTEXT.md`. The old split plan file was removed during documentation cleanup; use Git history if historical detail is needed.

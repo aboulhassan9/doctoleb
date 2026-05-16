@@ -1,0 +1,241 @@
+Project "DoctoLeb Predoctor Precheck Process ERD" {
+  database_type: "PostgreSQL"
+  Note: "Process ERD: predoctor opens patient/appointment context, records vitals, and can create follow-up work or notification events."
+}
+
+Table identity.users {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  role varchar(50) [not null]
+  first_name varchar(255)
+  last_name varchar(255)
+  phone varchar(20)
+  avatar_url text
+  initials varchar(5)
+  is_active boolean
+  created_at timestamptz
+  updated_at timestamptz
+  auth_user_id uuid
+
+  Note: 'Application identity and role profile.'
+}
+
+Table identity.doctors {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  department varchar(100)
+  specialization varchar(100)
+  license_number varchar(100) [unique]
+  bio text
+  availability json
+  consultation_fee numeric(10,2)
+  created_at timestamptz
+  updated_at timestamptz
+  provisioning_client_request_id uuid
+
+  Note: 'Doctor/provider profile linked to a user.'
+}
+
+Table identity.predoctors {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  supervisor_id uuid
+  university varchar(255)
+  year_of_study integer
+  status varchar(50)
+  created_at timestamptz
+  updated_at timestamptz
+
+  Note: 'Assistant role that prepares prechecks.'
+}
+
+Table patient_record.patients {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  date_of_birth date
+  sex varchar(20)
+  blood_type varchar(10)
+  allergies text
+  medical_history text
+  emergency_contact varchar(255)
+  emergency_phone varchar(20)
+  insurance_id varchar(100)
+  created_at timestamptz
+  updated_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  intake_completed_at timestamptz
+  established_at timestamptz
+  full_name text [not null]
+  phone text [not null]
+  email text
+
+  Note: 'Clinical patient profile linked to a user.'
+}
+
+Table scheduling.appointments {
+  id uuid [pk]
+  doctor_id uuid [not null]
+  patient_id uuid [not null]
+  scheduled_at timestamptz [not null]
+  duration_minutes integer
+  status text [not null]
+  reason text
+  notes text
+  created_at timestamptz
+  updated_at timestamptz
+  slot_id uuid [not null]
+  booked_by uuid [not null]
+  clinic_id uuid
+  visit_type_id uuid
+
+  Note: 'Booked visit between patient and doctor.'
+}
+
+Table clinical.encounters {
+  id uuid [pk]
+  appointment_id uuid [not null, unique]
+  patient_id uuid [not null]
+  doctor_id uuid [not null]
+  clinic_id uuid
+  visit_type_id uuid
+  status text [not null]
+  started_at timestamptz
+  ended_at timestamptz
+  chief_complaint text
+  summary text
+  created_by uuid
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Clinical visit record opened from an appointment.'
+}
+
+Table clinical.precheck_forms {
+  id uuid [pk]
+  patient_id uuid [not null]
+  predoctor_id uuid
+  blood_pressure varchar(20)
+  heart_rate integer
+  temperature numeric(5,2)
+  weight numeric(8,2)
+  height numeric(8,2)
+  current_medications text
+  allergies text
+  symptoms text
+  status varchar(50)
+  submitted_at timestamptz
+  created_at timestamptz
+  updated_at timestamptz
+  image_url text
+  is_urgent boolean
+
+  Note: 'Predoctor precheck form for a visit.'
+}
+
+Table clinical.care_tasks {
+  id uuid [pk]
+  patient_id uuid
+  encounter_id uuid
+  appointment_id uuid
+  assigned_to uuid
+  created_by uuid [not null]
+  task_type text [not null]
+  title text [not null]
+  description text
+  due_at timestamptz
+  priority text [not null]
+  status text [not null]
+  completed_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  client_request_id uuid
+
+  Note: 'Follow-up task for clinical or operational work.'
+}
+
+Table messaging.notification_events {
+  id uuid [pk]
+  user_id uuid
+  patient_id uuid
+  title text [not null]
+  body text [not null]
+  event_type text [not null]
+  related_type text
+  related_id uuid
+  severity text [not null]
+  status text [not null]
+  scheduled_for timestamptz
+  created_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  client_request_id uuid
+  source text [not null]
+
+  Note: 'Notification request before delivery.'
+}
+
+TableGroup "identity" [color: #2563EB] {
+  identity.users
+  identity.doctors
+  identity.predoctors
+
+  Note: 'Login users, doctors, staff, and roles.'
+}
+TableGroup "patient_record" [color: #0D9488] {
+  patient_record.patients
+
+  Note: 'Patient profile, consent, and history.'
+}
+TableGroup "scheduling" [color: #D97706] {
+  scheduling.appointments
+
+  Note: 'Clinics, availability, slots, and bookings.'
+}
+TableGroup "clinical" [color: #E11D48] {
+  clinical.encounters
+  clinical.precheck_forms
+  clinical.care_tasks
+
+  Note: 'Encounters, notes, documents, and care tasks.'
+}
+TableGroup "messaging" [color: #DB2777] {
+  messaging.notification_events
+
+  Note: 'Chat, notifications, receipts, and delivery.'
+}
+
+Note relationship_story {
+  'Relation: appointment context feeds precheck, then creates task and notification follow-up.'
+}
+
+Note relationship_legend {
+  'Ref format: left foreign key > right owner. Line color follows the left table area.'
+}
+
+Ref: identity.doctors.user_id > identity.users.id [color: #2563EB]
+Ref: identity.predoctors.user_id > identity.users.id [color: #2563EB]
+Ref: identity.predoctors.supervisor_id > identity.doctors.id [color: #2563EB]
+Ref: patient_record.patients.user_id > identity.users.id [color: #0D9488]
+Ref: scheduling.appointments.doctor_id > identity.doctors.id [color: #D97706]
+Ref: scheduling.appointments.patient_id > patient_record.patients.id [color: #D97706]
+Ref: clinical.encounters.appointment_id > scheduling.appointments.id [color: #E11D48]
+Ref: clinical.encounters.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.encounters.doctor_id > identity.doctors.id [color: #E11D48]
+Ref: clinical.precheck_forms.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.precheck_forms.predoctor_id > identity.predoctors.id [color: #E11D48]
+Ref: clinical.care_tasks.patient_id > patient_record.patients.id [color: #E11D48]
+Ref: clinical.care_tasks.appointment_id > scheduling.appointments.id [color: #E11D48]
+Ref: clinical.care_tasks.encounter_id > clinical.encounters.id [color: #E11D48]
+Ref: clinical.care_tasks.assigned_to > identity.users.id [color: #E11D48]
+Ref: clinical.care_tasks.created_by > identity.users.id [color: #E11D48]
+Ref: messaging.notification_events.patient_id > patient_record.patients.id [color: #DB2777]
+Ref: messaging.notification_events.user_id > identity.users.id [color: #DB2777]
+Ref: messaging.notification_events.created_by > identity.users.id [color: #DB2777]

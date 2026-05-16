@@ -45,9 +45,13 @@
     "consent_documents": ["id","code","title","body_md","version","audience","is_required","is_active","published_at","created_by","created_at","updated_at"],
     "patient_surgeries": ["id","patient_id","surgery_type_id","performed_at","hospital_name","surgeon_name","notes","recorded_by","is_archived","archived_at","archived_by","created_at","updated_at"],
     "tenant_app_config": ["id","profile_id","app_name","app_tagline","splash_logo_url","icon_url","primary_color","secondary_color","maintenance_message","min_supported_version","force_update_version","enabled_locales","support_phone","support_email","created_at","updated_at"],
-    "clinical_documents": ["id","patient_id","encounter_id","doctor_id","document_type","title","content","file_url","status","created_by","finalized_at","is_archived","archived_at","archived_by","created_at","updated_at","client_request_id","finalized_by","voided_at","voided_by","void_reason"],
+    "clinical_documents": ["id","patient_id","encounter_id","doctor_id","document_type","title","content","file_url","status","created_by","finalized_at","is_archived","archived_at","archived_by","created_at","updated_at","client_request_id","finalized_by","voided_at","voided_by","void_reason","template_id"],
     "doctor_specialties": ["id","doctor_id","specialty_id","is_primary","created_at","updated_at"],
     "document_templates": ["id","name","template_type","description","sections","is_default","created_by","is_archived","archived_at","archived_by","created_at","updated_at"],
+    "document_template_versions": ["id","template_id","version_number","status","is_current","schema_version","authoring_mode","render_profile","locale","direction","definition","definition_checksum","created_by","published_by","published_at","created_at","updated_at"],
+    "document_template_assets": ["id","template_id","template_version_id","asset_type","storage_bucket","storage_path","content_type","byte_size","checksum","image_width_px","image_height_px","scan_status","uploaded_by","is_archived","archived_at","archived_by","created_at","updated_at"],
+    "document_render_jobs": ["id","clinical_document_id","template_version_id","render_profile","status","attempts","requested_by","error_code","safe_error_summary","started_at","completed_at","created_at","updated_at"],
+    "document_render_artifacts": ["id","render_job_id","clinical_document_id","artifact_type","storage_bucket","storage_path","byte_size","checksum","validation_status","created_at"],
     "medication_catalog": ["id","name","generic_name","dosage_forms","common_dosages","notes","is_archived","archived_at","archived_by","created_at","updated_at"],
     "insurance_providers": ["id","code","name","phone","email","website_url","is_system","is_active","created_at","updated_at"],
     "message_attachments": ["id","message_id","uploaded_by","file_url","file_name","mime_type","file_size_bytes","storage_bucket","storage_path","created_at","updated_at"],
@@ -64,6 +68,9 @@
     "doctor_insurance_contracts": ["id","doctor_id","provider_id","doctor_provider_code","contract_number","valid_from","valid_to","is_active","created_at","updated_at"],
     "patient_insurance_policies": ["id","patient_id","provider_id","policy_number","policyholder_name","valid_from","valid_to","is_primary","created_at","updated_at"],
     "staff_invite_resend_events": ["id","staff_member_id","actor_user_id","client_request_id","email","status","error_code","requested_at","sent_at","failed_at","cancelled_at","created_at","updated_at"],
-    "staff_invite_reissue_events": ["id","staff_member_id","actor_user_id","client_request_id","previous_auth_user_id","invited_auth_user_id","email","status","error_code","requested_at","sent_at","failed_at","cancelled_at","created_at","updated_at"]
+    "staff_invite_reissue_events": ["id","staff_member_id","actor_user_id","client_request_id","previous_auth_user_id","invited_auth_user_id","email","status","error_code","requested_at","sent_at","failed_at","cancelled_at","created_at","updated_at"],
+    "analytical_reports": ["id","name","description","category","audience","is_default","is_archived","archived_at","archived_by","created_by","created_at","updated_at"],
+    "analytical_report_versions": ["id","report_id","version_number","status","is_current","schema_version","definition","definition_checksum","created_by","published_by","published_at","created_at","updated_at"],
+    "analytical_report_runs": ["id","report_id","version_id","filter_args","result_summary","scanned_row_estimate","status","error_code","safe_error_summary","requested_by","started_at","completed_at","latency_ms","created_at","updated_at"]
   }
 }

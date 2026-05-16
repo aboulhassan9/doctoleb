@@ -1,0 +1,5929 @@
+{
+  "id": "diagram_13_clinical_actions_detail",
+  "name": "DoctoLeb Clinical Actions Detail ERD",
+  "databaseType": "postgresql",
+  "tables": [
+    {
+      "id": "table_13_clinical_actions_detail_identity_users",
+      "name": "users",
+      "schema": "identity",
+      "order": 0,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_email",
+          "name": "email",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_role",
+          "name": "role",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_first_name",
+          "name": "first_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_last_name",
+          "name": "last_name",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_phone",
+          "name": "phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_avatar_url",
+          "name": "avatar_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_initials",
+          "name": "initials",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "5"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_users_auth_user_id",
+          "name": "auth_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_identity_users_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_identity_users_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 262,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Application identity and role profile.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_identity"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_identity_doctors",
+      "name": "doctors",
+      "schema": "identity",
+      "order": 1,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_department",
+          "name": "department",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_specialization",
+          "name": "specialization",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_license_number",
+          "name": "license_number",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_bio",
+          "name": "bio",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_availability",
+          "name": "availability",
+          "type": {
+            "id": "json",
+            "name": "json"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_consultation_fee",
+          "name": "consultation_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_doctors_provisioning_client_request_id",
+          "name": "provisioning_client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_identity_doctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_identity_doctors_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 684,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Doctor/provider profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_identity"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_identity_predoctors",
+      "name": "predoctors",
+      "schema": "identity",
+      "order": 2,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_identity_predoctors_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_predoctors_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_predoctors_supervisor_id",
+          "name": "supervisor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_predoctors_university",
+          "name": "university",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_predoctors_year_of_study",
+          "name": "year_of_study",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_predoctors_status",
+          "name": "status",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_predoctors_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_identity_predoctors_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_identity_predoctors_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_identity_predoctors_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 74,
+      "y": 1106,
+      "width": 260,
+      "color": "#2563EB",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Assistant role that prepares prechecks.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_identity"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_patient_record_patients",
+      "name": "patients",
+      "schema": "patient_record",
+      "order": 3,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_user_id",
+          "name": "user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_date_of_birth",
+          "name": "date_of_birth",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_sex",
+          "name": "sex",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_blood_type",
+          "name": "blood_type",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_medical_history",
+          "name": "medical_history",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_emergency_contact",
+          "name": "emergency_contact",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_emergency_phone",
+          "name": "emergency_phone",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_insurance_id",
+          "name": "insurance_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "100"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_intake_completed_at",
+          "name": "intake_completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_established_at",
+          "name": "established_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_full_name",
+          "name": "full_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patients_email",
+          "name": "email",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_patient_record_patients_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_patient_record_patients_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 262,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Clinical patient profile linked to a user.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_patient_record"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_patient_record_patient_insurance_policies",
+      "name": "patient_insurance_policies",
+      "schema": "patient_record",
+      "order": 4,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_provider_id",
+          "name": "provider_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_policy_number",
+          "name": "policy_number",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_policyholder_name",
+          "name": "policyholder_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_valid_from",
+          "name": "valid_from",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_valid_to",
+          "name": "valid_to",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_is_primary",
+          "name": "is_primary",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_patient_record_patient_insurance_policies_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 500,
+      "y": 684,
+      "width": 260,
+      "color": "#0D9488",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Patient insurance policy details.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_patient_record"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_scheduling_appointments",
+      "name": "appointments",
+      "schema": "scheduling",
+      "order": 5,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_scheduled_at",
+          "name": "scheduled_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_duration_minutes",
+          "name": "duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_reason",
+          "name": "reason",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_slot_id",
+          "name": "slot_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_booked_by",
+          "name": "booked_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_appointments_visit_type_id",
+          "name": "visit_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_scheduling_appointments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_scheduling_appointments_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 262,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Booked visit between patient and doctor.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_scheduling"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_scheduling_clinics",
+      "name": "clinics",
+      "schema": "scheduling",
+      "order": 6,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_address",
+          "name": "address",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_location_type",
+          "name": "location_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_city_id",
+          "name": "city_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_phone",
+          "name": "phone",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_working_hours",
+          "name": "working_hours",
+          "type": {
+            "id": "jsonb",
+            "name": "jsonb"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_is_primary",
+          "name": "is_primary",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_latitude",
+          "name": "latitude",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 10,
+          "scale": 7
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_longitude",
+          "name": "longitude",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 10,
+          "scale": 7
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_map_url",
+          "name": "map_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_floor",
+          "name": "floor",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_room",
+          "name": "room",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_scheduling_clinics_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_scheduling_clinics_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_scheduling_clinics_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 926,
+      "y": 684,
+      "width": 260,
+      "color": "#D97706",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Clinic location where visits happen.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_scheduling"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_reference_visit_types",
+      "name": "visit_types",
+      "schema": "reference",
+      "order": 7,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_code",
+          "name": "code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_name",
+          "name": "name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_default_duration_minutes",
+          "name": "default_duration_minutes",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_default_fee",
+          "name": "default_fee",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_requires_intake",
+          "name": "requires_intake",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_billable_service_id",
+          "name": "billable_service_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_is_system",
+          "name": "is_system",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_is_active",
+          "name": "is_active",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_reference_visit_types_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_reference_visit_types_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_reference_visit_types_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1352,
+      "y": 262,
+      "width": 260,
+      "color": "#64748B",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Visit type, duration, and billing defaults.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_reference"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_encounters",
+      "name": "encounters",
+      "schema": "clinical",
+      "order": 8,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_clinic_id",
+          "name": "clinic_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_visit_type_id",
+          "name": "visit_type_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_started_at",
+          "name": "started_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_ended_at",
+          "name": "ended_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_chief_complaint",
+          "name": "chief_complaint",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_summary",
+          "name": "summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_encounters_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_encounters_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_encounters_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 262,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Clinical visit record opened from an appointment.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_clinical_note_drafts",
+      "name": "clinical_note_drafts",
+      "schema": "clinical",
+      "order": 9,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_author_user_id",
+          "name": "author_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_note_type",
+          "name": "note_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_content",
+          "name": "content",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_expires_at",
+          "name": "expires_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_discarded_at",
+          "name": "discarded_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_converted_at",
+          "name": "converted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_converted_note_id",
+          "name": "converted_note_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_clinical_note_drafts_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_clinical_note_drafts_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 684,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Temporary draft before a clinical note is saved.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_clinical_notes",
+      "name": "clinical_notes",
+      "schema": "clinical",
+      "order": 10,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_author_user_id",
+          "name": "author_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_note_type",
+          "name": "note_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_content",
+          "name": "content",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_visibility",
+          "name": "visibility",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_notes_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_clinical_notes_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_clinical_notes_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 1106,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Doctor observations saved in the encounter record.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_diagnoses",
+      "name": "diagnoses",
+      "schema": "clinical",
+      "order": 11,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_disease_id",
+          "name": "disease_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_icd10_code",
+          "name": "icd10_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_diagnosis_text",
+          "name": "diagnosis_text",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_diagnosis_type",
+          "name": "diagnosis_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_onset_date",
+          "name": "onset_date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_resolved_at",
+          "name": "resolved_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_notes",
+          "name": "notes",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_recorded_by",
+          "name": "recorded_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_diagnoses_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_diagnoses_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_diagnoses_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 1528,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Diagnosis entries captured during an encounter.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_prescriptions",
+      "name": "prescriptions",
+      "schema": "clinical",
+      "order": 12,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_medication_name",
+          "name": "medication_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_dosage",
+          "name": "dosage",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_route",
+          "name": "route",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_frequency",
+          "name": "frequency",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_duration",
+          "name": "duration",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_instructions",
+          "name": "instructions",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_start_date",
+          "name": "start_date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_end_date",
+          "name": "end_date",
+          "type": {
+            "id": "date",
+            "name": "date"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_prescribed_by",
+          "name": "prescribed_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_prescriptions_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_prescriptions_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_prescriptions_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 1950,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Medication order created by the doctor.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_lab_orders",
+      "name": "lab_orders",
+      "schema": "clinical",
+      "order": 13,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_instructions",
+          "name": "instructions",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_ordered_at",
+          "name": "ordered_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_resulted_at",
+          "name": "resulted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_result_summary",
+          "name": "result_summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_result_document_id",
+          "name": "result_document_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_ordered_by",
+          "name": "ordered_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_lab_orders_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_lab_orders_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_lab_orders_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 2372,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Lab request created from an encounter.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_imaging_orders",
+      "name": "imaging_orders",
+      "schema": "clinical",
+      "order": 14,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_imaging_type",
+          "name": "imaging_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_body_area",
+          "name": "body_area",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_instructions",
+          "name": "instructions",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_ordered_at",
+          "name": "ordered_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_resulted_at",
+          "name": "resulted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_result_summary",
+          "name": "result_summary",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_result_document_id",
+          "name": "result_document_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_ordered_by",
+          "name": "ordered_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_imaging_orders_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_imaging_orders_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_imaging_orders_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 2794,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Imaging request created from an encounter.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "name": "clinical_documents",
+      "schema": "clinical",
+      "order": 15,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_document_type",
+          "name": "document_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_content",
+          "name": "content",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_file_url",
+          "name": "file_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_finalized_at",
+          "name": "finalized_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_finalized_by",
+          "name": "finalized_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_voided_at",
+          "name": "voided_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_voided_by",
+          "name": "voided_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_clinical_documents_void_reason",
+          "name": "void_reason",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_clinical_documents_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_clinical_documents_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 3216,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Document metadata attached to an encounter.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_document_attachments",
+      "name": "document_attachments",
+      "schema": "clinical",
+      "order": 16,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_document_id",
+          "name": "document_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_uploaded_by",
+          "name": "uploaded_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_file_url",
+          "name": "file_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_file_name",
+          "name": "file_name",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_mime_type",
+          "name": "mime_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_file_size_bytes",
+          "name": "file_size_bytes",
+          "type": {
+            "id": "bigint",
+            "name": "bigint"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_storage_bucket",
+          "name": "storage_bucket",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_storage_path",
+          "name": "storage_path",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_document_attachments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_document_attachments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_document_attachments_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 3638,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Files connected to a clinical document.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_precheck_forms",
+      "name": "precheck_forms",
+      "schema": "clinical",
+      "order": 17,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_predoctor_id",
+          "name": "predoctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_blood_pressure",
+          "name": "blood_pressure",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "20"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_heart_rate",
+          "name": "heart_rate",
+          "type": {
+            "id": "integer",
+            "name": "integer"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_temperature",
+          "name": "temperature",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 5,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_weight",
+          "name": "weight",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 8,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_height",
+          "name": "height",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 8,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_current_medications",
+          "name": "current_medications",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_allergies",
+          "name": "allergies",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_symptoms",
+          "name": "symptoms",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_status",
+          "name": "status",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_submitted_at",
+          "name": "submitted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_image_url",
+          "name": "image_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_precheck_forms_is_urgent",
+          "name": "is_urgent",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_precheck_forms_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_precheck_forms_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 4060,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Predoctor precheck form for a visit.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_clinical_care_tasks",
+      "name": "care_tasks",
+      "schema": "clinical",
+      "order": 18,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_assigned_to",
+          "name": "assigned_to",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_task_type",
+          "name": "task_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_title",
+          "name": "title",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_description",
+          "name": "description",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_due_at",
+          "name": "due_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_priority",
+          "name": "priority",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_completed_at",
+          "name": "completed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_clinical_care_tasks_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_clinical_care_tasks_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_clinical_care_tasks_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 1778,
+      "y": 4482,
+      "width": 260,
+      "color": "#E11D48",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Follow-up task for clinical or operational work.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_clinical"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_messaging_conversations",
+      "name": "conversations",
+      "schema": "messaging",
+      "order": 19,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_subject",
+          "name": "subject",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_conversation_type",
+          "name": "conversation_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_closed_at",
+          "name": "closed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_is_archived",
+          "name": "is_archived",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_archived_at",
+          "name": "archived_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_archived_by",
+          "name": "archived_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_conversations_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_messaging_conversations_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_messaging_conversations_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2204,
+      "y": 262,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Message thread between patient and clinic users.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_messaging"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_messaging_messages",
+      "name": "messages",
+      "schema": "messaging",
+      "order": 20,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_conversation_id",
+          "name": "conversation_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_sender_user_id",
+          "name": "sender_user_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_sender_patient_id",
+          "name": "sender_patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_body",
+          "name": "body",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_message_type",
+          "name": "message_type",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_is_internal",
+          "name": "is_internal",
+          "type": {
+            "id": "boolean",
+            "name": "boolean"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_edited_at",
+          "name": "edited_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_deleted_at",
+          "name": "deleted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_client_request_id",
+          "name": "client_request_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_redacted_at",
+          "name": "redacted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_messaging_messages_redacted_by",
+          "name": "redacted_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_messaging_messages_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_messaging_messages_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2204,
+      "y": 684,
+      "width": 260,
+      "color": "#DB2777",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Individual message content and sender.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_messaging"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_billing_payments",
+      "name": "payments",
+      "schema": "billing",
+      "order": 21,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_appointment_id",
+          "name": "appointment_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_amount",
+          "name": "amount",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_currency",
+          "name": "currency",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "10"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_status",
+          "name": "status",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_payment_method",
+          "name": "payment_method",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "50"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_transaction_id",
+          "name": "transaction_id",
+          "type": {
+            "id": "varchar",
+            "name": "varchar"
+          },
+          "primaryKey": false,
+          "unique": true,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "characterMaximumLength": "255"
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_payments_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_billing_payments_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_billing_payments_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2630,
+      "y": 262,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Payment record linked to patient, doctor, or visit.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_billing"
+    },
+    {
+      "id": "table_13_clinical_actions_detail_billing_insurance_claims",
+      "name": "insurance_claims",
+      "schema": "billing",
+      "order": 22,
+      "fields": [
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_id",
+          "name": "id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": true,
+          "unique": true,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_patient_id",
+          "name": "patient_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_doctor_id",
+          "name": "doctor_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_policy_id",
+          "name": "policy_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_template_id",
+          "name": "template_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_amount",
+          "name": "amount",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_amount_paid_by_insurer",
+          "name": "amount_paid_by_insurer",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_amount_paid_by_patient",
+          "name": "amount_paid_by_patient",
+          "type": {
+            "id": "numeric",
+            "name": "numeric"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771,
+          "precision": 10,
+          "scale": 2
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_diagnosis_code",
+          "name": "diagnosis_code",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_claim_form_pdf_url",
+          "name": "claim_form_pdf_url",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_status",
+          "name": "status",
+          "type": {
+            "id": "text",
+            "name": "text"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_printed_at",
+          "name": "printed_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_submitted_at",
+          "name": "submitted_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_paid_at",
+          "name": "paid_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_created_by",
+          "name": "created_by",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_created_at",
+          "name": "created_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_updated_at",
+          "name": "updated_at",
+          "type": {
+            "id": "timestamptz",
+            "name": "timestamptz"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": false,
+          "createdAt": 1778757633771
+        },
+        {
+          "id": "field_13_clinical_actions_detail_billing_insurance_claims_encounter_id",
+          "name": "encounter_id",
+          "type": {
+            "id": "uuid",
+            "name": "uuid"
+          },
+          "primaryKey": false,
+          "unique": false,
+          "nullable": true,
+          "createdAt": 1778757633771
+        }
+      ],
+      "indexes": [
+        {
+          "id": "idx_13_clinical_actions_detail_billing_insurance_claims_pk",
+          "name": "",
+          "unique": true,
+          "fieldIds": [
+            "field_13_clinical_actions_detail_billing_insurance_claims_id"
+          ],
+          "createdAt": 1778757633771,
+          "isPrimaryKey": true
+        }
+      ],
+      "x": 2630,
+      "y": 684,
+      "width": 260,
+      "color": "#059669",
+      "isView": false,
+      "createdAt": 1778757633771,
+      "comments": "Insurance claim raised from a clinical visit.",
+      "expanded": false,
+      "parentAreaId": "area_13_clinical_actions_detail_billing"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_13_clinical_actions_detail_0",
+      "name": "doctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_identity_doctors_user_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_1",
+      "name": "patients_user_id_users_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_patient_record_patients_user_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_2",
+      "name": "appointments_doctor_id_doctors_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_scheduling_appointments",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_scheduling_appointments_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_3",
+      "name": "appointments_patient_id_patients_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_scheduling_appointments",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_scheduling_appointments_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_4",
+      "name": "appointments_booked_by_users_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_scheduling_appointments",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_scheduling_appointments_booked_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_5",
+      "name": "appointments_clinic_id_clinics_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_13_clinical_actions_detail_scheduling_appointments",
+      "targetTableId": "table_13_clinical_actions_detail_scheduling_clinics",
+      "sourceFieldId": "field_13_clinical_actions_detail_scheduling_appointments_clinic_id",
+      "targetFieldId": "field_13_clinical_actions_detail_scheduling_clinics_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_6",
+      "name": "appointments_visit_type_id_visit_types_id",
+      "sourceSchema": "scheduling",
+      "targetSchema": "reference",
+      "sourceTableId": "table_13_clinical_actions_detail_scheduling_appointments",
+      "targetTableId": "table_13_clinical_actions_detail_reference_visit_types",
+      "sourceFieldId": "field_13_clinical_actions_detail_scheduling_appointments_visit_type_id",
+      "targetFieldId": "field_13_clinical_actions_detail_reference_visit_types_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_7",
+      "name": "encounters_appointment_id_appointments_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "targetTableId": "table_13_clinical_actions_detail_scheduling_appointments",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_encounters_appointment_id",
+      "targetFieldId": "field_13_clinical_actions_detail_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_8",
+      "name": "encounters_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_encounters_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_9",
+      "name": "encounters_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_encounters_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_10",
+      "name": "encounters_clinic_id_clinics_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "targetTableId": "table_13_clinical_actions_detail_scheduling_clinics",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_encounters_clinic_id",
+      "targetFieldId": "field_13_clinical_actions_detail_scheduling_clinics_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_11",
+      "name": "encounters_visit_type_id_visit_types_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "reference",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "targetTableId": "table_13_clinical_actions_detail_reference_visit_types",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_encounters_visit_type_id",
+      "targetFieldId": "field_13_clinical_actions_detail_reference_visit_types_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_12",
+      "name": "encounters_created_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_encounters_created_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_13",
+      "name": "clinical_note_drafts_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_note_drafts",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_14",
+      "name": "clinical_note_drafts_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_note_drafts",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_15",
+      "name": "clinical_note_drafts_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_note_drafts",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_16",
+      "name": "clinical_note_drafts_author_user_id_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_note_drafts",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_author_user_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_17",
+      "name": "clinical_note_drafts_converted_note_id_clinical_notes_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_note_drafts",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_clinical_notes",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_note_drafts_converted_note_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_clinical_notes_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_18",
+      "name": "clinical_notes_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_notes",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_notes_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_19",
+      "name": "clinical_notes_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_notes",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_notes_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_20",
+      "name": "clinical_notes_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_notes",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_notes_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_21",
+      "name": "clinical_notes_author_user_id_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_notes",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_notes_author_user_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_22",
+      "name": "diagnoses_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_diagnoses",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_diagnoses_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_23",
+      "name": "diagnoses_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_diagnoses",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_diagnoses_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_24",
+      "name": "diagnoses_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_diagnoses",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_diagnoses_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_25",
+      "name": "diagnoses_recorded_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_diagnoses",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_diagnoses_recorded_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_26",
+      "name": "prescriptions_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_prescriptions",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_prescriptions_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_27",
+      "name": "prescriptions_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_prescriptions",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_prescriptions_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_28",
+      "name": "prescriptions_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_prescriptions",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_prescriptions_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_29",
+      "name": "prescriptions_prescribed_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_prescriptions",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_prescriptions_prescribed_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_30",
+      "name": "lab_orders_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_lab_orders",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_lab_orders_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_31",
+      "name": "lab_orders_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_lab_orders",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_lab_orders_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_32",
+      "name": "lab_orders_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_lab_orders",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_lab_orders_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_33",
+      "name": "lab_orders_ordered_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_lab_orders",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_lab_orders_ordered_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_34",
+      "name": "lab_orders_result_document_id_clinical_documents_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_lab_orders",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_lab_orders_result_document_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_35",
+      "name": "imaging_orders_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_imaging_orders",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_imaging_orders_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_36",
+      "name": "imaging_orders_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_imaging_orders",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_imaging_orders_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_37",
+      "name": "imaging_orders_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_imaging_orders",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_imaging_orders_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_38",
+      "name": "imaging_orders_ordered_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_imaging_orders",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_imaging_orders_ordered_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_39",
+      "name": "imaging_orders_result_document_id_clinical_documents_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_imaging_orders",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_imaging_orders_result_document_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_40",
+      "name": "clinical_documents_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_41",
+      "name": "clinical_documents_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_42",
+      "name": "clinical_documents_doctor_id_doctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_43",
+      "name": "clinical_documents_created_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_created_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_44",
+      "name": "clinical_documents_finalized_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_finalized_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_45",
+      "name": "clinical_documents_voided_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_voided_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_46",
+      "name": "document_attachments_document_id_clinical_documents_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_document_attachments",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_clinical_documents",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_document_attachments_document_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_clinical_documents_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_47",
+      "name": "document_attachments_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_document_attachments",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_document_attachments_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_48",
+      "name": "document_attachments_uploaded_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_document_attachments",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_document_attachments_uploaded_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_49",
+      "name": "precheck_forms_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_precheck_forms",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_precheck_forms_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_50",
+      "name": "precheck_forms_predoctor_id_predoctors_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_precheck_forms",
+      "targetTableId": "table_13_clinical_actions_detail_identity_predoctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_precheck_forms_predoctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_predoctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_51",
+      "name": "predoctors_user_id_users_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_identity_predoctors",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_identity_predoctors_user_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_52",
+      "name": "predoctors_supervisor_id_doctors_id",
+      "sourceSchema": "identity",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_identity_predoctors",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_identity_predoctors_supervisor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_53",
+      "name": "care_tasks_appointment_id_appointments_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_care_tasks",
+      "targetTableId": "table_13_clinical_actions_detail_scheduling_appointments",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_care_tasks_appointment_id",
+      "targetFieldId": "field_13_clinical_actions_detail_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_54",
+      "name": "care_tasks_encounter_id_encounters_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_care_tasks",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_care_tasks_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_55",
+      "name": "care_tasks_patient_id_patients_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_care_tasks",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_care_tasks_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_56",
+      "name": "care_tasks_assigned_to_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_care_tasks",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_care_tasks_assigned_to",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_57",
+      "name": "care_tasks_created_by_users_id",
+      "sourceSchema": "clinical",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_clinical_care_tasks",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_clinical_care_tasks_created_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_58",
+      "name": "conversations_patient_id_patients_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_messaging_conversations",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_messaging_conversations_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_59",
+      "name": "conversations_created_by_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_messaging_conversations",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_messaging_conversations_created_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_60",
+      "name": "messages_conversation_id_conversations_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "messaging",
+      "sourceTableId": "table_13_clinical_actions_detail_messaging_messages",
+      "targetTableId": "table_13_clinical_actions_detail_messaging_conversations",
+      "sourceFieldId": "field_13_clinical_actions_detail_messaging_messages_conversation_id",
+      "targetFieldId": "field_13_clinical_actions_detail_messaging_conversations_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_61",
+      "name": "messages_sender_user_id_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_messaging_messages",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_messaging_messages_sender_user_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_62",
+      "name": "messages_sender_patient_id_patients_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_messaging_messages",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_messaging_messages_sender_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_63",
+      "name": "messages_redacted_by_users_id",
+      "sourceSchema": "messaging",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_messaging_messages",
+      "targetTableId": "table_13_clinical_actions_detail_identity_users",
+      "sourceFieldId": "field_13_clinical_actions_detail_messaging_messages_redacted_by",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_users_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_64",
+      "name": "payments_appointment_id_appointments_id",
+      "sourceSchema": "billing",
+      "targetSchema": "scheduling",
+      "sourceTableId": "table_13_clinical_actions_detail_billing_payments",
+      "targetTableId": "table_13_clinical_actions_detail_scheduling_appointments",
+      "sourceFieldId": "field_13_clinical_actions_detail_billing_payments_appointment_id",
+      "targetFieldId": "field_13_clinical_actions_detail_scheduling_appointments_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_65",
+      "name": "payments_doctor_id_doctors_id",
+      "sourceSchema": "billing",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_billing_payments",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_billing_payments_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_66",
+      "name": "payments_patient_id_patients_id",
+      "sourceSchema": "billing",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_billing_payments",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_billing_payments_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_67",
+      "name": "insurance_claims_patient_id_patients_id",
+      "sourceSchema": "billing",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_billing_insurance_claims",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_billing_insurance_claims_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_68",
+      "name": "insurance_claims_doctor_id_doctors_id",
+      "sourceSchema": "billing",
+      "targetSchema": "identity",
+      "sourceTableId": "table_13_clinical_actions_detail_billing_insurance_claims",
+      "targetTableId": "table_13_clinical_actions_detail_identity_doctors",
+      "sourceFieldId": "field_13_clinical_actions_detail_billing_insurance_claims_doctor_id",
+      "targetFieldId": "field_13_clinical_actions_detail_identity_doctors_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_69",
+      "name": "insurance_claims_encounter_id_encounters_id",
+      "sourceSchema": "billing",
+      "targetSchema": "clinical",
+      "sourceTableId": "table_13_clinical_actions_detail_billing_insurance_claims",
+      "targetTableId": "table_13_clinical_actions_detail_clinical_encounters",
+      "sourceFieldId": "field_13_clinical_actions_detail_billing_insurance_claims_encounter_id",
+      "targetFieldId": "field_13_clinical_actions_detail_clinical_encounters_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_70",
+      "name": "insurance_claims_policy_id_patient_insurance_policies_id",
+      "sourceSchema": "billing",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_billing_insurance_claims",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patient_insurance_policies",
+      "sourceFieldId": "field_13_clinical_actions_detail_billing_insurance_claims_policy_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    },
+    {
+      "id": "rel_13_clinical_actions_detail_71",
+      "name": "patient_insurance_policies_patient_id_patients_id",
+      "sourceSchema": "patient_record",
+      "targetSchema": "patient_record",
+      "sourceTableId": "table_13_clinical_actions_detail_patient_record_patient_insurance_policies",
+      "targetTableId": "table_13_clinical_actions_detail_patient_record_patients",
+      "sourceFieldId": "field_13_clinical_actions_detail_patient_record_patient_insurance_policies_patient_id",
+      "targetFieldId": "field_13_clinical_actions_detail_patient_record_patients_id",
+      "sourceCardinality": "many",
+      "targetCardinality": "one",
+      "createdAt": 1778757633771
+    }
+  ],
+  "dependencies": [],
+  "areas": [
+    {
+      "id": "area_13_clinical_actions_detail_identity",
+      "name": "identity",
+      "x": 40,
+      "y": 190,
+      "width": 340,
+      "height": 1272,
+      "color": "#2563EB",
+      "order": 0
+    },
+    {
+      "id": "area_13_clinical_actions_detail_patient_record",
+      "name": "patient_record",
+      "x": 466,
+      "y": 190,
+      "width": 340,
+      "height": 914,
+      "color": "#0D9488",
+      "order": 1
+    },
+    {
+      "id": "area_13_clinical_actions_detail_scheduling",
+      "name": "scheduling",
+      "x": 892,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#D97706",
+      "order": 2
+    },
+    {
+      "id": "area_13_clinical_actions_detail_reference",
+      "name": "reference",
+      "x": 1318,
+      "y": 190,
+      "width": 340,
+      "height": 524,
+      "color": "#64748B",
+      "order": 3
+    },
+    {
+      "id": "area_13_clinical_actions_detail_clinical",
+      "name": "clinical",
+      "x": 1744,
+      "y": 190,
+      "width": 340,
+      "height": 4744,
+      "color": "#E11D48",
+      "order": 4
+    },
+    {
+      "id": "area_13_clinical_actions_detail_messaging",
+      "name": "messaging",
+      "x": 2170,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#DB2777",
+      "order": 5
+    },
+    {
+      "id": "area_13_clinical_actions_detail_billing",
+      "name": "billing",
+      "x": 2596,
+      "y": 190,
+      "width": 340,
+      "height": 946,
+      "color": "#059669",
+      "order": 6
+    }
+  ],
+  "customTypes": [],
+  "notes": [
+    {
+      "id": "note_13_clinical_actions_detail_legend",
+      "content": "Read: FK > owner. Areas group schemas. Lines should flow left to right.",
+      "x": 40,
+      "y": 40,
+      "width": 520,
+      "height": 110,
+      "color": "#FEF3C7",
+      "order": 0
+    },
+    {
+      "id": "note_13_clinical_actions_detail_story",
+      "content": "appointment opens encounter; encounter owns notes, orders, files, tasks, messages, and billing.",
+      "x": 600,
+      "y": 40,
+      "width": 560,
+      "height": 110,
+      "color": "#DBEAFE",
+      "order": 1
+    }
+  ],
+  "createdAt": "2026-05-14T11:20:33.771Z",
+  "updatedAt": "2026-05-14T11:20:33.771Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.65
+  },
+  "canvasBounds": {
+    "x": 0,
+    "y": 0,
+    "width": 3102,
+    "height": 5054
+  }
+}

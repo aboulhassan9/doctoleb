@@ -18,6 +18,7 @@ describe('ENTITLEMENT_FEATURES', () => {
     assert.equal(ENTITLEMENT_FEATURES.messaging, 'messaging');
     assert.equal(ENTITLEMENT_FEATURES.insuranceBilling, 'insurance_billing');
     assert.equal(ENTITLEMENT_FEATURES.customDomain, 'custom_domain');
+    assert.equal(ENTITLEMENT_FEATURES.templatesEngine, 'templates_engine');
   });
 });
 

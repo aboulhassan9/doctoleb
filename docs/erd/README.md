@@ -1,41 +1,34 @@
 # DoctoLeb ERD Export
 
-This folder is the schema snapshot handoff point for future agents and
-white-label tenant onboarding.
+This folder keeps only the curated ERDs that are useful for the graduation
+report and handoff. The old full-schema DBML and broad generated slices were
+removed because they were cluttered and hard to document.
 
-## Current Status
+- `views/*.dbml`: source diagrams for ChartDB/manual editing.
+- `rendered/*.svg`: generated SVGs for the report and appendix.
+- `views/10` to `13`: detailed ERDs with full columns for key records.
+- `views/14` to `19`: process ERDs showing the tables each feature reads or mutates.
 
-- `tables.txt` is generated from the local migration directory after the legacy
-  burn-down and Block F baseline migrations. It should contain 57 active public
-  tables.
-- `schema_dump.sql` and `erd.png` still require a disposable branch/local
-  database connection. They are intentionally not faked from partial tooling
-  output.
+## Current ERDs
+| File | Use |
+|---|---|
+| `views/10-doctor-provider-detail.dbml` | Doctor/provider, staff, schedule, clinic, contracts. |
+| `views/11-patient-record-detail.dbml` | Patient identity, intake, history, consent, devices, insurance. |
+| `views/12-appointment-booking-detail.dbml` | Availability, slots, booking, encounter, payment, notifications. |
+| `views/13-clinical-actions-detail.dbml` | Encounter notes, drafts, diagnoses, orders, files, tasks, billing. |
+| `views/14-predoctor-precheck-process.dbml` | Predoctor vitals/precheck process. |
+| `views/15-messaging-notification-process.dbml` | Messaging, receipts, attachments, notification delivery. |
+| `views/16-billing-insurance-process.dbml` | Payments, insurance claims, provider contracts, policies. |
+| `views/17-staff-lifecycle-process.dbml` | Invite, resend, reissue, disable, reactivate. |
+| `views/18-runtime-branding-consent-feature-process.dbml` | Branding, feature gates, content, consent. |
+| `views/19-saas-tenant-provisioning-process.dbml` | Tenant setup, provider connections, secrets, migrations, audit. |
 
-## Generate The Full Artifacts
-
-Use a Supabase branch or local database, not the live development tenant:
+## Render
+Render the table-style diagrams to SVG:
 
 ```bash
-mkdir -p docs/erd
-
-pg_dump "$BACKEND_TEST_DATABASE_URL" \
-  --schema-only \
-  --schema=public \
-  --no-owner \
-  --no-privileges \
-  > docs/erd/schema_dump.sql
-
-psql "$BACKEND_TEST_DATABASE_URL" \
-  -c "\dt public.*" \
-  > docs/erd/tables.txt
+npm run render:erd-views
 ```
 
-Then import `docs/erd/schema_dump.sql` into dbdiagram.io, export the visual ERD
-as `docs/erd/erd.png`, and commit all three files together.
-
-## Drift Rule
-
-If a migration adds or removes a public table, update `tables.txt` in the same
-change. Do not manually edit `schema_dump.sql`; regenerate it from a branch/local
-database after migrations replay cleanly.
+Use one ERD per report page. If migrations change a workflow, update the
+matching curated DBML directly and rerender the SVG.

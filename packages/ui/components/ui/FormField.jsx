@@ -15,6 +15,7 @@ export default function FormField({
   value,
   onChange,
   error,
+  hint,
   required = false,
   placeholder,
   options,
@@ -91,6 +92,9 @@ export default function FormField({
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       {renderInput()}
+      {hint && !error && (
+        <p className="text-xs text-slate-500 mt-1">{hint}</p>
+      )}
       {error && (
         <p id={`${id}-error`} className="text-xs text-red-500 mt-1" role="alert">
           {error}

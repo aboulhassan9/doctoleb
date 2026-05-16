@@ -1,0 +1,396 @@
+Project "DoctoLeb Patient Record Detail ERD" {
+  database_type: "PostgreSQL"
+  Note: "Detailed ERD: patient identity, demographics, intake, consent, devices, medical history, family history, vaccines, surgeries, and insurance."
+}
+
+Table identity.users {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  role varchar(50) [not null]
+  first_name varchar(255)
+  last_name varchar(255)
+  phone varchar(20)
+  avatar_url text
+  initials varchar(5)
+  is_active boolean
+  created_at timestamptz
+  updated_at timestamptz
+  auth_user_id uuid
+
+  Note: 'Application identity and role profile.'
+}
+
+Table patient_record.patients {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  date_of_birth date
+  sex varchar(20)
+  blood_type varchar(10)
+  allergies text
+  medical_history text
+  emergency_contact varchar(255)
+  emergency_phone varchar(20)
+  insurance_id varchar(100)
+  created_at timestamptz
+  updated_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  intake_completed_at timestamptz
+  established_at timestamptz
+  full_name text [not null]
+  phone text [not null]
+  email text
+
+  Note: 'Clinical patient profile linked to a user.'
+}
+
+Table patient_record.medical_intake {
+  id uuid [pk]
+  patient_id uuid [not null, unique]
+  status text [not null]
+  collected_by uuid
+  completed_by uuid
+  completed_at timestamptz
+  reopened_by uuid
+  reopened_at timestamptz
+  reopen_reason text
+  occupation_id uuid
+  occupation_other text
+  blood_group_id smallint
+  marital_status text
+  living_with text
+  smoking_status text
+  alcohol_use text
+  exercise_frequency text
+  allergies_text text
+  current_medications_text text
+  notes text
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Structured intake captured for the patient.'
+}
+
+Table patient_record.patient_consents {
+  id uuid [pk]
+  patient_id uuid [not null]
+  consent_document_id uuid [not null]
+  accepted_by_user_id uuid
+  accepted_at timestamptz [not null]
+  revoked_at timestamptz
+  ip_address inet
+  user_agent text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  acceptance_method text [not null]
+
+  Note: 'Patient acceptance of consent documents.'
+}
+
+Table runtime.consent_documents {
+  id uuid [pk]
+  code text [not null]
+  title text [not null]
+  body_md text [not null]
+  version text [not null]
+  audience text [not null]
+  is_required boolean [not null]
+  is_active boolean [not null]
+  published_at timestamptz
+  created_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Consent document shown to patients.'
+}
+
+Table patient_record.patient_devices {
+  id uuid [pk]
+  patient_id uuid [not null]
+  user_id uuid [not null]
+  platform text [not null]
+  push_token text [not null, unique]
+  device_label text
+  app_version text
+  locale text
+  timezone text
+  is_active boolean [not null]
+  last_seen_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Patient device used for push delivery.'
+}
+
+Table patient_record.patient_diseases {
+  id uuid [pk]
+  patient_id uuid [not null]
+  disease_id uuid [not null]
+  status text [not null]
+  severity text
+  diagnosed_at date
+  notes text
+  recorded_by uuid
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Known patient disease history.'
+}
+
+Table patient_record.patient_family_history {
+  id uuid [pk]
+  patient_id uuid [not null]
+  relation_id smallint [not null]
+  disease_id uuid
+  condition_text text
+  age_at_onset smallint
+  is_deceased boolean [not null]
+  death_cause_disease_id uuid
+  death_cause_text text
+  notes text
+  recorded_by uuid
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Family medical history for risk context.'
+}
+
+Table patient_record.patient_surgeries {
+  id uuid [pk]
+  patient_id uuid [not null]
+  surgery_type_id uuid [not null]
+  performed_at date
+  hospital_name text
+  surgeon_name text
+  notes text
+  recorded_by uuid
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Past surgery history.'
+}
+
+Table patient_record.patient_vaccinations {
+  id uuid [pk]
+  patient_id uuid [not null]
+  vaccine_id uuid [not null]
+  status text [not null]
+  given_at date
+  due_at date
+  dose_number smallint
+  lot_number text
+  administered_by text
+  notes text
+  recorded_by uuid
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Vaccination history.'
+}
+
+Table patient_record.patient_insurance_policies {
+  id uuid [pk]
+  patient_id uuid [not null]
+  provider_id uuid [not null]
+  policy_number text [not null]
+  policyholder_name text
+  valid_from date
+  valid_to date
+  is_primary boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Patient insurance policy details.'
+}
+
+Table reference.blood_groups {
+  id smallint [pk]
+  code text [not null, unique]
+  name text [not null]
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Blood group lookup values.'
+}
+
+Table reference.occupations {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  category text
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Occupation lookup values.'
+}
+
+Table reference.diseases {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  icd10_code text
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Disease lookup values.'
+}
+
+Table reference.family_relations {
+  id smallint [pk]
+  code text [not null, unique]
+  name text [not null]
+  sort_order smallint [not null]
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Family relation lookup values.'
+}
+
+Table reference.surgery_types {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  body_system text
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Surgery type lookup values.'
+}
+
+Table reference.vaccines {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  description text
+  typical_doses smallint
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Vaccine lookup values.'
+}
+
+Table billing.insurance_providers {
+  id uuid [pk]
+  code text [not null, unique]
+  name text [not null]
+  phone text
+  email text
+  website_url text
+  is_system boolean [not null]
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Insurance company reference records.'
+}
+
+TableGroup "identity" [color: #2563EB] {
+  identity.users
+
+  Note: 'Login users, doctors, staff, and roles.'
+}
+TableGroup "patient_record" [color: #0D9488] {
+  patient_record.patients
+  patient_record.patient_consents
+  patient_record.patient_devices
+  patient_record.patient_family_history
+  patient_record.patient_surgeries
+  patient_record.patient_vaccinations
+  patient_record.medical_intake
+  patient_record.patient_diseases
+  patient_record.patient_insurance_policies
+
+  Note: 'Patient profile, consent, and history.'
+}
+TableGroup "reference" [color: #64748B] {
+  reference.blood_groups
+  reference.occupations
+  reference.diseases
+  reference.family_relations
+  reference.surgery_types
+  reference.vaccines
+
+  Note: 'Lookup data that standardizes forms.'
+}
+TableGroup "runtime" [color: #7C3AED] {
+  runtime.consent_documents
+
+  Note: 'Branding, pages, consent, and feature config.'
+}
+TableGroup "billing" [color: #059669] {
+  billing.insurance_providers
+
+  Note: 'Payments, insurance, contracts, and claims.'
+}
+
+Note relationship_story {
+  'Relation: user becomes patient; intake, consent, history, devices, and insurance extend the record.'
+}
+
+Note relationship_legend {
+  'Ref format: left foreign key > right owner. Line color follows the left table area.'
+}
+
+Ref: patient_record.patients.user_id > identity.users.id [color: #0D9488]
+Ref: patient_record.patients.archived_by > identity.users.id [color: #0D9488]
+Ref: patient_record.medical_intake.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.medical_intake.collected_by > identity.users.id [color: #0D9488]
+Ref: patient_record.medical_intake.completed_by > identity.users.id [color: #0D9488]
+Ref: patient_record.medical_intake.reopened_by > identity.users.id [color: #0D9488]
+Ref: patient_record.medical_intake.archived_by > identity.users.id [color: #0D9488]
+Ref: patient_record.medical_intake.occupation_id > reference.occupations.id [color: #0D9488]
+Ref: patient_record.medical_intake.blood_group_id > reference.blood_groups.id [color: #0D9488]
+Ref: patient_record.patient_consents.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_consents.consent_document_id > runtime.consent_documents.id [color: #0D9488]
+Ref: patient_record.patient_consents.accepted_by_user_id > identity.users.id [color: #0D9488]
+Ref: runtime.consent_documents.created_by > identity.users.id [color: #7C3AED]
+Ref: patient_record.patient_devices.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_devices.user_id > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_diseases.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_diseases.disease_id > reference.diseases.id [color: #0D9488]
+Ref: patient_record.patient_diseases.recorded_by > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_diseases.archived_by > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_family_history.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_family_history.relation_id > reference.family_relations.id [color: #0D9488]
+Ref: patient_record.patient_family_history.disease_id > reference.diseases.id [color: #0D9488]
+Ref: patient_record.patient_family_history.death_cause_disease_id > reference.diseases.id [color: #0D9488]
+Ref: patient_record.patient_family_history.recorded_by > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_family_history.archived_by > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_surgeries.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_surgeries.surgery_type_id > reference.surgery_types.id [color: #0D9488]
+Ref: patient_record.patient_surgeries.recorded_by > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_surgeries.archived_by > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_vaccinations.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_vaccinations.vaccine_id > reference.vaccines.id [color: #0D9488]
+Ref: patient_record.patient_vaccinations.recorded_by > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_vaccinations.archived_by > identity.users.id [color: #0D9488]
+Ref: patient_record.patient_insurance_policies.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_insurance_policies.provider_id > billing.insurance_providers.id [color: #0D9488]

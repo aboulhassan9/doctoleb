@@ -72,9 +72,8 @@ keep their appointment rows intact — only future bookings are blocked.
 ## Conventions specific to this service
 
 - **Never insert into `appointments` directly to "save a hop."** The
-  atomicity contract lives in `book_slot`. A previous duplicate
-  `clinicService.getAvailableTimeSlots` doing manual math was removed in
-  TIER0_V2 and must not return.
+  atomicity contract lives in `book_slot`. Duplicate manual slot math must not
+  return.
 - **`get_available_slots` is the source of truth for what's bookable.**
   UIs should not filter against another query.
 - **Weekday integers are 1-7 (Mon-Sun) per the DB convention.** The

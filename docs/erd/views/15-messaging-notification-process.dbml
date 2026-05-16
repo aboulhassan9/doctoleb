@@ -1,0 +1,268 @@
+Project "DoctoLeb Messaging And Notification Process ERD" {
+  database_type: "PostgreSQL"
+  Note: "Process ERD: conversation creation, participant membership, message send, attachments, read receipts, notification fan-out, and device delivery."
+}
+
+Table identity.users {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  role varchar(50) [not null]
+  first_name varchar(255)
+  last_name varchar(255)
+  phone varchar(20)
+  avatar_url text
+  initials varchar(5)
+  is_active boolean
+  created_at timestamptz
+  updated_at timestamptz
+  auth_user_id uuid
+
+  Note: 'Application identity and role profile.'
+}
+
+Table identity.staff_members {
+  id uuid [pk]
+  user_id uuid [unique]
+  doctor_id uuid [not null]
+  role text [not null]
+  display_name text [not null]
+  phone text
+  email text
+  invite_status text [not null]
+  reports_to uuid
+  hire_date date
+  is_active boolean [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  invite_client_request_id uuid
+  disabled_at timestamptz
+  disabled_by uuid
+  disabled_previous_invite_status text
+  invite_resent_at timestamptz
+  invite_resent_by uuid
+  invite_resend_count integer [not null]
+  reactivated_at timestamptz
+  reactivated_by uuid
+  reactivation_count integer [not null]
+  invite_reissued_at timestamptz
+  invite_reissued_by uuid
+  invite_reissue_count integer [not null]
+
+  Note: 'Staff seat, role, and lifecycle state.'
+}
+
+Table patient_record.patients {
+  id uuid [pk]
+  user_id uuid [not null, unique]
+  date_of_birth date
+  sex varchar(20)
+  blood_type varchar(10)
+  allergies text
+  medical_history text
+  emergency_contact varchar(255)
+  emergency_phone varchar(20)
+  insurance_id varchar(100)
+  created_at timestamptz
+  updated_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  intake_completed_at timestamptz
+  established_at timestamptz
+  full_name text [not null]
+  phone text [not null]
+  email text
+
+  Note: 'Clinical patient profile linked to a user.'
+}
+
+Table messaging.conversations {
+  id uuid [pk]
+  patient_id uuid
+  subject text
+  conversation_type text [not null]
+  status text [not null]
+  created_by uuid
+  closed_at timestamptz
+  is_archived boolean [not null]
+  archived_at timestamptz
+  archived_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Message thread between patient and clinic users.'
+}
+
+Table messaging.conversation_participants {
+  id uuid [pk]
+  conversation_id uuid [not null]
+  user_id uuid
+  staff_member_id uuid
+  patient_id uuid
+  role text [not null]
+  is_active boolean [not null]
+  last_read_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Users included in a conversation.'
+}
+
+Table messaging.messages {
+  id uuid [pk]
+  conversation_id uuid [not null]
+  sender_user_id uuid
+  sender_patient_id uuid
+  body text [not null]
+  message_type text [not null]
+  is_internal boolean [not null]
+  edited_at timestamptz
+  deleted_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  client_request_id uuid
+  redacted_at timestamptz
+  redacted_by uuid
+
+  Note: 'Individual message content and sender.'
+}
+
+Table messaging.message_attachments {
+  id uuid [pk]
+  message_id uuid [not null]
+  uploaded_by uuid
+  file_url text [not null]
+  file_name text [not null]
+  mime_type text
+  file_size_bytes bigint
+  storage_bucket text
+  storage_path text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Files attached to a message.'
+}
+
+Table messaging.message_read_receipts {
+  id uuid [pk]
+  message_id uuid [not null]
+  user_id uuid [not null]
+  read_at timestamptz [not null]
+  created_at timestamptz [not null]
+
+  Note: 'Read state for each message recipient.'
+}
+
+Table patient_record.patient_devices {
+  id uuid [pk]
+  patient_id uuid [not null]
+  user_id uuid [not null]
+  platform text [not null]
+  push_token text [not null, unique]
+  device_label text
+  app_version text
+  locale text
+  timezone text
+  is_active boolean [not null]
+  last_seen_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Patient device used for push delivery.'
+}
+
+Table messaging.notification_events {
+  id uuid [pk]
+  user_id uuid
+  patient_id uuid
+  title text [not null]
+  body text [not null]
+  event_type text [not null]
+  related_type text
+  related_id uuid
+  severity text [not null]
+  status text [not null]
+  scheduled_for timestamptz
+  created_by uuid
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  client_request_id uuid
+  source text [not null]
+
+  Note: 'Notification request before delivery.'
+}
+
+Table messaging.notification_deliveries {
+  id uuid [pk]
+  event_id uuid [not null]
+  user_id uuid
+  device_id uuid
+  channel text [not null]
+  status text [not null]
+  provider_message_id text
+  error_message text
+  sent_at timestamptz
+  read_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  client_request_id uuid
+
+  Note: 'Delivery attempt for a notification event.'
+}
+
+TableGroup "identity" [color: #2563EB] {
+  identity.users
+  identity.staff_members
+
+  Note: 'Login users, doctors, staff, and roles.'
+}
+TableGroup "patient_record" [color: #0D9488] {
+  patient_record.patients
+  patient_record.patient_devices
+
+  Note: 'Patient profile, consent, and history.'
+}
+TableGroup "messaging" [color: #DB2777] {
+  messaging.conversations
+  messaging.conversation_participants
+  messaging.messages
+  messaging.message_attachments
+  messaging.message_read_receipts
+  messaging.notification_events
+  messaging.notification_deliveries
+
+  Note: 'Chat, notifications, receipts, and delivery.'
+}
+
+Note relationship_story {
+  'Relation: conversation has participants; messages create attachments, receipts, events, and deliveries.'
+}
+
+Note relationship_legend {
+  'Ref format: left foreign key > right owner. Line color follows the left table area.'
+}
+
+Ref: identity.staff_members.user_id > identity.users.id [color: #2563EB]
+Ref: patient_record.patients.user_id > identity.users.id [color: #0D9488]
+Ref: messaging.conversations.patient_id > patient_record.patients.id [color: #DB2777]
+Ref: messaging.conversations.created_by > identity.users.id [color: #DB2777]
+Ref: messaging.conversation_participants.conversation_id > messaging.conversations.id [color: #DB2777]
+Ref: messaging.conversation_participants.user_id > identity.users.id [color: #DB2777]
+Ref: messaging.conversation_participants.staff_member_id > identity.staff_members.id [color: #DB2777]
+Ref: messaging.conversation_participants.patient_id > patient_record.patients.id [color: #DB2777]
+Ref: messaging.messages.conversation_id > messaging.conversations.id [color: #DB2777]
+Ref: messaging.messages.sender_user_id > identity.users.id [color: #DB2777]
+Ref: messaging.messages.sender_patient_id > patient_record.patients.id [color: #DB2777]
+Ref: messaging.messages.redacted_by > identity.users.id [color: #DB2777]
+Ref: messaging.message_attachments.message_id > messaging.messages.id [color: #DB2777]
+Ref: messaging.message_attachments.uploaded_by > identity.users.id [color: #DB2777]
+Ref: messaging.message_read_receipts.message_id > messaging.messages.id [color: #DB2777]
+Ref: messaging.message_read_receipts.user_id > identity.users.id [color: #DB2777]
+Ref: patient_record.patient_devices.patient_id > patient_record.patients.id [color: #0D9488]
+Ref: patient_record.patient_devices.user_id > identity.users.id [color: #0D9488]
+Ref: messaging.notification_events.user_id > identity.users.id [color: #DB2777]
+Ref: messaging.notification_events.patient_id > patient_record.patients.id [color: #DB2777]
+Ref: messaging.notification_events.created_by > identity.users.id [color: #DB2777]
+Ref: messaging.notification_deliveries.event_id > messaging.notification_events.id [color: #DB2777]
+Ref: messaging.notification_deliveries.user_id > identity.users.id [color: #DB2777]
+Ref: messaging.notification_deliveries.device_id > patient_record.patient_devices.id [color: #DB2777]

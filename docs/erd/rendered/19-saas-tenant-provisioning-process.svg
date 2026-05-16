@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2080" height="2470" viewBox="0 0 2080 2470" role="img" aria-label="DoctoLeb SaaS Tenant Provisioning Process ERD">
+<defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+<rect width="100%" height="100%" fill="#f8fbfa"/>
+<text x="36" y="42" font-family="Arial, sans-serif" font-size="24" font-weight="800" fill="#020617">DoctoLeb SaaS Tenant Provisioning Process ERD</text>
+<text x="36" y="66" font-family="Arial, sans-serif" font-size="12" fill="#64748b">Detailed ERD view with all columns shown</text>
+<path d="M 1196 433 C 1220 433, 1220 219, 1196 219" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 856 647 C 616 647, 616 243, 376 243" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 376 513 C 400 513, 400 243, 376 243" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 323 C 1026 323, 1026 195, 786 195" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 323 C 1026 323, 1026 195, 786 195" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 777 C 1026 777, 1026 195, 786 195" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 777 C 821 777, 821 243, 376 243" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1606 777 C 1630 777, 1630 323, 1606 323" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1606 777 C 1630 777, 1630 323, 1606 323" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1606 1215 C 1630 1215, 1630 777, 1606 777" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 1215 C 821 1215, 821 243, 376 243" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 1589 C 821 1589, 821 243, 376 243" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 1589 C 1026 1589, 1026 195, 786 195" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 1589 C 1026 1589, 1026 195, 786 195" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 1947 C 821 1947, 821 243, 376 243" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1606 1947 C 1630 1947, 1630 1215, 1606 1215" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1266 1947 C 1026 1947, 1026 195, 786 195" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1606 2281 C 1630 2281, 1630 1947, 1606 1947" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<path d="M 1676 187 C 1026 187, 1026 243, 376 243" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-opacity="0.58" marker-end="url(#arrow)"/>
+<text x="36" y="92" font-family="Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="2" fill="#0e7490">REGISTRY</text>
+<text x="446" y="92" font-family="Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="2" fill="#15803d">SECURITY</text>
+<text x="856" y="92" font-family="Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="2" fill="#c2410c">PLANS</text>
+<text x="1266" y="92" font-family="Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="2" fill="#6d28d9">PROVISIONING</text>
+<text x="1676" y="92" font-family="Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="2" fill="#be185d">AUDIT</text>
+<g filter="url(#shadow)">
+        <rect x="446" y="112" width="340" height="166" rx="18" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+        <rect x="446" y="112" width="340" height="42" rx="18" fill="#ecfdf3"/>
+        <path d="M 446 140 h 340 v 14 h -340 z" fill="#ecfdf3"/>
+        <text x="462" y="139" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#0f172a">security.super_admins</text>
+<text x="462" y="176" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="490" y="176" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="770" y="176" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="462" y="192" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="192" font-family="Arial, sans-serif" font-size="10" fill="#334155">auth_user_id</text>
+<text x="770" y="192" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="490" y="208" font-family="Arial, sans-serif" font-size="10" fill="#334155">display_name</text>
+<text x="770" y="208" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="462" y="224" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="224" font-family="Arial, sans-serif" font-size="10" fill="#334155">is_active</text>
+<text x="770" y="224" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">boolean</text>
+<text x="462" y="240" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="240" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="770" y="240" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="490" y="256" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_login_at</text>
+<text x="770" y="256" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="462" y="272" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="272" font-family="Arial, sans-serif" font-size="10" fill="#334155">role</text>
+<text x="770" y="272" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="446" y="302" width="340" height="198" rx="18" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+        <rect x="446" y="302" width="340" height="42" rx="18" fill="#ecfdf3"/>
+        <path d="M 446 330 h 340 v 14 h -340 z" fill="#ecfdf3"/>
+        <text x="462" y="329" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#0f172a">security.edge_rate_limit_buckets</text>
+<text x="462" y="366" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="490" y="366" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="770" y="366" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">bigserial</text>
+<text x="462" y="382" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="382" font-family="Arial, sans-serif" font-size="10" fill="#334155">route</text>
+<text x="770" y="382" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="462" y="398" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="398" font-family="Arial, sans-serif" font-size="10" fill="#334155">key_hash</text>
+<text x="770" y="398" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="462" y="414" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="414" font-family="Arial, sans-serif" font-size="10" fill="#334155">window_start</text>
+<text x="770" y="414" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="462" y="430" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="430" font-family="Arial, sans-serif" font-size="10" fill="#334155">window_seconds</text>
+<text x="770" y="430" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">integer</text>
+<text x="462" y="446" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="446" font-family="Arial, sans-serif" font-size="10" fill="#334155">request_count</text>
+<text x="770" y="446" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">integer</text>
+<text x="462" y="462" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="462" font-family="Arial, sans-serif" font-size="10" fill="#334155">expires_at</text>
+<text x="770" y="462" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="462" y="478" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="478" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="770" y="478" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="462" y="494" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="490" y="494" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="770" y="494" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="36" y="112" width="340" height="262" rx="18" fill="#ffffff" stroke="#0891b2" stroke-width="1.4"/>
+        <rect x="36" y="112" width="340" height="42" rx="18" fill="#e8f7ff"/>
+        <path d="M 36 140 h 340 v 14 h -340 z" fill="#e8f7ff"/>
+        <text x="52" y="139" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#0f172a">registry.tenants</text>
+<text x="52" y="176" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="80" y="176" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="360" y="176" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="52" y="192" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="192" font-family="Arial, sans-serif" font-size="10" fill="#334155">slug</text>
+<text x="360" y="192" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="208" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="208" font-family="Arial, sans-serif" font-size="10" fill="#334155">display_name</text>
+<text x="360" y="208" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="224" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="224" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="360" y="224" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="80" y="240" font-family="Arial, sans-serif" font-size="10" fill="#334155">plan</text>
+<text x="360" y="240" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="256" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="256" font-family="Arial, sans-serif" font-size="10" fill="#334155">release_channel</text>
+<text x="360" y="256" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="272" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="272" font-family="Arial, sans-serif" font-size="10" fill="#334155">supabase_project_ref</text>
+<text x="360" y="272" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="288" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="288" font-family="Arial, sans-serif" font-size="10" fill="#334155">supabase_url</text>
+<text x="360" y="288" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="304" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="304" font-family="Arial, sans-serif" font-size="10" fill="#334155">supabase_anon_key</text>
+<text x="360" y="304" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="80" y="320" font-family="Arial, sans-serif" font-size="10" fill="#334155">schema_version</text>
+<text x="360" y="320" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="80" y="336" font-family="Arial, sans-serif" font-size="10" fill="#334155">notes</text>
+<text x="360" y="336" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="352" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="352" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="360" y="352" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="52" y="368" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="368" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="360" y="368" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="36" y="398" width="340" height="230" rx="18" fill="#ffffff" stroke="#0891b2" stroke-width="1.4"/>
+        <rect x="36" y="398" width="340" height="42" rx="18" fill="#e8f7ff"/>
+        <path d="M 36 426 h 340 v 14 h -340 z" fill="#e8f7ff"/>
+        <text x="52" y="425" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#0f172a">registry.tenant_domains</text>
+<text x="52" y="462" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="80" y="462" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="360" y="462" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="52" y="478" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="478" font-family="Arial, sans-serif" font-size="10" fill="#334155">tenant_id</text>
+<text x="360" y="478" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="52" y="494" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="494" font-family="Arial, sans-serif" font-size="10" fill="#334155">hostname</text>
+<text x="360" y="494" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="510" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="510" font-family="Arial, sans-serif" font-size="10" fill="#334155">surface</text>
+<text x="360" y="510" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="52" y="526" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="526" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="360" y="526" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="80" y="542" font-family="Arial, sans-serif" font-size="10" fill="#334155">dns_status</text>
+<text x="360" y="542" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="80" y="558" font-family="Arial, sans-serif" font-size="10" fill="#334155">ssl_status</text>
+<text x="360" y="558" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="80" y="574" font-family="Arial, sans-serif" font-size="10" fill="#334155">verification_token</text>
+<text x="360" y="574" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="80" y="590" font-family="Arial, sans-serif" font-size="10" fill="#334155">verified_at</text>
+<text x="360" y="590" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="52" y="606" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="606" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="360" y="606" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="52" y="622" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="80" y="622" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="360" y="622" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="856" y="112" width="340" height="214" rx="18" fill="#ffffff" stroke="#f97316" stroke-width="1.4"/>
+        <rect x="856" y="112" width="340" height="42" rx="18" fill="#fff7ed"/>
+        <path d="M 856 140 h 340 v 14 h -340 z" fill="#fff7ed"/>
+        <text x="872" y="139" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#0f172a">plans.plans</text>
+<text x="872" y="176" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="900" y="176" font-family="Arial, sans-serif" font-size="10" fill="#334155">code</text>
+<text x="1180" y="176" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="872" y="192" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="192" font-family="Arial, sans-serif" font-size="10" fill="#334155">name</text>
+<text x="1180" y="192" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="872" y="208" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="208" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="1180" y="208" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="872" y="224" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="224" font-family="Arial, sans-serif" font-size="10" fill="#334155">billing_mode</text>
+<text x="1180" y="224" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="900" y="240" font-family="Arial, sans-serif" font-size="10" fill="#334155">price_label</text>
+<text x="1180" y="240" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="900" y="256" font-family="Arial, sans-serif" font-size="10" fill="#334155">stripe_product_lookup_key</text>
+<text x="1180" y="256" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="900" y="272" font-family="Arial, sans-serif" font-size="10" fill="#334155">description</text>
+<text x="1180" y="272" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="872" y="288" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="288" font-family="Arial, sans-serif" font-size="10" fill="#334155">sort_order</text>
+<text x="1180" y="288" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">integer</text>
+<text x="872" y="304" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="304" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1180" y="304" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="872" y="320" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="320" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1180" y="320" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="856" y="350" width="340" height="166" rx="18" fill="#ffffff" stroke="#f97316" stroke-width="1.4"/>
+        <rect x="856" y="350" width="340" height="42" rx="18" fill="#fff7ed"/>
+        <path d="M 856 378 h 340 v 14 h -340 z" fill="#fff7ed"/>
+        <text x="872" y="377" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#0f172a">plans.plan_entitlements</text>
+<text x="872" y="414" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="900" y="414" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="1180" y="414" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="872" y="430" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="430" font-family="Arial, sans-serif" font-size="10" fill="#334155">plan_code</text>
+<text x="1180" y="430" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="872" y="446" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="446" font-family="Arial, sans-serif" font-size="10" fill="#334155">feature_code</text>
+<text x="1180" y="446" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="872" y="462" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="462" font-family="Arial, sans-serif" font-size="10" fill="#334155">is_enabled</text>
+<text x="1180" y="462" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">boolean</text>
+<text x="872" y="478" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="478" font-family="Arial, sans-serif" font-size="10" fill="#334155">limits</text>
+<text x="1180" y="478" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="872" y="494" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="494" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1180" y="494" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="872" y="510" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="510" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1180" y="510" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="856" y="540" width="340" height="214" rx="18" fill="#ffffff" stroke="#f97316" stroke-width="1.4"/>
+        <rect x="856" y="540" width="340" height="42" rx="18" fill="#fff7ed"/>
+        <path d="M 856 568 h 340 v 14 h -340 z" fill="#fff7ed"/>
+        <text x="872" y="567" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#0f172a">plans.tenant_entitlements</text>
+<text x="872" y="604" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="900" y="604" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="1180" y="604" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="872" y="620" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="620" font-family="Arial, sans-serif" font-size="10" fill="#334155">tenant_id</text>
+<text x="1180" y="620" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="872" y="636" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="636" font-family="Arial, sans-serif" font-size="10" fill="#334155">feature_code</text>
+<text x="1180" y="636" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="872" y="652" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="652" font-family="Arial, sans-serif" font-size="10" fill="#334155">source</text>
+<text x="1180" y="652" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="872" y="668" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="668" font-family="Arial, sans-serif" font-size="10" fill="#334155">is_enabled</text>
+<text x="1180" y="668" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">boolean</text>
+<text x="872" y="684" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="684" font-family="Arial, sans-serif" font-size="10" fill="#334155">limits</text>
+<text x="1180" y="684" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="900" y="700" font-family="Arial, sans-serif" font-size="10" fill="#334155">reason</text>
+<text x="1180" y="700" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="900" y="716" font-family="Arial, sans-serif" font-size="10" fill="#334155">expires_at</text>
+<text x="1180" y="716" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="872" y="732" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="732" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1180" y="732" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="872" y="748" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="900" y="748" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1180" y="748" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="1266" y="112" width="340" height="422" rx="18" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+        <rect x="1266" y="112" width="340" height="42" rx="18" fill="#f5f3ff"/>
+        <path d="M 1266 140 h 340 v 14 h -340 z" fill="#f5f3ff"/>
+        <text x="1282" y="139" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#0f172a">provisioning.provisioning_provider_connections</text>
+<text x="1282" y="176" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="1310" y="176" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="1590" y="176" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="192" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="192" font-family="Arial, sans-serif" font-size="10" fill="#334155">provider</text>
+<text x="1590" y="192" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="208" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="208" font-family="Arial, sans-serif" font-size="10" fill="#334155">display_name</text>
+<text x="1590" y="208" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="224" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="224" font-family="Arial, sans-serif" font-size="10" fill="#334155">owner_scope</text>
+<text x="1590" y="224" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="240" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="240" font-family="Arial, sans-serif" font-size="10" fill="#334155">auth_method</text>
+<text x="1590" y="240" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="256" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="256" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="1590" y="256" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="272" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="272" font-family="Arial, sans-serif" font-size="10" fill="#334155">is_automation_enabled</text>
+<text x="1590" y="272" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">boolean</text>
+<text x="1310" y="288" font-family="Arial, sans-serif" font-size="10" fill="#334155">external_account_id</text>
+<text x="1590" y="288" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="304" font-family="Arial, sans-serif" font-size="10" fill="#334155">external_account_slug</text>
+<text x="1590" y="304" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="320" font-family="Arial, sans-serif" font-size="10" fill="#334155">external_team_id</text>
+<text x="1590" y="320" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="336" font-family="Arial, sans-serif" font-size="10" fill="#334155">external_org_id</text>
+<text x="1590" y="336" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="352" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="352" font-family="Arial, sans-serif" font-size="10" fill="#334155">capabilities</text>
+<text x="1590" y="352" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1282" y="368" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="368" font-family="Arial, sans-serif" font-size="10" fill="#334155">secret_storage</text>
+<text x="1590" y="368" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="384" font-family="Arial, sans-serif" font-size="10" fill="#334155">secret_ref</text>
+<text x="1590" y="384" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="400" font-family="Arial, sans-serif" font-size="10" fill="#334155">secret_last_rotated_at</text>
+<text x="1590" y="400" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="416" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_verified_at</text>
+<text x="1590" y="416" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="432" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error_code</text>
+<text x="1590" y="432" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="448" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error_summary</text>
+<text x="1590" y="448" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="464" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_by</text>
+<text x="1590" y="464" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1310" y="480" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_by</text>
+<text x="1590" y="480" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="496" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="496" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1590" y="496" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="512" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="512" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1590" y="512" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="528" font-family="Arial, sans-serif" font-size="10" fill="#334155">archived_at</text>
+<text x="1590" y="528" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="1266" y="558" width="340" height="438" rx="18" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+        <rect x="1266" y="558" width="340" height="42" rx="18" fill="#f5f3ff"/>
+        <path d="M 1266 586 h 340 v 14 h -340 z" fill="#f5f3ff"/>
+        <text x="1282" y="585" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#0f172a">provisioning.tenant_provisioning_jobs</text>
+<text x="1282" y="622" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="1310" y="622" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="1590" y="622" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1310" y="638" font-family="Arial, sans-serif" font-size="10" fill="#334155">tenant_id</text>
+<text x="1590" y="638" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="654" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="654" font-family="Arial, sans-serif" font-size="10" fill="#334155">requested_slug</text>
+<text x="1590" y="654" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="670" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="670" font-family="Arial, sans-serif" font-size="10" fill="#334155">requested_display_name</text>
+<text x="1590" y="670" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="686" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="686" font-family="Arial, sans-serif" font-size="10" fill="#334155">requested_plan</text>
+<text x="1590" y="686" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="702" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="702" font-family="Arial, sans-serif" font-size="10" fill="#334155">requested_domains</text>
+<text x="1590" y="702" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1282" y="718" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="718" font-family="Arial, sans-serif" font-size="10" fill="#334155">initial_branding</text>
+<text x="1590" y="718" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1282" y="734" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="734" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="1590" y="734" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="750" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="750" font-family="Arial, sans-serif" font-size="10" fill="#334155">checklist</text>
+<text x="1590" y="750" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1310" y="766" font-family="Arial, sans-serif" font-size="10" fill="#334155">assigned_admin_id</text>
+<text x="1590" y="766" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1310" y="782" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error</text>
+<text x="1590" y="782" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="798" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="798" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1590" y="798" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="814" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="814" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1590" y="814" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="830" font-family="Arial, sans-serif" font-size="10" fill="#334155">completed_at</text>
+<text x="1590" y="830" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="846" font-family="Arial, sans-serif" font-size="10" fill="#334155">client_request_id</text>
+<text x="1590" y="846" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="862" font-family="Arial, sans-serif" font-size="10" fill="#334155">supabase_connection_id</text>
+<text x="1590" y="862" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1310" y="878" font-family="Arial, sans-serif" font-size="10" fill="#334155">vercel_connection_id</text>
+<text x="1590" y="878" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="894" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="894" font-family="Arial, sans-serif" font-size="10" fill="#334155">automation_mode</text>
+<text x="1590" y="894" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="910" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="910" font-family="Arial, sans-serif" font-size="10" fill="#334155">automation_status</text>
+<text x="1590" y="910" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="926" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="926" font-family="Arial, sans-serif" font-size="10" fill="#334155">provider_state</text>
+<text x="1590" y="926" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1310" y="942" font-family="Arial, sans-serif" font-size="10" fill="#334155">cancel_requested_at</text>
+<text x="1590" y="942" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="958" font-family="Arial, sans-serif" font-size="10" fill="#334155">first_doctor_email</text>
+<text x="1590" y="958" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="974" font-family="Arial, sans-serif" font-size="10" fill="#334155">first_doctor_display_name</text>
+<text x="1590" y="974" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="990" font-family="Arial, sans-serif" font-size="10" fill="#334155">first_doctor_phone</text>
+<text x="1590" y="990" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="1266" y="1020" width="340" height="390" rx="18" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+        <rect x="1266" y="1020" width="340" height="42" rx="18" fill="#f5f3ff"/>
+        <path d="M 1266 1048 h 340 v 14 h -340 z" fill="#f5f3ff"/>
+        <text x="1282" y="1047" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#0f172a">provisioning.tenant_provisioning_steps</text>
+<text x="1282" y="1084" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="1310" y="1084" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="1590" y="1084" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="1100" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1100" font-family="Arial, sans-serif" font-size="10" fill="#334155">provisioning_job_id</text>
+<text x="1590" y="1100" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1310" y="1116" font-family="Arial, sans-serif" font-size="10" fill="#334155">tenant_id</text>
+<text x="1590" y="1116" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="1132" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1132" font-family="Arial, sans-serif" font-size="10" fill="#334155">step_code</text>
+<text x="1590" y="1132" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1148" font-family="Arial, sans-serif" font-size="10" fill="#334155">provider</text>
+<text x="1590" y="1148" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1164" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1164" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="1590" y="1164" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1180" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1180" font-family="Arial, sans-serif" font-size="10" fill="#334155">idempotency_key</text>
+<text x="1590" y="1180" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1196" font-family="Arial, sans-serif" font-size="10" fill="#334155">external_resource_kind</text>
+<text x="1590" y="1196" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1212" font-family="Arial, sans-serif" font-size="10" fill="#334155">external_resource_id</text>
+<text x="1590" y="1212" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1228" font-family="Arial, sans-serif" font-size="10" fill="#334155">external_resource_url</text>
+<text x="1590" y="1228" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1244" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1244" font-family="Arial, sans-serif" font-size="10" fill="#334155">preconditions</text>
+<text x="1590" y="1244" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1282" y="1260" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1260" font-family="Arial, sans-serif" font-size="10" fill="#334155">postconditions</text>
+<text x="1590" y="1260" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1310" y="1276" font-family="Arial, sans-serif" font-size="10" fill="#334155">undo_strategy</text>
+<text x="1590" y="1276" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1292" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1292" font-family="Arial, sans-serif" font-size="10" fill="#334155">undo_payload</text>
+<text x="1590" y="1292" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1282" y="1308" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1308" font-family="Arial, sans-serif" font-size="10" fill="#334155">attempt_count</text>
+<text x="1590" y="1308" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">integer</text>
+<text x="1310" y="1324" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error_code</text>
+<text x="1590" y="1324" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1340" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error_summary</text>
+<text x="1590" y="1340" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1356" font-family="Arial, sans-serif" font-size="10" fill="#334155">started_at</text>
+<text x="1590" y="1356" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="1372" font-family="Arial, sans-serif" font-size="10" fill="#334155">completed_at</text>
+<text x="1590" y="1372" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="1388" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1388" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1590" y="1388" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="1404" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1404" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1590" y="1404" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="1266" y="1434" width="340" height="310" rx="18" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+        <rect x="1266" y="1434" width="340" height="42" rx="18" fill="#f5f3ff"/>
+        <path d="M 1266 1462 h 340 v 14 h -340 z" fill="#f5f3ff"/>
+        <text x="1282" y="1461" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#0f172a">provisioning.tenant_secret_refs</text>
+<text x="1282" y="1498" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="1310" y="1498" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="1590" y="1498" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="1514" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1514" font-family="Arial, sans-serif" font-size="10" fill="#334155">tenant_id</text>
+<text x="1590" y="1514" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="1530" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1530" font-family="Arial, sans-serif" font-size="10" fill="#334155">project_ref</text>
+<text x="1590" y="1530" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1546" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1546" font-family="Arial, sans-serif" font-size="10" fill="#334155">secret_kind</text>
+<text x="1590" y="1546" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1562" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1562" font-family="Arial, sans-serif" font-size="10" fill="#334155">secret_storage</text>
+<text x="1590" y="1562" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1578" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1578" font-family="Arial, sans-serif" font-size="10" fill="#334155">secret_ref</text>
+<text x="1590" y="1578" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1594" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1594" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="1590" y="1594" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1610" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1610" font-family="Arial, sans-serif" font-size="10" fill="#334155">secret_last_rotated_at</text>
+<text x="1590" y="1610" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="1626" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_verified_at</text>
+<text x="1590" y="1626" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="1642" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error_code</text>
+<text x="1590" y="1642" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1658" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error_summary</text>
+<text x="1590" y="1658" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1674" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_by</text>
+<text x="1590" y="1674" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1310" y="1690" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_by</text>
+<text x="1590" y="1690" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1310" y="1706" font-family="Arial, sans-serif" font-size="10" fill="#334155">revoked_at</text>
+<text x="1590" y="1706" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="1722" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1722" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1590" y="1722" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="1738" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1738" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1590" y="1738" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="1266" y="1768" width="340" height="358" rx="18" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+        <rect x="1266" y="1768" width="340" height="42" rx="18" fill="#f5f3ff"/>
+        <path d="M 1266 1796 h 340 v 14 h -340 z" fill="#f5f3ff"/>
+        <text x="1282" y="1795" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#0f172a">provisioning.tenant_migration_runs</text>
+<text x="1282" y="1832" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="1310" y="1832" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="1590" y="1832" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="1848" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1848" font-family="Arial, sans-serif" font-size="10" fill="#334155">tenant_id</text>
+<text x="1590" y="1848" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1310" y="1864" font-family="Arial, sans-serif" font-size="10" fill="#334155">provisioning_step_id</text>
+<text x="1590" y="1864" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="1880" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1880" font-family="Arial, sans-serif" font-size="10" fill="#334155">project_ref</text>
+<text x="1590" y="1880" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1896" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1896" font-family="Arial, sans-serif" font-size="10" fill="#334155">runner_mode</text>
+<text x="1590" y="1896" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1912" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1912" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="1590" y="1912" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1928" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1928" font-family="Arial, sans-serif" font-size="10" fill="#334155">migration_source</text>
+<text x="1590" y="1928" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="1944" font-family="Arial, sans-serif" font-size="10" fill="#334155">source_checksum</text>
+<text x="1590" y="1944" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="1960" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1960" font-family="Arial, sans-serif" font-size="10" fill="#334155">expected_migrations_count</text>
+<text x="1590" y="1960" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">integer</text>
+<text x="1282" y="1976" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="1976" font-family="Arial, sans-serif" font-size="10" fill="#334155">applied_migrations_count</text>
+<text x="1590" y="1976" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">integer</text>
+<text x="1310" y="1992" font-family="Arial, sans-serif" font-size="10" fill="#334155">failed_migration_version</text>
+<text x="1590" y="1992" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="2008" font-family="Arial, sans-serif" font-size="10" fill="#334155">failed_migration_name</text>
+<text x="1590" y="2008" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="2024" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error_code</text>
+<text x="1590" y="2024" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="2040" font-family="Arial, sans-serif" font-size="10" fill="#334155">last_error_summary</text>
+<text x="1590" y="2040" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="2056" font-family="Arial, sans-serif" font-size="10" fill="#334155">started_at</text>
+<text x="1590" y="2056" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="2072" font-family="Arial, sans-serif" font-size="10" fill="#334155">completed_at</text>
+<text x="1590" y="2072" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="2088" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_by</text>
+<text x="1590" y="2088" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="2104" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2104" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1590" y="2104" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="2120" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2120" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1590" y="2120" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="1266" y="2150" width="340" height="262" rx="18" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+        <rect x="1266" y="2150" width="340" height="42" rx="18" fill="#f5f3ff"/>
+        <path d="M 1266 2178 h 340 v 14 h -340 z" fill="#f5f3ff"/>
+        <text x="1282" y="2177" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#0f172a">provisioning.tenant_migration_items</text>
+<text x="1282" y="2214" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="1310" y="2214" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="1590" y="2214" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="2230" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2230" font-family="Arial, sans-serif" font-size="10" fill="#334155">run_id</text>
+<text x="1590" y="2230" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1282" y="2246" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2246" font-family="Arial, sans-serif" font-size="10" fill="#334155">sequence_no</text>
+<text x="1590" y="2246" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">integer</text>
+<text x="1282" y="2262" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2262" font-family="Arial, sans-serif" font-size="10" fill="#334155">version</text>
+<text x="1590" y="2262" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="2278" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2278" font-family="Arial, sans-serif" font-size="10" fill="#334155">name</text>
+<text x="1590" y="2278" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="2294" font-family="Arial, sans-serif" font-size="10" fill="#334155">checksum</text>
+<text x="1590" y="2294" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1282" y="2310" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2310" font-family="Arial, sans-serif" font-size="10" fill="#334155">status</text>
+<text x="1590" y="2310" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="2326" font-family="Arial, sans-serif" font-size="10" fill="#334155">error_code</text>
+<text x="1590" y="2326" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="2342" font-family="Arial, sans-serif" font-size="10" fill="#334155">error_summary</text>
+<text x="1590" y="2342" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1310" y="2358" font-family="Arial, sans-serif" font-size="10" fill="#334155">started_at</text>
+<text x="1590" y="2358" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1310" y="2374" font-family="Arial, sans-serif" font-size="10" fill="#334155">completed_at</text>
+<text x="1590" y="2374" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="2390" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2390" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="1590" y="2390" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+<text x="1282" y="2406" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1310" y="2406" font-family="Arial, sans-serif" font-size="10" fill="#334155">updated_at</text>
+<text x="1590" y="2406" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<g filter="url(#shadow)">
+        <rect x="1676" y="112" width="340" height="150" rx="18" fill="#ffffff" stroke="#db2777" stroke-width="1.4"/>
+        <rect x="1676" y="112" width="340" height="42" rx="18" fill="#fdf2f8"/>
+        <path d="M 1676 140 h 340 v 14 h -340 z" fill="#fdf2f8"/>
+        <text x="1692" y="139" font-family="Arial, sans-serif" font-size="14" font-weight="800" fill="#0f172a">audit.tenant_events</text>
+<text x="1692" y="176" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#f59e0b">PK</text>
+<text x="1720" y="176" font-family="Arial, sans-serif" font-size="10" fill="#334155">id</text>
+<text x="2000" y="176" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1720" y="192" font-family="Arial, sans-serif" font-size="10" fill="#334155">tenant_id</text>
+<text x="2000" y="192" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1692" y="208" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1720" y="208" font-family="Arial, sans-serif" font-size="10" fill="#334155">event_type</text>
+<text x="2000" y="208" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">text</text>
+<text x="1720" y="224" font-family="Arial, sans-serif" font-size="10" fill="#334155">actor_id</text>
+<text x="2000" y="224" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">uuid</text>
+<text x="1692" y="240" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1720" y="240" font-family="Arial, sans-serif" font-size="10" fill="#334155">metadata</text>
+<text x="2000" y="240" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">jsonb</text>
+<text x="1692" y="256" font-family="Arial, sans-serif" font-size="10" font-weight="800" fill="#94a3b8">*</text>
+<text x="1720" y="256" font-family="Arial, sans-serif" font-size="10" fill="#334155">created_at</text>
+<text x="2000" y="256" text-anchor="end" font-family="Arial, sans-serif" font-size="9" fill="#64748b">timestamptz</text>
+</g>
+<text x="36" y="2454" font-family="Arial, sans-serif" font-size="11" fill="#94a3b8">DoctoLeb detailed ERD documentation view</text>
+</svg>
