@@ -9,7 +9,7 @@ export type TenantMigration = {
   readonly sql: string
 }
 
-export const TENANT_MIGRATION_SOURCE_CHECKSUM = "7efdf48f5a7db049647847a50a9657d7567bb9e8106200346e3a4ffdc3ff965d"
+export const TENANT_MIGRATION_SOURCE_CHECKSUM = "48815a8f4dce2b82ff56ee04c32ee7330fa8949748c4f96e47151dc6e34845cf"
 
 export const TENANT_MIGRATION_BUNDLE = Object.freeze([
   {
@@ -452,5 +452,12 @@ export const TENANT_MIGRATION_BUNDLE = Object.freeze([
     "fileName": "20260515230000_analytical_reports_seed_checksum_fix.sql",
     "checksum": "a48537467ad97d240231b0a51bdca5ac66723ca3ef1d767bef8f48717b70be5d",
     "sql": "-- Fix seed report checksums: replace MD5-padded values with real SHA-256.\n--\n-- The JS service's createReportDefinitionChecksum uses Web Crypto SHA-256,\n-- which produces a genuine 64-char hex digest. The original seed migration\n-- used lpad(md5(v_definition::text), 64, '0') — a 32-char MD5 hash\n-- zero-padded to 64 chars. The two will never match if compared, breaking\n-- definition-change detection.\n--\n-- This migration recalculates all seed (is_default=true) version checksums\n-- using PostgreSQL's encode(digest(..., 'sha256'), 'hex') so they align\n-- with the JS contract. Non-seed reports are untouched — they were created\n-- through the service which already uses SHA-256.\n\nUPDATE public.analytical_report_versions\nSET definition_checksum = encode(digest(definition::text, 'sha256'), 'hex')\nWHERE report_id IN (\n  SELECT id FROM public.analytical_reports WHERE is_default = true\n);"
+  },
+  {
+    "version": "20260517093000",
+    "name": "analytical_report_rpc_volatility_fix",
+    "fileName": "20260517093000_analytical_report_rpc_volatility_fix.sql",
+    "checksum": "8c76ac14ba3861818ccede5314edcfe62e7a6e5124ef538b6b6fbf6a3e5cdbde",
+    "sql": "-- Fix analytical-report RPC volatility.\n--\n-- The runtime compiler intentionally uses `set local statement_timeout = '5s'`\n-- before executing dynamic aggregate SQL. PostgreSQL only allows SET inside\n-- VOLATILE functions, so tenants that already received the runtime migration\n-- need this additive repair migration before reports can execute.\n\nalter function public.run_analytical_report(jsonb, jsonb) volatile;\n\ncomment on function public.run_analytical_report(jsonb, jsonb) is\n  'Closed-set analytical-report compiler. VOLATILE because it sets a local statement_timeout before dynamic execution; SECURITY INVOKER preserves tenant RLS while returning aggregated rows as JSONB.';\n"
   }
 ]) satisfies readonly TenantMigration[]
