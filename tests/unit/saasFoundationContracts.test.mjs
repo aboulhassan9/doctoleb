@@ -1195,6 +1195,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(featureVisibility, /\/staff-messages/);
     assert.match(featureVisibility, /\/doctor-staff/);
     assert.match(featureVisibility, /\/doctor-reports/);
+    assert.match(featureVisibility, /\/reports/);
     assert.match(featureVisibility, /\/doctor-claims/);
     assert.match(featureRoute, /hasEntitlement/);
     assert.match(featureRoute, /failed closed/);
@@ -1203,9 +1204,12 @@ describe('SaaS foundation contracts', () => {
     assert.match(patientApp, /ENTITLEMENT_FEATURES\.messaging/);
     assert.match(opsApp, /ENTITLEMENT_FEATURES\.staffAccounts/);
     assert.match(opsApp, /ENTITLEMENT_FEATURES\.advancedReports/);
+    assert.match(opsApp, /ENTITLEMENT_FEATURES\.analyticalReports/);
     assert.match(opsApp, /ENTITLEMENT_FEATURES\.insuranceBilling/);
     assert.match(entitlementSync, /audience: 'public'/);
     assert.match(entitlementSync, /staff_accounts[\s\S]*audience: 'staff'/);
+    assert.match(entitlementSync, /advanced_reports: 'analytical_reports'/);
+    assert.match(entitlementSync, /analytical_reports[\s\S]*Advanced reports/);
     assert.match(entitlementSync, /resetFeatureCodes/);
     assert.match(entitlementSync, /\.delete\(\)[\s\S]*source', 'manual_override'/);
     assert.match(panel, /resolveEffectiveEntitlementState/);

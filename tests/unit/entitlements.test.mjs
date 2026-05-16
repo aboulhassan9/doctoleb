@@ -103,6 +103,17 @@ describe('entitlements', () => {
     assert.deepEqual(entitlements[ENTITLEMENT_FEATURES.customBranding].limits, { logoUploads: true });
   });
 
+  it('treats legacy advanced_reports as the analytical_reports entitlement', () => {
+    const entitlements = featureFlagsToEntitlementMap([
+      {
+        code: ENTITLEMENT_FEATURES.advancedReports,
+        is_enabled: true,
+      },
+    ]);
+
+    assert.equal(hasEntitlement(entitlements, ENTITLEMENT_FEATURES.analyticalReports), true);
+  });
+
   it('defines insurance billing as a plan-gated entitlement code', () => {
     assert.equal(ENTITLEMENT_FEATURES.insuranceBilling, 'insurance_billing');
   });
@@ -112,6 +123,8 @@ describe('entitlements', () => {
     assert.equal(getFeatureRequirementForPath('/staff-messages'), ENTITLEMENT_FEATURES.messaging);
     assert.equal(getFeatureRequirementForPath('/doctor-staff'), ENTITLEMENT_FEATURES.staffAccounts);
     assert.equal(getFeatureRequirementForPath('/doctor-reports'), ENTITLEMENT_FEATURES.advancedReports);
+    assert.equal(getFeatureRequirementForPath('/reports'), ENTITLEMENT_FEATURES.analyticalReports);
+    assert.equal(getFeatureRequirementForPath('/reports/123'), ENTITLEMENT_FEATURES.analyticalReports);
     assert.equal(getFeatureRequirementForPath('/doctor-claims'), ENTITLEMENT_FEATURES.insuranceBilling);
     assert.equal(getFeatureRequirementForPath('/secretary-insurance-providers'), ENTITLEMENT_FEATURES.insuranceBilling);
     assert.equal(getFeatureRequirementForPath('/secretary-patient-insurance/123'), ENTITLEMENT_FEATURES.insuranceBilling);

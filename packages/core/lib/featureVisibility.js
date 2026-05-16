@@ -5,6 +5,7 @@ const FEATURE_ROUTE_RULES = Object.freeze([
   { path: '/staff-messages', featureCode: ENTITLEMENT_FEATURES.messaging },
   { path: '/doctor-staff', featureCode: ENTITLEMENT_FEATURES.staffAccounts },
   { path: '/doctor-reports', featureCode: ENTITLEMENT_FEATURES.advancedReports },
+  { prefix: '/reports', featureCode: ENTITLEMENT_FEATURES.analyticalReports },
   { path: '/doctor-claims', featureCode: ENTITLEMENT_FEATURES.insuranceBilling },
   { path: '/secretary-insurance-providers', featureCode: ENTITLEMENT_FEATURES.insuranceBilling },
   { path: '/secretary-claim-templates', featureCode: ENTITLEMENT_FEATURES.insuranceBilling },

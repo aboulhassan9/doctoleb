@@ -103,6 +103,7 @@ describe('hasEntitlement / requireEntitlement', () => {
   const entitlements = {
     messaging: { isEnabled: true },
     insurance_billing: { isEnabled: false },
+    advanced_reports: { isEnabled: true },
   };
 
   it('hasEntitlement returns true for enabled features', () => {
@@ -119,6 +120,15 @@ describe('hasEntitlement / requireEntitlement', () => {
 
   it('hasEntitlement is case-insensitive', () => {
     assert.equal(hasEntitlement(entitlements, 'MESSAGING'), true);
+  });
+
+  it('hasEntitlement accepts the legacy advanced_reports alias for analytical_reports', () => {
+    assert.equal(hasEntitlement(entitlements, ENTITLEMENT_FEATURES.analyticalReports), true);
+  });
+
+  it('requireEntitlement returns the enabled legacy alias row for analytical_reports', () => {
+    const result = requireEntitlement(entitlements, ENTITLEMENT_FEATURES.analyticalReports);
+    assert.equal(result, entitlements.advanced_reports);
   });
 
   it('hasEntitlement handles null entitlements gracefully', () => {

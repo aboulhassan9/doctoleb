@@ -11,6 +11,11 @@ export const ENTITLEMENT_FEATURES = Object.freeze({
   analyticalReports: 'analytical_reports',
 });
 
+const FEATURE_ALIASES = Object.freeze({
+  [ENTITLEMENT_FEATURES.analyticalReports]: [ENTITLEMENT_FEATURES.advancedReports],
+  [ENTITLEMENT_FEATURES.advancedReports]: [ENTITLEMENT_FEATURES.analyticalReports],
+});
+
 const SOURCE_PRIORITY = Object.freeze({
   plan: 10,
   tenant_feature_flags: 20,
@@ -29,6 +34,12 @@ export class EntitlementError extends Error {
 
 function normalizeFeatureCode(value) {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
+}
+
+export function getEntitlementFeatureCodes(featureCode) {
+  const normalizedFeatureCode = normalizeFeatureCode(featureCode);
+  if (!normalizedFeatureCode) return [];
+  return [normalizedFeatureCode, ...(FEATURE_ALIASES[normalizedFeatureCode] ?? [])];
 }
 
 function normalizeLimits(value) {
@@ -102,13 +113,14 @@ export function featureFlagsToEntitlementMap(featureFlags = []) {
 }
 
 export function hasEntitlement(entitlements, featureCode) {
-  const normalizedFeatureCode = normalizeFeatureCode(featureCode);
-  return entitlements?.[normalizedFeatureCode]?.isEnabled === true;
+  return getEntitlementFeatureCodes(featureCode).some((code) => entitlements?.[code]?.isEnabled === true);
 }
 
 export function requireEntitlement(entitlements, featureCode) {
-  if (!hasEntitlement(entitlements, featureCode)) {
+  const enabledCode = getEntitlementFeatureCodes(featureCode)
+    .find((code) => entitlements?.[code]?.isEnabled === true);
+  if (!enabledCode) {
     throw new EntitlementError(normalizeFeatureCode(featureCode));
   }
-  return entitlements[normalizeFeatureCode(featureCode)];
+  return entitlements[enabledCode];
 }

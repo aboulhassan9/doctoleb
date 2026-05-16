@@ -235,7 +235,7 @@ describe('control-plane tenant branding draft helpers', () => {
 describe('control-plane entitlement draft helpers', () => {
   const features = [
     { code: 'messaging' },
-    { code: 'advanced_reports' },
+    { code: 'analytical_reports' },
     { code: 'insurance_billing' },
   ];
   const planEntitlements = [
@@ -256,7 +256,7 @@ describe('control-plane entitlement draft helpers', () => {
 
     assert.deepEqual(state, {
       messaging: true,
-      advanced_reports: true,
+      analytical_reports: true,
       insurance_billing: false,
     });
   });
@@ -266,7 +266,7 @@ describe('control-plane entitlement draft helpers', () => {
     const payload = buildManualEntitlementSyncPayload({
       desiredState: {
         messaging: true,
-        advanced_reports: true,
+        analytical_reports: true,
         insurance_billing: false,
       },
       planState,
@@ -276,7 +276,7 @@ describe('control-plane entitlement draft helpers', () => {
 
     assert.deepEqual(payload.entitlements, [
       {
-        feature_code: 'advanced_reports',
+        feature_code: 'analytical_reports',
         source: 'manual_override',
         is_enabled: true,
         limits: {},
@@ -291,7 +291,7 @@ describe('control-plane entitlement draft helpers', () => {
     const payload = buildManualEntitlementSyncPayload({
       desiredState: {
         messaging: true,
-        advanced_reports: false,
+        analytical_reports: false,
         insurance_billing: false,
       },
       planState,
@@ -302,7 +302,7 @@ describe('control-plane entitlement draft helpers', () => {
     });
 
     assert.deepEqual(payload.entitlements, []);
-    assert.deepEqual(payload.resetFeatureCodes, ['advanced_reports']);
+    assert.deepEqual(payload.resetFeatureCodes, ['analytical_reports', 'advanced_reports']);
   });
 });
 

@@ -54,12 +54,26 @@ const FEATURE_META: Record<string, { name: string; description: string; audience
     audience: 'staff',
     targetRoles: ['doctor'],
   },
-  advanced_reports: {
+  analytical_reports: {
     name: 'Advanced reports',
     description: 'Saved operational and financial reports.',
     audience: 'staff',
     targetRoles: ['doctor', 'secretary'],
   },
+}
+
+const LEGACY_FEATURE_ALIASES: Record<string, string> = {
+  advanced_reports: 'analytical_reports',
+}
+
+const TENANT_FEATURE_FLAG_ALIASES: Record<string, { code: string; name: string; description: string }[]> = {
+  analytical_reports: [
+    {
+      code: 'advanced_reports',
+      name: 'Advanced reports',
+      description: 'Legacy alias for analytical reports.',
+    },
+  ],
 }
 
 const SOURCE_PRIORITY: Record<string, number> = {
@@ -73,6 +87,16 @@ function normalizeFeatureCode(value: unknown) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
 
+function canonicalFeatureCode(value: unknown) {
+  const featureCode = normalizeFeatureCode(value)
+  return LEGACY_FEATURE_ALIASES[featureCode] ?? featureCode
+}
+
+function knownFeatureCode(value: unknown) {
+  const featureCode = normalizeFeatureCode(value)
+  return Boolean(FEATURE_META[canonicalFeatureCode(featureCode)])
+}
+
 function normalizeLimits(value: unknown) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 }
@@ -80,7 +104,7 @@ function normalizeLimits(value: unknown) {
 function normalizeEntitlement(row: unknown, tenantId: string) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) return null
   const input = row as Record<string, unknown>
-  const featureCode = normalizeFeatureCode(input.feature_code)
+  const featureCode = canonicalFeatureCode(input.feature_code)
   if (!FEATURE_META[featureCode]) return null
 
   const source = input.source === 'addon' || input.source === 'manual_override'
@@ -102,15 +126,19 @@ function normalizeResetFeatureCodes(value: unknown, protectedCodes: Set<string>)
 
   const codes = new Set<string>()
   for (const item of value) {
-    const code = normalizeFeatureCode(item)
-    if (FEATURE_META[code] && !protectedCodes.has(code)) codes.add(code)
+    const rawCode = normalizeFeatureCode(item)
+    const canonicalCode = canonicalFeatureCode(rawCode)
+    if (knownFeatureCode(rawCode) && !protectedCodes.has(canonicalCode)) {
+      codes.add(canonicalCode)
+      for (const alias of TENANT_FEATURE_FLAG_ALIASES[canonicalCode] ?? []) codes.add(alias.code)
+    }
   }
 
   return [...codes]
 }
 
 function applyResolved(map: Record<string, Record<string, unknown>>, row: Record<string, unknown>, source: string) {
-  const featureCode = normalizeFeatureCode(row.feature_code)
+  const featureCode = canonicalFeatureCode(row.feature_code)
   if (!FEATURE_META[featureCode]) return
 
   const candidate = {
@@ -223,10 +251,10 @@ Deno.serve(async (req) => {
   }
 
   const tenantClient = createTenantServiceClient(tenant.supabase_url, key)
-  const featureFlagRows = Object.values(resolved).map((entitlement) => {
+  const featureFlagRows = Object.values(resolved).flatMap((entitlement) => {
     const featureCode = String(entitlement.feature_code)
     const meta = FEATURE_META[featureCode]
-    return {
+    const canonicalRow = {
       code: featureCode,
       name: meta.name,
       description: meta.description,
@@ -236,6 +264,13 @@ Deno.serve(async (req) => {
       target_platforms: ['web'],
       config: normalizeLimits(entitlement.limits),
     }
+    const aliasRows = (TENANT_FEATURE_FLAG_ALIASES[featureCode] ?? []).map((alias) => ({
+      ...canonicalRow,
+      code: alias.code,
+      name: alias.name,
+      description: alias.description,
+    }))
+    return [canonicalRow, ...aliasRows]
   })
 
   const { data: featureFlags, error: syncError } = await tenantClient

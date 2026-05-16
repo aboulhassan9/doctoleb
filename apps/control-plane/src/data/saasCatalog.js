@@ -41,7 +41,7 @@ export const FEATURE_CATALOG = Object.freeze([
     description: 'Plan-gated insurance payment and claim workflow access.',
   },
   {
-    code: 'advanced_reports',
+    code: 'analytical_reports',
     label: 'Advanced reports',
     description: 'Operational reporting beyond the base dashboards.',
   },
