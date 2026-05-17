@@ -178,7 +178,7 @@ const QUICK_START_TEMPLATES = [
     definition: {
       schemaVersion: '1',
       dataSource: 'diagnoses',
-      groupBy: [{ column: 'icd_code', granularity: '' }],
+      groupBy: [{ column: 'icd10_code', granularity: '' }],
       aggregations: [{ fn: 'count', as: 'count' }],
       filters: [],
       orderBy: [{ ref: 'count', dir: 'desc' }],
@@ -215,13 +215,36 @@ const EDITOR_STEPS = [
   { key: 'display',   label: 'Display' },
 ];
 
+const LAST_EDITOR_STEP = EDITOR_STEPS.length - 1;
+
+function normalizeNumberInput(value) {
+  return String(value ?? '')
+    .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0))
+    .replace(/[^\d]/g, '');
+}
+
+function normalizeReportLimit(value) {
+  const normalized = normalizeNumberInput(value);
+  if (!normalized) return '';
+  return String(Math.min(Math.max(Number(normalized), 1), 1000));
+}
+
+function hasFilledFilterValue(filter) {
+  if (!filter.column || !filter.operator) return false;
+  if (filter.operator === 'is_null' || filter.operator === 'not_null') return true;
+  if (filter.operator === 'in' || filter.operator === 'not_in') {
+    return String(filter.value || '').split(',').some((value) => value.trim());
+  }
+  return String(filter.value ?? '').trim() !== '';
+}
+
 function StepProgress({ steps, current, onStepClick }) {
   return (
     <div className="flex items-center gap-1 overflow-x-auto pb-1" role="navigation" aria-label="Report editor steps">
       {steps.map((s, i) => {
         const isComplete = i < current;
         const isCurrent = i === current;
-        const canNavigate = isComplete || isCurrent;
         const inner = (
           <>
             <div
@@ -246,11 +269,11 @@ function StepProgress({ steps, current, onStepClick }) {
         );
         return (
           <div key={s.key} className="flex items-center gap-1" aria-current={isCurrent ? 'step' : undefined}>
-            {canNavigate && onStepClick ? (
+            {onStepClick ? (
               <button
                 type="button"
                 onClick={() => onStepClick(i)}
-                className="flex items-center gap-1 cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                className="flex items-center gap-1 cursor-pointer rounded px-1 py-1 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 aria-label={`Go to step: ${s.label}`}
               >
                 {inner}
@@ -283,6 +306,7 @@ export default function ReportEditorPage() {
   const [saveError, setSaveError] = useState('');
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const initialValuesRef = useRef(null);
+  const [activeStep, setActiveStep] = useState(0);
 
   // ── Report metadata ──
   const [name, setName] = useState('');
@@ -355,17 +379,20 @@ export default function ReportEditorPage() {
     return columnTypeMap[col]?.values || null;
   }, [columnTypeMap]);
 
-  // ── Step progress computation ──
-  // Which step is the doctor currently on? Based on how far they've filled
-  // in the form. Steps are: details, data, groupby, measure, filters, display.
-  const currentStep = useMemo(() => {
-    if (!name.trim()) return 0; // details
-    if (!dataSource) return 1; // data
-    if (groupBy.some((g) => g.column)) return 2; // groupby (at least partially filled)
-    if (aggregations.some((a) => a.fn && a.as)) return 3; // measure
-    if (filters.length > 0) return 4; // filters
-    return 5; // display
-  }, [name, dataSource, groupBy, aggregations, filters]);
+  const currentStep = activeStep;
+
+  const goToStep = useCallback((stepIndex) => {
+    const safeIndex = Math.min(Math.max(stepIndex, 0), LAST_EDITOR_STEP);
+    setActiveStep(safeIndex);
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  }, []);
+
+  const goNext = useCallback(() => goToStep(activeStep + 1), [activeStep, goToStep]);
+  const goBack = useCallback(() => goToStep(activeStep - 1), [activeStep, goToStep]);
 
   // Result keys an order-by entry may reference: group-by columns/aliases
   // plus aggregation aliases.
@@ -551,7 +578,7 @@ export default function ReportEditorPage() {
         : { fn: a.fn, column: a.column, as: a.as }));
 
     const cleanFilters = filters
-      .filter((f) => f.column && f.operator)
+      .filter(hasFilledFilterValue)
       .map((f) => {
         // `bind` makes the filter runtime-adjustable — the viewer renders a
         // filter box for it and the value here becomes the default.
@@ -580,7 +607,7 @@ export default function ReportEditorPage() {
       aggregations: cleanAggregations,
       filters: cleanFilters,
       orderBy: cleanOrderBy,
-      limit: Number(limit) || 100,
+      limit: Number(normalizeNumberInput(limit)) || 100,
       visualization: { type: vizType },
       header: {
         title: name || 'Untitled report',
@@ -732,6 +759,7 @@ export default function ReportEditorPage() {
     setVizType(def.visualization?.type || 'bar');
     setHeaderSubtitle(def.header?.subtitle || '');
     setComparison(null);
+    goToStep(LAST_EDITOR_STEP);
   }
 
   if (loading) {
@@ -769,14 +797,11 @@ export default function ReportEditorPage() {
       <motion.div initial="hidden" animate="visible" variants={stagger} className="space-y-6 p-6">
         {/* Step progress indicator */}
         <motion.div variants={fadeUp}>
-          <StepProgress steps={EDITOR_STEPS} current={currentStep} onStepClick={(i) => {
-            const el = document.getElementById(`step-${EDITOR_STEPS[i].key}`);
-            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }} />
+          <StepProgress steps={EDITOR_STEPS} current={currentStep} onStepClick={goToStep} />
         </motion.div>
 
         {/* Quick-start templates (only for new reports) */}
-        {isNew && (
+        {isNew && activeStep === 0 && (
           <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Quick start</h2>
             <p className="text-xs text-slate-500">Pick a template to fill in the steps automatically — then tweak as needed.</p>
@@ -818,7 +843,7 @@ export default function ReportEditorPage() {
                   <button
                     type="button"
                     onClick={handleSaveAsCopy}
-                    disabled={saving || !name.trim()}
+                    disabled={saving || !String(name || '').trim()}
                     className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                     aria-label="Save as a new copy of this report"
                   >
@@ -828,7 +853,7 @@ export default function ReportEditorPage() {
                 <button
                   type="button"
                   onClick={handleSave}
-                  disabled={saving || !name.trim()}
+                  disabled={saving || !String(name || '').trim()}
                   className="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
                   aria-label="Save this report"
                 >
@@ -845,7 +870,7 @@ export default function ReportEditorPage() {
           </motion.div>
         )}
 
-        {definitionIssues.length > 0 && (
+        {activeStep === LAST_EDITOR_STEP && definitionIssues.length > 0 && (
           <motion.div variants={fadeUp} className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
             <p className="font-medium">A few things to fix before this report can be saved:</p>
             <ul className="mt-1 list-disc pl-5 space-y-0.5">
@@ -855,18 +880,21 @@ export default function ReportEditorPage() {
         )}
 
         {/* Step 1 — Report details */}
+        {activeStep === 0 && (
         <motion.div id="step-details" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">1. Report details</h2>
-          <FormField label="Report name" name="report-name" value={name} onChange={(e) => setName(e.target.value)} error={!name.trim() ? 'A name is required' : ''} />
+          <FormField label="Report name" name="report-name" value={name} onChange={setName} error={!String(name || '').trim() ? 'A name is required' : ''} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Category" name="category" type="select" value={category} onChange={(e) => setCategory(e.target.value)} options={CATEGORY_OPTIONS} />
-            <FormField label="Who can see it" name="audience" type="select" value={audience} onChange={(e) => setAudience(e.target.value)} options={AUDIENCE_OPTIONS} />
+            <FormField label="Category" name="category" type="select" value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
+            <FormField label="Who can see it" name="audience" type="select" value={audience} onChange={setAudience} options={AUDIENCE_OPTIONS} />
           </div>
-          <FormField label="Description" name="description" type="textarea" value={description} onChange={(e) => setDescription(e.target.value)} />
-          <FormField label="Chart subtitle (optional)" name="header-subtitle" value={headerSubtitle} onChange={(e) => setHeaderSubtitle(e.target.value)} />
+          <FormField label="Description" name="description" type="textarea" value={description} onChange={setDescription} />
+          <FormField label="Chart subtitle (optional)" name="header-subtitle" value={headerSubtitle} onChange={setHeaderSubtitle} />
         </motion.div>
+        )}
 
         {/* Step 2 — Data */}
+        {activeStep === 1 && (
         <motion.div id="step-data" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">2. What data</h2>
           <FormField
@@ -882,8 +910,10 @@ export default function ReportEditorPage() {
             access rules as the rest of DoctoLeb.
           </p>
         </motion.div>
+        )}
 
         {/* Step 3 — Break down by (group-by) */}
+        {activeStep === 2 && (
         <motion.div id="step-groupby" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">3. Break down by</h2>
@@ -939,8 +969,10 @@ export default function ReportEditorPage() {
             Leave empty for a grand total. Add a column to split the numbers (e.g. by doctor, by month).
           </p>
         </motion.div>
+        )}
 
         {/* Step 4 — Measure (aggregations) */}
+        {activeStep === 3 && (
         <motion.div id="step-measure" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">4. What to measure</h2>
@@ -1007,8 +1039,10 @@ export default function ReportEditorPage() {
             );
           })}
         </motion.div>
+        )}
 
         {/* Step 5 — Filters */}
+        {activeStep === 4 && (
         <motion.div id="step-filters" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">5. Filters (optional)</h2>
@@ -1143,8 +1177,11 @@ export default function ReportEditorPage() {
             );
           })}
         </motion.div>
+        )}
 
         {/* Step 6 — Sort, limit, chart */}
+        {activeStep === 5 && (
+        <>
         <motion.div id="step-display" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">6. Sort &amp; display</h2>
           <div className="flex items-center justify-between">
@@ -1197,9 +1234,12 @@ export default function ReportEditorPage() {
             <FormField
               label="Max rows"
               name="max-rows"
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={String(limit)}
-              onChange={(v) => setLimit(v)}
+              onChange={(v) => setLimit(normalizeReportLimit(v))}
+              onBlur={() => setLimit((value) => normalizeReportLimit(value) || '100')}
             />
           </div>
 
@@ -1304,6 +1344,48 @@ export default function ReportEditorPage() {
             <ChartErrorBoundary>
               <ChartRenderer definition={buildDefinition()} rows={previewRows} />
             </ChartErrorBoundary>
+          )}
+        </motion.div>
+        </>
+        )}
+
+        <motion.div
+          variants={fadeUp}
+          className="sticky bottom-4 z-20 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 shadow-xl shadow-slate-200/70 backdrop-blur"
+        >
+          <button
+            type="button"
+            onClick={goBack}
+            disabled={activeStep === 0}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Back
+          </button>
+          <div className="min-w-0 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+              Step {activeStep + 1} of {EDITOR_STEPS.length}
+            </p>
+            <p className="truncate text-sm font-extrabold text-slate-900">
+              {EDITOR_STEPS[activeStep]?.label}
+            </p>
+          </div>
+          {activeStep < LAST_EDITOR_STEP ? (
+            <button
+              type="button"
+              onClick={goNext}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-slate-300 transition hover:-translate-y-0.5 hover:bg-slate-800"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !String(name || '').trim() || definitionIssues.length > 0}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2 text-sm font-bold text-white shadow-lg shadow-slate-300 transition hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {saving ? 'Saving...' : isNew ? 'Create report' : 'Save report'}
+            </button>
           )}
         </motion.div>
       </motion.div>

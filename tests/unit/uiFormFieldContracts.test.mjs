@@ -25,4 +25,18 @@ describe('FormField event contract', () => {
     assert.match(source, /const sourceEvent = event \|\| valueOrEvent/);
     assert.match(source, /const value = event \? valueOrEvent : sourceEvent\.target\.value/);
   });
+
+  it('keeps the report builder on value-first fields and real wizard navigation', () => {
+    const source = read('apps/clinic-ops/src/pages/ReportEditorPage.jsx');
+
+    assert.match(source, /const \[activeStep, setActiveStep\] = useState\(0\)/);
+    assert.match(source, /const goNext = useCallback\(\(\) => goToStep\(activeStep \+ 1\)/);
+    assert.match(source, /const goBack = useCallback\(\(\) => goToStep\(activeStep - 1\)/);
+    assert.match(source, /filter\(hasFilledFilterValue\)/);
+    assert.match(source, /normalizeReportLimit/);
+    assert.match(source, /groupBy: \[\{ column: 'icd10_code'/);
+    assert.match(source, /onChange=\{setName\}/);
+    assert.doesNotMatch(source, /onChange=\{\(e\) => setName\(e\.target\.value\)\}/);
+    assert.doesNotMatch(source, /disabled=\{saving \|\| !name\.trim\(\)\}/);
+  });
 });
