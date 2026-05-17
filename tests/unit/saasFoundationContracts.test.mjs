@@ -542,6 +542,9 @@ describe('SaaS foundation contracts', () => {
     assert.match(tenantMigrationBundle, /alter function public\.run_analytical_report\(jsonb, jsonb\) volatile/);
     assert.match(analyticalReportVolatilityFix, /alter function public\.run_analytical_report\(jsonb, jsonb\) volatile/);
     assert.match(analyticalReportVolatilityFix, /SECURITY INVOKER/);
+    for (const source of [analyticalReportRuntime, analyticalReportRuntimeFix]) {
+      assert.match(source, /else v_value::text\s+end\s+\)\);/);
+    }
     for (const source of [analyticalReportRuntime, analyticalReportRuntimeFix, tenantMigrationBundle]) {
       assert.match(source, /%I::text %s \(%L::text\[\]\)/);
       assert.match(source, /case when v_op = 'in' then '= any' else '<> all' end/);

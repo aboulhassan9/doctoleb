@@ -221,7 +221,7 @@ begin
           when 'string' then v_value #>> '{}'
           else v_value::text
         end
-      );
+      ));
     end if;
   end loop;
 
