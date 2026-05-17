@@ -29,12 +29,19 @@ import {
   ANALYTICAL_REPORT_SELECT_FIELDS,
   ANALYTICAL_REPORT_VERSION_SELECT_FIELDS,
   ANALYTICAL_REPORT_RUN_SELECT_FIELDS,
+  ANALYTICAL_REPORT_SHARE_SELECT_FIELDS,
 } from '../lib/selects.js';
+import {
+  resolveComparisonWindow,
+  buildPreviousRun,
+  mergeComparisonRows,
+} from '../lib/reportComparison.js';
 import {
   analyticalReportDefinitionSchema,
   analyticalReportCreateSchema,
   analyticalReportVersionCreateSchema,
   analyticalReportRunRequestSchema,
+  analyticalReportShareCreateSchema,
 } from '../schemas/analyticalReports.js';
 import { apiCall, apiPaged } from './api.js';
 
@@ -202,6 +209,83 @@ export const analyticalReportService = {
           archived_by: archivedBy,
         })
         .eq('id', id)
+        .select(ANALYTICAL_REPORT_SELECT_FIELDS)
+        .single(),
+    );
+  },
+
+  // ── Sharing + ownership ──
+
+  /**
+   * List the explicit access grants on a report. Returns share rows; the
+   * caller resolves `shared_with_user_id` to a name via the staff list.
+   */
+  async listShares(reportId) {
+    if (!reportId) return validationError('Report id is required.');
+    return apiPaged(
+      supabase
+        .from('analytical_report_shares')
+        .select(ANALYTICAL_REPORT_SHARE_SELECT_FIELDS, { count: 'exact' })
+        .eq('report_id', reportId)
+        .order('created_at', { ascending: true }),
+      { page: 1, pageSize: 200 },
+    );
+  },
+
+  /** Grant a colleague access to a report. RLS limits this to the owner/admin. */
+  async share(payload) {
+    const parsed = parse(analyticalReportShareCreateSchema, payload);
+    if (parsed.error) return validationError(parsed.error);
+    return apiCall(
+      supabase
+        .from('analytical_report_shares')
+        .insert([parsed.data])
+        .select(ANALYTICAL_REPORT_SHARE_SELECT_FIELDS)
+        .single(),
+    );
+  },
+
+  /** Change an existing grant's permission level. */
+  async updateShare(shareId, permissionLevel) {
+    if (!shareId) return validationError('Share id is required.');
+    if (permissionLevel !== 'view' && permissionLevel !== 'edit') {
+      return validationError('permission_level must be "view" or "edit".');
+    }
+    return apiCall(
+      supabase
+        .from('analytical_report_shares')
+        .update({ permission_level: permissionLevel })
+        .eq('id', shareId)
+        .select(ANALYTICAL_REPORT_SHARE_SELECT_FIELDS)
+        .single(),
+    );
+  },
+
+  /** Revoke a grant. Access grants are control metadata — hard delete is correct. */
+  async removeShare(shareId) {
+    if (!shareId) return validationError('Share id is required.');
+    return apiCall(
+      supabase
+        .from('analytical_report_shares')
+        .delete()
+        .eq('id', shareId)
+        .select(ANALYTICAL_REPORT_SHARE_SELECT_FIELDS)
+        .single(),
+    );
+  },
+
+  /**
+   * Transfer report ownership to another user. The DB guard trigger makes
+   * this admin-only — a non-admin caller gets a clear rejection.
+   */
+  async transferOwnership(reportId, newOwnerId) {
+    if (!reportId) return validationError('Report id is required.');
+    if (!newOwnerId) return validationError('New owner id is required.');
+    return apiCall(
+      supabase
+        .from('analytical_reports')
+        .update({ created_by: newOwnerId })
+        .eq('id', reportId)
         .select(ANALYTICAL_REPORT_SELECT_FIELDS)
         .single(),
     );
@@ -428,6 +512,12 @@ export const analyticalReportService = {
     const parsedDef = parse(analyticalReportDefinitionSchema, definition);
     if (parsedDef.error) return validationError(parsedDef.error);
 
+    // Period-over-period: run the base report twice (current + shifted)
+    // and merge. Delegated so the recursive runs carry no `comparison`.
+    if (parsedDef.data.comparison) {
+      return analyticalReportService._runComparison(parsedDef.data, filterArgs || {});
+    }
+
     const { data, error } = await apiCall(
       supabase.rpc('run_analytical_report', {
         p_definition: parsedDef.data,
@@ -444,6 +534,35 @@ export const analyticalReportService = {
       : data && typeof data === 'object'
         ? [data]
         : [];
+    return { data: { rows }, error: null };
+  },
+
+  /**
+   * Period-over-period comparison runner. Resolves the current window from
+   * the report's date filters, runs the base report for that window and
+   * for the shifted window, then merges into a dual-series dataset where
+   * each measure `m` is paired with `m__prev`. Returns the same
+   * `{ data: { rows }, error }` envelope as `runDefinition`.
+   */
+  async _runComparison(definition, filterArgs) {
+    const window = resolveComparisonWindow(definition, filterArgs);
+    if (window.error) return validationError(window.error);
+
+    const baseDefinition = { ...definition };
+    delete baseDefinition.comparison;
+
+    const currentRes = await analyticalReportService.runDefinition(baseDefinition, filterArgs);
+    if (currentRes.error) return currentRes;
+
+    const previous = buildPreviousRun(definition, filterArgs, window);
+    const previousRes = await analyticalReportService.runDefinition(
+      previous.definition, previous.filterArgs,
+    );
+    if (previousRes.error) return previousRes;
+
+    const rows = mergeComparisonRows(
+      currentRes.data.rows, previousRes.data.rows, baseDefinition,
+    );
     return { data: { rows }, error: null };
   },
 

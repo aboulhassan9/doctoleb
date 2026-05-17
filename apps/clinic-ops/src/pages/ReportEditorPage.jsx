@@ -43,6 +43,7 @@ import {
   REPORT_VISUALIZATIONS,
 } from '@core/schemas/analyticalReports';
 import { resolveColumnLabel } from '@core/lib/reportLabels';
+import { toDateInputValue, RELATIVE_DATE_SHORTCUTS } from '@core/lib/dateUtils';
 import { stagger, fadeUp } from '@core/lib/animations';
 
 // ── Friendly labels ─────────────────────────────────────────────────
@@ -117,23 +118,6 @@ const AUDIENCE_OPTIONS = [
   { value: 'admin', label: 'Admins only' },
   { value: 'public_safe', label: 'Public-safe' },
 ];
-
-function toDateInputValue(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-const RELATIVE_DATE_SHORTCUTS = [
-  { label: 'Today',          getValue: () => toDateInputValue(new Date()) },
-  { label: 'Start of week',  getValue: () => { const d = new Date(); d.setDate(d.getDate() - d.getDay()); return toDateInputValue(d); } },
-  { label: 'Start of month', getValue: () => { const d = new Date(); d.setDate(1); return toDateInputValue(d); } },
-  { label: '30 days ago',    getValue: () => { const d = new Date(); d.setDate(d.getDate() - 30); return toDateInputValue(d); } },
-  { label: 'Start of quarter', getValue: () => { const d = new Date(); d.setMonth(Math.floor(d.getMonth() / 3) * 3); d.setDate(1); return toDateInputValue(d); } },
-  { label: 'Start of year',  getValue: () => `${new Date().getFullYear()}-01-01` },
-];
-
 
 /** Legacy alias — used in places where dataSource isn't available (e.g. sort refs). */
 function prettyColumn(col) {
@@ -315,6 +299,8 @@ export default function ReportEditorPage() {
   const [limit, setLimit] = useState(100);
   const [vizType, setVizType] = useState('bar');
   const [headerSubtitle, setHeaderSubtitle] = useState('');
+  // Period-over-period comparison: null = off, else { column, period }.
+  const [comparison, setComparison] = useState(null);
 
   // ── Preview state ──
   const [previewRows, setPreviewRows] = useState(null);
@@ -324,6 +310,11 @@ export default function ReportEditorPage() {
 
   const availableColumns = REPORT_DATA_SOURCE_COLUMNS[dataSource] || [];
   const columnTypeMap = REPORT_DATA_SOURCE_COLUMN_TYPES[dataSource] || {};
+  // Timestamp / date columns — the period axis for comparison.
+  const dateColumns = availableColumns.filter((c) => {
+    const t = columnTypeMap[c]?.type;
+    return t === 'timestamp' || t === 'date';
+  });
 
   // ── Smart column-aware helpers ──
   // Filter operators available for a given column (based on its type).
@@ -402,6 +393,7 @@ export default function ReportEditorPage() {
     limit: String(limit),
     vizType,
     headerSubtitle,
+    comparison,
   }), [
     name,
     description,
@@ -415,6 +407,7 @@ export default function ReportEditorPage() {
     limit,
     vizType,
     headerSubtitle,
+    comparison,
   ]);
 
   useEffect(() => {
@@ -482,7 +475,7 @@ export default function ReportEditorPage() {
     if (loading || !autoPreviewEnabled) return;
     triggerAutoPreview();
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [dataSource, groupBy, aggregations, filters, orderBy, limit, vizType, name, headerSubtitle, triggerAutoPreview, loading, autoPreviewEnabled]);
+  }, [dataSource, groupBy, aggregations, filters, orderBy, limit, vizType, name, headerSubtitle, comparison, triggerAutoPreview, loading, autoPreviewEnabled]);
 
   // ── Load existing report when editing ──
   useEffect(() => {
@@ -533,6 +526,9 @@ export default function ReportEditorPage() {
         setLimit(def.limit || 100);
         setVizType(def.visualization?.type || 'bar');
         setHeaderSubtitle(def.header?.subtitle || '');
+        setComparison(def.comparison
+          ? { column: def.comparison.column, period: def.comparison.period }
+          : null);
       }
       setLoading(false);
     })();
@@ -591,6 +587,9 @@ export default function ReportEditorPage() {
         ...(headerSubtitle ? { subtitle: headerSubtitle } : {}),
         showFilters: true,
       },
+      ...(comparison && comparison.column
+        ? { comparison: { column: comparison.column, period: comparison.period } }
+        : {}),
     };
   }
 
@@ -701,6 +700,7 @@ export default function ReportEditorPage() {
     setAggregations([{ fn: 'count', column: '', as: 'count' }]);
     setFilters([]);
     setOrderBy([]);
+    setComparison(null);
     setPreviewRows(null);
   }
 
@@ -731,6 +731,7 @@ export default function ReportEditorPage() {
     setLimit(def.limit || 100);
     setVizType(def.visualization?.type || 'bar');
     setHeaderSubtitle(def.header?.subtitle || '');
+    setComparison(null);
   }
 
   if (loading) {
@@ -856,13 +857,13 @@ export default function ReportEditorPage() {
         {/* Step 1 — Report details */}
         <motion.div id="step-details" variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">1. Report details</h2>
-          <FormField label="Report name" name="report-name" value={name} onChange={setName} error={!name.trim() ? 'A name is required' : ''} />
+          <FormField label="Report name" name="report-name" value={name} onChange={(e) => setName(e.target.value)} error={!name.trim() ? 'A name is required' : ''} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Category" name="category" type="select" value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
-            <FormField label="Who can see it" name="audience" type="select" value={audience} onChange={setAudience} options={AUDIENCE_OPTIONS} />
+            <FormField label="Category" name="category" type="select" value={category} onChange={(e) => setCategory(e.target.value)} options={CATEGORY_OPTIONS} />
+            <FormField label="Who can see it" name="audience" type="select" value={audience} onChange={(e) => setAudience(e.target.value)} options={AUDIENCE_OPTIONS} />
           </div>
-          <FormField label="Description" name="description" type="textarea" value={description} onChange={setDescription} />
-          <FormField label="Chart subtitle (optional)" name="header-subtitle" value={headerSubtitle} onChange={setHeaderSubtitle} />
+          <FormField label="Description" name="description" type="textarea" value={description} onChange={(e) => setDescription(e.target.value)} />
+          <FormField label="Chart subtitle (optional)" name="header-subtitle" value={headerSubtitle} onChange={(e) => setHeaderSubtitle(e.target.value)} />
         </motion.div>
 
         {/* Step 2 — Data */}
@@ -1190,7 +1191,7 @@ export default function ReportEditorPage() {
               name="viz-type"
               type="select"
               value={vizType}
-              onChange={setVizType}
+              onChange={(v) => { setVizType(v); if (v === 'pie') setComparison(null); }}
               options={REPORT_VISUALIZATIONS.map((v) => ({ value: v, label: VIZ_LABELS[v] || v }))}
             />
             <FormField
@@ -1200,6 +1201,57 @@ export default function ReportEditorPage() {
               value={String(limit)}
               onChange={(v) => setLimit(v)}
             />
+          </div>
+
+          {/* Period-over-period comparison */}
+          <div className="pt-3 border-t border-slate-100 space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                checked={Boolean(comparison)}
+                disabled={vizType === 'pie'}
+                onChange={(e) => setComparison(e.target.checked
+                  ? { column: dateColumns[0] || '', period: 'previous_period' }
+                  : null)}
+                className="rounded border-slate-300 disabled:opacity-50"
+              />
+              Compare against an earlier period
+            </label>
+            {vizType === 'pie' ? (
+              <p className="text-xs text-slate-500">Period comparison is not available for pie charts.</p>
+            ) : comparison ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  label="Period date column"
+                  name="comparison-column"
+                  type="select"
+                  value={comparison.column}
+                  onChange={(v) => setComparison((c) => ({ ...c, column: v }))}
+                  options={dateColumns.length
+                    ? dateColumns.map((c) => ({ value: c, label: resolveColumnLabel(dataSource, c) }))
+                    : [{ value: '', label: 'No date columns on this data source' }]}
+                />
+                <FormField
+                  label="Compare to"
+                  name="comparison-period"
+                  type="select"
+                  value={comparison.period}
+                  onChange={(v) => setComparison((c) => ({ ...c, period: v }))}
+                  options={[
+                    { value: 'previous_period', label: 'Previous period' },
+                    { value: 'previous_year', label: 'Same period last year' },
+                  ]}
+                />
+                <p className="text-xs text-slate-500 sm:col-span-2">
+                  Add an “on or after” filter on this column in step 5 to set the current
+                  period. The report runs twice — current and shifted — and charts both.
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500">
+                Overlay this report against the previous period or the same period last year.
+              </p>
+            )}
           </div>
         </motion.div>
 

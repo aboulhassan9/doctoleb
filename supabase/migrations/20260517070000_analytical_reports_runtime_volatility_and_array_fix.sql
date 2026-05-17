@@ -1,32 +1,25 @@
--- Analytical-report runtime engine.
+-- Fix run_analytical_report: volatility category + array_append safety.
 --
--- The `run_analytical_report` function compiles a validated definition
--- JSON into a parameterized SQL query, executes it as the LOGGED-IN USER
--- (SECURITY INVOKER), and returns the aggregated rows as JSONB.
+-- Bug 1 (0A000 — production blocker):
+--   The function was declared STABLE but its body contains
+--   SET local statement_timeout = '5s'. PostgreSQL rejects SET in
+--   non-VOLATILE functions with error code 0A000 ("SET is not allowed
+--   in a non-volatile function"), causing every RPC call to return
+--   HTTP 400. The function is also semantically VOLATILE because it
+--   executes dynamic SQL (RETURN QUERY EXECUTE) whose results depend
+--   on current data state.
+--   Fix: STABLE → VOLATILE.
 --
--- Safety model:
---   1. Closed-set whitelists for every identifier the function emits —
---      data sources, columns per source, aggregation functions, filter
---      operators, time granularities, sort directions. The function
---      raises an exception the moment a non-allowlisted identifier
---      arrives.
---   2. Every identifier is interpolated with `format('%I', ...)` so even
---      a misconfigured allowlist cannot escape SQL syntax.
---   3. Every literal goes through `format('%L', ...)` (single-value
---      filters) or is passed as a USING parameter (the array `in`/`not_in`
---      operators). No user value reaches the query as raw text.
---   4. SECURITY INVOKER means the underlying clinical/financial RLS still
---      applies — a secretary running "revenue by doctor" only sees the
---      payment rows her RLS lets her see. The function NEVER bypasses
---      that, even when called by an admin.
---   5. Result cardinality is capped at the definition's `limit` (max 1000
---      per the JS schema). The query also pre-trims via the WHERE clause
---      whenever filters are present.
---
--- This function is the single execution surface for analytical reports.
--- Adding a new data source means adding (a) its table name to the
--- `v_source_table` CASE, (b) its column allowlist to the
--- `v_allowed_columns` CASE, and (c) any source-specific default filter.
+-- Bug 2 (22P02 — latent, surfaces after Bug 1 fix):
+--   The text[] || text operator used for filter/select/group/order
+--   part assembly is ambiguous — PostgreSQL may resolve || as array
+--   concatenation (text[] || text[]) instead of element append
+--   (text[] || text), causing "malformed array literal" (22P02) when
+--   the right operand is an untyped string literal like
+--   'is_archived = false'. Using array_append() is unambiguous.
+--   Fix: replace all v_xxx_parts := v_xxx_parts || expr with
+--        v_xxx_parts := array_append(v_xxx_parts, expr).
+--   Also applied to v_resolved_keys for consistency.
 
 create or replace function public.run_analytical_report(
   p_definition jsonb,
@@ -201,7 +194,7 @@ begin
                 from unnest(v_array_values) as unnest),
           ','
         ) || '}'
-      );
+      ));
     else
       -- eq / neq / gt / gte / lt / lte
       if v_value is null then
@@ -224,7 +217,7 @@ begin
           when 'string' then v_value #>> '{}'
           else v_value::text
         end
-      );
+      ));
     end if;
   end loop;
 
@@ -276,18 +269,4 @@ revoke all on function public.run_analytical_report(jsonb, jsonb) from public;
 grant execute on function public.run_analytical_report(jsonb, jsonb) to authenticated;
 
 comment on function public.run_analytical_report(jsonb, jsonb) is
-  'Closed-set analytical-report compiler. Validates the JSON definition against per-source column allowlists, builds a parameterized SQL query, executes as the logged-in user (SECURITY INVOKER → RLS still scopes rows), and returns aggregated rows as JSONB. The only execution surface for the analytical-report engine.';
-
--- Seed the analytical_reports feature flag — disabled by default; tenants
--- opt in once they've configured the reports they want.
-insert into public.feature_flags (code, name, description, is_enabled, target_roles, target_platforms, audience)
-values (
-  'analytical_reports',
-  'Analytical Reports',
-  'Doctor / admin / staff saved-report engine. When on, the Reports sidebar entry is visible.',
-  false,
-  array['doctor','admin','secretary'],
-  array['web'],
-  'staff'
-)
-on conflict (code) do nothing;
+  'Closed-set analytical-report compiler. Validates the JSON definition against per-source column allowlists, builds a parameterized SQL query, executes as the logged-in user (SECURITY INVOKER → RLS still scopes rows), and returns aggregated rows as JSONB. The only execution surface for the analytical-report engine. VOLATILE because it uses SET local and executes dynamic SQL; array_append() for unambiguous text[] element appending.';

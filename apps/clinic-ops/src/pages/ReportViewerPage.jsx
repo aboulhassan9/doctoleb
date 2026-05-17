@@ -22,21 +22,24 @@ import { motion } from 'framer-motion';
 import DashboardLayout from '@ui/components/layouts/DashboardLayout';
 import {
   PageHeader, LoadingSkeleton, EmptyState, ChartRenderer, ChartErrorBoundary, FormField,
-  StatusBadge, ConfirmDialog,
+  StatusBadge, ConfirmDialog, DatePickerInput,
 } from '@ui/components/ui';
 import { useAuth } from '@ui/contexts/AuthContext';
 import { analyticalReportService } from '@core/services/analyticalReports';
+import { REPORT_DATA_SOURCE_COLUMN_TYPES } from '@core/schemas/analyticalReports';
 import { resolveColumnLabel } from '@core/lib/reportLabels';
 import { toCsv } from '@core/lib/csv';
 import '@ui/styles/print-report.css';
-import { timeAgo } from '@core/lib/dateUtils';
+import { timeAgo, RELATIVE_DATE_SHORTCUTS } from '@core/lib/dateUtils';
 import { stagger, fadeUp } from '@core/lib/animations';
+import ReportSharePanel from '../components/reports/ReportSharePanel';
 
 export default function ReportViewerPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const canManage = user?.role === 'doctor' || user?.role === 'admin';
+  const isAdmin = user?.role === 'admin';
 
   const [report, setReport] = useState(null);
   const [version, setVersion] = useState(null);
@@ -45,6 +48,12 @@ export default function ReportViewerPage() {
   const [rows, setRows] = useState([]);
   const [error, setError] = useState('');
   const [filterArgs, setFilterArgs] = useState({});
+  const [viewingOldVersion, setViewingOldVersion] = useState(null);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [versions, setVersions] = useState([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   // Recent-runs ledger. `runsTick` is bumped after each run so the panel
   // refreshes once the fire-and-forget ledger write has had a moment to land.
@@ -55,6 +64,9 @@ export default function ReportViewerPage() {
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [showBackConfirm, setShowBackConfirm] = useState(false);
   const [archiving, setArchiving] = useState(false);
+
+  // Sharing
+  const [showShare, setShowShare] = useState(false);
 
   // Drill-down — each entry is { column, operator, value, label }
   const [drillDownFilters, setDrillDownFilters] = useState([]);
@@ -87,7 +99,11 @@ export default function ReportViewerPage() {
     return () => { alive = false; };
   }, [id]);
 
-  const definition = version?.definition || null;
+  // When `viewingOldVersion` is set the page previews a past version;
+  // otherwise it shows the current published version.
+  const activeVersion = viewingOldVersion || version;
+  const definition = activeVersion?.definition || null;
+  const isOwner = Boolean(report?.created_by) && report.created_by === user?.id;
 
   // Bound filters from the definition — the only ones we expose as a UI
   // filter strip. Inline (non-bound) filters are part of the saved report
@@ -128,11 +144,26 @@ export default function ReportViewerPage() {
   }
 
   // ── Run (original report, no drill-down) ────────────────────────────
-  async function runReport(overrides) {
+  async function runReport(overrides, { forceCurrent = false } = {}) {
     if (!report?.id || !user?.id) return;
     const args = overrides ?? filterArgs;
     setRunning(true);
     setError('');
+    // Previewing a past version: run that definition ad-hoc, no ledger entry.
+    if (viewingOldVersion && !forceCurrent) {
+      const { data, error: err } = await analyticalReportService.runDefinition(
+        viewingOldVersion.definition,
+        args || {},
+      );
+      if (err) {
+        setError(err);
+        setRows([]);
+      } else {
+        setRows(data?.rows || []);
+      }
+      setRunning(false);
+      return;
+    }
     const { data, error: err } = await analyticalReportService.runByReport(
       report.id,
       args || {},
@@ -248,6 +279,76 @@ export default function ReportViewerPage() {
     navigate('/reports');
   }
 
+  // ── Version history ──────────────────────────────────────────────────
+  async function loadVersions() {
+    if (!report?.id) return;
+    setVersionsLoading(true);
+    const { data } = await analyticalReportService.listVersions(report.id, {
+      page: 1, pageSize: 50,
+    });
+    if (Array.isArray(data)) setVersions(data);
+    setVersionsLoading(false);
+  }
+
+  function toggleVersionHistory() {
+    const next = !showVersionHistory;
+    setShowVersionHistory(next);
+    if (next && versions.length === 0) void loadVersions();
+  }
+
+  // Preview a past version read-only — runs that version's definition
+  // ad-hoc (no ledger entry) and switches the page into old-version mode.
+  async function handleViewVersion(v) {
+    if (running || !v?.definition) return;
+    setViewingOldVersion(v);
+    setDrillDownFilters([]);
+    setFilterArgs({});
+    setRunning(true);
+    setError('');
+    const { data, error: err } = await analyticalReportService.runDefinition(v.definition, {});
+    if (err) {
+      setError(err);
+      setRows([]);
+    } else {
+      setRows(data?.rows || []);
+    }
+    setRunning(false);
+  }
+
+  // Leave old-version mode and re-run the current published version.
+  function handleBackToCurrent() {
+    if (running) return;
+    setViewingOldVersion(null);
+    setDrillDownFilters([]);
+    setFilterArgs({});
+    void runReport({}, { forceCurrent: true });
+  }
+
+  // Restore = publish a NEW version carrying the old definition. Existing
+  // versions stay immutable; the auto-run effect re-renders once `version`
+  // updates to the freshly-published row.
+  async function handleRestoreVersion() {
+    if (!viewingOldVersion || !user?.id) return;
+    setRestoring(true);
+    const { error: err } = await analyticalReportService.publishNewVersion(
+      report.id,
+      viewingOldVersion.definition,
+      { publishedBy: user.id },
+    );
+    setRestoring(false);
+    setShowRestoreConfirm(false);
+    if (err) {
+      setError(err);
+      return;
+    }
+    setViewingOldVersion(null);
+    setDrillDownFilters([]);
+    setFilterArgs({});
+    const versionRes = await analyticalReportService.getCurrentVersion(report.id);
+    if (!versionRes.error) setVersion(versionRes.data);
+    await loadVersions();
+  }
+
   if (loading) {
     return (
       <DashboardLayout role="doctor">
@@ -296,6 +397,16 @@ export default function ReportViewerPage() {
                     🖶 Print
                   </button>
                 )}
+                {(isOwner || isAdmin) && (
+                  <button
+                    type="button"
+                    onClick={() => setShowShare(true)}
+                    className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    aria-label="Share this report"
+                  >
+                    Share
+                  </button>
+                )}
                 {canManage && (
                   <button
                     type="button"
@@ -331,21 +442,101 @@ export default function ReportViewerPage() {
           />
         </motion.div>
 
+        {/* Viewing-a-past-version banner */}
+        {viewingOldVersion && (
+          <motion.div variants={fadeUp} className="rounded-xl border border-amber-300 bg-amber-50 p-4 no-print" role="status">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-amber-800">
+                <span className="font-semibold">Viewing version {viewingOldVersion.version_number}</span>
+                {' — a past snapshot. It is not the current report.'}
+              </p>
+              <div className="flex items-center gap-2">
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={() => setShowRestoreConfirm(true)}
+                    disabled={running || restoring}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 disabled:opacity-50"
+                  >
+                    Restore this version
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleBackToCurrent}
+                  disabled={running}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg border border-amber-300 text-sm font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50"
+                >
+                  Back to current
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Filter strip — only rendered when the definition has bound filters */}
         {boundFilters.length > 0 && definition?.header?.showFilters !== false && (
           <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white p-4 space-y-3 no-print" role="region" aria-label="Report filters">
             <h3 className="text-sm font-semibold text-slate-700">Filters</h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {boundFilters.map((f) => (
-                <FormField
-                  key={f.bind}
-                  name={f.bind}
-                  label={resolveColumnLabel(definition.dataSource, f.column) || f.bind}
-                  value={filterArgs[f.bind] ?? ''}
-                  onChange={(v) => setFilterArgs((prev) => ({ ...prev, [f.bind]: v }))}
-                  aria-label={`Filter: ${resolveColumnLabel(definition.dataSource, f.column) || f.bind}`}
-                />
-              ))}
+              {boundFilters.map((f) => {
+                const colType = (REPORT_DATA_SOURCE_COLUMN_TYPES[definition.dataSource] || {})[f.column]?.type;
+                const isDateCol = colType === 'timestamp' || colType === 'date';
+                const enumVals = (REPORT_DATA_SOURCE_COLUMN_TYPES[definition.dataSource] || {})[f.column]?.values;
+                const isEnumCol = Boolean(enumVals);
+                const colLabel = resolveColumnLabel(definition.dataSource, f.column) || f.bind;
+
+                if (isDateCol) {
+                  return (
+                    <div key={f.bind} className="space-y-1.5">
+                      <DatePickerInput
+                        label={colLabel}
+                        name={f.bind}
+                        value={filterArgs[f.bind] ?? ''}
+                        onChange={(e) => setFilterArgs((prev) => ({ ...prev, [f.bind]: e.target.value }))}
+                      />
+                      <div className="flex flex-wrap gap-1">
+                        {RELATIVE_DATE_SHORTCUTS.map(({ label, getValue }) => (
+                          <button
+                            key={label}
+                            type="button"
+                            onClick={() => setFilterArgs((prev) => ({ ...prev, [f.bind]: getValue() }))}
+                            className="rounded px-1.5 py-0.5 text-xs text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (isEnumCol) {
+                  return (
+                    <FormField
+                      key={f.bind}
+                      name={f.bind}
+                      label={colLabel}
+                      type="select"
+                      value={filterArgs[f.bind] ?? ''}
+                      onChange={(v) => setFilterArgs((prev) => ({ ...prev, [f.bind]: v }))}
+                      options={[{ value: '', label: `— pick ${colLabel} —` }, ...enumVals.map((v) => ({ value: v, label: v }))]}
+                      aria-label={`Filter: ${colLabel}`}
+                    />
+                  );
+                }
+
+                return (
+                  <FormField
+                    key={f.bind}
+                    name={f.bind}
+                    label={colLabel}
+                    value={filterArgs[f.bind] ?? ''}
+                    onChange={(v) => setFilterArgs((prev) => ({ ...prev, [f.bind]: v }))}
+                    aria-label={`Filter: ${colLabel}`}
+                  />
+                );
+              })}
             </div>
             <div className="flex items-center justify-end">
               <button
@@ -474,6 +665,81 @@ export default function ReportViewerPage() {
             </div>
           </motion.div>
         )}
+
+        {/* Version history */}
+        <motion.div variants={fadeUp} className="rounded-xl border border-slate-200 bg-white no-print">
+          <button
+            type="button"
+            onClick={toggleVersionHistory}
+            className="flex w-full items-center justify-between px-5 py-4 text-left"
+            aria-expanded={showVersionHistory}
+          >
+            <h3 className="text-sm font-semibold text-slate-700">Version history</h3>
+            <span className="text-sm text-slate-400" aria-hidden="true">{showVersionHistory ? '▲' : '▼'}</span>
+          </button>
+          {showVersionHistory && (
+            <div className="border-t border-slate-100 px-5 py-4">
+              {versionsLoading ? (
+                <LoadingSkeleton rows={3} />
+              ) : versions.length === 0 ? (
+                <p className="text-sm text-slate-500">No versions found for this report.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {versions.map((v) => {
+                    const isViewing = viewingOldVersion?.id === v.id;
+                    return (
+                      <li
+                        key={v.id}
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2"
+                      >
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-medium text-slate-700">v{v.version_number}</span>
+                          <StatusBadge status={v.status} size="sm" />
+                          {v.is_current && (
+                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                              Current
+                            </span>
+                          )}
+                          <span className="text-xs text-slate-500">
+                            {timeAgo(v.published_at || v.created_at)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {v.is_current ? (
+                            viewingOldVersion ? (
+                              <button
+                                type="button"
+                                onClick={handleBackToCurrent}
+                                disabled={running}
+                                className="text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                              >
+                                Back to current
+                              </button>
+                            ) : (
+                              <span className="text-xs text-slate-400">Showing now</span>
+                            )
+                          ) : isViewing ? (
+                            <span className="text-xs font-medium text-amber-600">Viewing</span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleViewVersion(v)}
+                              disabled={running}
+                              className="text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                              aria-label={`View version ${v.version_number}`}
+                            >
+                              View this version
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
+        </motion.div>
       </motion.div>
 
       <ConfirmDialog
@@ -498,6 +764,28 @@ export default function ReportViewerPage() {
         onConfirm={() => { setShowBackConfirm(false); navigate('/reports'); }}
         onCancel={() => setShowBackConfirm(false)}
       />
+
+      {/* Restore confirmation — publishes the old definition as a new version */}
+      <ConfirmDialog
+        isOpen={showRestoreConfirm}
+        title="Restore this version?"
+        message={`Version ${viewingOldVersion?.version_number ?? ''} will be published as a new current version. Existing versions are kept unchanged.`}
+        confirmLabel={restoring ? 'Restoring…' : 'Restore'}
+        cancelLabel="Cancel"
+        variant="warning"
+        onConfirm={handleRestoreVersion}
+        onCancel={() => setShowRestoreConfirm(false)}
+      />
+
+      {showShare && report && (
+        <ReportSharePanel
+          report={report}
+          currentUserId={user?.id}
+          isAdmin={isAdmin}
+          onClose={() => setShowShare(false)}
+          onOwnershipChanged={(updated) => setReport(updated)}
+        />
+      )}
     </DashboardLayout>
   );
 }

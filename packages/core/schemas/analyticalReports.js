@@ -462,6 +462,17 @@ const visualizationSchema = z.object({
 }).strict();
 
 /**
+ * Period-over-period comparison. When set, the run pipeline executes the
+ * report twice — once for the current window, once shifted back — and
+ * merges the result into a dual-series dataset. `column` is the date /
+ * timestamp column whose filters define the period.
+ */
+const comparisonSchema = z.object({
+  column: safeColumnName,
+  period: z.enum(['previous_period', 'previous_year']),
+}).strict();
+
+/**
  * The full report definition.
  *
  * Hard caps mirror those on document_templates: enough headroom for any
@@ -482,6 +493,7 @@ export const analyticalReportDefinitionSchema = z.object({
     subtitle: z.string().trim().max(480).optional(),
     showFilters: z.boolean().optional().default(true),
   }).strict(),
+  comparison: comparisonSchema.optional(),
 }).strict().superRefine((value, ctx) => {
   // Every column referenced (group_by, aggregations, filters, order_by)
   // must be in the source's allowlist.
@@ -620,6 +632,62 @@ export const analyticalReportDefinitionSchema = z.object({
       });
     }
   }
+
+  // ── Period-over-period comparison ──
+  if (value.comparison) {
+    const col = value.comparison.column;
+    if (!allowedSet.has(col)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['comparison'],
+        message: `Comparison column "${col}" is not allowed on data source "${value.dataSource}".`,
+      });
+    } else if (typeMap && typeMap[col]) {
+      const colType = typeMap[col].type;
+      if (colType !== 'timestamp' && colType !== 'date') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['comparison'],
+          message: `Comparison column "${col}" must be a date or timestamp column.`,
+        });
+      }
+    }
+
+    // The period axis is a filter, not a group_by — a date/timestamp
+    // group_by would shift its buckets between runs and break the merge.
+    for (const g of value.groupBy) {
+      const gType = typeMap && typeMap[g.column] ? typeMap[g.column].type : null;
+      if (gType === 'timestamp' || gType === 'date') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['comparison'],
+          message: 'Period comparison cannot be combined with a date/timestamp group-by.',
+        });
+        break;
+      }
+    }
+
+    // The current window needs a lower bound on the comparison column.
+    const hasLowerBound = value.filters.some(
+      (f) => f.column === col && (f.operator === 'gte' || f.operator === 'gt'),
+    );
+    if (!hasLowerBound) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['comparison'],
+        message: `Period comparison requires an "on or after" filter on "${col}".`,
+      });
+    }
+
+    // A pie shows one share — it cannot express two periods.
+    if (value.visualization.type === 'pie') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['comparison'],
+        message: 'Period comparison is not supported for pie charts.',
+      });
+    }
+  }
 });
 
 // ── Wrapper schemas for service inputs ──────────────────────────────
@@ -675,3 +743,15 @@ export const analyticalReportRunRequestSchema = z.object({
   (v) => Boolean(v.report_id) !== Boolean(v.version_id),
   { message: 'Pass exactly one of report_id or version_id.' },
 );
+
+/**
+ * A single access grant on a report (review FEAT-3). An `edit` grant lets
+ * the grantee edit the report and publish new versions; `view` is a
+ * recorded baseline. RLS restricts who may create grants to the owner/admin.
+ */
+export const analyticalReportShareCreateSchema = z.object({
+  report_id: z.string().uuid(),
+  shared_with_user_id: z.string().uuid(),
+  permission_level: z.enum(['view', 'edit']).default('edit'),
+  granted_by: z.string().uuid(),
+}).strict();

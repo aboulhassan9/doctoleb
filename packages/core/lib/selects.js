@@ -944,3 +944,12 @@ export const ANALYTICAL_REPORT_RUN_SELECT_FIELDS = [
   'created_at',
   'updated_at',
 ].join(', ');
+
+export const ANALYTICAL_REPORT_SHARE_SELECT_FIELDS = [
+  'id',
+  'report_id',
+  'shared_with_user_id',
+  'permission_level',
+  'granted_by',
+  'created_at',
+].join(', ');

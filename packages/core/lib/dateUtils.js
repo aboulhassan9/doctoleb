@@ -42,3 +42,29 @@ export function smartTimestamp(value) {
     const date = parsed.toLocaleDateString([], { month: 'short', day: 'numeric' });
     return `${date} ${time}`;
 }
+
+/**
+ * Format a Date as `YYYY-MM-DD` for native <input type="date"> value binding.
+ * @param {Date} date
+ * @returns {string} e.g. "2026-05-16"
+ */
+export function toDateInputValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Quick date shortcuts for report filter value inputs.
+ * Each entry provides a human-readable label and a function that returns
+ * a `YYYY-MM-DD` string suitable for <input type="date">.
+ */
+export const RELATIVE_DATE_SHORTCUTS = Object.freeze([
+  { label: 'Today',          getValue: () => toDateInputValue(new Date()) },
+  { label: 'Start of week',  getValue: () => { const d = new Date(); d.setDate(d.getDate() - d.getDay()); return toDateInputValue(d); } },
+  { label: 'Start of month', getValue: () => { const d = new Date(); d.setDate(1); return toDateInputValue(d); } },
+  { label: '30 days ago',    getValue: () => { const d = new Date(); d.setDate(d.getDate() - 30); return toDateInputValue(d); } },
+  { label: 'Start of quarter', getValue: () => { const d = new Date(); d.setMonth(Math.floor(d.getMonth() / 3) * 3); d.setDate(1); return toDateInputValue(d); } },
+  { label: 'Start of year',  getValue: () => `${new Date().getFullYear()}-01-01` },
+]);

@@ -249,3 +249,50 @@
 6. **UX-2** — Increase auto-preview debounce + throttle (DB load risk)
 7. **FEAT-2** — Date picker for timestamp filters (major UX gap)
 8. Then proceed through Important findings in dependency order
+
+---
+
+## Remediation Status (2026-05-16)
+
+All 24 actionable findings have been fixed. The remaining 6 items are larger features requiring separate implementation plans.
+
+### Fixed (24/30)
+
+| ID | Status | Key change |
+|----|--------|------------|
+| UX-1 | ✅ Fixed | `ConfirmDialog` on Cancel/Back when editor is dirty; viewer confirms navigation away from running report |
+| UX-2 | ✅ Fixed | Debounce increased to 3s; throttle skips auto-preview while previous run is in-flight |
+| UX-3 | ✅ Fixed | Auto-preview shows same skeleton/spinner as manual run |
+| UX-4 | ✅ Fixed | Bound filter labels use `resolveColumnLabel(dataSource, column)` with `f.bind` fallback |
+| UX-5 | ✅ Fixed | Pagination controls added to ReportsPage (page size 25, prev/next buttons) |
+| UX-6 | ✅ Fixed | `toCsv(rows, headerMap)` accepts optional header map; viewer passes `buildColumnLabelMap(definition)` |
+| UX-7 | ✅ Fixed | "Duplicate" action on each library card |
+| UX-8 | ✅ Fixed | `description` field added to each `QUICK_START_TEMPLATES` entry; rendered as subtitle |
+| UI-1 | ✅ Fixed | Print CSS moved to `packages/ui/styles/print-report.css`, imported at module level |
+| UI-2 | ✅ Fixed | `chartHeight` prop on `ChartRenderer`; responsive default via `clamp(280px, 40vh, 480px)` |
+| UI-3 | ✅ Fixed | `formatKpiValue` uses `Intl.NumberFormat` (currency for sums, decimals for averages, integer for counts) |
+| UI-4 | ✅ Fixed | Pie chart switches to external legend when slices > 8; inline labels truncated to 15 chars |
+| UI-5 | ✅ Fixed | Default reports get icon prefix + gradient badge; custom reports show "My report" badge |
+| UI-6 | 🔜 Future | Dark-mode chart tokens — requires ThemeContext integration, separate plan |
+| UI-7 | ✅ Fixed | `isAnimationActive={rows.length <= 100}` and `animationDuration={400}` on all chart primitives |
+| A11y-1 | ✅ Fixed | `<caption>` added to ReportTable derived from definition header title |
+| A11y-2 | ✅ Fixed | `aria-label` on drill-down buttons: `Drill down on {column}: {value}` |
+| A11y-3 | ✅ Fixed | Category filter wrapped in `role="tablist"`; buttons get `role="tab"` + `aria-selected` |
+| A11y-4 | ✅ Fixed | All FormField usages pass `name`; component uses `useId()` fallback when `name` is missing |
+| A11y-5 | ✅ Fixed | Skip-link anchors added: "Skip to chart", "Skip to detail table", "Skip to filters" |
+| A11y-6 | ✅ Fixed | Completed steps are `<button>` elements with `onClick` + `aria-label` |
+| A11y-7 | ✅ Fixed | `aria-live="polite"` on chart region; `role="alert"` on error div |
+| FEAT-1 | ✅ Fixed | Client-side retry (3 attempts, exponential backoff) on unique-constraint violation in `publishNewVersion` |
+| FEAT-2 | ✅ Fixed | DatePickerInput + RELATIVE_DATE_SHORTCUTS for timestamp/date columns; enum selects for enum columns — both editor and viewer. Shared utilities extracted to `dateUtils.js` |
+| FEAT-7 | ✅ Fixed (merged with FEAT-2) | Relative date shortcuts included in FEAT-2 implementation |
+
+### Future work (6/30 — require separate implementation plans)
+
+| ID | Scope | Notes |
+|----|-------|-------|
+| FEAT-3 | Report sharing + ownership transfer | New `report_shares` table, service method, UI "Share" button |
+| FEAT-4 | Scheduled/automated report runs | Cron fields, Edge Function scheduler, "Schedule" tab in UI |
+| FEAT-5 | Version history browser | UI panel showing version list, diff summary, restore action |
+| FEAT-6 | PDF export for reports | New Edge Function or reuse existing PDF pipeline with report template |
+| FEAT-8 | Chart period-over-period comparison | Schema `comparison` field, dual-series dataset, ChartRenderer overlay |
+| UI-6 | Dark-mode chart tokens | ThemeContext/CSS custom property integration for chart primitives |
