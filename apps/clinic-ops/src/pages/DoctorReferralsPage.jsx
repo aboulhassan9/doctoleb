@@ -56,6 +56,13 @@ export default function DoctorReferralsPage() {
 
     const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     const refNumber = `REF-${Date.now().toString().slice(-6)}`;
+    const selectedPatientName = selectedPatient?.users
+        ? getUserDisplayName(selectedPatient.users)
+        : 'Patient not selected';
+    const selectedRecipient = doctors.find((doctor) => doctor.id === referToDoctorId);
+    const recipientDoctorName = selectedRecipient?.users
+        ? `Dr. ${getUserDisplayName(selectedRecipient.users)}`
+        : 'Specialist not selected';
 
     const handlePrint = () => {
         window.print();
@@ -147,7 +154,7 @@ export default function DoctorReferralsPage() {
 
                 <div className="flex-1 overflow-y-auto p-8 pb-12">
                     <div className="max-w-5xl mx-auto">
-                        <div className="flex justify-between items-end mb-8">
+                        <div className="flex justify-between items-end mb-8 print-hidden">
                             <div>
                                 <nav className="flex text-xs font-bold text-slate-400 uppercase tracking-widest gap-2 mb-2">
                                     <span onClick={() => navigate('/doctor-dashboard')} className="hover:text-primary cursor-pointer">Referrals</span>
@@ -189,7 +196,7 @@ export default function DoctorReferralsPage() {
                                         <select
                                             value={selectedPatient?.id || ''}
                                             onChange={(e) => setSelectedPatient(patients.find(p => p.id === e.target.value) || null)}
-                                            className="w-full border-b-2 border-slate-200 focus:border-primary bg-transparent py-2 font-bold text-slate-900 focus:ring-0 transition-colors px-0"
+                                            className="print-hidden w-full border-b-2 border-slate-200 focus:border-primary bg-transparent py-2 font-bold text-slate-900 focus:ring-0 transition-colors px-0"
                                         >
                                             <option value="">— Select patient —</option>
                                             {patients.map(p => (
@@ -198,6 +205,7 @@ export default function DoctorReferralsPage() {
                                                 </option>
                                             ))}
                                         </select>
+                                        <p className="print-only border-b-2 border-slate-900 py-2 font-bold text-slate-900">{selectedPatientName}</p>
                                     </div>
                                     <div className="space-y-4">
                                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">Referring To Doctor / Specialist</label>
@@ -205,7 +213,7 @@ export default function DoctorReferralsPage() {
                                             <select
                                                 value={referToDoctorId}
                                                 onChange={(e) => setReferToDoctorId(e.target.value)}
-                                                className="w-full border-b-2 border-slate-200 focus:border-primary bg-transparent py-2 font-bold text-slate-900 focus:ring-0 transition-colors px-0"
+                                                className="print-hidden w-full border-b-2 border-slate-200 focus:border-primary bg-transparent py-2 font-bold text-slate-900 focus:ring-0 transition-colors px-0"
                                             >
                                                 <option value="">— Select doctor —</option>
                                                 {doctors.map(doctor => (
@@ -214,14 +222,16 @@ export default function DoctorReferralsPage() {
                                                     </option>
                                                 ))}
                                             </select>
-                                            <button className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                            <p className="print-only border-b-2 border-slate-900 py-2 font-bold text-slate-900">{recipientDoctorName}</p>
+                                            <button className="print-hidden absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                                                 <span className="material-symbols-outlined">person_search</span>
                                             </button>
                                         </div>
                                     </div>
                                     <div className="space-y-4">
                                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">Current Patient Status</label>
-                                        <div className="flex gap-4">
+                                        <p className="print-only py-2 font-bold capitalize text-slate-900">{patientStatus}</p>
+                                        <div className="print-hidden flex gap-4">
                                             <label className={`flex-1 flex items-center justify-center gap-2 border-2 px-4 py-2 rounded-lg cursor-pointer transition-colors ${patientStatus === 'urgent' ? 'border-primary/20 bg-primary/5' : 'border-slate-200 hover:bg-slate-50'}`}>
                                                 <input 
                                                     checked={patientStatus === 'urgent'} 
@@ -249,10 +259,13 @@ export default function DoctorReferralsPage() {
                                 <div className="space-y-12">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Reason for Referral</label>
+                                        <p className="print-only min-h-[72px] whitespace-pre-wrap rounded-none border-b border-slate-200 py-3 text-sm font-medium leading-relaxed text-slate-800">
+                                            {reason || 'Not provided'}
+                                        </p>
                                         <textarea 
                                             value={reason}
                                             onChange={(e) => setReason(e.target.value)}
-                                            className="w-full border-none focus:ring-0 bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-700 placeholder:italic leading-relaxed" 
+                                            className="print-hidden w-full border-none focus:ring-0 bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-700 placeholder:italic leading-relaxed"
                                             placeholder="Briefly state why the patient is being referred..." 
                                             rows="2"
                                         />
@@ -260,10 +273,13 @@ export default function DoctorReferralsPage() {
 
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Clinical Findings &amp; Observations</label>
+                                        <p className="print-only min-h-[120px] whitespace-pre-wrap rounded-none border-b border-slate-200 py-3 text-sm font-medium leading-relaxed text-slate-800">
+                                            {clinicalFindings || 'Not provided'}
+                                        </p>
                                         <textarea 
                                             value={clinicalFindings}
                                             onChange={(e) => setClinicalFindings(e.target.value)}
-                                            className="w-full border-none focus:ring-0 bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-700 leading-relaxed" 
+                                            className="print-hidden w-full border-none focus:ring-0 bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-700 leading-relaxed"
                                             placeholder="Patient presented with..." 
                                             rows="4"
                                         />
@@ -273,7 +289,8 @@ export default function DoctorReferralsPage() {
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Pertinent Test Results</label>
                                             <div className="bg-slate-50 rounded-xl p-4 min-h-[160px] flex flex-col gap-2 items-center justify-center">
-                                                <button className="w-full border-2 border-dashed border-slate-200 rounded-lg p-6 text-slate-400 flex flex-col items-center justify-center gap-2 hover:border-primary hover:text-primary transition-colors">
+                                                <p className="print-only w-full text-sm font-medium text-slate-600">No attached test results listed.</p>
+                                                <button className="print-hidden w-full border-2 border-dashed border-slate-200 rounded-lg p-6 text-slate-400 flex flex-col items-center justify-center gap-2 hover:border-primary hover:text-primary transition-colors">
                                                     <span className="material-symbols-outlined text-3xl">upload_file</span>
                                                     <span className="text-[10px] font-bold uppercase tracking-wider">Attach Test Results</span>
                                                 </button>
@@ -282,10 +299,13 @@ export default function DoctorReferralsPage() {
 
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Treatment Plan / Medications</label>
+                                            <p className="print-only min-h-[160px] whitespace-pre-wrap rounded-none border-b border-slate-200 py-3 text-sm font-medium leading-relaxed text-slate-800">
+                                                {treatmentPlan || 'Not provided'}
+                                            </p>
                                             <textarea 
                                                 value={treatmentPlan}
                                                 onChange={(e) => setTreatmentPlan(e.target.value)}
-                                                className="w-full border-none focus:ring-0 bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-700 leading-relaxed" 
+                                                className="print-hidden w-full border-none focus:ring-0 bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-700 leading-relaxed"
                                                 placeholder="Current interventions and prescribed medications..." 
                                                 rows="6"
                                             />
@@ -314,7 +334,7 @@ export default function DoctorReferralsPage() {
                                             onTouchMove={draw}
                                             onTouchEnd={stopDraw}
                                         />
-                                        <div className="flex justify-between">
+                                        <div className="print-hidden flex justify-between">
                                             <button onClick={clearSignature} className="text-[10px] font-bold uppercase text-slate-400 hover:text-critical transition-colors">Clear</button>
                                             <span className="text-[10px] font-bold uppercase text-success">Draw your signature above</span>
                                         </div>

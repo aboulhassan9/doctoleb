@@ -124,6 +124,10 @@ html.dark .fixed.inset-0 {
   background-color: rgba(255, 255, 255, 0.4); 
 }
 
+.print-only {
+  display: none !important;
+}
+
 @media print {
   aside, header.sticky {
     display: none !important;
@@ -135,6 +139,9 @@ html.dark .fixed.inset-0 {
   }
   .print-hidden {
     display: none !important;
+  }
+  .print-only {
+    display: block !important;
   }
 }
 
