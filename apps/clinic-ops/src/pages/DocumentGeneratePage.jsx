@@ -371,8 +371,11 @@ export default function DocumentGeneratePage() {
   }, [selectedPatient, doctor, selectedEncounter]);
 
   // Handle field value changes
-  const handleFieldChange = useCallback((e) => {
-    const { name, value, type } = e.target;
+  const handleFieldChange = useCallback((valueOrEvent, event) => {
+    const sourceEvent = event || valueOrEvent;
+    const { name } = sourceEvent.target || {};
+    if (!name) return;
+    const value = event ? valueOrEvent : sourceEvent.target.value;
     setFieldValues((prev) => ({ ...prev, [name]: value }));
     // Clear error on change
     if (fieldErrors[name]) {

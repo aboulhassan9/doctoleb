@@ -7,7 +7,7 @@ import { INPUT_CLASS, SELECT_CLASS, TEXTAREA_CLASS } from '@/lib/styles';
  * Ensures every form field has a proper <label> (accessibility).
  * Replaces scattered placeholder-only inputs across forms.
  *
- * @param {{ label: string, name: string, type?: string, value?: string, onChange?: (e) => void, error?: string, required?: boolean, placeholder?: string, options?: Array<{value: string, label: string}>, rows?: number, className?: string, children?: React.ReactNode }} props
+ * @param {{ label: string, name: string, type?: string, value?: string, onChange?: (value: string, event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void, error?: string, required?: boolean, placeholder?: string, options?: Array<{value: string, label: string}>, rows?: number, className?: string, children?: React.ReactNode }} props
  */
 export default function FormField({
   label,
@@ -27,6 +27,9 @@ export default function FormField({
 }) {
   const reactId = useId();
   const id = name ? `field-${name}` : reactId;
+  const emitChange = (event) => {
+    onChange?.(event.target.value, event);
+  };
 
   const renderInput = () => {
     if (children) return children;
@@ -37,7 +40,7 @@ export default function FormField({
           id={id}
           name={name}
           value={value}
-          onChange={onChange}
+          onChange={emitChange}
           className={`${SELECT_CLASS} ${error ? 'border-red-300 focus:ring-red-200 focus:border-red-400' : ''}`}
           required={required}
           aria-invalid={!!error}
@@ -58,7 +61,7 @@ export default function FormField({
           id={id}
           name={name}
           value={value}
-          onChange={onChange}
+          onChange={emitChange}
           placeholder={placeholder}
           rows={rows || 4}
           className={`${TEXTAREA_CLASS} ${error ? 'border-red-300 focus:ring-red-200 focus:border-red-400' : ''}`}
@@ -76,7 +79,7 @@ export default function FormField({
         name={name}
         type={type}
         value={value}
-        onChange={onChange}
+        onChange={emitChange}
         placeholder={placeholder}
         className={`${INPUT_CLASS} ${error ? 'border-red-300 focus:ring-red-200 focus:border-red-400' : ''}`}
         required={required}
