@@ -476,6 +476,8 @@ describe('SaaS foundation contracts', () => {
     const runnerMigration = read('supabase-control-plane/migrations/00010000000023_control_plane_tenant_db_migration_runner.sql');
     const secretRetryMigration = read('supabase-control-plane/migrations/00010000000024_control_plane_tenant_secret_vault_upsert_retry.sql');
     const secretColumnMigration = read('supabase-control-plane/migrations/00010000000025_control_plane_tenant_secret_vault_upsert_column_qualification.sql');
+    const analyticalReportRuntime = read('supabase/migrations/20260515210000_analytical_reports_runtime.sql');
+    const analyticalReportRuntimeFix = read('supabase/migrations/20260517070000_analytical_reports_runtime_volatility_and_array_fix.sql');
     const analyticalReportVolatilityFix = read('supabase/migrations/20260517093000_analytical_report_rpc_volatility_fix.sql');
     const tenantSecrets = read('supabase-control-plane/functions/_shared/tenantSecrets.ts');
     const tenantMigrationRunner = read('supabase-control-plane/functions/_shared/tenantMigrationRunner.ts');
@@ -540,6 +542,11 @@ describe('SaaS foundation contracts', () => {
     assert.match(tenantMigrationBundle, /alter function public\.run_analytical_report\(jsonb, jsonb\) volatile/);
     assert.match(analyticalReportVolatilityFix, /alter function public\.run_analytical_report\(jsonb, jsonb\) volatile/);
     assert.match(analyticalReportVolatilityFix, /SECURITY INVOKER/);
+    for (const source of [analyticalReportRuntime, analyticalReportRuntimeFix, tenantMigrationBundle]) {
+      assert.match(source, /%I::text %s \(%L::text\[\]\)/);
+      assert.match(source, /case when v_op = 'in' then '= any' else '<> all' end/);
+      assert.doesNotMatch(source, /from unnest\(v_array_values\) as unnest/);
+    }
     assert.match(tenantMigrationRunner, /import postgres from 'npm:postgres@/);
     assert.match(tenantMigrationRunner, /prepare: false/);
     assert.match(tenantMigrationRunner, /supabase_migrations\.schema_migrations/);

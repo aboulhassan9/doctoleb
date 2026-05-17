@@ -182,18 +182,15 @@ begin
       if v_value is null or jsonb_typeof(v_value) <> 'array' then
         raise exception 'Operator "%" requires an array value', v_op using errcode = '22023';
       end if;
-      -- Convert the JSON array to a text[] and interpolate via %L casting.
+      -- Convert the JSON array to a quoted text[] literal. The compared
+      -- column is cast to text so UUID/date/numeric sources work uniformly.
       select array_agg(value::text) into v_array_values
       from jsonb_array_elements_text(v_value);
       v_filter_parts := array_append(v_filter_parts, format(
-        '%I %s (select unnest(%L::text[]))',
+        '%I::text %s (%L::text[])',
         v_col,
-        case when v_op = 'in' then '=' else '<>' end,
-        '{' || array_to_string(
-          array(select format('"%s"', replace(unnest, '"', '\"'))
-                from unnest(v_array_values) as unnest),
-          ','
-        ) || '}'
+        case when v_op = 'in' then '= any' else '<> all' end,
+        coalesce(v_array_values, array[]::text[])
       ));
     else
       -- eq / neq / gt / gte / lt / lte
