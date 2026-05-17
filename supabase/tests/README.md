@@ -13,6 +13,11 @@ In GitHub Actions, the repository uses the free-plan-safe path: it starts a
 disposable local Supabase stack, runs `supabase db reset --local --no-seed`, and
 exports the local `DB_URL`, `API_URL`, and `ANON_KEY` from `supabase status -o
 env` before executing this runner with `BACKEND_DB_CONTRACT_REQUIRED=true`.
+Before the disposable database starts, CI also runs
+`npm run check:tenant-migration-bundle` and
+`npm run audit:tenant-migration-flow`; this proves the SaaS runner bundle is
+exactly generated from tracked tenant migration SQL and that no local-only
+migration file can pass without being committed.
 
 The runner loads `.env.test.local` / `.env.local` / `.env` automatically. If
 `BACKEND_TEST_SUPABASE_URL` and `BACKEND_TEST_SUPABASE_ANON_KEY` are not set, it

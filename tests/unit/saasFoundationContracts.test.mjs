@@ -562,6 +562,10 @@ describe('SaaS foundation contracts', () => {
     assert.match(tenantMigrationRunner, /TENANT_DATABASE_CONNECTION_FAILED/);
     assert.match(tenantMigrationRunner, /admin_upsert_tenant_migration_item/);
     assert.match(tenantMigrationRunner, /admin_finish_tenant_migration_run/);
+    assert.match(tenantMigrationRunner, /readAppliedMigrationLedger/);
+    assert.match(tenantMigrationRunner, /migrationLedgerChecksumMatches/);
+    assert.match(tenantMigrationRunner, /TENANT_MIGRATION_LEDGER_MISMATCH/);
+    assert.match(tenantMigrationRunner, /expectedChecksum/);
     assert.doesNotMatch(tenantMigrationRunner, /console\.(log|error|warn)\([^)]*(databaseUrl|connectionString|secretValue)/);
     assert.match(providerExecution, /readVaultSecretRef/);
     assert.match(providerExecution, /secretStorage === 'supabase_vault'/);
@@ -1714,11 +1718,16 @@ describe('SaaS foundation contracts', () => {
   it('GitHub Actions runs backend DB contract checks on a disposable local Supabase stack', () => {
     const workflow = read('.github/workflows/ci.yml');
     const script = read('scripts/backend-db-contract-tests.mjs');
+    const auditScript = read('scripts/audit-tenant-migration-flow.mjs');
+    const auditLib = read('scripts/lib/tenantMigrationFlow.mjs');
     const config = read('supabase/config.toml');
     const readme = read('supabase/tests/README.md');
+    const pkg = JSON.parse(read('package.json'));
 
     assert.match(workflow, /BACKEND_DB_CONTRACT_REQUIRED: 'true'/);
     assert.match(workflow, /uses: supabase\/setup-cli@v1/);
+    assert.match(workflow, /Audit tenant migration delivery flow/);
+    assert.match(workflow, /npm run audit:tenant-migration-flow/);
     assert.match(workflow, /supabase start -x realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor/);
     assert.match(workflow, /supabase db reset --local --no-seed/);
     assert.match(workflow, /supabase status -o env/);
@@ -1736,7 +1745,14 @@ describe('SaaS foundation contracts', () => {
     assert.match(script, /BACKEND_TEST_ALLOW_LIVE_ANON_RPC/);
     assert.doesNotMatch(script, /BACKEND_TEST_ALLOW_LIVE_DB/);
     assert.match(script, /REQUIRED BUT SKIPPED/);
+    assert.equal(pkg.scripts['audit:tenant-migration-flow'], 'node scripts/audit-tenant-migration-flow.mjs');
+    assert.match(auditScript, /Tenant Migration Flow Audit/);
+    assert.match(auditScript, /supabase db reset --local --no-seed/);
+    assert.match(auditLib, /Untracked migration SQL files/);
+    assert.match(auditLib, /Tenant migration bundle is not exactly generated/);
+    assert.match(auditLib, /CREATE INDEX CONCURRENTLY/);
     assert.match(readme, /free-plan-safe path/);
+    assert.match(readme, /npm run audit:tenant-migration-flow/);
     assert.match(readme, /supabase db reset --local --no-seed/);
   });
 

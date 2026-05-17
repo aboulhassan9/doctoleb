@@ -231,6 +231,10 @@ jobs:
         if: needs.detect-changes.outputs.run_migration_bundle == 'true'
         run: npm run check:tenant-migration-bundle
 
+      - name: Audit tenant migration delivery flow
+        if: needs.detect-changes.outputs.run_migration_bundle == 'true'
+        run: npm run audit:tenant-migration-flow
+
       - name: Audit backend contracts
         if: needs.detect-changes.outputs.run_backend_contract == 'true'
         run: npm run audit:backend-contract
@@ -356,6 +360,9 @@ jobs:
 
       - name: Check tenant migration bundle
         run: npm run check:tenant-migration-bundle
+
+      - name: Audit tenant migration delivery flow
+        run: npm run audit:tenant-migration-flow
 
       - name: Audit backend contracts
         run: npm run audit:backend-contract

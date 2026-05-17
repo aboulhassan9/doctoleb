@@ -18,6 +18,7 @@
     "audit:backend-contract": "node scripts/backend-contract-audit.mjs",
     "audit:selects-drift": "node scripts/audit-selects-drift.mjs",
     "audit:rpc-signatures": "node scripts/audit-rpc-signatures.mjs",
+    "audit:tenant-migration-flow": "node scripts/audit-tenant-migration-flow.mjs",
     "generate:tenant-migration-bundle": "node scripts/generate-tenant-migration-bundle.mjs",
     "check:tenant-migration-bundle": "node scripts/generate-tenant-migration-bundle.mjs --check",
     "test:backend-db-contract": "node scripts/backend-db-contract-tests.mjs",
@@ -39,7 +40,7 @@
     "generate:chartdb-erd": "node scripts/generate-chartdb-erd-json.mjs",
     "audit:bundle-secrets": "node scripts/bundle-secret-audit.mjs",
     "audit:high": "npm audit --audit-level=high",
-    "verify": "npm run lint && npm run build && npm run check:tenant-migration-bundle && npm run test:unit && npm run test:pdfa && npm run audit:backend-contract && npm run audit:selects-drift && npm run audit:rpc-signatures && npm run test:backend-db-contract && npm run audit:high",
+    "verify": "npm run lint && npm run build && npm run check:tenant-migration-bundle && npm run audit:tenant-migration-flow && npm run test:unit && npm run test:pdfa && npm run audit:backend-contract && npm run audit:selects-drift && npm run audit:rpc-signatures && npm run test:backend-db-contract && npm run audit:high",
     "test": "npm run verify",
     "preview": "vite preview"
   },

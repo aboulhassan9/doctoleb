@@ -95,6 +95,20 @@ describe('CI change classifier', () => {
     assertIncludesAll(result.requiredProofs, ['patient-build', 'clinic-ops-build', 'db-contracts']);
   });
 
+  it('routes tenant migration runner changes through the full migration delivery proof', () => {
+    const result = classifyFiles(['supabase-control-plane/functions/_shared/tenantMigrationRunner.ts']);
+
+    assert.equal(result.lane, 'backend');
+    assertIncludesAll(result.affectedSystems, ['client', 'operations', 'saas-admin']);
+    assert.equal(result.runMigrationBundle, true);
+    assert.equal(result.runDbContracts, true);
+    assert.equal(result.runBackendContract, true);
+    assert.equal(result.runAdminCorsSmoke, true);
+    assertIncludesAll(result.domains, ['tenant-db-setup', 'provisioning', 'ci-deploy', 'security']);
+    assertIncludesAll(result.apps, ['patient-web', 'clinic-ops', 'control-plane']);
+    assertIncludesAll(result.requiredProofs, ['migration-bundle', 'db-contracts', 'control-plane-build']);
+  });
+
   it('routes a staff function change through both ops UI and auth contract proof', () => {
     const result = classifyFiles(['supabase/functions/staff-invite/index.ts']);
 

@@ -288,12 +288,18 @@ async function migrationLedgerExists(sql: PostgresClient) {
   return rows[0]?.exists === true
 }
 
-async function readAppliedVersions(sql: PostgresClient) {
-  const rows = await sql<{ version: string }[]>`
-    select version
+type AppliedMigrationLedger = {
+  version: string
+  name: string | null
+  statements: string[] | null
+}
+
+async function readAppliedMigrationLedger(sql: PostgresClient) {
+  const rows = await sql<AppliedMigrationLedger[]>`
+    select version, name, statements
       from supabase_migrations.schema_migrations
   `
-  return new Set(rows.map((row) => row.version))
+  return new Map(rows.map((row) => [row.version, row]))
 }
 
 async function insertMigrationLedgerRow(sql: PostgresClient, migration: TenantMigration) {
@@ -324,6 +330,13 @@ async function applyMigration(sql: PostgresClient, migration: TenantMigration) {
     }
     throw error
   }
+}
+
+function migrationLedgerChecksumMatches(
+  applied: AppliedMigrationLedger | undefined,
+  migration: TenantMigration,
+) {
+  return applied?.statements?.includes(migration.checksum) === true
 }
 
 async function verifyRuntimeObjects(sql: PostgresClient) {
@@ -461,10 +474,48 @@ export async function runTenantDatabaseMigrations(
     }
 
     await ensureMigrationLedger(sql)
-    const appliedVersions = await readAppliedVersions(sql)
+    const appliedMigrations = await readAppliedMigrationLedger(sql)
 
     for (const [index, migration] of TENANT_MIGRATION_BUNDLE.entries()) {
-      if (appliedVersions.has(migration.version)) {
+      const appliedMigration = appliedMigrations.get(migration.version)
+      if (appliedMigration) {
+        if (!migrationLedgerChecksumMatches(appliedMigration, migration)) {
+          const errorSummary = 'Tenant migration ledger checksum does not match the canonical migration bundle.'
+          await upsertMigrationItem(context, {
+            runId,
+            migration,
+            sequenceNo: index,
+            status: 'failed',
+            errorCode: 'TENANT_MIGRATION_LEDGER_MISMATCH',
+            errorSummary,
+          })
+
+          await finishMigrationRun(context, {
+            runId,
+            status: 'blocked',
+            expectedMigrationsCount: TENANT_MIGRATION_BUNDLE.length,
+            appliedMigrationsCount,
+            failedMigrationVersion: migration.version,
+            failedMigrationName: migration.name,
+            errorCode: 'TENANT_MIGRATION_LEDGER_MISMATCH',
+            errorSummary,
+          })
+
+          return {
+            data: null,
+            error: 'TENANT_MIGRATION_LEDGER_MISMATCH',
+            summary: errorSummary,
+            details: {
+              migrationRunId: runId,
+              failedMigrationVersion: migration.version,
+              failedMigrationName: migration.name,
+              expectedChecksum: migration.checksum,
+              recordedChecksumCount: appliedMigration.statements?.length ?? 0,
+              projectRef: normalizedProjectRef,
+            },
+          }
+        }
+
         const item = await upsertMigrationItem(context, {
           runId,
           migration,
@@ -530,7 +581,11 @@ export async function runTenantDatabaseMigrations(
       })
       if (item.error) throw new Error(item.error)
       appliedMigrationsCount += 1
-      appliedVersions.add(migration.version)
+      appliedMigrations.set(migration.version, {
+        version: migration.version,
+        name: migration.name,
+        statements: [migration.checksum],
+      })
     }
 
     const missingRuntimeObjects = await verifyRuntimeObjects(sql)

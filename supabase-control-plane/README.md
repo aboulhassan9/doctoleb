@@ -117,6 +117,7 @@ supabase db push
 
 # Keep the server-side tenant migration bundle aligned with tenant migrations.
 npm run check:tenant-migration-bundle
+npm run audit:tenant-migration-flow
 
 # Deploy the resolver Edge Function. --no-verify-jwt is correct; the
 # endpoint is intentionally public.
@@ -161,6 +162,8 @@ The control plane now has schema support for provider-flexible provisioning:
 - Dedicated provider metadata Edge Functions now exist for list/upsert/archive. They reject raw token-shaped input, sanitize `secret_ref` out of responses, and use reversible archive semantics.
 - Provider and tenant setup secrets can be stored through one-way Edge Function calls into Supabase Vault. Browser responses include only safe metadata such as `has_secret_ref`, storage type, status, and timestamps.
 - `apply_tenant_migrations` now uses a server-side database connection string stored in Vault to apply the canonical tenant migrations from `supabase/migrations`, then records run/item status in `tenant_migration_runs` and `tenant_migration_items`.
+- The tenant migration bundle must pass `npm run audit:tenant-migration-flow` before deploy. The audit rejects untracked or unstaged migration SQL, unsafe transactional patterns, and any bundle that is not exactly regenerated from `supabase/migrations`.
+- The migration runner records each SQL checksum in the tenant `supabase_migrations.schema_migrations` ledger. If a tenant already has the same migration version with a different or missing checksum, setup blocks with `TENANT_MIGRATION_LEDGER_MISMATCH` instead of silently skipping changed SQL.
 - Tenant database setup refuses unknown non-empty public schemas unless a DoctoLeb/Supabase migration ledger already exists. This prevents the SaaS admin from accidentally modifying a customer database that was not prepared for DoctoLeb.
 - `admin-run-provisioning-step` advances the assisted path through provider readiness, operator-linked tenant project verification, migration readiness, tenant profile/app config seed, first doctor/admin seed, Vercel/free-alias routing verification, resolver smoke, and guarded activation.
 - `admin-cancel-provisioning-job`, `admin-resume-provisioning-job`, and `admin-compensate-provisioning-step` expose operator cancel/recovery/undo paths through authenticated admin functions only. A cancelled job remains terminal for audit; resume creates a new zero-PHI provisioning ledger for the same tenant and carries forward safe checkpoints.

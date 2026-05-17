@@ -561,11 +561,22 @@ function isMigrationOrDbPath(filePath) {
     || /^supabase-control-plane\/migrations\//.test(filePath);
 }
 
+function isTenantMigrationFlowPath(filePath) {
+  return [
+    'scripts/generate-tenant-migration-bundle.mjs',
+    'scripts/audit-tenant-migration-flow.mjs',
+    'supabase-control-plane/functions/_shared/tenantMigrationBundle.ts',
+    'supabase-control-plane/functions/_shared/tenantMigrationRunner.ts',
+  ].includes(filePath)
+    || filePath.startsWith('scripts/lib/tenantMigration');
+}
+
 function isBackendScriptPath(filePath) {
   return [
     'scripts/backend-contract-audit.mjs',
     'scripts/backend-db-contract-tests.mjs',
     'scripts/generate-tenant-migration-bundle.mjs',
+    'scripts/audit-tenant-migration-flow.mjs',
   ].includes(filePath);
 }
 
@@ -809,6 +820,18 @@ function collectBackendDetails(result, files) {
         result.runResolverSmoke = true;
         result.runAdminCorsSmoke = true;
       }
+    }
+
+    if (isTenantMigrationFlowPath(filePath)) {
+      result.affectedSystems.push(...ALL_SYSTEMS);
+      result.runDbContracts = true;
+      result.runMigrationBundle = true;
+      result.runBackendContract = true;
+      result.apps.push('patient-web', 'clinic-ops', 'control-plane');
+      result.smokeApps.push(...ALL_APPS);
+      result.runAdminCorsSmoke = true;
+      result.requiredProofs.push('migration-bundle', 'db-contracts', 'control-plane-build');
+      addDomains(result, ['tenant-db-setup', 'provisioning', 'ci-deploy', 'security']);
     }
   }
 
