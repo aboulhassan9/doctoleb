@@ -360,7 +360,7 @@ async function verifyControlPlaneFlow(page) {
 
   const slug = smokeId.replace(/[^a-z0-9-]/g, '-').slice(0, 40);
   await page.getByLabel(/Clinic name/i).fill(`QA Clinic ${slug}`);
-  await page.getByLabel(/^Slug$/i).fill(slug);
+  await page.getByRole('textbox', { name: /Slug/i }).fill(slug);
   await page.getByRole('button', { name: /Next step/i }).click({ timeout: 15_000 });
   await page.getByRole('heading', { name: /First doctor setup/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByLabel(/First doctor admin/i).fill(`QA Doctor ${slug}`);
