@@ -8,6 +8,9 @@ const DEFAULT_BRAND = {
   favicon_url: null,
   primary_color: '#0891b2',
   secondary_color: '#0f172a',
+  accent_color: '#9b6a3f',
+  surface_color: '#fcf9f2',
+  text_color: '#1c1c18',
   contact_phone: null,
   contact_email: null,
   website_url: null,
@@ -83,6 +86,9 @@ function normalizeBrand(row) {
     favicon_url: appConfig?.icon_url || config?.favicon_url || null,
     primary_color: normalizeHexColor(appConfig?.primary_color || config?.primary_color, DEFAULT_BRAND.primary_color),
     secondary_color: normalizeHexColor(appConfig?.secondary_color || config?.secondary_color, DEFAULT_BRAND.secondary_color),
+    accent_color: normalizeHexColor(appConfig?.accent_color || config?.accent_color, DEFAULT_BRAND.accent_color),
+    surface_color: normalizeHexColor(appConfig?.surface_color || config?.surface_color, DEFAULT_BRAND.surface_color),
+    text_color: normalizeHexColor(appConfig?.text_color || config?.text_color, DEFAULT_BRAND.text_color),
     contact_phone: appConfig?.support_phone || config?.contact_phone || null,
     contact_email: appConfig?.support_email || config?.contact_email || null,
     website_url: config?.doctor_website_url || config?.website_url || null,
@@ -175,11 +181,17 @@ export function BrandProvider({ children, appSurface = 'patient-web' }) {
     const primary = normalizeHexColor(brand.primary_color, DEFAULT_BRAND.primary_color);
     const primaryHover = shadeHexColor(primary, -8);
     const secondary = normalizeHexColor(brand.secondary_color, DEFAULT_BRAND.secondary_color);
+    const accent = normalizeHexColor(brand.accent_color, DEFAULT_BRAND.accent_color);
+    const surface = normalizeHexColor(brand.surface_color, DEFAULT_BRAND.surface_color);
+    const text = normalizeHexColor(brand.text_color, DEFAULT_BRAND.text_color);
 
     root.style.setProperty('--doctor-brand-primary', primary);
     root.style.setProperty('--doctor-brand-secondary', secondary);
     root.style.setProperty('--tenant-brand-primary', primary);
     root.style.setProperty('--tenant-brand-secondary', secondary);
+    root.style.setProperty('--tenant-brand-accent', accent);
+    root.style.setProperty('--tenant-brand-surface', surface);
+    root.style.setProperty('--tenant-brand-text', text);
     root.style.setProperty('--color-primary', primary);
     root.style.setProperty('--color-primary-rgb', hexToRgbParts(primary));
     root.style.setProperty('--color-primary-hover', primaryHover);
@@ -187,7 +199,7 @@ export function BrandProvider({ children, appSurface = 'patient-web' }) {
     root.style.setProperty('--color-secondary', secondary);
     root.style.setProperty('--color-secondary-rgb', hexToRgbParts(secondary));
     root.style.setProperty('--color-primary-light', `rgb(${hexToRgbParts(primary)} / 0.1)`);
-  }, [brand.primary_color, brand.secondary_color]);
+  }, [brand.accent_color, brand.primary_color, brand.secondary_color, brand.surface_color, brand.text_color]);
 
   useEffect(() => {
     const surfaceLabel = APP_SURFACE_LABELS[appSurface] || 'Portal';

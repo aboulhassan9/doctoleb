@@ -11,6 +11,7 @@ function buildPrecheckPayload(data, status) {
     blood_pressure: data.bloodPressure,
     heart_rate: data.heartRate,
     temperature: data.temperature,
+    respiratory_rate: data.respiratoryRate ?? null,
     weight: data.weight,
     height: data.height,
     current_medications: data.currentMedications,

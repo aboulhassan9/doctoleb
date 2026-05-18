@@ -10,6 +10,9 @@ const CONTROL_PLANE_PUBLIC_FUNCTIONS = new Set([
   'marketing-capture-lead',
   'tenant-resolve',
 ]);
+const TENANT_PUBLIC_FUNCTIONS = new Set([
+  'stripe-patient-webhook',
+]);
 
 function parseCsv(value) {
   return String(value || '')
@@ -60,7 +63,7 @@ function runSupabaseDeploy({ stageRoot, functionName, projectRef }) {
     projectRef,
   ];
 
-  if (CONTROL_PLANE_PUBLIC_FUNCTIONS.has(functionName)) {
+  if (CONTROL_PLANE_PUBLIC_FUNCTIONS.has(functionName) || TENANT_PUBLIC_FUNCTIONS.has(functionName)) {
     args.push('--no-verify-jwt');
   }
 

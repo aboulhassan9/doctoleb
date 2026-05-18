@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&amp;family=Newsreader:ital,wght@0,400;0,500;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f6f3ec",
+                    "inverse-surface": "#31312c",
+                    "surface-variant": "#e5e2db",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#f4dfcb",
+                    "secondary-fixed-dim": "#d7c3b0",
+                    "tertiary-fixed": "#ffdcc4",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#bacbba",
+                    "outline": "#747872",
+                    "tertiary-fixed-dim": "#efbc98",
+                    "secondary-fixed": "#f4dfcb",
+                    "on-tertiary-fixed-variant": "#613f24",
+                    "on-primary-container": "#ddeedd",
+                    "tertiary": "#6d492c",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#1c1c18",
+                    "surface": "#fcf9f2",
+                    "on-tertiary-fixed": "#2f1501",
+                    "on-secondary-container": "#716252",
+                    "secondary": "#6b5c4c",
+                    "primary-fixed": "#d6e7d6",
+                    "on-background": "#1c1c18",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#ffe4d2",
+                    "outline-variant": "#c3c8c1",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#526255",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#101f14",
+                    "surface-bright": "#fcf9f2",
+                    "on-surface-variant": "#434843",
+                    "surface-container-high": "#ebe8e1",
+                    "primary-container": "#5d6d5f",
+                    "on-tertiary": "#ffffff",
+                    "background": "#fcf9f2",
+                    "on-primary-fixed-variant": "#3b4a3e",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#886042",
+                    "on-secondary-fixed-variant": "#524436",
+                    "surface-container": "#f1eee7",
+                    "primary": "#455548",
+                    "surface-dim": "#dcdad3",
+                    "on-secondary-fixed": "#241a0e",
+                    "inverse-primary": "#bacbba",
+                    "surface-container-highest": "#e5e2db",
+                    "inverse-on-surface": "#f3f0e9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "organic-offset": "12px",
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Newsreader"],
+                    "body-lg": ["Fira Sans"],
+                    "display-lg": ["Newsreader"],
+                    "headline-lg": ["Newsreader"],
+                    "narrative-action": ["Newsreader"],
+                    "body-md": ["Fira Sans"],
+                    "label-md": ["Fira Sans"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "narrative-action": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>.organic-noise {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAJyD8tG9t6d7dbZ3HIvpskF8WRe6npTaAwkDy-2ltoUxS4v3_xcXtg54kWj72duFk1ltvf7jtiT5s8aAcfV3JxIBGE1JOEBAsS8JhYRONZQih1faMbxfvlrQ_DxdQ-zJgBizmYxfGfP7LfZBhCPT5WKEHzkKinTC08W0F9OhE2tsZyaunhu76eszLm94Anh_ApkNF2C68AiC0su74FHhjNqFPhQPnH-p79j4Al5x-xv_gMf3qqcHqb8LPBkMWR2-1xzrnHm7Y15g);
+    background-repeat: repeat;
+    opacity: 0.03;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 10
+    }
+.timeline-line {
+    background: linear-gradient(to bottom, transparent, #455548 10%, #455548 90%, transparent);
+    width: 2px;
+    mask-image: url("data:image/svg+xml,%3Csvg width='2' height='100' viewBox='0 0 2 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 0C1 20 0 40 1 60C2 80 1 100 1 100' stroke='black' stroke-width='2'/%3E%3C/svg%3E")
+    }
+.parchment-texture {
+    background-color: #fcf9f2;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuB70DW5Vqqfe46JJ-jsXy7efZlGjAHbNojiOQ1dZyM3svuEV0xOBD4q_Myibj7CrAVpm5IqSPQFTJLoIxss_BB3frC5eNkVsrXoVkZgDQhMCSfXT-H3yJU4dIUvjpw6OWwprmt9J0v4F1PYKLG3GdCaVSO0Ixk8u3Ct3D8LlunGXKWeWTPETUIfjyv0p-CfFWOUSves_4DPo2uBirDT9B_mvqUFsLGYRpNZgzh_ceQAIfWJmh-V1y6cJXGAqHq813soCIABvR6-Wg)
+    }
+.asymmetrical-shadow {
+    box-shadow: 4px 6px 12px -2px rgba(69, 85, 72, 0.15)
+    }</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen relative font-body-md overflow-x-hidden">
+<div class="organic-noise"></div>
+<!-- SideNavBar (Desktop) -->
+<nav class="flex flex-col h-screen fixed left-0 top-0 py-gutter bg-surface-container-low shadow-sm w-64 rounded-r-xl z-50">
+<div class="px-6 mb-12">
+<h1 class="font-headline-lg text-headline-lg text-primary">Care Journey</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Sovereign Control</p>
+</div>
+<div class="flex flex-col flex-grow px-2 space-y-2">
+<!-- Chronic Tab Active -->
+<a class="flex items-center px-4 py-3 text-on-surface-variant hover:bg-surface-variant/30 transition-all duration-300 ease-out active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="person_check">person_check</span>
+<span class="font-label-md text-label-md">Presence</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-surface-variant hover:bg-surface-variant/30 transition-all duration-300 ease-out active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="spa">spa</span>
+<span class="font-label-md text-label-md">Sanctuary</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-surface-variant hover:bg-surface-variant/30 transition-all duration-300 ease-out active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="map">map</span>
+<span class="font-label-md text-label-md">Pathways</span>
+</a>
+<a class="flex items-center px-4 py-3 text-primary font-bold border-r-4 border-primary transition-all duration-300 ease-out active:scale-95" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="history">history</span>
+<span class="font-label-md text-label-md">Chronicle</span>
+</a>
+</div>
+<div class="px-6 mt-auto flex items-center">
+<div class="w-10 h-10 rounded-full bg-secondary-container overflow-hidden mr-3 border-2 border-outline-variant">
+<img alt="Patient profile avatar" data-alt="A close-up, high-detail portrait of an elderly woman with silver hair and gentle wrinkles, looking calmly into the distance. The lighting is soft and natural, emphasizing a serene and dignified mood. The image has a subtle film grain and a muted, earthy color palette with warm sage and soft cream tones to match the organic healthcare aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsh7LsgxP7FLOIGIAPoMkKxCPdJCsoFETnCX6YkIzeWUqWbcjiJ50DbpvXsVk1WvKpcIs4BgynBHnOahdatr2z4ug7MWYS_LWNtC6t3RiiwThAwRKX4ddBn-0sae0BrbyBVf29WRDuFI5KvjbSCi7T5ZMMdk3vzcc2Hah_8OrnOP9NzBiY462dkudBjJg5zENEVK9TuzWi8ADOqUgZI6ZMoYERAdu_r5wX60Snv2HMaG2i7M3gtWRnxW-4hJWYMcbNsIxVkwcCXw"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold">Eleanor Vance</span>
+<span class="text-xs opacity-70">Patient ID: 4882-9</span>
+</div>
+</div>
+</nav>
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-margin-desktop py-4 sticky top-0 z-40 ml-64 bg-surface/80 backdrop-blur-xl">
+<div class="flex items-center">
+<span class="font-headline-lg text-headline-lg font-medium text-primary">Care Timeline</span>
+</div>
+<div class="flex items-center space-x-6">
+<div class="relative">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" data-icon="notifications">notifications</span>
+<div class="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full"></div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" data-icon="settings">settings</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 px-margin-desktop py-12 relative flex flex-col min-h-[calc(100vh-80px)]">
+<!-- Timeline Background Line -->
+<div class="absolute left-margin-desktop top-0 bottom-0 timeline-line opacity-30 pointer-events-none"></div>
+<div class="max-w-4xl w-full relative z-20 space-y-16">
+<!-- Timeline Item: Past Event (Subtle) -->
+<section class="flex gap-12 group">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-surface-container-high border-2 border-outline-variant flex items-center justify-center -ml-4 bg-surface relative">
+<span class="material-symbols-outlined text-sm opacity-50" data-icon="check">check</span>
+</div>
+<div class="pt-1 opacity-60">
+<p class="font-label-md text-label-md uppercase tracking-wider mb-2">October 24</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface-variant">Blood Pressure Sync</h3>
+<p class="font-body-md text-body-md italic mt-1 font-headline-lg">118/74 mmHg — Stable trending.</p>
+</div>
+</section>
+<!-- Focus Item: Clinical Item & Messaging Anchor -->
+<section class="flex gap-12">
+<!-- Timeline Node -->
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary flex items-center justify-center -ml-6 shadow-lg border-4 border-surface">
+<span class="material-symbols-outlined text-on-primary" data-icon="medication" style="font-variation-settings: 'FILL' 1;">medication</span>
+</div>
+<div class="flex-grow space-y-6">
+<div class="mb-4">
+<p class="font-label-md text-label-md text-primary font-bold uppercase tracking-widest">Active Prescription Focus</p>
+<p class="font-body-md text-on-surface-variant">Updated today at 9:15 AM</p>
+</div>
+<!-- Large Tactile Prescription Card -->
+<div class="parchment-texture asymmetrical-shadow p-organic-offset rounded-xl border border-outline-variant/30 max-w-2xl relative overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-tertiary">Lisinopril 10mg</h2>
+<p class="font-body-md italic font-headline-lg opacity-70">Antihypertensive - ACE Inhibitor</p>
+</div>
+<div class="px-4 py-1 bg-secondary-container rounded-full">
+<span class="font-label-md text-label-md text-on-secondary-fixed-variant">1 Daily</span>
+</div>
+</div>
+<div class="border-t border-dashed border-outline-variant py-6 space-y-4">
+<p class="font-body-md text-body-md leading-relaxed text-on-surface">
+                                Primary maintenance for hypertension. Please monitor for any persistent dry cough or unexpected fatigue. Ensure consistent hydration throughout the day.
+                            </p>
+<div class="flex gap-4">
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined mr-2" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-md text-label-md">Refill in 12 days</span>
+</div>
+<div class="flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined mr-2" data-icon="info">info</span>
+<span class="font-label-md text-label-md">View interactions</span>
+</div>
+</div>
+</div>
+<!-- Messaging Anchor Attachment -->
+<div class="mt-8 bg-surface-container/50 rounded-lg p-6 border-l-4 border-tertiary-container">
+<div class="flex items-start gap-4 mb-6">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="person">person</span>
+</div>
+<div class="flex-grow">
+<p class="font-headline-lg text-narrative-action italic">"I've been feeling a bit dizzy after my morning dose... it lasts for about an hour. Should I be concerned?"</p>
+<div class="mt-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-on-surface-variant" data-icon="history_edu">history_edu</span>
+<span class="font-label-md text-label-md text-on-surface-variant italic">Added to clinic review queue</span>
+</div>
+</div>
+</div>
+<!-- Algorithmic Triage Badge -->
+<div class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-fixed/20 border border-primary-fixed-dim rounded-lg mb-6">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="hub">hub</span>
+<span class="font-label-md text-label-md text-on-primary-fixed-variant">Automated Triage: Routed to Dr. Smith's on-call nurse</span>
+</div>
+<!-- Response Block -->
+<div class="flex items-start gap-4 p-4 bg-surface rounded-lg border border-outline-variant/20 ml-8">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-sm" data-icon="medical_services">medical_services</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-bold mb-1">Nurse Sarah G.</p>
+<p class="font-body-md text-body-md opacity-80">Hello Eleanor. Some mild lightheadedness can happen as your body adjusts. Try rising slowly from sitting. I've flagged this for Dr. Smith to review during his 2 PM rounds.</p>
+</div>
+</div>
+<!-- Composer -->
+<div class="mt-8 pt-6 border-t border-outline-variant/30">
+<div class="flex items-end gap-4">
+<div class="flex-grow">
+<label class="sr-only">Reply to care team</label>
+<input class="w-full bg-transparent border-0 border-b-2 border-outline-variant focus:border-primary focus:ring-0 font-headline-lg text-narrative-action py-2 px-0 italic placeholder:opacity-40 transition-all duration-300" placeholder="Offer more context or ask a follow-up..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-full flex items-center gap-2 hover:bg-primary-container transition-all active:scale-95 shadow-md">
+<span class="font-label-md text-label-md font-bold uppercase tracking-wider">Send Intent</span>
+<span class="material-symbols-outlined text-sm" data-icon="feather">features</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming Event Item -->
+<section class="flex gap-12 opacity-80 grayscale-[0.2]">
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-surface-container flex items-center justify-center -ml-4 border-2 border-outline-variant relative">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed"></div>
+</div>
+<div class="pt-1">
+<p class="font-label-md text-label-md uppercase tracking-wider mb-2">Upcoming - Oct 30</p>
+<div class="asymmetrical-shadow p-6 bg-surface-container-low rounded-xl border border-outline-variant/20 flex items-center gap-6 max-w-lg">
+<div class="w-16 h-16 rounded-xl overflow-hidden grayscale">
+<img alt="Doctor profile" data-alt="A professional medical headshot of a doctor with a warm, empathetic expression. He is wearing a simple white coat and a stethoscope is visible. The background is a soft, blurred clinical setting with warm, indirect lighting. The overall mood is reassuring and human-centric, avoiding sterile or harsh aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCCKunB6UzzMPy7q7yn9z91-jFIinwbcfqHWBt05oyRrS6CTVobGiuf4MNtA57nv_arelM7Wd-Np_23JCZoepVkndekSoPDyCHLkW37TFGvt9N7TbJLozHvKX6SMOLxRoh42ofwGqriZ85cTgRiuJdgwensSWxgDwSNdIVO8OPKJUA00aN3iNpo3ycSLOe8hkipkqqS5kCbiskw11WZPegP7zq5FSz3OCfjTNl5nE-NiSonKRX30PONE0WP_9uslSsiG15YS76DA"/>
+</div>
+<div>
+<h4 class="font-headline-lg text-headline-lg text-on-surface">In-Person Consultation</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Dr. Julian Smith — Cardiology</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Floating Contextual FAB -->
+<button class="fixed bottom-margin-desktop right-margin-desktop bg-tertiary-container text-on-tertiary-container p-6 rounded-2xl shadow-xl flex items-center gap-3 active:scale-95 transition-transform z-50">
+<span class="material-symbols-outlined" data-icon="ink_pen" style="font-variation-settings: 'FILL' 1;">ink_pen</span>
+<span class="font-label-md text-label-md font-bold uppercase tracking-widest">Update Journal</span>
+</button>
+</main>
+<!-- Visual Asymmetry Decoration -->
+<div class="fixed top-1/4 -right-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="fixed bottom-1/3 -left-16 w-48 h-48 bg-secondary/5 rounded-full blur-2xl pointer-events-none -z-10"></div>
+</body></html>

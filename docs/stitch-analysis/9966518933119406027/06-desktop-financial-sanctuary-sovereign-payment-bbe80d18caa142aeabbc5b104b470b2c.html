@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Sanctuary | Aetheris Health</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,700;1,400&amp;family=Fira+Sans:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#241a0e",
+                    "tertiary-fixed-dim": "#efbc98",
+                    "on-error-container": "#93000a",
+                    "inverse-on-surface": "#f3f0e9",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#526255",
+                    "outline-variant": "#c3c8c1",
+                    "on-secondary-fixed-variant": "#524436",
+                    "secondary": "#6b5c4c",
+                    "surface-variant": "#e5e2db",
+                    "surface-dim": "#dcdad3",
+                    "on-primary-fixed-variant": "#3b4a3e",
+                    "tertiary-container": "#886042",
+                    "surface-container-high": "#ebe8e1",
+                    "secondary-fixed": "#f4dfcb",
+                    "primary-fixed": "#d6e7d6",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#d7c3b0",
+                    "on-background": "#1c1c18",
+                    "tertiary": "#6d492c",
+                    "surface-container-low": "#f6f3ec",
+                    "surface-container": "#f1eee7",
+                    "primary-fixed-dim": "#bacbba",
+                    "primary-container": "#5d6d5f",
+                    "on-error": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-bright": "#fcf9f2",
+                    "on-tertiary-fixed-variant": "#613f24",
+                    "primary": "#455548",
+                    "on-primary-container": "#ddeedd",
+                    "inverse-surface": "#31312c",
+                    "on-tertiary-fixed": "#2f1501",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#bacbba",
+                    "on-secondary-container": "#716252",
+                    "outline": "#747872",
+                    "on-surface": "#1c1c18",
+                    "on-primary": "#ffffff",
+                    "secondary-container": "#f4dfcb",
+                    "on-surface-variant": "#434843",
+                    "on-tertiary-container": "#ffe4d2",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e5e2db",
+                    "on-primary-fixed": "#101f14",
+                    "background": "#fcf9f2",
+                    "tertiary-fixed": "#ffdcc4",
+                    "surface": "#fcf9f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "margin-mobile": "20px",
+                    "organic-offset": "12px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Fira Sans"],
+                    "label-md": ["Fira Sans"],
+                    "headline-lg-mobile": ["Newsreader"],
+                    "headline-lg": ["Newsreader"],
+                    "display-lg": ["Newsreader"],
+                    "narrative-action": ["Newsreader"],
+                    "body-md": ["Fira Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                    "narrative-action": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>.wabi-sabi-grain {
+    position: relative
+    }
+.wabi-sabi-grain::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBNH3bWzJ73Ma_tHbOY4VGdM4K7AVdsNq-oLXGnKaIUQUFqpfYa29qp79YbXUju4DILFd1bWl_Z1s5CDGXCEbSyMBcT82cFgl8irfh60fQHOnu0M4sktuGefkGp6OUpmd87Q84z6MtyVsBfm1xLMvGsyg10_DNmaRlZ-dx166u7es5agEomg4h6VJRNRVYH_B42jofiKvN2iKJdjGGtlUI51py7cD311mFiTm_Y-1E4Hv6xdeWB0U4zMELlU43Z-zU72rhFlk002Q);
+    z-index: 10
+    }
+.asymmetric-stagger > *:nth-child(even) {
+    transform: translatey(24px)
+    }
+.slider-track {
+    background: #e5e2db;
+    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.05)
+    }
+.organic-line {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #747872 50%, transparent);
+    border-radius: 999px
+    }
+.thud-settle {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+    }
+.slider-thumb {
+    cursor: grab;
+    transition: transform 0.1s linear
+    }
+.slider-thumb:active {
+    cursor: grabbing
+    }</style>
+</head>
+<body class="bg-background text-on-surface wabi-sabi-grain min-h-screen font-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 bg-surface/90 backdrop-blur-xl">
+<div class="font-display-lg text-headline-lg text-primary tracking-tight italic">Aetheris Health</div>
+<div class="flex items-center space-x-6">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors duration-300" data-icon="search">search</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors duration-300" data-icon="notifications_none">notifications_none</span>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:text-primary transition-colors duration-300" data-icon="account_circle" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="hidden lg:flex flex-col h-screen fixed left-0 top-0 py-8 px-6 bg-surface-container-low w-72 pt-24 z-40">
+<div class="mb-8 px-5">
+<h2 class="font-display-lg text-headline-lg text-primary">Financial Sanctuary</h2>
+<p class="text-on-surface-variant text-label-md mt-1 italic">Settling the balance, gently.</p>
+</div>
+<div class="flex-grow space-y-2">
+<a class="flex items-center space-x-3 text-on-surface-variant pl-5 py-3 rounded-lg hover:bg-surface-variant/50 transition-all group" href="#">
+<span class="material-symbols-outlined" data-icon="spa">spa</span>
+<span class="font-body-lg">Presence</span>
+</a>
+<a class="flex items-center space-x-3 text-primary font-bold border-l-4 border-primary pl-4 py-3 bg-surface-variant/20" href="#">
+<span class="material-symbols-outlined" data-icon="shield_health">shield_watch</span>
+<span class="font-body-lg">Sanctuary</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant pl-5 py-3 rounded-lg hover:bg-surface-variant/50 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+<span class="font-body-lg">Pathways</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant pl-5 py-3 rounded-lg hover:bg-surface-variant/50 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-body-lg">Chronicle</span>
+</a>
+</div>
+<div class="mt-auto space-y-4 pt-6 border-t border-outline-variant/30">
+<a class="flex items-center space-x-3 text-on-surface-variant pl-5 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span class="font-label-md">Vitals</span>
+</a>
+<a class="flex items-center space-x-3 text-on-surface-variant pl-5 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md">Settings</span>
+</a>
+<button class="w-full mt-4 py-3 px-4 bg-tertiary-container text-on-tertiary-container font-label-md rounded-lg hover:opacity-90 active:scale-95 transition-all">
+                Emergency Access
+            </button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="lg:ml-72 pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-6xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start asymmetric-stagger">
+<!-- Narrative Section -->
+<section class="md:col-span-7 bg-surface-container-low p-8 md:p-12 rounded-3xl relative overflow-hidden shadow-sm">
+<div class="absolute top-0 right-0 p-8 opacity-10">
+<span class="material-symbols-outlined text-[80px]" data-icon="balance">balance</span>
+</div>
+<h3 class="font-display-lg text-display-lg text-primary mb-6">Soft Collection</h3>
+<p class="font-narrative-action text-narrative-action leading-relaxed text-on-surface-variant">
+                    Your final bill for <span class="text-tertiary font-bold italic">Tuesday's visit</span> is ready.
+                    The total was <span class="text-primary font-bold">$15 less</span> than our original estimate.
+                    You can settle this whenever you feel ready, at your own pace and convenience.
+                </p>
+<!-- Plain Language Estimate -->
+<div class="mt-12 space-y-6">
+<div class="flex justify-between items-end border-b border-outline-variant/30 pb-4">
+<div>
+<p class="font-label-md text-on-surface-variant uppercase tracking-wider">Compassionate Consultation</p>
+<p class="text-body-md text-on-surface-variant/70">Time spent with Dr. Elara Vance</p>
+</div>
+<p class="font-headline-lg text-primary">$120.00</p>
+</div>
+<div class="flex justify-between items-end border-b border-outline-variant/30 pb-4">
+<div>
+<p class="font-label-md text-on-surface-variant uppercase tracking-wider">Insightful Lab Analysis</p>
+<p class="text-body-md text-on-surface-variant/70">Bio-rhythm and blood screening</p>
+</div>
+<p class="font-headline-lg text-primary">$45.00</p>
+</div>
+<div class="flex justify-between items-center pt-4">
+<p class="font-headline-lg text-secondary">Current Balance</p>
+<p class="text-[40px] font-display-lg text-primary tracking-tighter">$165.00</p>
+</div>
+</div>
+</section>
+<!-- Payment Vault & Lock -->
+<div class="md:col-span-5 space-y-8">
+<section class="bg-surface-container-highest p-8 rounded-3xl border border-outline-variant/50 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h4 class="font-headline-lg text-primary">Payment Vault</h4>
+<span class="material-symbols-outlined text-secondary" data-icon="lock_open">lock_open</span>
+</div>
+<div class="p-6 bg-surface-bright rounded-2xl border-2 border-primary/20 flex items-center justify-between mb-8">
+<div class="flex items-center space-x-4">
+<div class="w-12 h-8 bg-on-secondary-fixed rounded flex items-center justify-center">
+<span class="text-[10px] text-white font-bold tracking-tighter">VISA</span>
+</div>
+<div>
+<p class="font-body-lg text-on-surface">•••• 4242</p>
+<p class="text-label-md text-on-surface-variant">Expires 08/26</p>
+</div>
+</div>
+<div class="flex flex-col items-center">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-primary after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary/20"></div>
+</label>
+<span class="text-[10px] text-on-surface-variant mt-1 uppercase font-bold tracking-tighter">Sovereign</span>
+</div>
+</div>
+<!-- Payment Friction Lock -->
+<div class="relative pt-4">
+<div class="slider-track w-full h-16 rounded-full flex items-center px-2 relative" id="slider-track">
+<span class="absolute inset-0 flex items-center justify-center font-label-md text-on-surface-variant pointer-events-none uppercase tracking-widest opacity-50">
+                                Slide to authorize payment
+                            </span>
+<div class="slider-thumb w-14 h-12 bg-primary text-white rounded-full flex items-center justify-center shadow-lg transform translate-x-0 z-20" id="slider-thumb">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="absolute left-2 h-12 bg-primary/10 rounded-full z-10 w-0" id="slider-fill"></div>
+</div>
+</div>
+</section>
+<!-- Digital Receipt Timeline -->
+<section class="p-4">
+<h4 class="font-headline-lg text-primary mb-6">Settled Threads</h4>
+<div class="relative space-y-8 pl-8">
+<div class="absolute left-[11px] top-2 bottom-2 w-[2px] bg-outline-variant/30"></div>
+<!-- Timeline Item 1 -->
+<div class="relative">
+<div class="absolute -left-[26px] top-1 w-4 h-4 bg-primary rounded-full border-4 border-background"></div>
+<div class="p-6 bg-surface-container rounded-2xl border-l-4 border-primary/40 shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-on-surface-variant">October 12, 2023</span>
+<span class="text-primary font-bold">$120.00</span>
+</div>
+<h5 class="font-body-lg text-on-surface">Deep Respiratory Consult</h5>
+<p class="text-body-md text-on-surface-variant italic mt-1">With Dr. Smith — Settled</p>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative opacity-70">
+<div class="absolute -left-[26px] top-1 w-4 h-4 bg-outline rounded-full border-4 border-background"></div>
+<div class="p-6 bg-surface-container-low rounded-2xl border-l-4 border-outline/40">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-md text-on-surface-variant">September 24, 2023</span>
+<span class="text-primary font-bold">$45.00</span>
+</div>
+<h5 class="font-body-lg text-on-surface">Organic Mineral Panel</h5>
+<p class="text-body-md text-on-surface-variant italic mt-1">Laboratory — Settled</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Atmospheric Image -->
+<div class="mt-24 rounded-[40px] overflow-hidden h-[300px] w-full relative">
+<img class="w-full h-full object-cover grayscale-[0.2] brightness-90" data-alt="A serene, high-angle macro photograph of smooth river stones partially submerged in clear, ripples water. The lighting is soft and golden, reflecting a late afternoon sun. The color palette is composed of muted sage greens, warm earthy grays, and soft creams, echoing a calm tech and organic brutalist aesthetic. The mood is deeply tranquil and grounded, conveying a sense of permanence and balance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7lFi8tXLO2gpAihXi2QOKP7HG9dk5bfNmdtJMyGVC8eqcj5v4uYatqKyZ2Dus3hAWQphfEHaEbEVqX79O_iKkY7u2_7OsBu_5QMnWwFPhOmlM2Vb7gGYJGdtPsCew7ghFkhGm8NArIGFdqvCOWRRROKFC28dEp7QVYgX37yJG8fa7oz-fkynjXXtIbb4H-2URMICIUCosD5n3UoP4vorTsKBrtDnYrclt1_J9A1-S-ksMhU-kAlQnGtwp5dc-R9JCfoqUk8cdYQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+<div class="absolute bottom-8 left-8">
+<p class="font-display-lg text-headline-lg italic text-on-surface">“Wealth is the ability to fully experience life.”</p>
+<p class="font-label-md text-on-surface-variant mt-2 uppercase tracking-widest">— Henry David Thoreau</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 lg:hidden bg-surface-container rounded-t-xl shadow-lg border-t border-outline-variant/30">
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 px-4 py-1 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="home_app_logo">home_app_logo</span>
+<span class="font-label-md">Presence</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 px-4 py-1 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-label-md">Pathways</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-5 py-1">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md font-bold">Sanctuary</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 px-4 py-1 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="lock_open">lock_open</span>
+<span class="font-label-md">Vault</span>
+</div>
+</footer>
+<script>
+        // Friction Lock Micro-interaction
+        const thumb = document.getElementById('slider-thumb');
+        const track = document.getElementById('slider-track');
+        const fill = document.getElementById('slider-fill');
+        let isDragging = false;
+        let startX = 0;
+        const maxTranslate = track.offsetWidth - thumb.offsetWidth - 16; // Adjust for padding
+
+        thumb.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            thumb.style.transition = 'none';
+            fill.style.transition = 'none';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            let delta = e.clientX - startX;
+            delta = Math.max(0, Math.min(delta, maxTranslate));
+            thumb.style.transform = `translateX(${delta}px)`;
+            fill.style.width = `${delta}px`;
+
+            // Interaction weight effect
+            const progress = delta / maxTranslate;
+            thumb.style.opacity = 1 - (progress * 0.2);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            const currentX = parseFloat(thumb.style.transform.replace('translateX(', '').replace('px)', ''));
+
+            if (currentX > maxTranslate * 0.9) {
+                // Success State
+                thumb.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                thumb.style.transform = `translateX(${maxTranslate}px)`;
+                thumb.innerHTML = '<span class="material-symbols-outlined">check</span>';
+                thumb.classList.remove('bg-primary');
+                thumb.classList.add('bg-secondary');
+                fill.style.width = '100%';
+
+                setTimeout(() => {
+                    alert('Payment authorized successfully. Peace be with you.');
+                }, 400);
+            } else {
+                // Snap Back (The "Thud")
+                thumb.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                thumb.style.transform = `translateX(0px)`;
+                fill.style.width = '0px';
+            }
+        });
+
+        // Touch support for mobile
+        thumb.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            thumb.style.transition = 'none';
+            fill.style.transition = 'none';
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            let delta = e.touches[0].clientX - startX;
+            delta = Math.max(0, Math.min(delta, maxTranslate));
+            thumb.style.transform = `translateX(${delta}px)`;
+            fill.style.width = `${delta}px`;
+        });
+
+        window.addEventListener('touchend', () => {
+             if (!isDragging) return;
+             // Reuse same logic as mouseup
+             window.dispatchEvent(new Event('mouseup'));
+        });
+    </script>
+</body></html>

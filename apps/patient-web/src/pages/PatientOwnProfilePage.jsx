@@ -1,402 +1,320 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { logError } from '@/lib/logger';
-import { useToast } from '@/contexts/ToastContext';
-import { patientService } from '@/services/patients';
-import { getHomeRouteForRole } from '@/lib/routes';
+import { CheckCircle2, Edit3, Save, ShieldAlert, UserRound, X } from 'lucide-react';
+import { useAuth } from '@ui/contexts/AuthContext';
+import { useToast } from '@ui/contexts/ToastContext';
+import { patientService } from '@core/services/patients';
+import { patientFormsService } from '@core/services/patientForms';
+import { PATIENT_FORM_CONTEXTS, resolvePatientFormDefinition } from '@core/lib/patientForms';
+import { logError } from '@core/lib/logger';
+import { getUserInitials } from '@core/lib/userDisplay';
+import { PatientPortalShell } from '@ui/components/patient/PatientPortalShell';
+import { PatientIntakeField } from '@ui/components/patient/PatientIntakeField';
+import { patientFadeRise, patientStagger } from '@ui/styles/patientMotion';
+
+const PROFILE_KEYS = [
+  'first_name',
+  'last_name',
+  'phone',
+  'date_of_birth',
+  'sex',
+  'blood_type',
+  'allergies',
+  'insurance_id',
+  'emergency_contact',
+  'emergency_phone',
+  'medical_history',
+];
+
+function buildProfileForm({ user, patient }) {
+  return {
+    first_name: user?.first_name || patient?.users?.first_name || '',
+    last_name: user?.last_name || patient?.users?.last_name || '',
+    phone: user?.phone || patient?.users?.phone || '',
+    date_of_birth: patient?.date_of_birth || '',
+    sex: patient?.sex || '',
+    blood_type: patient?.blood_type || '',
+    allergies: patient?.allergies || '',
+    insurance_id: patient?.insurance_id || '',
+    emergency_contact: patient?.emergency_contact || '',
+    emergency_phone: patient?.emergency_phone || '',
+    medical_history: patient?.medical_history || '',
+  };
+}
+
+function buildProfilePayload(form) {
+  return Object.fromEntries(PROFILE_KEYS.map((key) => {
+    const value = typeof form[key] === 'string' ? form[key].trim() : form[key];
+    return [key, value || null];
+  }));
+}
+
+function validateRequired({ definition, form }) {
+  for (const key of definition.requiredKeys || []) {
+    if (!PROFILE_KEYS.includes(key)) continue;
+    if (!String(form[key] || '').trim()) {
+      const field = definition.fields.find((item) => item.key === key);
+      return `${field?.label || key} is required.`;
+    }
+  }
+  return null;
+}
+
+function ProfileSummary({ user, patient, isEditing, onEdit, onCancel, onSave, submitting }) {
+  const patientRef = patient?.id ? `PAT-${String(patient.id).replace(/-/g, '').slice(0, 10).toUpperCase()}` : 'Pending profile';
+
+  return (
+    <motion.section variants={patientFadeRise} className="patient-paper-strong patient-surface relative overflow-hidden p-6">
+      <div aria-hidden="true" className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[color-mix(in_srgb,var(--patient-success)_45%,transparent)] blur-3xl" />
+      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex items-center gap-5">
+          <span className="grid h-20 w-20 place-items-center rounded-[22px_6px_22px_6px] bg-[var(--patient-sage)] text-2xl font-black text-white">
+            {getUserInitials(user)}
+          </span>
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--patient-sage)]">Patient identity</p>
+            <h1 className="patient-display mt-2 text-4xl font-medium tracking-tight text-[var(--patient-ink)]">
+              {[user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'Patient profile'}
+            </h1>
+            <p className="mt-2 font-mono text-xs font-bold text-[color-mix(in_srgb,var(--patient-muted)_75%,transparent)]">{patientRef}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={submitting}
+                className="patient-button-secondary px-5 py-3"
+              >
+                <X className="h-4 w-4" />
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={submitting}
+                className="patient-button-primary px-5 py-3 disabled:bg-[var(--patient-outline)]"
+              >
+                <Save className="h-4 w-4" />
+                {submitting ? 'Saving...' : 'Save'}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="patient-button-primary px-5 py-3"
+            >
+              <Edit3 className="h-4 w-4" />
+              Edit profile
+            </button>
+          )}
+        </div>
+      </div>
+    </motion.section>
+  );
+}
 
 export default function PatientOwnProfilePage() {
-    const navigate = useNavigate();
-    const { user, logout } = useAuth();
-    const { showToast } = useToast();
-    const [patient, setPatient] = useState(null);
-    const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState(false);
-    const [formData, setFormData] = useState({
-        first_name: '',
-        last_name: '',
-        phone: '',
-        date_of_birth: '',
-        sex: '',
-        blood_type: '',
-        allergies: '',
-        insurance_id: '',
-        emergency_contact: '',
-        emergency_phone: '',
-        medical_history: '',
-    });
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const [patient, setPatient] = useState(null);
+  const [definition, setDefinition] = useState(() => resolvePatientFormDefinition({ context: PATIENT_FORM_CONTEXTS.profile }));
+  const [configWarning, setConfigWarning] = useState('');
+  const [formData, setFormData] = useState(() => buildProfileForm({ user, patient: null }));
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-    useEffect(() => {
-        fetchPatientProfile();
-    }, [user?.id]);
+  const visibleFields = useMemo(
+    () => (definition.fields || []).filter((field) => PROFILE_KEYS.includes(field.key)),
+    [definition.fields]
+  );
 
-    async function fetchPatientProfile() {
-        try {
-            setLoading(true);
-            const { data, error } = await patientService.getByUserId(user?.id);
-            if (!error && data) {
-                setPatient(data);
-                setFormData({
-                    first_name: user?.first_name || '',
-                    last_name: user?.last_name || '',
-                    phone: user?.phone || '',
-                    date_of_birth: data.date_of_birth || '',
-                    sex: data.sex || '',
-                    blood_type: data.blood_type || '',
-                    allergies: data.allergies || '',
-                    insurance_id: data.insurance_id || '',
-                    emergency_contact: data.emergency_contact || '',
-                    emergency_phone: data.emergency_phone || '',
-                    medical_history: data.medical_history || '',
-                });
-            }
-        } catch (err) {
-            logError('Error fetching profile:', err);
-            showToast('Failed to load profile', 'error');
-        } finally {
-            setLoading(false);
-        }
+  const sections = useMemo(() => {
+    return (definition.sections || [])
+      .map((section) => ({
+        ...section,
+        fields: visibleFields.filter((field) => field.section === section.id),
+      }))
+      .filter((section) => section.fields.length > 0);
+  }, [definition.sections, visibleFields]);
+
+  const fetchPatientProfile = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
     }
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+    try {
+      setLoading(true);
+      const { data, error } = await patientService.getByUserId(user.id);
+      if (error || !data) {
+        showToast(error || 'Failed to load profile', 'error');
+        return;
+      }
 
-    const handleSaveProfile = async (e) => {
-        e.preventDefault();
-        
-        const sanitizedFirst = formData.first_name?.trim();
-        const sanitizedLast = formData.last_name?.trim();
-        const sanitizedPhone = formData.phone?.trim();
+      const definitionResult = await patientFormsService.getDefinition({
+        context: PATIENT_FORM_CONTEXTS.profile,
+        patientId: data.id,
+      });
 
-        if (!sanitizedFirst || !sanitizedLast) {
-            showToast('First and Last Name are required', 'error');
-            return;
-        }
+      setPatient(data);
+      setFormData(buildProfileForm({ user, patient: data }));
+      setDefinition(definitionResult.data || resolvePatientFormDefinition({ context: PATIENT_FORM_CONTEXTS.profile }));
+      setConfigWarning(definitionResult.configError || '');
+    } catch (err) {
+      logError('PatientOwnProfilePage.fetchPatientProfile', err);
+      showToast('Failed to load profile', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (sanitizedPhone && !/^\+?[\d\s-]{8,20}$/.test(sanitizedPhone)) {
-            showToast('Please enter a valid phone number', 'error');
-            return;
-        }
+  useEffect(() => {
+    void fetchPatientProfile();
+  }, [user?.id]);
 
-        if (formData.emergency_phone && !/^\+?[\d\s-]{8,20}$/.test(formData.emergency_phone)) {
-            showToast('Please enter a valid emergency contact phone', 'error');
-            return;
-        }
+  const updateField = (key, value) => {
+    setFormData((current) => ({ ...current, [key]: value }));
+  };
 
-        try {
-            setSubmitting(true);
-            const { error } = await patientService.updateOwnProfile({
-                userId: user?.id,
-                patientId: patient?.id,
-                profile: {
-                    first_name: sanitizedFirst,
-                    last_name: sanitizedLast,
-                    phone: sanitizedPhone || null,
-                    date_of_birth: formData.date_of_birth || null,
-                    sex: formData.sex || null,
-                    blood_type: formData.blood_type || null,
-                    allergies: formData.allergies || null,
-                    insurance_id: formData.insurance_id || null,
-                    emergency_contact: formData.emergency_contact || null,
-                    emergency_phone: formData.emergency_phone || null,
-                    medical_history: formData.medical_history || null,
-                },
-            });
+  const handleSaveProfile = async () => {
+    const requiredError = validateRequired({ definition, form: formData });
+    if (requiredError) {
+      showToast(requiredError, 'error');
+      return;
+    }
 
-            if (!error) {
-                showToast('Profile updated successfully', 'success');
+    const sanitizedPhone = formData.phone?.trim();
+    if (sanitizedPhone && !/^\+?[\d\s-]{8,20}$/.test(sanitizedPhone)) {
+      showToast('Please enter a valid phone number', 'error');
+      return;
+    }
+
+    if (formData.emergency_phone && !/^\+?[\d\s-]{8,20}$/.test(formData.emergency_phone)) {
+      showToast('Please enter a valid emergency contact phone', 'error');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const { data, error } = await patientService.updateOwnProfile({
+        userId: user?.id,
+        patientId: patient?.id,
+        profile: buildProfilePayload(formData),
+      });
+
+      if (error) {
+        showToast(error || 'Failed to update profile', 'error');
+        return;
+      }
+
+      showToast('Profile updated successfully', 'success');
+      setPatient(data || patient);
+      setIsEditing(false);
+      await fetchPatientProfile();
+    } catch (err) {
+      logError('PatientOwnProfilePage.handleSaveProfile', err);
+      showToast('An error occurred while saving your profile', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <PatientPortalShell title="Profile" subtitle="Identity, safety notes, and support contacts">
+        <motion.section variants={patientStagger} initial="hidden" animate="visible" className="grid gap-8 lg:grid-cols-[0.9fr_1.2fr]">
+          <div className="space-y-5">
+            <ProfileSummary
+              user={user}
+              patient={patient}
+              isEditing={isEditing}
+              onEdit={() => setIsEditing(true)}
+              onCancel={() => {
                 setIsEditing(false);
-                fetchPatientProfile();
-            } else {
-                logError('error', error);
-                showToast(error || 'Failed to update profile', 'error');
-            }
-        } catch (err) {
-            logError('Error updating profile:', err);
-            showToast('An error occurred', 'error');
-        } finally {
-            setSubmitting(false);
-        }
-    };
+                setFormData(buildProfileForm({ user, patient }));
+              }}
+              onSave={handleSaveProfile}
+              submitting={submitting}
+            />
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-background-light flex items-center justify-center">
-                <p className="text-slate-500">Loading profile...</p>
+            <motion.section variants={patientFadeRise} className="patient-paper patient-surface p-6">
+              <ShieldAlert className="h-6 w-6 text-[var(--patient-clay)]" />
+              <h2 className="patient-display mt-4 text-3xl font-medium tracking-tight text-[var(--patient-ink)]">
+                Profile changes are clinical inputs.
+              </h2>
+              <p className="mt-3 text-sm font-semibold leading-6 text-[var(--patient-muted)]">
+                The page renders from the same allowlisted registry used by onboarding. Deep structured history remains staff-managed for this phase.
+              </p>
+            </motion.section>
+          </div>
+
+          <motion.form
+            variants={patientFadeRise}
+            className="patient-paper-strong patient-surface p-6"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (isEditing) void handleSaveProfile();
+            }}
+            aria-busy={loading || submitting}
+          >
+            <div className="flex flex-col gap-3 border-b border-[color-mix(in_srgb,var(--patient-outline)_60%,transparent)] pb-5 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--patient-sage)]">Editable profile</p>
+                <h2 className="patient-display mt-2 text-4xl font-medium tracking-tight text-[var(--patient-ink)]">
+                  What the clinic sees first
+                </h2>
+              </div>
+              <span className="patient-status-sage">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Config-ready
+              </span>
             </div>
-        );
-    }
 
-    return (
-        <div className="min-h-screen bg-background-light">
-            {/* Header */}
-            <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-black">
-                            {user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold text-slate-900">My Profile</h1>
-                            <p className="text-xs text-slate-500">View and manage your information</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => navigate(getHomeRouteForRole(user?.role))}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-                        >
-                            Back to Dashboard
-                        </button>
-                        <button
-                            onClick={async () => {
-                                await logout();
-                                navigate('/login');
-                            }}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </header>
+            {configWarning ? (
+              <p className="patient-inset-warning mt-5 px-4 py-3 text-sm font-black">
+                {configWarning}
+              </p>
+            ) : null}
 
-            <main className="max-w-4xl mx-auto px-6 py-8">
-                {/* Profile Header Card */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-2xl border border-slate-200 p-8 mb-8"
-                >
-                    <div className="flex items-end gap-6 mb-6">
-                        <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-4xl font-black">
-                            {user?.first_name ? `${user.first_name[0]}${(user.last_name || '')[0] || ''}`.toUpperCase() : '?'}
-                        </div>
-                        <div className="flex-1">
-                            <h2 className="text-3xl font-black text-slate-900 mb-1">
-                                {formData.first_name} {formData.last_name}
-                            </h2>
-                            <p className="text-sm text-slate-600 mb-4">Patient ID: {patient?.id}</p>
-                            <div className="flex gap-2">
-                                {!isEditing && (
-                                    <button
-                                        onClick={() => setIsEditing(true)}
-                                        className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-all"
-                                    >
-                                        Edit Profile
-                                    </button>
-                                )}
-                                {isEditing && (
-                                    <>
-                                        <button
-                                            onClick={() => {
-                                                setIsEditing(false);
-                                                fetchPatientProfile();
-                                            }}
-                                            className="px-4 py-2 bg-slate-200 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-300 transition-all"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleSaveProfile}
-                                            disabled={submitting}
-                                            className="px-4 py-2 bg-success text-white text-sm font-bold rounded-lg hover:bg-success/90 disabled:opacity-50 transition-all"
-                                        >
-                                            {submitting ? 'Saving...' : 'Save Changes'}
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
+            {loading ? (
+              <div className="mt-6 space-y-3" role="status">
+                {[0, 1, 2].map((index) => (
+                  <div key={index} className="h-24 animate-pulse rounded-xl bg-[var(--patient-wash)]" />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-6 space-y-8">
+                {sections.map((section) => (
+                  <section key={section.id}>
+                    <div className="mb-4 flex items-center gap-3">
+                      <UserRound className="h-4 w-4 text-[var(--patient-sage)]" />
+                      <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--patient-sage)]">
+                        {section.title}
+                      </h3>
                     </div>
-                </motion.div>
-
-                {/* Personal Information */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="bg-white rounded-2xl border border-slate-200 p-6 mb-6"
-                >
-                    <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                        <span>👤</span> Personal Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">First Name</label>
-                            <input
-                                type="text"
-                                name="first_name"
-                                value={formData.first_name}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            />
+                    <div className="grid gap-5 md:grid-cols-2">
+                      {section.fields.map((field) => (
+                        <div key={field.key} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
+                          <PatientIntakeField
+                            field={field}
+                            value={formData[field.key]}
+                            onChange={updateField}
+                            disabled={!isEditing || submitting}
+                          />
                         </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Last Name</label>
-                            <input
-                                type="text"
-                                name="last_name"
-                                value={formData.last_name}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Phone</label>
-                            <input
-                                type="tel"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Date of Birth</label>
-                            <input
-                                type="date"
-                                name="date_of_birth"
-                                value={formData.date_of_birth}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Gender</label>
-                            <select
-                                name="sex"
-                                value={formData.sex}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
-                            >
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Blood Type</label>
-                            <select
-                                name="blood_type"
-                                value={formData.blood_type}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
-                            >
-                                <option value="">Select Blood Type</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                            </select>
-                        </div>
+                      ))}
                     </div>
-                </motion.div>
-
-                {/* Medical Information */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-white rounded-2xl border border-slate-200 p-6 mb-6"
-                >
-                    <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                        <span>🏥</span> Medical Information
-                    </h3>
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Allergies</label>
-                            <textarea
-                                name="allergies"
-                                value={formData.allergies}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                placeholder="List any known allergies..."
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
-                                rows="3"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Medical History</label>
-                            <textarea
-                                name="medical_history"
-                                value={formData.medical_history}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                placeholder="Describe any past medical conditions, surgeries, etc..."
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
-                                rows="4"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Insurance ID</label>
-                            <input
-                                type="text"
-                                name="insurance_id"
-                                value={formData.insurance_id}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                placeholder="Your insurance policy number"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            />
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Emergency Contact */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-white rounded-2xl border border-slate-200 p-6"
-                >
-                    <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                        <span>🆘</span> Emergency Contact
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Contact Name</label>
-                            <input
-                                type="text"
-                                name="emergency_contact"
-                                value={formData.emergency_contact}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                placeholder="Full name"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">Contact Phone</label>
-                            <input
-                                type="tel"
-                                name="emergency_phone"
-                                value={formData.emergency_phone}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                                placeholder="Phone number"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            />
-                        </div>
-                    </div>
-                </motion.div>
-            </main>
-        </div>
-    );
+                  </section>
+                ))}
+              </div>
+            )}
+          </motion.form>
+        </motion.section>
+    </PatientPortalShell>
+  );
 }

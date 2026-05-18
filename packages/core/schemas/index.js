@@ -35,6 +35,44 @@ export {
   patientDeviceSchema,
 } from './patients.js';
 
+/* ── Patient Onboarding ──────────────────────────────────────────── */
+export {
+  patientSelfIntakeSchema,
+} from './patientOnboarding.js';
+
+export {
+  DEFAULT_PATIENT_ONBOARDING_DEFINITION,
+  PATIENT_ONBOARDING_FIELD_REGISTRY,
+  PATIENT_ONBOARDING_SECTIONS,
+  PATIENT_ONBOARDING_CONFIG_CONTRACT,
+  PATIENT_ONBOARDING_CUSTOM_FIELD_KEY_PATTERN,
+  PATIENT_ONBOARDING_CUSTOM_FIELD_PREFIX,
+  PATIENT_ONBOARDING_LOCKED_REQUIRED_KEYS,
+  buildPatientGuidedIntakePayload,
+  buildPatientOnboardingStatus,
+  getPatientOnboardingFieldsForSection,
+  getPatientOnboardingInitialForm,
+  getPatientOnboardingSectionProgress,
+  resolvePatientOnboardingDefinition,
+} from '../lib/patientOnboarding.js';
+
+export {
+  DEFAULT_PATIENT_BOOKING_DEFINITION,
+  PATIENT_BILLING_CONTACT_FIELD_REGISTRY,
+  PATIENT_BOOKING_FIELD_REGISTRY,
+  PATIENT_CHECK_IN_FIELD_REGISTRY,
+  PATIENT_FORM_CONTEXTS,
+  PATIENT_FORM_SECTIONS,
+  collectPatientFormCustomAnswers,
+  getPatientFormRegistry,
+  resolvePatientFormDefinition,
+} from '../lib/patientForms.js';
+
+export {
+  groupPatientTimelineItems,
+  normalizePatientTimelineDocuments,
+} from '../lib/patientTimeline.js';
+
 /* ── Clinical ────────────────────────────────────────────────────── */
 export {
   encounterCreateSchema,
@@ -128,6 +166,15 @@ export {
   paymentCreateSchema,
   paymentUpdateSchema,
 } from './payments.js';
+
+/* ── Patient Billing ─────────────────────────────────────────────── */
+export {
+  patientBillingOverviewSchema,
+  patientBillingPaymentSchema,
+  patientCheckoutSessionResponseSchema,
+  patientCheckoutStartSchema,
+  patientPaymentIdSchema,
+} from './patientBilling.js';
 
 /* ── Service response shapes (F3) ────────────────────────────────── */
 export {

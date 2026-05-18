@@ -1,260 +1,213 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Fingerprint, Lock, Mail, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { getHomeRouteForRole } from '@/lib/routes';
+import { patientFadeRise, patientStagger } from '@ui/styles/patientMotion';
 
-const SignUpPage = () => {
-    const navigate = useNavigate();
-    const { signUp } = useAuth();
-    const { displayName } = useBrand();
+function Field({ id, label, type = 'text', value, onChange, placeholder, autoComplete, icon: Icon, trailing, minLength }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <label className="patient-display text-xl font-medium text-[var(--patient-ink)] transition-colors" htmlFor={id}>
+        {label}
+      </label>
+      <div className="relative">
+        {Icon ? <Icon className="pointer-events-none absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--patient-muted)]" /> : null}
+        <input
+          id={id}
+          className={`patient-field-input py-3 ${Icon ? 'pl-8' : ''} ${trailing ? 'pr-12' : ''}`}
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          minLength={minLength}
+          required
+        />
+        {trailing}
+      </div>
+    </div>
+  );
+}
 
-    const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirm: '' });
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [agreed, setAgreed] = useState(false);
-    const [error, setError] = useState('');
-    const [notice, setNotice] = useState('');
-    const [submitting, setSubmitting] = useState(false);
+function PasswordToggle({ visible, onClick, label }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-[var(--patient-muted)] transition hover:text-[var(--patient-ink)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--patient-sage)]"
+      aria-label={label}
+    >
+      {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  );
+}
 
-    const set = (k) => (e) => setForm(prev => ({ ...prev, [k]: e.target.value }));
+export default function SignUpPage() {
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
+  const { displayName } = useBrand();
 
-    const validate = () => {
-        if (!form.firstName.trim() || !form.lastName.trim()) return 'Please enter your full name.';
-        if (!form.email.trim()) return 'Email is required.';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email address.';
-        if (form.password.length < 8) return 'Password must be at least 8 characters.';
-        if (form.password !== form.confirm) return 'Passwords do not match.';
-        if (!agreed) return 'You must agree to the Terms of Service.';
-        return null;
-    };
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', confirm: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setNotice('');
-        const validationError = validate();
-        if (validationError) { setError(validationError); return; }
+  const set = (key) => (event) => setForm((previous) => ({ ...previous, [key]: event.target.value }));
 
-        setSubmitting(true);
-        const { success, error: signUpError, user, pendingConfirmation, email } = await signUp(
-            form.email.trim(),
-            form.password,
-            form.firstName.trim(),
-            form.lastName.trim()
-        );
-        setSubmitting(false);
+  const validate = () => {
+    if (!form.firstName.trim() || !form.lastName.trim()) return 'Please enter your full name.';
+    if (!form.email.trim()) return 'Email is required.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Please enter a valid email address.';
+    if (form.password.length < 8) return 'Password must be at least 8 characters.';
+    if (form.password !== form.confirm) return 'Passwords do not match.';
+    if (!agreed) return 'Please confirm the clinic privacy and account terms before continuing.';
+    return null;
+  };
 
-        if (!success) {
-            setError(signUpError || 'Failed to create account. Please try again.');
-            return;
-        }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setNotice('');
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
-        if (pendingConfirmation) {
-            setNotice(`Account created. Please check ${email || form.email.trim()} to confirm your email, then sign in.`);
-            setForm(prev => ({ ...prev, password: '', confirm: '' }));
-            return;
-        }
-
-        navigate(getHomeRouteForRole(user?.role || 'patient'));
-    };
-
-    const benefits = [
-        { icon: 'calendar_month', text: 'Request and manage appointments' },
-        { icon: 'assignment',     text: 'Complete intake details before your visit' },
-        { icon: 'description',    text: 'Access documents your clinic shares with you' },
-        { icon: 'notifications',  text: 'Keep reminders and updates in one place' },
-        { icon: 'security',       text: 'Private patient access for your clinic record' },
-    ];
-
-    return (
-        <div className="flex min-h-screen w-full font-display">
-
-            {/* ─── LEFT PANEL ─── */}
-            <div className="hidden lg:flex w-[520px] bg-background-dark flex-col relative overflow-hidden shrink-0">
-                <motion.div
-                    animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0], borderRadius: ['40%', '50%', '40%'] }}
-                    transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-                    className="absolute top-[-10%] left-[30%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[90px] pointer-events-none"
-                />
-                <motion.div
-                    animate={{ scale: [1, 1.3, 1], rotate: [0, -90, 0] }}
-                    transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-                    className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-primary/10 rounded-full blur-[70px] pointer-events-none"
-                />
-                <div className="relative z-10 p-14 flex flex-col h-full">
-                    <Link to="/" className="flex items-center gap-3 mb-14">
-                        <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
-                            <span className="material-symbols-outlined text-xl">health_metrics</span>
-                        </div>
-                        <span className="text-white font-black text-2xl tracking-tight">{displayName}</span>
-                    </Link>
-                    <div className="mb-10">
-                        <h1 className="text-white font-black text-4xl leading-tight mb-4">
-                            Start your <span className="text-primary">patient account</span>
-                        </h1>
-                        <p className="text-slate-400 text-base leading-relaxed">
-                            Create a secure account to request appointments and prepare for visits with your clinic.
-                        </p>
-                    </div>
-                    <div className="flex-1 flex flex-col gap-5">
-                        {benefits.map((b, i) => (
-                            <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.08 }} className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-                                    <span className="material-symbols-outlined text-primary text-xl">{b.icon}</span>
-                                </div>
-                                <p className="text-slate-300 text-sm font-medium">{b.text}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-                    <div className="mt-10 pt-8 border-t border-slate-800 grid grid-cols-3 gap-4">
-                        {[{ num: '1', label: 'Patient Profile' }, { num: '24/7', label: 'Portal Access' }, { num: '3', label: 'Core Steps' }].map((s, i) => (
-                            <div key={i} className="text-center">
-                                <p className="text-primary text-xl font-black">{s.num}</p>
-                                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{s.label}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* ─── RIGHT PANEL ─── */}
-            <div className="flex-1 bg-background-light flex flex-col overflow-y-auto">
-                <div className="flex items-center justify-between px-8 py-5 border-b border-slate-200">
-                    <Link to="/" className="flex lg:hidden items-center gap-2">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined text-base">health_metrics</span>
-                        </div>
-                        <span className="text-slate-900 font-black text-lg">{displayName}</span>
-                    </Link>
-                    <div className="hidden lg:block" />
-                    <div className="flex items-center gap-4">
-                        <p className="text-sm text-slate-500 hidden sm:block">Already have an account?</p>
-                        <Link to="/login" className="px-5 py-2 rounded-xl border border-slate-200 text-slate-700 text-sm font-bold hover:border-primary hover:text-primary transition-all">
-                            Sign In
-                        </Link>
-                    </div>
-                </div>
-
-                <div className="flex-1 flex flex-col justify-center max-w-[520px] w-full mx-auto px-8 py-12">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                            <span className="material-symbols-outlined text-primary text-3xl">person_add</span>
-                        </div>
-                        <h2 className="text-4xl font-black text-slate-900 mb-2">Create your account</h2>
-                        <p className="text-slate-500 text-base">Create a patient account for appointments, intake, and follow-up</p>
-                    </motion.div>
-
-                    {error && (
-                        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-5 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
-                            {error}
-                        </motion.div>
-                    )}
-
-                    {notice && (
-                        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">
-                            {notice}
-                        </motion.div>
-                    )}
-
-                    <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="space-y-5" onSubmit={handleSubmit}>
-                        {/* Name row */}
-                        <div className="flex gap-3">
-                            <div className="flex flex-col gap-2 flex-1">
-                                <label className="text-slate-700 text-sm font-bold px-1">First Name</label>
-                                <input
-                                    type="text" required value={form.firstName} onChange={set('firstName')} placeholder="John"
-                                    className="w-full px-4 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 text-sm shadow-sm"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-2 flex-1">
-                                <label className="text-slate-700 text-sm font-bold px-1">Last Name</label>
-                                <input
-                                    type="text" required value={form.lastName} onChange={set('lastName')} placeholder="Family name"
-                                    className="w-full px-4 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 text-sm shadow-sm"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Email */}
-                        <div className="flex flex-col gap-2">
-                            <label className="text-slate-700 text-sm font-bold px-1">Email Address</label>
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-xl">mail</span>
-                                <input
-                                    type="email" required value={form.email} onChange={set('email')} placeholder="you@example.com"
-                                    className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 text-sm shadow-sm"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password */}
-                        <div className="flex flex-col gap-2">
-                            <label className="text-slate-700 text-sm font-bold px-1">Password</label>
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-xl">lock</span>
-                                <input
-                                    type={showPassword ? 'text' : 'password'} required minLength={8} value={form.password} onChange={set('password')} placeholder="Min. 8 characters"
-                                    className="w-full pl-12 pr-12 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 text-sm shadow-sm"
-                                />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                                    <span className="material-symbols-outlined text-xl">{showPassword ? 'visibility_off' : 'visibility'}</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Confirm Password */}
-                        <div className="flex flex-col gap-2">
-                            <label className="text-slate-700 text-sm font-bold px-1">Confirm Password</label>
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-xl">lock_reset</span>
-                                <input
-                                    type={showConfirm ? 'text' : 'password'} required value={form.confirm} onChange={set('confirm')} placeholder="Repeat your password"
-                                    className="w-full pl-12 pr-12 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 text-sm shadow-sm"
-                                />
-                                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                                    <span className="material-symbols-outlined text-xl">{showConfirm ? 'visibility_off' : 'visibility'}</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Terms */}
-                        <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl bg-primary/5 border border-primary/20">
-                            <input type="checkbox" required checked={agreed} onChange={e => setAgreed(e.target.checked)} className="w-4 h-4 mt-0.5 rounded border-slate-300 accent-primary" />
-                            <span className="text-sm text-slate-600 leading-relaxed">
-                                I agree to the{' '}<a href="#" className="text-primary font-semibold hover:underline">Terms of Service</a>{' '}and{' '}
-                                <a href="#" className="text-primary font-semibold hover:underline">Privacy Policy</a>.
-                                My information will be handled according to the clinic privacy policy.
-                            </span>
-                        </label>
-
-                        <motion.button
-                            whileHover={{ scale: (agreed && !submitting) ? 1.02 : 1 }}
-                            whileTap={{ scale: (agreed && !submitting) ? 0.98 : 1 }}
-                            type="submit"
-                            disabled={!agreed || submitting}
-                            className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all text-base ${
-                                agreed && !submitting ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                            }`}
-                        >
-                            {submitting ? (
-                                <>
-                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Creating Account...
-                                </>
-                            ) : (
-                                <>
-                                    <span>Create Account</span>
-                                    <span className="material-symbols-outlined text-xl">how_to_reg</span>
-                                </>
-                            )}
-                        </motion.button>
-                    </motion.form>
-                </div>
-            </div>
-        </div>
+    setSubmitting(true);
+    const { success, error: signUpError, user, pendingConfirmation, email } = await signUp(
+      form.email.trim(),
+      form.password,
+      form.firstName.trim(),
+      form.lastName.trim()
     );
-};
+    setSubmitting(false);
 
-export default SignUpPage;
+    if (!success) {
+      setError(signUpError || 'Failed to create account. Please try again.');
+      return;
+    }
+
+    if (pendingConfirmation) {
+      setNotice(`Account created. Please check ${email || form.email.trim()} to confirm your email, then sign in.`);
+      setForm((previous) => ({ ...previous, password: '', confirm: '' }));
+      return;
+    }
+
+    navigate(user?.role === 'patient' ? '/patient-onboarding' : getHomeRouteForRole(user?.role || 'patient'));
+  };
+
+  return (
+    <div className="patient-sanctuary patient-grain min-h-screen">
+      <main className="patient-entry-canvas">
+        <motion.section
+          variants={patientStagger}
+          initial="hidden"
+          animate="visible"
+          className="patient-entry-wide"
+        >
+          <motion.header variants={patientFadeRise} className="mb-16 flex flex-col gap-6 md:mb-24">
+            <Fingerprint className="h-10 w-10 text-[var(--patient-sage)]" />
+            <div>
+              <p className="patient-kicker mb-4">{displayName}</p>
+              <h1 className="patient-display mb-4 text-5xl font-normal tracking-tight text-[var(--patient-ink)]">
+                Create your account
+              </h1>
+              <p className="max-w-2xl text-lg leading-8 text-[var(--patient-muted)]">
+                Start with your basic account details. Your first-visit clinical intake comes next, after you sign in to the secure portal.
+              </p>
+            </div>
+          </motion.header>
+
+          <motion.form variants={patientStagger} onSubmit={handleSubmit} className="space-y-14">
+            {error ? (
+              <motion.div variants={patientFadeRise} className="bg-red-50 px-4 py-3 text-sm font-bold text-red-700" role="alert">
+                {error}
+              </motion.div>
+            ) : null}
+
+            {notice ? (
+              <motion.div variants={patientFadeRise} className="bg-[color-mix(in_srgb,var(--patient-sage)_16%,var(--patient-surface))] px-4 py-3 text-sm font-bold text-[var(--patient-sage)]" role="status">
+                <CheckCircle2 className="mr-2 inline h-4 w-4" />
+                {notice}
+              </motion.div>
+            ) : null}
+
+            <motion.div variants={patientFadeRise} className="grid gap-12 md:grid-cols-2">
+              <Field id="signup-first-name" label="First name" value={form.firstName} onChange={set('firstName')} placeholder="As used by the clinic" autoComplete="given-name" icon={UserRound} />
+              <Field id="signup-last-name" label="Last name" value={form.lastName} onChange={set('lastName')} placeholder="Family name" autoComplete="family-name" icon={UserRound} />
+            </motion.div>
+
+            <motion.div variants={patientFadeRise}>
+              <Field id="signup-email" label="Email address" type="email" value={form.email} onChange={set('email')} placeholder="name@domain.com" autoComplete="email" icon={Mail} />
+            </motion.div>
+
+            <motion.div variants={patientFadeRise} className="grid gap-12 md:grid-cols-2">
+              <Field
+                id="signup-password"
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={set('password')}
+                placeholder="Minimum 8 characters"
+                autoComplete="new-password"
+                minLength={8}
+                icon={Lock}
+                trailing={<PasswordToggle visible={showPassword} onClick={() => setShowPassword((value) => !value)} label={showPassword ? 'Hide password' : 'Show password'} />}
+              />
+              <Field
+                id="signup-confirm-password"
+                label="Confirm password"
+                type={showConfirm ? 'text' : 'password'}
+                value={form.confirm}
+                onChange={set('confirm')}
+                placeholder="Repeat your password"
+                autoComplete="new-password"
+                icon={Lock}
+                trailing={<PasswordToggle visible={showConfirm} onClick={() => setShowConfirm((value) => !value)} label={showConfirm ? 'Hide confirmation password' : 'Show confirmation password'} />}
+              />
+            </motion.div>
+
+            <motion.label variants={patientFadeRise} className="grid cursor-pointer grid-cols-[20px_1fr] gap-4 bg-[color-mix(in_srgb,var(--patient-surface)_78%,white)] px-4 py-4">
+              <input
+                type="checkbox"
+                required
+                checked={agreed}
+                onChange={(event) => setAgreed(event.target.checked)}
+                className="mt-1 h-4 w-4 accent-[var(--patient-sage)]"
+              />
+              <span className="text-sm font-semibold leading-7 text-[var(--patient-muted)]">
+                I agree to the clinic Terms of Service and Privacy Policy, and understand that first-visit clinical intake comes next.
+              </span>
+            </motion.label>
+
+            <motion.div variants={patientFadeRise} className="flex flex-col gap-4 border-t border-[color-mix(in_srgb,var(--patient-ink)_12%,transparent)] pt-12 sm:flex-row sm:items-center sm:justify-between">
+              <Link to="/login" className="text-sm font-bold text-[var(--patient-muted)] underline-offset-4 hover:text-[var(--patient-sage)] hover:underline">
+                Already have an account?
+              </Link>
+              <button
+                type="submit"
+                disabled={!agreed || submitting}
+                className="group inline-flex items-center justify-center gap-4 bg-[var(--patient-sage)] px-8 py-5 text-xl font-medium text-white transition hover:bg-[color-mix(in_srgb,var(--patient-sage)_88%,black)] disabled:cursor-not-allowed disabled:opacity-55"
+              >
+                <span className="patient-display">{submitting ? 'Creating account...' : 'Continue to intake'}</span>
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </button>
+            </motion.div>
+          </motion.form>
+
+          <motion.p variants={patientFadeRise} initial="hidden" animate="visible" className="mt-10 flex max-w-xl items-start gap-3 text-sm font-semibold leading-7 text-[var(--patient-muted)]">
+            <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-[var(--patient-clay)]" />
+            PHI starts only after protected sign-in. The public account step stays deliberately small.
+          </motion.p>
+        </motion.section>
+      </main>
+    </div>
+  );
+}

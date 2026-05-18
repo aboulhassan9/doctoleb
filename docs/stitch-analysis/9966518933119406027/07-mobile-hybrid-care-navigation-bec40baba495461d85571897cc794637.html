@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hybrid Care Navigation - Aetheris Health</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Fira+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>.grain-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.035;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuD9ABZF1BXuec2VXD62USRpLR59nimarGV6mL559agl-495jCv9oidIBh6p5nx1GmzI0jPNnCfHokKHwInFG5pRgR2Tl718maV4vJzv9zkR5Dfec9-Kl1Gy2-V3XwkBWFVGAO6viulgURssmpQsErABytXqS3bJTuvhUu9LCNFfwMQlVW8PZwPvfV6KOSaNy9biUamYA9Lf8EBVnhSR-QYc9QUyKy9UC3J9i4FAFiuB4GpMMxXtTi2Passn6hNI4iIMrFFIYsK_UQ)
+    }
+.organic-shape-1 {
+    border-radius: 63% 37% 54% 46%/45% 48% 52% 55%
+    }
+.organic-border {
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+    border-image: linear-gradient(to right, transparent, #455548, transparent) 1;
+    border-radius: 100% 0% 100% 0%/0% 100% 0% 100%
+    }
+.pulse-ambient {
+    animation: pulse-ring 4s cubic-bezier(0.4, 0, 0.6, 1) infinite
+    }
+@keyframes pulse-ring {
+    0%, 100% {
+        opacity: 0.2;
+        transform: scale(1);
+        } 50% {
+        opacity: 0.5;
+        transform: scale(1.1);
+        }
+    }
+.slide-track {
+    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1), inset -1px -1px 2px rgba(255, 255, 255, 0.5)
+    }
+.hand-drawn-path {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: dash 2s ease-in-out forwards
+    }
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+        }
+    }
+::-webkit-scrollbar {
+    display: none
+    }
+body {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain
+    }</style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#efbc98",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed": "#f4dfcb",
+                      "on-primary-fixed-variant": "#3b4a3e",
+                      "tertiary-fixed": "#ffdcc4",
+                      "on-background": "#1c1c18",
+                      "secondary-fixed-dim": "#d7c3b0",
+                      "background": "#fcf9f2",
+                      "surface-container-highest": "#e5e2db",
+                      "on-primary-container": "#ddeedd",
+                      "surface-container": "#f1eee7",
+                      "tertiary": "#6d492c",
+                      "surface-container-high": "#ebe8e1",
+                      "outline-variant": "#c3c8c1",
+                      "surface-tint": "#526255",
+                      "surface-dim": "#dcdad3",
+                      "inverse-primary": "#bacbba",
+                      "secondary": "#6b5c4c",
+                      "on-surface": "#1c1c18",
+                      "primary": "#455548",
+                      "error": "#ba1a1a",
+                      "on-error-container": "#93000a",
+                      "surface-container-low": "#f6f3ec",
+                      "on-secondary-container": "#716252",
+                      "on-primary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed-dim": "#bacbba",
+                      "on-tertiary-fixed": "#2f1501",
+                      "on-surface-variant": "#434843",
+                      "outline": "#747872",
+                      "surface-bright": "#fcf9f2",
+                      "secondary-container": "#f4dfcb",
+                      "on-tertiary-fixed-variant": "#613f24",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed": "#101f14",
+                      "inverse-surface": "#31312c",
+                      "on-secondary-fixed": "#241a0e",
+                      "tertiary-container": "#886042",
+                      "primary-fixed": "#d6e7d6",
+                      "surface": "#fcf9f2",
+                      "primary-container": "#5d6d5f",
+                      "on-error": "#ffffff",
+                      "on-tertiary-container": "#ffe4d2",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#e5e2db",
+                      "on-secondary-fixed-variant": "#524436",
+                      "inverse-on-surface": "#f3f0e9"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "organic-offset": "12px",
+                      "margin-mobile": "20px",
+                      "unit": "8px",
+                      "gutter": "24px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Newsreader"],
+                      "body-md": ["Fira Sans"],
+                      "label-md": ["Fira Sans"],
+                      "display-lg": ["Newsreader"],
+                      "body-lg": ["Fira Sans"],
+                      "narrative-action": ["Newsreader"],
+                      "headline-lg-mobile": ["Newsreader"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "narrative-action": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-32 overflow-x-hidden">
+<div class="grain-overlay"></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile py-4 bg-surface/90 backdrop-blur-xl">
+<h1 class="font-display-lg text-headline-lg-mobile text-primary tracking-tight italic">Aetheris Health</h1>
+<div class="flex gap-4 items-center">
+<button class="material-symbols-outlined text-primary text-2xl" data-icon="notifications_none">notifications_none</button>
+<button class="w-10 h-10 rounded-full border border-outline-variant overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="A cinematic, warm-toned close-up portrait of a serene woman with a peaceful expression, set against a soft-focus organic background of sage green and cream fabrics. The lighting is gentle and high-key, emphasizing a natural, skin-textured look consistent with a calm healthcare aesthetic. The mood is dignified, professional, and grounded." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCro1WDQPEWA_I4Nd6EvtQfgaIfHUpT_8H4c-TnQ3hYNxYhb9Tk157C6Vn0xPkdyRqB2yOFAiX0F6bRnrfHmHdJYsCAfaayLFKM7BB39jFW_5ek1rrt7DmtBWgzsofVilnnWPUvFWyyscbieO2MsXeGxhuL1wR20HyBMNDDqCHnVHEEQrsl-SBqevXeQWt-vydZvE99uzJIltwLa4-D_uzsOFK60WyMjcu-e63jME2oLFKaMRPylBD0Pxo3bc0opBBa3aIyrunFzQ"/>
+</button>
+</div>
+</header>
+<main class="pt-24 px-margin-mobile flex flex-col gap-10">
+<!-- Conversational Triage -->
+<section class="mt-4">
+<span class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-2 block">Intention for Care</span>
+<div class="relative">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-6 leading-tight">
+                    What is the reason for your visit?
+                </h2>
+<div class="relative group">
+<input class="w-full bg-transparent border-none border-b-2 border-primary/20 focus:border-primary focus:ring-0 py-4 font-narrative-action text-narrative-action placeholder:text-on-surface-variant/40 transition-all duration-500 ease-out italic" placeholder="Describe your feeling..." type="text"/>
+<div class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-focus-within:w-full transition-all duration-700"></div>
+</div>
+<p class="mt-3 text-on-surface-variant font-body-md italic opacity-60">e.g., persistent back pain, lingering fatigue</p>
+</div>
+</section>
+<!-- Active Sanctuary (Virtual Waiting Room) -->
+<section class="relative">
+<div class="bg-surface-container-low p-6 rounded-3xl border border-primary/5 shadow-sm overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<div>
+<span class="font-label-md text-label-md bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full mb-3 inline-block">Active Sanctuary</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Virtual Consultation</h3>
+</div>
+<div class="relative flex items-center justify-center w-12 h-12">
+<div class="absolute w-full h-full bg-primary/10 rounded-full pulse-ambient"></div>
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="videocam" style="font-variation-settings: 'FILL' 1;">videocam</span>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 bg-white/40 rounded-2xl backdrop-blur-sm border border-white/60">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-fixed">
+<img alt="Dr. Smith" class="w-full h-full object-cover" data-alt="A professional and empathetic male doctor with a warm smile, wearing a modern charcoal medical tunic. He is set against a minimalist clinical background with warm wood accents and soft, indirect lighting. The overall style is organic and high-contrast, avoiding sterile white aesthetics in favor of earthy tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5ZPgwqazn9QVZt5K1i3EYyFleqGqYNBD5B87-8fRkg89tOxOH1J3qEKETrY_CXKIsIzGQ5e1PGedSYGXnIuW_lRmBM5kPxqFtz8Z1t1o9E8Pc-YKX7hXyx_S6xN1SyNHpGdwiXP4H_Z6WVgIO2NDiRlMMSN3hlHrsPBwrI6TWDp5KdiLmzMz0sZYb7wChGKByk9JIxsRfrs4J8zUfx1rAQUhhTrsgouidtLJQwwVU2fv61ySnrvJgZed0ZTAyNEivXvRwoVulXQ"/>
+</div>
+<div class="flex-1">
+<p class="font-body-lg text-on-surface leading-tight">Dr. Smith will join you shortly</p>
+<p class="font-label-md text-on-surface-variant opacity-70">Estimated: 4 minutes</p>
+</div>
+<button class="bg-primary text-on-primary font-label-md px-4 py-2 rounded-xl transition-all active:scale-95">Enter</button>
+</div>
+</div>
+</section>
+<!-- Proactive Guidance -->
+<section class="grid grid-cols-1 gap-6">
+<div class="organic-shape-1 bg-secondary-container/30 p-8 flex flex-col items-center text-center border border-secondary-fixed/50">
+<span class="material-symbols-outlined text-4xl text-tertiary mb-4" data-icon="location_on">location_on</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-tertiary mb-3">In-Person Evaluation</h3>
+<p class="font-body-md text-on-secondary-fixed-variant mb-6 leading-relaxed">
+                    Based on your description of <span class="font-bold">persistent back pain</span>, we suggest a physical assessment at our Sanctuary in the Woods.
+                </p>
+<button class="font-label-md text-label-md text-tertiary border-b border-tertiary/40 pb-1 hover:text-primary transition-colors">
+                    Why we suggest this
+                </button>
+</div>
+</section>
+<!-- Optimal Windows -->
+<section>
+<div class="flex justify-between items-end mb-6">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Optimal Windows</h3>
+<span class="material-symbols-outlined text-on-surface-variant opacity-40 text-3xl" data-icon="calendar_today">calendar_today</span>
+</div>
+<div class="space-y-4">
+<!-- Slot 1 -->
+<div class="group flex items-center justify-between p-5 bg-surface-container-lowest rounded-2xl border-b-4 border-outline-variant/20 hover:border-primary/40 transition-all duration-300">
+<div class="flex items-center gap-5">
+<div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary/5">
+<span class="material-symbols-outlined text-primary/60" data-icon="wb_sunny">wb_sunny</span>
+</div>
+<div>
+<p class="font-body-lg text-on-surface font-medium">Today, 2:30 PM</p>
+<p class="font-label-md text-on-surface-variant">Sanctuary Alpha</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Slot 2 -->
+<div class="group flex items-center justify-between p-5 bg-surface-container-lowest rounded-2xl border-b-4 border-outline-variant/20 hover:border-primary/40 transition-all duration-300">
+<div class="flex items-center gap-5">
+<div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary/5">
+<span class="material-symbols-outlined text-primary/60" data-icon="filter_drama">filter_drama</span>
+</div>
+<div>
+<p class="font-body-lg text-on-surface font-medium">Tomorrow, 10:00 AM</p>
+<p class="font-label-md text-on-surface-variant">Main Clinic</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Slot 3 -->
+<div class="group flex items-center justify-between p-5 bg-surface-container-lowest rounded-2xl border-b-4 border-outline-variant/20 hover:border-primary/40 transition-all duration-300">
+<div class="flex items-center gap-5">
+<div class="w-10 h-10 flex items-center justify-center rounded-full bg-primary/5">
+<span class="material-symbols-outlined text-primary/60" data-icon="eco">eco</span>
+</div>
+<div>
+<p class="font-body-lg text-on-surface font-medium">Friday, 9:15 AM</p>
+<p class="font-label-md text-on-surface-variant">Virtual Hub</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Friction Lock -->
+<section class="mt-12 mb-8">
+<div class="relative w-full h-20 bg-surface-container-high rounded-full p-2 slide-track overflow-hidden" id="friction-lock">
+<div class="absolute top-2 left-2 h-16 w-16 bg-error rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing z-20 transition-transform duration-75 shadow-lg" id="slide-thumb">
+<span class="material-symbols-outlined text-on-error" data-icon="close">close</span>
+</div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<span class="font-label-md text-on-surface-variant opacity-40 uppercase tracking-[0.2em] translate-x-4">Slide to cancel</span>
+</div>
+<div class="absolute top-0 left-0 h-full bg-error/10 w-0 z-10 transition-all duration-75" id="slide-progress"></div>
+</div>
+<p class="text-center mt-4 font-label-md text-error italic opacity-60">Requires intentional effort to dismiss scheduled care.</p>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container dark:bg-surface-container-high rounded-t-3xl shadow-lg border-t border-outline-variant/30">
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-5 py-2">
+<span class="material-symbols-outlined" data-icon="home_app_logo">home_app_logo</span>
+<span class="font-label-md text-label-md">Presence</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-label-md text-label-md">Pathways</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md">Chronicle</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="lock_open">lock_open</span>
+<span class="font-label-md text-label-md">Vault</span>
+</button>
+</nav>
+<script>
+        // Friction Lock Interaction
+        const slider = document.getElementById('slide-thumb');
+        const track = document.getElementById('friction-lock');
+        const progress = document.getElementById('slide-progress');
+        let isDragging = false;
+        let startX = 0;
+        let maxScroll = 0;
+
+        const updatePosition = (clientX) => {
+            if (!isDragging) return;
+            const trackRect = track.getBoundingClientRect();
+            maxScroll = trackRect.width - slider.offsetWidth - 16;
+            let moveX = clientX - startX;
+
+            moveX = Math.max(0, Math.min(moveX, maxScroll));
+
+            slider.style.transform = `translateX(${moveX}px)`;
+            progress.style.width = `${moveX + slider.offsetWidth / 2}px`;
+
+            if (moveX >= maxScroll - 5) {
+                confirmCancellation();
+            }
+        };
+
+        const confirmCancellation = () => {
+            isDragging = false;
+            slider.style.backgroundColor = '#455548'; // Success primary color
+            slider.innerHTML = '<span class="material-symbols-outlined text-white">check</span>';
+            track.style.opacity = '0.5';
+            track.style.pointerEvents = 'none';
+            alert('Appointment cancellation requested. We will confirm shortly.');
+        };
+
+        slider.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            slider.style.transition = 'none';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            updatePosition(e.clientX);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            slider.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            slider.style.transform = 'translateX(0)';
+            progress.style.width = '0';
+        });
+
+        // Touch support
+        slider.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            slider.style.transition = 'none';
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            updatePosition(e.touches[0].clientX);
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            slider.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            slider.style.transform = 'translateX(0)';
+            progress.style.width = '0';
+        });
+
+        // Subtle parallax/entry animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('section');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = `all 0.8s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.1}s`;
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 100);
+            });
+        });
+    </script>
+</body></html>

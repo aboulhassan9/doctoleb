@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Clinical Identity Registration - Aetheris Health</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#6d492c",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed-variant": "#613f24",
+                      "surface-container": "#f1eee7",
+                      "tertiary-fixed": "#ffdcc4",
+                      "outline": "#747872",
+                      "surface-container-high": "#ebe8e1",
+                      "primary-fixed-dim": "#bacbba",
+                      "surface-container-highest": "#e5e2db",
+                      "on-tertiary-fixed": "#2f1501",
+                      "on-tertiary-container": "#ffe4d2",
+                      "surface-container-low": "#f6f3ec",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed": "#d6e7d6",
+                      "on-surface-variant": "#434843",
+                      "on-surface": "#1c1c18",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#f4dfcb",
+                      "on-primary-fixed": "#101f14",
+                      "tertiary-fixed-dim": "#efbc98",
+                      "surface": "#fcf9f2",
+                      "secondary-fixed-dim": "#d7c3b0",
+                      "on-primary": "#ffffff",
+                      "secondary-container": "#f4dfcb",
+                      "primary-container": "#5d6d5f",
+                      "surface-variant": "#e5e2db",
+                      "on-background": "#1c1c18",
+                      "primary": "#455548",
+                      "inverse-on-surface": "#f3f0e9",
+                      "on-secondary-fixed": "#241a0e",
+                      "on-error-container": "#93000a",
+                      "surface-dim": "#dcdad3",
+                      "surface-bright": "#fcf9f2",
+                      "inverse-primary": "#bacbba",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed-variant": "#524436",
+                      "on-primary-fixed-variant": "#3b4a3e",
+                      "secondary": "#6b5c4c",
+                      "outline-variant": "#c3c8c1",
+                      "on-primary-container": "#ddeedd",
+                      "tertiary-container": "#886042",
+                      "on-secondary-container": "#716252",
+                      "surface-container-lowest": "#ffffff",
+                      "background": "#fcf9f2",
+                      "surface-tint": "#526255",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#31312c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "gutter": "24px",
+                      "organic-offset": "12px",
+                      "margin-mobile": "20px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Newsreader"
+                      ],
+                      "headline-lg": [
+                              "Newsreader"
+                      ],
+                      "body-md": [
+                              "Fira Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Newsreader"
+                      ],
+                      "body-lg": [
+                              "Fira Sans"
+                      ],
+                      "narrative-action": [
+                              "Newsreader"
+                      ],
+                      "label-md": [
+                              "Fira Sans"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "narrative-action": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Organic texture simulation */
+        body {
+            background-color: theme('colors.surface');
+            background-image: radial-gradient(circle at 50% 50%, theme('colors.surface-bright') 0%, transparent 80%),
+                              radial-gradient(circle at 0% 0%, theme('colors.surface-container-low') 0%, transparent 50%);
+        }
+
+        /* Custom tactile underline styles */
+        .tactile-input {
+            border: none;
+            border-bottom: 3px solid theme('colors.outline-variant');
+            background: transparent;
+            box-shadow: none !important;
+            border-radius: 0;
+            padding-left: 0;
+            padding-right: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Spring physics feel */
+        }
+
+        .tactile-input:focus {
+            outline: none;
+            border-bottom: 4px solid theme('colors.primary');
+            transform: translateY(-2px);
+        }
+
+        /* Hide standard radio buttons */
+        .tactile-radio input[type="radio"] {
+            display: none;
+        }
+
+        /* Style the label as a tactile block */
+        .tactile-radio label {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid theme('colors.outline-variant');
+        }
+
+        .tactile-radio input[type="radio"]:checked + label {
+            background-color: theme('colors.primary-container');
+            color: theme('colors.on-primary-container');
+            border-color: theme('colors.primary');
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-on-surface antialiased flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop selection:bg-primary-container selection:text-on-primary-container">
+<main class="w-full max-w-2xl mx-auto relative z-10">
+<header class="mb-16 md:mb-24 flex flex-col gap-6">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 0;">fingerprint</span>
+<div>
+<h1 class="font-display-lg text-headline-lg-mobile md:text-display-lg text-on-surface mb-4 tracking-tight">Clinical Identity</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg leading-relaxed">
+                    To establish your foundational health record, we require your core clinical identifiers. This data remains sovereign to you, anchoring your presence in the sanctuary.
+                </p>
+</div>
+</header>
+<form class="space-y-16">
+<!-- Legal Full Name -->
+<div class="flex flex-col gap-4 relative group">
+<label class="font-narrative-action text-narrative-action text-on-surface group-focus-within:text-primary transition-colors duration-300" for="fullName">
+                    Legal Full Name
+                </label>
+<input autocomplete="off" class="tactile-input font-body-lg text-body-lg text-on-surface placeholder-outline-variant/50 w-full" id="fullName" name="fullName" placeholder="As it appears on official records" type="text"/>
+</div>
+<!-- Date of Birth -->
+<div class="flex flex-col gap-4 relative group">
+<label class="font-narrative-action text-narrative-action text-on-surface group-focus-within:text-primary transition-colors duration-300" for="dob">
+                    Date of Birth
+                </label>
+<input class="tactile-input font-body-lg text-body-lg text-on-surface w-full" id="dob" name="dob" type="date"/>
+</div>
+<!-- Biological Sex at Birth -->
+<div class="flex flex-col gap-6">
+<label class="font-narrative-action text-narrative-action text-on-surface">
+                    Biological Sex at Birth
+                </label>
+<p class="font-body-md text-body-md text-on-surface-variant -mt-4 mb-2 opacity-80">Required for accurate clinical reference ranges.</p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="tactile-radio">
+<input id="sex_female" name="biological_sex" type="radio" value="female"/>
+<label class="block w-full cursor-pointer rounded-lg bg-surface-container py-4 px-6 text-center font-body-lg text-body-lg text-on-surface hover:bg-surface-variant/50" for="sex_female">
+                            Female
+                        </label>
+</div>
+<div class="tactile-radio">
+<input id="sex_male" name="biological_sex" type="radio" value="male"/>
+<label class="block w-full cursor-pointer rounded-lg bg-surface-container py-4 px-6 text-center font-body-lg text-body-lg text-on-surface hover:bg-surface-variant/50" for="sex_male">
+                            Male
+                        </label>
+</div>
+<div class="tactile-radio">
+<input id="sex_other" name="biological_sex" type="radio" value="other"/>
+<label class="block w-full cursor-pointer rounded-lg bg-surface-container py-4 px-6 text-center font-body-lg text-body-lg text-on-surface hover:bg-surface-variant/50" for="sex_other">
+                            Other / Intersex
+                        </label>
+</div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="pt-12 mt-12 border-t border-outline-variant/30 flex justify-end">
+<button class="group relative overflow-hidden rounded-xl bg-primary px-8 py-5 text-on-primary shadow-sm hover:bg-surface-tint hover:shadow-md transition-all duration-300 ease-out flex items-center gap-4" type="button">
+<span class="font-narrative-action text-narrative-action relative z-10">Continue to Data Vault</span>
+<span class="material-symbols-outlined relative z-10 transform group-hover:translate-x-1 transition-transform duration-300" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</button>
+</div>
+</form>
+</main>
+</body></html>

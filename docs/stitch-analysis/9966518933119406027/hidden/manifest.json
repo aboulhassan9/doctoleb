@@ -1,0 +1,45 @@
+{
+  "projectId": "9966518933119406027",
+  "downloadedAt": "2026-05-18T10:21:50.018Z",
+  "screens": [
+    {
+      "index": 1,
+      "title": "Initial Intake & Intent",
+      "deviceType": "DESKTOP",
+      "width": 2560,
+      "height": 2048,
+      "name": "projects/9966518933119406027/screens/3bde8abe5b414d5dbe6743c7fe8b0375",
+      "screenId": "3bde8abe5b414d5dbe6743c7fe8b0375",
+      "screenshot": "01-hidden-desktop-initial-intake-intent-3bde8abe5b414d5dbe6743c7fe8b0375.png",
+      "screenshotBytes": 24442,
+      "html": "01-hidden-desktop-initial-intake-intent-3bde8abe5b414d5dbe6743c7fe8b0375.html",
+      "htmlBytes": 11323
+    },
+    {
+      "index": 2,
+      "title": "Care Timeline & Contextual Messaging",
+      "deviceType": "DESKTOP",
+      "width": 2560,
+      "height": 2704,
+      "name": "projects/9966518933119406027/screens/592f92e5ec1043b8b4a6598538a57255",
+      "screenId": "592f92e5ec1043b8b4a6598538a57255",
+      "screenshot": "02-hidden-desktop-care-timeline-contextual-messaging-592f92e5ec1043b8b4a6598538a57255.png",
+      "screenshotBytes": 115908,
+      "html": "02-hidden-desktop-care-timeline-contextual-messaging-592f92e5ec1043b8b4a6598538a57255.html",
+      "htmlBytes": 17892
+    },
+    {
+      "index": 3,
+      "title": "Hybrid Care Navigation",
+      "deviceType": "DESKTOP",
+      "width": 2560,
+      "height": 2656,
+      "name": "projects/9966518933119406027/screens/9464be16d2124d30b827115a6fc75a79",
+      "screenId": "9464be16d2124d30b827115a6fc75a79",
+      "screenshot": "03-hidden-desktop-hybrid-care-navigation-9464be16d2124d30b827115a6fc75a79.png",
+      "screenshotBytes": 92037,
+      "html": "03-hidden-desktop-hybrid-care-navigation-9464be16d2124d30b827115a6fc75a79.html",
+      "htmlBytes": 17627
+    }
+  ]
+}

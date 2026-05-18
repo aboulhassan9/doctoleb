@@ -15,6 +15,8 @@ export { useDoctorProfile } from './features/useDoctorProfile';
 export { useBilling } from './features/useBilling';
 export { useCertificates } from './features/useCertificates';
 export { useEntitlements } from './features/useEntitlements';
+export { usePatientOnboarding } from './features/usePatientOnboarding';
+export { usePatientPortal } from './features/usePatientPortal';
 
 // Encounter hooks (moved from clinic-ops to core)
 export { useEncounter } from './features/useEncounter';

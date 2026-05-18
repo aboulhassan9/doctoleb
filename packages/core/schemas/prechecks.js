@@ -7,6 +7,7 @@ export const precheckDraftSchema = z.object({
   bloodPressure: nullableTrimmedString(40),
   heartRate: nullableNumber({ integer: true, min: 1, max: 300 }),
   temperature: nullableNumber({ min: 20, max: 50 }),
+  respiratoryRate: nullableNumber({ integer: true, min: 1, max: 80 }),
   weight: nullableNumber({ min: 1, max: 1000 }),
   height: nullableNumber({ min: 1, max: 300 }),
   currentMedications: nullableTrimmedString(4000),

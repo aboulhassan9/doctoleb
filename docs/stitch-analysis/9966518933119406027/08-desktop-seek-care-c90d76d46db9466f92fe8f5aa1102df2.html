@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Seek Care</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#f3f0e9",
+                        "on-primary-container": "#ddeedd",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fcf9f2",
+                        "on-tertiary-fixed-variant": "#613f24",
+                        "surface-variant": "#e5e2db",
+                        "secondary-fixed": "#f4dfcb",
+                        "primary-container": "#5d6d5f",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#2f1501",
+                        "on-primary-fixed": "#101f14",
+                        "primary": "#455548",
+                        "on-secondary-fixed-variant": "#524436",
+                        "on-surface-variant": "#434843",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#fcf9f2",
+                        "on-secondary-container": "#716252",
+                        "on-background": "#1c1c18",
+                        "surface-container-highest": "#e5e2db",
+                        "primary-fixed-dim": "#bacbba",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#efbc98",
+                        "secondary": "#6b5c4c",
+                        "on-secondary-fixed": "#241a0e",
+                        "outline-variant": "#c3c8c1",
+                        "tertiary-fixed": "#ffdcc4",
+                        "on-error-container": "#93000a",
+                        "surface": "#fcf9f2",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#f1eee7",
+                        "on-surface": "#1c1c18",
+                        "on-primary-fixed-variant": "#3b4a3e",
+                        "tertiary": "#6d492c",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#526255",
+                        "surface-dim": "#dcdad3",
+                        "secondary-container": "#f4dfcb",
+                        "tertiary-container": "#886042",
+                        "surface-container-high": "#ebe8e1",
+                        "primary-fixed": "#d6e7d6",
+                        "inverse-primary": "#bacbba",
+                        "secondary-fixed-dim": "#d7c3b0",
+                        "on-tertiary-container": "#ffe4d2",
+                        "inverse-surface": "#31312c",
+                        "surface-container-low": "#f6f3ec",
+                        "outline": "#747872"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "margin-mobile": "20px",
+                        "organic-offset": "12px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Newsreader"],
+                        "label-md": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "narrative-action": ["Newsreader"],
+                        "display-lg": ["Newsreader"],
+                        "body-lg": ["Fira Sans"],
+                        "headline-lg": ["Newsreader"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "narrative-action": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Ambient noise overlay to create tactile paper feel */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.02;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+        }
+
+        /* Imperfect underline for narrative inputs */
+        .narrative-input {
+            border-bottom: 2px solid transparent;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .narrative-input::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: theme('colors.outline-variant');
+            border-radius: 2px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Spring-like transition */
+        }
+        .narrative-input:hover::after, .narrative-input:focus-within::after {
+            background-color: theme('colors.tertiary');
+            height: 3px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen antialiased selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+<!-- Tactile Noise Texture -->
+<div class="noise-overlay"></div>
+<!-- Main Canvas: Navigation shell suppressed due to focused transactional intent -->
+<main class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-16 flex flex-col gap-12 md:gap-16 relative z-10">
+<!-- Minimal Top Header for Flow Context -->
+<header class="flex items-center justify-between">
+<button aria-label="Cancel and return" class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-xl group-hover:-translate-x-1 transition-transform duration-300">arrow_back</span>
+<span class="font-label-md text-label-md">Cancel</span>
+</button>
+<div class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary italic tracking-tight">Seek Care</div>
+</header>
+<!-- Intelligent Triage: Narrative Block -->
+<section class="pl-0 md:pl-organic-offset relative">
+<div class="absolute -left-4 top-2 bottom-2 w-1 bg-surface-container rounded-full hidden md:block"></div>
+<p class="font-label-md text-label-md text-outline uppercase tracking-widest mb-4">Initial Assessment</p>
+<div class="font-display-lg text-headline-lg-mobile md:text-display-lg leading-snug md:leading-tight text-on-surface">
+                I need to see a <br class="hidden md:block"/>
+<span class="narrative-input text-tertiary font-medium px-1">Neurologist</span> <br/>
+                regarding my <br class="hidden md:block"/>
+<span class="narrative-input text-tertiary font-medium px-1">persistent visual auras</span>.
+            </div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-6 italic opacity-80">Tap highlighted text to modify your response.</p>
+</section>
+<!-- Proactive Suggestion Card -->
+<section class="bg-surface-container-low p-6 md:p-8 rounded-xl border border-outline-variant/30 shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-32 h-32 bg-secondary-container/20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+<div class="flex items-start gap-5 relative z-10">
+<div class="mt-1">
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">local_hospital</span>
+</div>
+<div>
+<h2 class="font-narrative-action text-narrative-action text-on-surface mb-2">In-Person Consultation Advised</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Based on reports of visual auras, a comprehensive physical neurological examination is recommended over telehealth to ensure proper diagnostic accuracy.</p>
+</div>
+</div>
+</section>
+<!-- Optimal Time Slots: Soft List -->
+<section class="pl-0 md:pl-organic-offset">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-widest mb-6">Select a Time</h3>
+<div class="flex flex-col gap-4">
+<!-- Slot 1 -->
+<button class="w-full text-left bg-surface p-5 rounded-xl border border-surface-variant hover:border-tertiary/40 hover:bg-surface-container-low transition-all duration-500 flex justify-between items-center group shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+<div class="flex items-center gap-4 md:gap-6">
+<div class="w-1.5 h-12 bg-tertiary rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-y-50 group-hover:scale-y-100"></div>
+<div>
+<div class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface group-hover:text-tertiary transition-colors">09:30 AM</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-1">Tomorrow, Oct 24</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-body-md text-body-md text-on-surface font-medium">Dr. Aris Thorne</div>
+<div class="font-label-md text-label-md text-on-surface-variant flex items-center justify-end gap-1.5 mt-1">
+<span class="material-symbols-outlined text-sm">room</span>
+                            Room 302, Floor 3
+                        </div>
+</div>
+</button>
+<!-- Slot 2 -->
+<button class="w-full text-left bg-surface p-5 rounded-xl border border-surface-variant hover:border-tertiary/40 hover:bg-surface-container-low transition-all duration-500 flex justify-between items-center group shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+<div class="flex items-center gap-4 md:gap-6">
+<div class="w-1.5 h-12 bg-tertiary rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-y-50 group-hover:scale-y-100"></div>
+<div>
+<div class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface group-hover:text-tertiary transition-colors">11:15 AM</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-1">Tomorrow, Oct 24</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-body-md text-body-md text-on-surface font-medium">Dr. Elena Rostova</div>
+<div class="font-label-md text-label-md text-on-surface-variant flex items-center justify-end gap-1.5 mt-1">
+<span class="material-symbols-outlined text-sm">room</span>
+                            Room 114, Floor 1
+                        </div>
+</div>
+</button>
+<!-- Slot 3 -->
+<button class="w-full text-left bg-surface p-5 rounded-xl border border-surface-variant hover:border-tertiary/40 hover:bg-surface-container-low transition-all duration-500 flex justify-between items-center group shadow-sm hover:shadow-md transform hover:-translate-y-0.5 opacity-90">
+<div class="flex items-center gap-4 md:gap-6">
+<div class="w-1.5 h-12 bg-tertiary rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-y-50 group-hover:scale-y-100"></div>
+<div>
+<div class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface group-hover:text-tertiary transition-colors">02:00 PM</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-1">Thursday, Oct 26</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-body-md text-body-md text-on-surface font-medium">Dr. Aris Thorne</div>
+<div class="font-label-md text-label-md text-on-surface-variant flex items-center justify-end gap-1.5 mt-1">
+<span class="material-symbols-outlined text-sm">room</span>
+                            Room 302, Floor 3
+                        </div>
+</div>
+</button>
+</div>
+</section>
+<!-- Virtual Waiting Room Preview Component -->
+<section class="mt-8 bg-surface-container-highest p-6 md:p-8 rounded-xl border-t-4 border-t-secondary-fixed shadow-[inset_0_2px_12px_rgba(0,0,0,0.03)]">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-widest mb-5">Preview: Your Visit Environment</h3>
+<div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
+<div class="w-16 h-16 rounded-full bg-secondary-fixed/50 flex items-center justify-center shrink-0 border border-secondary-fixed shadow-sm">
+<span class="material-symbols-outlined text-on-secondary-fixed-variant text-2xl" style="font-variation-settings: 'FILL' 1;">spa</span>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg text-on-surface font-medium mb-1.5">The Sanctuary Lounge</h4>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        Upon arrival on Floor 3, you'll be directed to our low-sensory waiting area designed to de-escalate pre-appointment anxiety. You can complete intake forms securely from your device while waiting.
+                    </p>
+</div>
+</div>
+</section>
+</main>
+</body></html>

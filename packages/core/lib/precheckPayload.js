@@ -43,6 +43,7 @@ export function buildPrecheckSubmissionPayload({
     bloodPressure: cleanString(vitals.bloodPressure) || null,
     heartRate: parsedVitals.heartRate,
     temperature: parsedVitals.temperature,
+    respiratoryRate: parsedVitals.respiratoryRate,
     weight: parsedVitals.weight,
     height: parsedVitals.height,
     currentMedications: medications.map(cleanString).filter(Boolean).join('\n') || null,

@@ -35,6 +35,9 @@ const PatientAppointmentsPage = lazy(() => import('./pages/PatientAppointmentsPa
 const PatientMedicalHistoryPage = lazy(() => import('./pages/PatientMedicalHistoryPage'));
 const PatientDashboardPage = lazy(() => import('./pages/PatientDashboardPage'));
 const PatientMessagesPage = lazy(() => import('./pages/PatientMessagesPage'));
+const PatientOnboardingPage = lazy(() => import('./pages/PatientOnboardingPage'));
+const PatientBillingPage = lazy(() => import('./pages/PatientBillingPage'));
+const PatientCheckInPage = lazy(() => import('./pages/PatientCheckInPage'));
 
 function TenantPortalShell() {
   const routerBasename = getCurrentTenantBasename();
@@ -63,9 +66,12 @@ function TenantPortalShell() {
 
                       {/* Patient Portal */}
                       <Route path="/patient-profile" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientOwnProfilePage /></ProtectedRoute>} />
+                      <Route path="/patient-onboarding" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientOnboardingPage /></ProtectedRoute>} />
                       <Route path="/patient-appointments" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientAppointmentsPage /></ProtectedRoute>} />
                       <Route path="/patient-dashboard" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientDashboardPage /></ProtectedRoute>} />
                       <Route path="/patient-history" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientMedicalHistoryPage /></ProtectedRoute>} />
+                      <Route path="/patient-billing" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientBillingPage /></ProtectedRoute>} />
+                      <Route path="/patient-check-in" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><PatientCheckInPage /></ProtectedRoute>} />
                       <Route path="/patient-messages" element={<ProtectedRoute requiredRole="patient" appSurface={APP_SURFACES.patientWeb}><FeatureProtectedRoute featureCode={ENTITLEMENT_FEATURES.messaging} audience="patient"><PatientMessagesPage /></FeatureProtectedRoute></ProtectedRoute>} />
 
                       <Route path="*" element={<NotFoundPage />} />

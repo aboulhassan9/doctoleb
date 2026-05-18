@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aetheris Health - Sanctuary Dashboard</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#ffdcc4",
+                    "secondary-fixed-dim": "#d7c3b0",
+                    "surface-tint": "#526255",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-primary": "#bacbba",
+                    "tertiary-fixed-dim": "#efbc98",
+                    "surface-container-highest": "#e5e2db",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#6d492c",
+                    "on-primary-fixed": "#101f14",
+                    "primary-container": "#5d6d5f",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#ddeedd",
+                    "inverse-on-surface": "#f3f0e9",
+                    "on-tertiary-fixed": "#2f1501",
+                    "secondary-container": "#f4dfcb",
+                    "on-tertiary-fixed-variant": "#613f24",
+                    "primary-fixed": "#d6e7d6",
+                    "on-background": "#1c1c18",
+                    "surface-bright": "#fcf9f2",
+                    "on-surface-variant": "#434843",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed": "#241a0e",
+                    "surface-container-low": "#f6f3ec",
+                    "on-error": "#ffffff",
+                    "surface": "#fcf9f2",
+                    "secondary": "#6b5c4c",
+                    "surface-container": "#f1eee7",
+                    "on-tertiary-container": "#ffe4d2",
+                    "error-container": "#ffdad6",
+                    "surface-dim": "#dcdad3",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#524436",
+                    "on-secondary-container": "#716252",
+                    "primary": "#455548",
+                    "outline": "#747872",
+                    "secondary-fixed": "#f4dfcb",
+                    "outline-variant": "#c3c8c1",
+                    "tertiary-container": "#886042",
+                    "primary-fixed-dim": "#bacbba",
+                    "background": "#fcf9f2",
+                    "surface-variant": "#e5e2db",
+                    "inverse-surface": "#31312c",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#3b4a3e",
+                    "on-surface": "#1c1c18",
+                    "surface-container-high": "#ebe8e1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "gutter": "24px",
+                    "organic-offset": "12px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "64px"
+            },
+            "fontFamily": {
+                    "body-md": ["Fira Sans"],
+                    "narrative-action": ["Newsreader"],
+                    "display-lg": ["Newsreader"],
+                    "headline-lg-mobile": ["Newsreader"],
+                    "label-md": ["Fira Sans"],
+                    "body-lg": ["Fira Sans"],
+                    "headline-lg": ["Newsreader"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "narrative-action": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Ambient grain texture */
+        .texture-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            mix-blend-mode: multiply;
+        }
+
+        /* Tactile interaction underline */
+        .tactile-action {
+            position: relative;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding-bottom: 2px;
+        }
+
+        .tactile-action::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            bottom: 0;
+            left: 0;
+            background-color: #5d6d5f; /* primary-container */
+            border-radius: 2px;
+            transform: scaleY(1);
+            transform-origin: bottom;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .tactile-action:hover {
+            transform: translateY(-2px);
+        }
+
+        .tactile-action:hover::after {
+            transform: scaleY(3);
+            opacity: 0.6;
+        }
+
+        /* Smooth reveal for focus elements */
+        .ambient-reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: breatheUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes breatheUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Ambient Texture Layer -->
+<div class="texture-overlay"></div>
+<!-- TopAppBar (Mobile) / hidden on md+ to rely on SideNav -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 bg-surface/90 backdrop-blur-xl md:hidden">
+<div class="font-display-lg text-headline-lg-mobile text-primary tracking-tight italic">
+            Aetheris Health
+        </div>
+<div class="flex items-center gap-4 text-primary">
+<button class="hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+<button class="hover:text-primary transition-colors duration-300 relative">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications_none</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+</header>
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden lg:flex flex-col h-screen fixed left-0 top-0 py-8 px-6 bg-surface-container-low shadow-sm h-full w-72 rounded-r-xl z-40">
+<div class="mb-12">
+<h1 class="font-display-lg text-headline-lg text-primary italic mb-6">Aetheris Health</h1>
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-surface-variant bg-surface-variant/50 relative">
+<img alt="Patient Profile" class="w-full h-full object-cover" data-alt="A serene, soft-focus portrait of a middle-aged woman with calm expression, soft natural lighting. Wabi-sabi aesthetic with muted sage and slate undertones. High quality, tactile texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqRLd93tTrs0tC6l-0EOLwmq3S7yzr_16re8gmEpBBlHBUEIhNpmAXPal7Gp_DEQrNGdESzy8JFp0F_jrqjW6iWPCkhhDaWPdKCSKFfX3cH6aO0eRaHMfmADBG-GosvPTSZCM1cZawh8A0iDeqX7EoAjOzN8N8MDCQJAw9B1eQiWABuGYSSrh_HPYHRWlhTckc7_7bKpvM2zbbPZMK5rbQ8HleirrDxFxPIVB-mp5zCzA_eQxZZQy2ylALQTlcOFrDZJA-7ak-pQ"/>
+</div>
+<div>
+<h2 class="font-label-md text-label-md text-on-surface font-medium">Your Presence</h2>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Steady &amp; Whole</p>
+</div>
+</div>
+</div>
+<ul class="flex-1 space-y-2">
+<li>
+<a class="flex items-center gap-4 py-3 text-primary font-bold border-l-4 border-primary pl-4 bg-surface-variant/20 rounded-r-lg" href="#">
+<span class="material-symbols-outlined">spa</span>
+<span class="font-body-lg text-body-lg">Presence</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 py-3 text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all rounded-r-lg" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span class="font-body-lg text-body-lg">Sanctuary</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 py-3 text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all rounded-r-lg" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-body-lg text-body-lg">Pathways</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 py-3 text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all rounded-r-lg" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-body-lg text-body-lg">Chronicle</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto space-y-6">
+<button class="w-full py-3 px-4 bg-error-container text-on-error-container font-label-md text-label-md rounded-lg flex items-center justify-center gap-2 hover:bg-error/20 transition-colors">
+<span class="material-symbols-outlined text-sm">emergency</span>
+                Emergency Access
+            </button>
+<ul class="space-y-2 border-t border-outline-variant/30 pt-4">
+<li>
+<a class="flex items-center gap-4 py-2 text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all rounded-r-lg" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-body-md text-body-md">Vitals</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 py-2 text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all rounded-r-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 md:pt-32 md:pb-12 px-margin-mobile md:px-margin-desktop lg:ml-72 min-h-screen flex flex-col justify-center relative">
+<!-- Subtle background decorative blob -->
+<div class="absolute top-1/4 right-10 w-96 h-96 bg-secondary-container/20 rounded-[40%_60%_70%_30%] blur-3xl -z-10 animate-[spin_60s_linear_infinite]"></div>
+<div class="max-w-4xl mx-auto w-full relative">
+<!-- Ambient Narrative Section -->
+<section class="mb-24">
+<h2 class="font-display-lg text-display-lg text-primary mb-8 md:text-[64px] md:leading-[72px] tracking-tight">
+                    Good morning, Sarah.
+                </h2>
+<div class="font-display-lg text-headline-lg-mobile md:text-[40px] md:leading-[56px] text-on-surface-variant font-light space-y-6">
+<p>
+                        Your vitals are stable today. You have an upcoming telehealth visit for your seasonal allergies tomorrow.
+                    </p>
+<p class="ambient-reveal">
+                        Would you like to <a class="font-narrative-action text-narrative-action md:text-[32px] text-primary tactile-action mx-1" href="#">review your pre-visit checklist</a> or view your <a class="font-narrative-action text-narrative-action md:text-[32px] text-secondary tactile-action mx-1" href="#">2 new notifications</a>?
+                    </p>
+</div>
+</section>
+<!-- Contextual Focus: Upcoming Visit Details (Bento Grid Style) -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-16 ambient-reveal" style="animation-delay: 0.8s;">
+<!-- Main Action Card -->
+<div class="md:col-span-8 bg-surface-container-low rounded-2xl p-8 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 duration-700"></div>
+<div class="flex items-start justify-between mb-12 relative z-10">
+<div>
+<span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container font-label-md text-xs rounded-full mb-4">Tomorrow, 10:00 AM</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Telehealth Consult</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Dr. Aris Thorne • Seasonal Allergies follow-up</p>
+</div>
+<div class="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 32px;">video_camera_front</span>
+</div>
+</div>
+<!-- Friction Lock Action -->
+<div class="relative w-full h-16 bg-surface-variant rounded-full overflow-hidden mt-8 shadow-inner border border-outline-variant/20 flex items-center px-2">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent to-surface-tint/5 opacity-50 pointer-events-none"></div>
+<div class="w-12 h-12 bg-primary text-on-primary rounded-full shadow-md flex items-center justify-center cursor-pointer relative z-10 hover:bg-primary-fixed-variant transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+<span class="absolute w-full text-center font-label-md text-label-md text-on-surface-variant pointer-events-none">Slide to begin intake</span>
+</div>
+</div>
+<!-- Secondary Info Card -->
+<div class="md:col-span-4 bg-secondary-container/30 rounded-2xl p-6 border border-secondary-container flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-3 text-secondary mb-4">
+<span class="material-symbols-outlined">favorite</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Resting Heart Rate</span>
+</div>
+<div class="font-display-lg text-[56px] text-on-surface leading-none mb-1">
+                            64 <span class="text-2xl text-on-surface-variant">bpm</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 text-sm">Steady. -2 bpm from yesterday.</p>
+</div>
+<div class="mt-8 h-16 w-full relative">
+<!-- Organic line chart placeholder -->
+<svg class="w-full h-full stroke-secondary fill-none stroke-2" preserveaspectratio="none" viewbox="0 0 100 30">
+<path d="M0,20 Q10,25 20,15 T40,10 T60,20 T80,5 T100,15" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 lg:hidden bg-surface-container border-t border-outline-variant/30 rounded-t-xl shadow-lg">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-5 py-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home_app_logo</span>
+<span class="font-label-md text-label-md mt-1 text-xs">Presence</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 rounded-full px-4 py-1 transition-colors" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-md text-label-md mt-1 text-xs">Pathways</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 rounded-full px-4 py-1 transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md mt-1 text-xs">Chronicle</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 rounded-full px-4 py-1 transition-colors" href="#">
+<span class="material-symbols-outlined">lock_open</span>
+<span class="font-label-md text-label-md mt-1 text-xs">Vault</span>
+</a>
+</nav>
+</body></html>

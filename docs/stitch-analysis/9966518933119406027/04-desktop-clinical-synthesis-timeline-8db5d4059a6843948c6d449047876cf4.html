@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Clinical Synthesis - DoctoLeb 2026</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdcc4",
+                        "secondary-fixed-dim": "#d7c3b0",
+                        "surface-tint": "#526255",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#bacbba",
+                        "tertiary-fixed-dim": "#efbc98",
+                        "surface-container-highest": "#e5e2db",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#6d492c",
+                        "on-primary-fixed": "#101f14",
+                        "primary-container": "#5d6d5f",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#ddeedd",
+                        "inverse-on-surface": "#f3f0e9",
+                        "on-tertiary-fixed": "#2f1501",
+                        "secondary-container": "#f4dfcb",
+                        "on-tertiary-fixed-variant": "#613f24",
+                        "primary-fixed": "#d6e7d6",
+                        "on-background": "#1c1c18",
+                        "surface-bright": "#fcf9f2",
+                        "on-surface-variant": "#434843",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#241a0e",
+                        "surface-container-low": "#f6f3ec",
+                        "on-error": "#ffffff",
+                        "surface": "#fcf9f2",
+                        "secondary": "#6b5c4c",
+                        "surface-container": "#f1eee7",
+                        "on-tertiary-container": "#ffe4d2",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dcdad3",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#524436",
+                        "on-secondary-container": "#716252",
+                        "primary": "#455548",
+                        "outline": "#747872",
+                        "secondary-fixed": "#f4dfcb",
+                        "outline-variant": "#c3c8c1",
+                        "tertiary-container": "#886042",
+                        "primary-fixed-dim": "#bacbba",
+                        "background": "#fcf9f2",
+                        "surface-variant": "#e5e2db",
+                        "inverse-surface": "#31312c",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#3b4a3e",
+                        "on-surface": "#1c1c18",
+                        "surface-container-high": "#ebe8e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "organic-offset": "12px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Fira Sans"],
+                        "narrative-action": ["Newsreader"],
+                        "display-lg": ["Newsreader"],
+                        "headline-lg-mobile": ["Newsreader"],
+                        "label-md": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"],
+                        "headline-lg": ["Newsreader"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "narrative-action": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.03"/%3E%3C/svg%3E');
+        }
+        .organic-line {
+            stroke-dasharray: 10, 5;
+            stroke-linecap: round;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-xl">
+<div class="font-display-lg text-headline-lg-mobile md:text-display-lg text-primary dark:text-primary-fixed-dim tracking-tight italic">
+            Aetheris Health
+        </div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="notifications_none">notifications_none</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden lg:flex flex-col h-screen fixed left-0 top-0 py-8 px-6 bg-surface-container-low dark:bg-surface-container-lowest shadow-sm w-72 rounded-r-xl z-40 mt-[88px]">
+<div class="mb-8 pl-5">
+<h2 class="font-display-lg text-headline-lg text-primary">Your Presence</h2>
+<p class="font-body-md text-on-surface-variant">Steady &amp; Whole</p>
+</div>
+<div class="flex flex-col gap-4 flex-grow font-body-lg text-body-lg">
+<a class="text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all py-2 rounded-lg flex items-center gap-3" href="#">
+<span class="material-symbols-outlined" data-icon="spa">spa</span> Presence
+            </a>
+<a class="text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all py-2 rounded-lg flex items-center gap-3" href="#">
+<span class="material-symbols-outlined" data-icon="shield_health">shield</span> Sanctuary
+            </a>
+<a class="text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all py-2 rounded-lg flex items-center gap-3" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span> Pathways
+            </a>
+<a class="text-primary font-bold border-l-4 border-primary pl-4 py-2 flex items-center gap-3 bg-surface-variant/20 rounded-r-lg" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu" style="font-variation-settings: 'FILL' 1;">history_edu</span> Chronicle
+            </a>
+</div>
+<div class="mt-auto flex flex-col gap-2 font-body-lg text-body-lg">
+<button class="w-full py-3 bg-error-container text-on-error-container rounded-lg hover:opacity-90 transition-opacity mb-4">Emergency Access</button>
+<a class="text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all py-2 rounded-lg flex items-center gap-3" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span> Vitals
+            </a>
+<a class="text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all py-2 rounded-lg flex items-center gap-3" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Settings
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="pt-[100px] lg:pl-[320px] px-margin-mobile md:px-margin-desktop pb-32 max-w-7xl mx-auto">
+<!-- Narrative Summary Block -->
+<section class="mt-8 mb-16 relative">
+<div class="absolute -left-6 top-0 bottom-0 w-1 bg-surface-tint opacity-20 rounded-full"></div>
+<p class="font-narrative-action text-narrative-action text-on-surface-variant max-w-3xl leading-relaxed">
+                Hello Alex, looking at your recent synthesis, your <span class="text-primary font-bold">cholesterol has gently trended down</span> since March. The adjustments to your evening routine seem to be fostering better rest.
+                Would you like to <a class="text-tertiary-container border-b-2 border-tertiary-container/30 hover:border-tertiary-container transition-colors inline-block pb-0.5" href="#">review the specific dietary pathways</a> we discussed last autumn?
+            </p>
+</section>
+<!-- Asymmetric Grid for Data -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Organic Chart 1: Vitals -->
+<div class="lg:col-span-7 bg-surface-container-low rounded-xl p-8 relative overflow-hidden transform hover:-translate-y-1 transition-transform duration-500">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl" data-icon="water_drop">water_drop</span>
+</div>
+<h3 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-2">Fasting Glucose</h3>
+<p class="text-on-surface-variant text-body-md mb-6">A steadying rhythm over the past lunar cycles.</p>
+<div class="h-48 w-full relative flex items-end justify-between pb-4 border-b-2 border-surface-tint/20">
+<!-- SVG for Organic Line -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<path class="text-primary organic-line" d="M 0,80 Q 20,75 40,60 T 80,45 T 100,50" fill="none" stroke="currentColor" stroke-width="2"></path>
+</svg>
+<!-- Watercolor Data Points -->
+<div class="relative z-10 w-4 h-4 rounded-full bg-primary/40 blur-[2px] ml-4 transform -translate-y-4"></div>
+<div class="relative z-10 w-5 h-5 rounded-full bg-primary/60 blur-[1px] transform -translate-y-12"></div>
+<div class="relative z-10 w-4 h-4 rounded-full bg-primary/50 blur-[2px] transform -translate-y-20"></div>
+<div class="relative z-10 w-6 h-6 rounded-full bg-primary-container blur-[1px] mr-4 transform -translate-y-16"></div>
+</div>
+<div class="flex justify-between mt-2 text-label-md font-label-md text-on-surface-variant/70">
+<span>Jan</span>
+<span>Feb</span>
+<span>Mar</span>
+<span>Apr</span>
+</div>
+<div class="mt-6 flex items-center justify-between">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span>Within expected cadence</span>
+</div>
+<button class="text-label-md font-label-md text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors">
+                        View Details <span class="material-symbols-outlined text-sm" data-icon="arrow_right_alt">arrow_right_alt</span>
+</button>
+</div>
+</div>
+<!-- Out of Range Indicator / Empathy Flag -->
+<div class="lg:col-span-5 bg-surface-container rounded-xl p-8 flex flex-col justify-between transform translate-y-4 lg:translate-y-12 shadow-sm">
+<div>
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-container/10 text-tertiary-container mb-4">
+<span class="material-symbols-outlined text-sm" data-icon="vital_signs">vital_signs</span>
+<span class="text-label-md font-label-md uppercase tracking-wider">Gentle Attention</span>
+</div>
+<h3 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-3">Vitamin D Synthesis</h3>
+<p class="text-on-surface-variant text-body-md">Levels are slightly below our shared baseline. The winter months often ask for a bit more support here.</p>
+</div>
+<div class="mt-8 flex gap-4">
+<button class="px-6 py-2 bg-tertiary-container text-on-tertiary-container rounded-lg hover:opacity-90 transition-opacity font-label-md text-label-md">Suggest Adjustments</button>
+</div>
+</div>
+<!-- Document Progressive Disclosure -->
+<div class="lg:col-span-12 mt-12 bg-surface-bright border border-outline-variant/30 rounded-xl p-6 md:p-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div>
+<h3 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-1">Archived Formularies</h3>
+<p class="text-on-surface-variant text-body-md">The raw textures of your medical history, preserved for detailed reference.</p>
+</div>
+<button class="group flex items-center gap-3 px-5 py-3 rounded-xl bg-surface-container-low hover:bg-surface-variant transition-all border border-outline-variant/50">
+<div class="flex flex-col items-start">
+<span class="text-label-md font-label-md text-on-surface font-bold">Unfold Archives</span>
+<span class="text-xs text-on-surface-variant">PDFs &amp; Scans</span>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="unfold_more">unfold_more</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 lg:hidden bg-surface-container dark:bg-surface-container-high rounded-t-xl border-t border-outline-variant/30 shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 rounded-xl p-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home_app_logo">home_app_logo</span>
+<span class="font-label-md text-label-md mt-1">Presence</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 rounded-xl p-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-label-md text-label-md mt-1">Pathways</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-5 py-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-label-md text-label-md mt-1 font-bold">Chronicle</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/20 rounded-xl p-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="lock_open">lock_open</span>
+<span class="font-label-md text-label-md mt-1">Vault</span>
+</a>
+</nav>
+</body></html>

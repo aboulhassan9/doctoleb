@@ -44,6 +44,9 @@ export function normalizeTenantBranding(value: unknown, options: BrandingOptions
 
   const primary = nullableText(input.primary_color, 20)
   const secondary = nullableText(input.secondary_color, 20)
+  const accent = nullableText(input.accent_color, 20)
+  const surface = nullableText(input.surface_color, 20)
+  const textColor = nullableText(input.text_color, 20)
   const enabledLocales = normalizeLocales(input.enabled_locales)
 
   return {
@@ -60,6 +63,9 @@ export function normalizeTenantBranding(value: unknown, options: BrandingOptions
       icon_url: nullableHttpsUrl(input.icon_url, 2000),
       primary_color: primary && HEX.test(primary) ? primary : null,
       secondary_color: secondary && HEX.test(secondary) ? secondary : null,
+      accent_color: accent && HEX.test(accent) ? accent : null,
+      surface_color: surface && HEX.test(surface) ? surface : null,
+      text_color: textColor && HEX.test(textColor) ? textColor : null,
       support_phone: nullableText(input.support_phone, 80),
       support_email: nullableText(input.support_email, 240),
       enabled_locales: enabledLocales,

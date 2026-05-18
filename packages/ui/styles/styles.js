@@ -11,44 +11,44 @@
 
 // ── Form Controls ───────────────────────────────────────────────────
 export const INPUT_CLASS =
-  'w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white ' +
+  'w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-[var(--bg-card)] ' +
   'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ' +
-  'transition-all placeholder:text-slate-300';
+  'transition-colors duration-200 placeholder:text-slate-300';
 
 export const SELECT_CLASS =
-  'w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white ' +
+  'w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-[var(--bg-card)] ' +
   'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ' +
-  'transition-all appearance-none cursor-pointer';
+  'transition-colors duration-200 appearance-none cursor-pointer';
 
 export const TEXTAREA_CLASS =
-  'w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white ' +
+  'w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-[var(--bg-card)] ' +
   'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ' +
-  'transition-all placeholder:text-slate-300 resize-none';
+  'transition-colors duration-200 placeholder:text-slate-300 resize-none';
 
 // ── Cards & Containers ──────────────────────────────────────────────
 export const CARD_CLASS =
-  'bg-white rounded-2xl border border-slate-200 shadow-sm p-6';
+  'bg-[var(--bg-card)] rounded-lg border border-slate-200 p-6';
 
 export const CARD_HOVER_CLASS =
-  'bg-white rounded-2xl border border-slate-200 shadow-sm p-6 ' +
-  'hover:shadow-md hover:border-primary/30 transition-all cursor-pointer';
+  'bg-[var(--bg-card)] rounded-lg border border-slate-200 p-6 ' +
+  'hover:border-primary/30 transition-colors duration-200 cursor-pointer';
 
 // ── Buttons ─────────────────────────────────────────────────────────
 export const BUTTON_PRIMARY =
-  'px-4 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl ' +
-  'text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed';
+  'px-4 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg ' +
+  'text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
 
 export const BUTTON_SECONDARY =
-  'px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl ' +
-  'text-sm font-medium hover:bg-slate-50 transition-all';
+  'px-4 py-2.5 bg-[var(--bg-card)] border border-slate-200 text-slate-700 rounded-lg ' +
+  'text-sm font-medium hover:bg-slate-50 transition-colors duration-200';
 
 export const BUTTON_DANGER =
-  'px-4 py-2.5 bg-error hover:bg-red-700 text-white rounded-xl ' +
-  'text-sm font-medium transition-all';
+  'px-4 py-2.5 bg-error hover:bg-red-700 text-white rounded-lg ' +
+  'text-sm font-medium transition-colors duration-200';
 
 export const BUTTON_ICON =
-  'w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 ' +
-  'text-slate-600 hover:bg-primary/10 hover:text-primary transition-all';
+  'w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 ' +
+  'text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors duration-200';
 
 // ── Status Badges ───────────────────────────────────────────────────
 export const BADGE_BASE =

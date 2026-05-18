@@ -1,133 +1,202 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { logError } from '@/lib/logger';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
-import { documentService } from '@/services/documents';
-import { formatClinicDate, formatClinicTime } from '@/lib/time';
-import PatientPageHeader from '@ui/components/patient/PatientPageHeader';
-import { StatusBadge, Modal } from '@ui/components/ui';
-
-// ── Constants ────────────────────────────────────────────────────────────
-
-const TAB_FILTERS = Object.freeze({
-  all: () => true,
-  prescriptions: (d) => d.document_type === 'prescription',
-  labs: (d) => d.document_type === 'lab_request' || d.document_type === 'lab_result',
-  imaging: (d) => d.document_type === 'imaging_result',
-  certificates: (d) => d.document_type === 'certificate',
-  referrals: (d) => d.document_type === 'referral',
-  reports: (d) => d.document_type === 'report',
-});
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  ClipboardList,
+  Download,
+  Eye,
+  FileText,
+  FlaskConical,
+  Images,
+  ScrollText,
+  Stethoscope,
+} from 'lucide-react';
+import { patientTimelineService } from '@core/services/patientTimeline';
+import { documentService } from '@core/services/documents';
+import { formatClinicDate, formatClinicTime } from '@core/lib/time';
+import { logError } from '@core/lib/logger';
+import { useAuth } from '@ui/contexts/AuthContext';
+import { useToast } from '@ui/contexts/ToastContext';
+import { PatientPortalShell } from '@ui/components/patient/PatientPortalShell';
+import { Modal } from '@ui/components/ui';
+import { patientFadeRise, patientStagger } from '@ui/styles/patientMotion';
 
 const TAB_META = [
-  { key: 'all', label: 'All', icon: '📋' },
-  { key: 'prescriptions', label: 'Prescriptions', icon: '💊' },
-  { key: 'labs', label: 'Lab Results', icon: '🧪' },
-  { key: 'imaging', label: 'Imaging', icon: '🩻' },
-  { key: 'certificates', label: 'Certificates', icon: '📜' },
-  { key: 'referrals', label: 'Referrals', icon: '🏥' },
-  { key: 'reports', label: 'Reports', icon: '📝' },
+  { key: 'all', label: 'All records', icon: ClipboardList, match: () => true },
+  { key: 'reports', label: 'Reports', icon: ScrollText, match: (doc) => doc.document_type === 'report' },
+  { key: 'prescriptions', label: 'Prescriptions', icon: Stethoscope, match: (doc) => doc.document_type === 'prescription' },
+  { key: 'labs', label: 'Labs', icon: FlaskConical, match: (doc) => doc.document_type === 'lab_request' || doc.document_type === 'lab_result' },
+  { key: 'imaging', label: 'Imaging', icon: Images, match: (doc) => doc.document_type === 'imaging_result' },
+  { key: 'forms', label: 'Forms', icon: FileText, match: (doc) => ['certificate', 'referral', 'insurance_form', 'insurance_claim'].includes(doc.document_type) },
 ];
 
-const DOC_TYPE_ICON = {
-  prescription: '💊',
-  lab_request: '🧪',
-  lab_result: '🧪',
-  imaging_result: '🩻',
-  certificate: '📜',
-  referral: '🏥',
-  report: '📝',
-  insurance_form: '🛡️',
-  insurance_claim: '🛡️',
-};
-
-// `clinical_documents.status` enum is `draft | final | superseded | void`.
-// Drafts are never patient-visible; everything else is shown (with `void`
-// gated behind the "Show voided records" toggle so retracted records remain
-// discoverable).
-const VISIBLE_STATUSES = new Set(['final', 'void', 'superseded']);
-const VOIDED_STATUS = 'void';
-
-function formatDocumentTimestamp(value) {
+function formatTimelineTimestamp(value) {
   if (!value) return 'Date unknown';
   const date = formatClinicDate(value, { month: 'short', day: 'numeric', year: 'numeric' });
   const time = formatClinicTime(value);
-  if (!date && !time) return 'Date unknown';
-  return date && time ? `${date} at ${time}` : (date || time);
+  return [date, time].filter(Boolean).join(' at ') || 'Date unknown';
 }
 
-// ── Component ────────────────────────────────────────────────────────────
+function filterTimelineGroups(groups, activeTab) {
+  const tab = TAB_META.find((item) => item.key === activeTab) || TAB_META[0];
+  return (groups || [])
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => tab.match(item.source || {})),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
+function TimelineSkeleton() {
+  return (
+    <div className="space-y-4" role="status" aria-label="Loading care timeline">
+      {[0, 1, 2].map((index) => (
+        <div key={index} className="h-32 animate-pulse rounded-xl bg-[var(--patient-wash)]" />
+      ))}
+    </div>
+  );
+}
+
+function EmptyTimeline({ activeTab }) {
+  const label = TAB_META.find((tab) => tab.key === activeTab)?.label || 'records';
+  return (
+    <div className="patient-inset border border-dashed border-[var(--patient-outline)] p-8 text-center">
+      <ClipboardList className="mx-auto h-10 w-10 text-[var(--patient-sage)]" />
+      <h3 className="patient-display mt-4 text-2xl font-medium tracking-tight text-[var(--patient-ink)]">
+        No {label.toLowerCase()} yet.
+      </h3>
+      <p className="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-[var(--patient-muted)]">
+        Finalized clinical documents and approved records will appear here after the clinic shares them.
+      </p>
+    </div>
+  );
+}
+
+function TimelineItem({ item, onView, onDownload, downloadingId }) {
+  const doc = item.source || {};
+  const hasContent = Boolean(doc.content && String(doc.content).trim().length > 0);
+  const hasFile = Boolean(doc.file_url);
+  const isDownloading = downloadingId === item.id;
+
+  return (
+    <article className="patient-inset relative p-5">
+      <span aria-hidden="true" className="absolute -left-[1.68rem] top-7 h-3 w-3 rounded-full border-2 border-[var(--patient-surface)] bg-[var(--patient-sage)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--patient-sage)_12%,transparent)]" />
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="patient-status-sage uppercase tracking-wide">
+              {item.label}
+            </span>
+            <span className="patient-status-muted">
+              {item.status}
+            </span>
+          </div>
+          <h3 className="patient-display mt-3 text-2xl font-medium tracking-tight text-[var(--patient-ink)]">
+            {item.title}
+          </h3>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--patient-muted)]">
+            {formatTimelineTimestamp(item.occurredAt)}
+            {item.doctor ? ` · ${item.doctor}` : ''}
+          </p>
+          {hasContent ? (
+            <p className="mt-3 line-clamp-2 text-sm font-semibold leading-6 text-[color-mix(in_srgb,var(--patient-muted)_80%,transparent)]">
+              {doc.content}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {hasContent ? (
+            <button
+              type="button"
+              onClick={() => onView(doc)}
+              className="patient-button-secondary px-4 py-2 text-xs"
+            >
+              <Eye className="h-4 w-4" />
+              View
+            </button>
+          ) : null}
+          {hasFile ? (
+            <button
+              type="button"
+              onClick={() => onDownload(doc)}
+              disabled={isDownloading}
+              className="patient-button-primary px-4 py-2 text-xs disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              {isDownloading ? 'Opening...' : 'Download'}
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function ContentModal({ doc, onClose }) {
+  const subtitle = `${documentService.labels[doc.document_type] || doc.document_type} · ${formatTimelineTimestamp(doc.finalized_at || doc.created_at)}`;
+  return (
+    <Modal isOpen onClose={onClose} title={doc.title || 'Clinical document'} size="lg">
+      <p className="-mt-2 mb-4 text-xs font-bold text-[color-mix(in_srgb,var(--patient-muted)_70%,transparent)]">{subtitle}</p>
+      <pre className="whitespace-pre-wrap font-sans text-sm leading-7 text-[var(--patient-muted)]">
+        {doc.content}
+      </pre>
+    </Modal>
+  );
+}
 
 export default function PatientMedicalHistoryPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
-
-  const [allDocuments, setAllDocuments] = useState([]);
+  const [timeline, setTimeline] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
-  const [includeArchived, setIncludeArchived] = useState(false);
   const [openContentDoc, setOpenContentDoc] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
 
-  const patientId = user?.patient_id;
-
   useEffect(() => {
-    if (!patientId) return undefined;
     let cancelled = false;
-    setLoading(true);
-    (async () => {
-      try {
-        const { data, error } = await documentService.getByPatientId(patientId, { pageSize: 100 });
-        if (cancelled) return;
-        if (error) {
-          showToast(error, 'error');
-          setAllDocuments([]);
-          return;
-        }
-        setAllDocuments(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (cancelled) return;
-        logError('PatientMedicalHistoryPage:fetch', err);
-        showToast('Failed to load medical history', 'error');
-      } finally {
-        if (!cancelled) setLoading(false);
+
+    const loadTimeline = async () => {
+      if (!user?.patient_id) {
+        setTimeline(null);
+        setLoading(false);
+        return;
       }
-    })();
+
+      setLoading(true);
+      const result = await patientTimelineService.getTimeline({ patientId: user.patient_id, pageSize: 100 });
+      if (cancelled) return;
+
+      if (result.error) {
+        showToast(result.error, 'error');
+        setTimeline(null);
+      } else {
+        setTimeline(result.data);
+      }
+      setLoading(false);
+    };
+
+    void loadTimeline();
     return () => {
       cancelled = true;
     };
-  }, [patientId, showToast]);
+  }, [user?.patient_id, showToast]);
 
-  const visibleDocuments = useMemo(() => allDocuments.filter((doc) => {
-    if (!VISIBLE_STATUSES.has(doc.status)) return false;
-    if (doc.status === VOIDED_STATUS && !includeArchived) return false;
-    return true;
-  }), [allDocuments, includeArchived]);
+  const counts = useMemo(() => {
+    const items = timeline?.items || [];
+    return Object.fromEntries(TAB_META.map((tab) => [
+      tab.key,
+      items.filter((item) => tab.match(item.source || {})).length,
+    ]));
+  }, [timeline?.items]);
 
-  const tabbedDocuments = useMemo(() => {
-    const filter = TAB_FILTERS[activeTab] || TAB_FILTERS.all;
-    return visibleDocuments.filter(filter);
-  }, [visibleDocuments, activeTab]);
-
-  // Single pass to compute all tab counts instead of N filter() calls.
-  const tabCounts = useMemo(() => {
-    const counts = Object.fromEntries(TAB_META.map((t) => [t.key, 0]));
-    for (const doc of visibleDocuments) {
-      for (const tab of TAB_META) {
-        if (TAB_FILTERS[tab.key](doc)) counts[tab.key] += 1;
-      }
-    }
-    return counts;
-  }, [visibleDocuments]);
-
-  const archivedCount = useMemo(
-    () => allDocuments.filter((d) => d.status === VOIDED_STATUS).length,
-    [allDocuments]
+  const visibleGroups = useMemo(
+    () => filterTimelineGroups(timeline?.groups || [], activeTab),
+    [timeline?.groups, activeTab]
   );
 
   const handleDownload = useCallback(async (doc) => {
-    if (downloadingId) return;
+    if (!doc?.id || downloadingId) return;
     setDownloadingId(doc.id);
     try {
       const { data, error } = await documentService.getDownloadUrl(doc.id);
@@ -137,7 +206,7 @@ export default function PatientMedicalHistoryPage() {
       }
       window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
     } catch (err) {
-      logError('PatientMedicalHistoryPage:download', err);
+      logError('PatientMedicalHistoryPage.download', err);
       showToast('Could not generate a download link. Please try again.', 'error');
     } finally {
       setDownloadingId(null);
@@ -145,230 +214,94 @@ export default function PatientMedicalHistoryPage() {
   }, [downloadingId, showToast]);
 
   return (
-    <div className="min-h-screen bg-background-light">
-      <PatientPageHeader title="Medical History" subtitle="Your finalized clinical records" />
+    <PatientPortalShell title="Care Timeline" subtitle="Finalized records shared by your clinic">
+        <motion.section
+          variants={patientStagger}
+          initial="hidden"
+          animate="visible"
+          className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto]"
+        >
+          <motion.div variants={patientFadeRise}>
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--patient-sage)]">Clinical record</p>
+            <h1 className="patient-display mt-3 max-w-3xl text-5xl font-medium leading-[0.98] tracking-tight text-[var(--patient-ink)]">
+              A timeline, not a file cabinet.
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm font-semibold leading-6 text-[var(--patient-muted)]">
+              The patient app shows finalized, patient-safe documents in date order. Drafts and retracted clinical work stay out of this surface.
+            </p>
+          </motion.div>
+        </motion.section>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {loading ? (
-          <LoadingState />
-        ) : (
-          <>
-            <TabBar tabs={TAB_META} counts={tabCounts} activeTab={activeTab} onChange={setActiveTab} />
+        <motion.nav
+          variants={patientFadeRise}
+          initial="hidden"
+          animate="visible"
+          className="mb-6 flex gap-2 overflow-x-auto"
+          aria-label="Care timeline filters"
+        >
+          {TAB_META.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={`patient-focus inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-3 text-sm font-black transition ${
+                  isActive
+                    ? 'bg-[var(--patient-sage)] text-white shadow-sm'
+                    : 'border border-[var(--patient-outline)] bg-[color-mix(in_srgb,var(--patient-surface)_80%,transparent)] text-[var(--patient-muted)] hover:border-[color-mix(in_srgb,var(--patient-sage)_40%,transparent)] hover:text-[var(--patient-ink)]'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {tab.label} ({counts[tab.key] || 0})
+              </button>
+            );
+          })}
+        </motion.nav>
 
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <p className="text-sm text-slate-500">
-                Showing {tabbedDocuments.length} of {visibleDocuments.length}{' '}
-                {activeTab === 'all' ? 'records' : activeTab}
-              </p>
-              {archivedCount > 0 && (
-                <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={includeArchived}
-                    onChange={(e) => setIncludeArchived(e.target.checked)}
-                    className="rounded border-slate-300 text-primary focus:ring-primary"
-                  />
-                  Show voided records ({archivedCount})
-                </label>
-              )}
+        <motion.section
+          variants={patientFadeRise}
+          initial="hidden"
+          animate="visible"
+          className="patient-paper-strong patient-surface p-6"
+          aria-busy={loading}
+        >
+          {loading ? (
+            <TimelineSkeleton />
+          ) : visibleGroups.length ? (
+            <div className="space-y-8">
+              {visibleGroups.map((group) => (
+                <section key={group.key} className="relative pl-7">
+                  <span aria-hidden="true" className="absolute bottom-0 left-1 top-9 w-px bg-[var(--patient-outline)]" />
+                  <p className="mb-4 text-[11px] font-black uppercase tracking-[0.18em] text-[var(--patient-clay)]">
+                    {group.date ? formatClinicDate(group.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'Undated'}
+                  </p>
+                  <div className="space-y-4">
+                    {group.items.map((item) => (
+                      <TimelineItem
+                        key={item.id}
+                        item={item}
+                        onView={setOpenContentDoc}
+                        onDownload={handleDownload}
+                        downloadingId={downloadingId}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
             </div>
+          ) : (
+            <EmptyTimeline activeTab={activeTab} />
+          )}
+        </motion.section>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl border border-slate-200 p-6"
-            >
-              {tabbedDocuments.length > 0 ? (
-                <div className="space-y-4">
-                  {tabbedDocuments.map((doc) => (
-                    <DocumentCard
-                      key={doc.id}
-                      doc={doc}
-                      onDownload={() => handleDownload(doc)}
-                      onViewContent={() => setOpenContentDoc(doc)}
-                      isDownloading={downloadingId === doc.id}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyDocumentsState activeTab={activeTab} />
-              )}
-            </motion.div>
-
-            {visibleDocuments.length > 0 && <SummaryStats counts={tabCounts} />}
-          </>
-        )}
-      </main>
 
       <AnimatePresence>
-        {openContentDoc && (
+        {openContentDoc ? (
           <ContentModal doc={openContentDoc} onClose={() => setOpenContentDoc(null)} />
-        )}
+        ) : null}
       </AnimatePresence>
-    </div>
-  );
-}
-
-// ── Subcomponents ────────────────────────────────────────────────────────
-
-function TabBar({ tabs, counts, activeTab, onChange }) {
-  return (
-    <div className="flex gap-2 mb-6 border-b border-slate-200 overflow-x-auto">
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.key;
-        return (
-          <button
-            key={tab.key}
-            onClick={() => onChange(tab.key)}
-            className={`px-5 py-3 font-semibold text-sm border-b-2 transition-all whitespace-nowrap ${
-              isActive ? 'border-primary text-primary' : 'border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <span className="mr-1.5" aria-hidden="true">{tab.icon}</span>
-            {tab.label} ({counts[tab.key] ?? 0})
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function DocumentCard({ doc, onDownload, onViewContent, isDownloading }) {
-  const isVoided = doc.status === VOIDED_STATUS;
-  const hasFile = Boolean(doc.file_url);
-  const hasContent = Boolean(doc.content && String(doc.content).trim().length > 0);
-  const icon = DOC_TYPE_ICON[doc.document_type] || '📋';
-  const typeLabel = documentService.labels[doc.document_type] || doc.document_type;
-  const finalizedDate = doc.finalized_at || doc.created_at;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`p-5 rounded-xl border transition-all ${
-        isVoided
-          ? 'bg-rose-50/40 border-rose-200'
-          : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 hover:border-primary hover:shadow-lg'
-      }`}
-    >
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="flex items-start gap-4 flex-1 min-w-0">
-          <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-xl ${
-            isVoided ? 'bg-rose-100 text-rose-700' : 'bg-primary/10 text-primary'
-          }`}>
-            {icon}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className={`font-bold text-lg ${isVoided ? 'text-rose-900' : 'text-slate-900'}`}>
-                {doc.title || typeLabel}
-              </h3>
-              <span className="px-2.5 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase rounded-full">
-                {typeLabel}
-              </span>
-              <StatusBadge status={doc.status} size="sm" />
-            </div>
-            {hasContent && !isVoided && (
-              <p className="text-sm text-slate-600 mb-2 line-clamp-2">{doc.content}</p>
-            )}
-            {isVoided && doc.void_reason && (
-              <p className="text-sm text-rose-700 mb-2">
-                <span className="font-semibold">Voided:</span> {doc.void_reason}
-              </p>
-            )}
-            <p className="text-xs text-slate-500">
-              {isVoided ? '🚫' : '📅'} {formatDocumentTimestamp(finalizedDate)}
-            </p>
-          </div>
-        </div>
-
-        {!isVoided && (
-          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-            {hasContent && (
-              <button
-                onClick={onViewContent}
-                className="px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded-lg transition-all"
-              >
-                👁 View
-              </button>
-            )}
-            {hasFile && (
-              <button
-                onClick={onDownload}
-                disabled={isDownloading}
-                className="px-4 py-2 text-xs font-bold text-primary hover:bg-primary/10 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isDownloading ? '…' : '📥 Download'}
-              </button>
-            )}
-            {!hasFile && !hasContent && (
-              <span className="text-xs text-slate-400 italic px-4 py-2">Empty document</span>
-            )}
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
-}
-
-function ContentModal({ doc, onClose }) {
-  const subtitle = `${documentService.labels[doc.document_type] || doc.document_type} · ${formatDocumentTimestamp(doc.finalized_at || doc.created_at)}`;
-  return (
-    <Modal isOpen onClose={onClose} title={doc.title} size="lg">
-      <p className="text-xs text-slate-500 -mt-2 mb-4">{subtitle}</p>
-      <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
-        {doc.content}
-      </pre>
-    </Modal>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="text-center py-16">
-      <div className="inline-block w-8 h-8 border-3 border-slate-200 border-t-primary rounded-full animate-spin mb-3" />
-      <p className="text-slate-500">Loading medical history…</p>
-    </div>
-  );
-}
-
-function EmptyDocumentsState({ activeTab }) {
-  const label = activeTab === 'all' ? 'medical records' : activeTab;
-  return (
-    <div className="text-center py-16">
-      <div className="text-5xl mb-4" aria-hidden="true">📭</div>
-      <p className="text-slate-500 font-medium mb-2">No {label} yet</p>
-      <p className="text-sm text-slate-400">
-        Your {label} will appear here once your doctor finalizes them.
-      </p>
-    </div>
-  );
-}
-
-function SummaryStats({ counts }) {
-  const cards = [
-    { key: 'prescriptions', label: 'Prescriptions', color: 'text-primary' },
-    { key: 'labs', label: 'Lab Results', color: 'text-emerald-600' },
-    { key: 'imaging', label: 'Imaging', color: 'text-indigo-600' },
-    { key: 'certificates', label: 'Certificates', color: 'text-amber-600' },
-    { key: 'referrals', label: 'Referrals', color: 'text-rose-600' },
-  ];
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-4"
-    >
-      {cards.map((card) => (
-        <div
-          key={card.key}
-          className="bg-white rounded-2xl border border-slate-200 p-6 text-center hover:shadow-lg transition-all"
-        >
-          <p className={`text-3xl font-black mb-2 ${card.color}`}>{counts[card.key] ?? 0}</p>
-          <p className="text-sm font-semibold text-slate-600">{card.label}</p>
-        </div>
-      ))}
-    </motion.div>
+    </PatientPortalShell>
   );
 }

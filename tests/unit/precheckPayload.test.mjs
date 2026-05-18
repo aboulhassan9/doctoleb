@@ -26,6 +26,7 @@ describe('precheck payload coercion', () => {
     assert.equal(payload.bloodPressure, '120/80');
     assert.equal(payload.temperature, 36.8);
     assert.equal(payload.heartRate, 72);
+    assert.equal(payload.respiratoryRate, 16);
     assert.equal(payload.weight, 68.5);
     assert.equal(payload.allergies, 'Penicillin, Dust');
     assert.equal(payload.currentMedications, 'Amoxicillin 500mg');

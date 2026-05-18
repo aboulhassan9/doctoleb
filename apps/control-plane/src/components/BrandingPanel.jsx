@@ -109,35 +109,29 @@ export default function BrandingPanel({ tenant, runtimeBranding = null, runtimeB
                 />
               </Field>
 
-              <div className="grid gap-5 border-t border-slate-100 pt-5 sm:col-span-2 sm:grid-cols-2">
-                <Field label="Primary color (Hex)">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className="h-9 w-9 shrink-0 rounded-md border border-slate-200"
-                      style={{ backgroundColor: branding.primary_color || '#e2e8f0' }}
-                    />
-                    <TextInput
-                      value={branding.primary_color}
-                      onChange={(e) => updateField('primary_color', e.target.value)}
-                      placeholder="#0F172A"
-                      className="font-mono"
-                    />
-                  </div>
-                </Field>
-                <Field label="Secondary color (Hex)">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className="h-9 w-9 shrink-0 rounded-md border border-slate-200"
-                      style={{ backgroundColor: branding.secondary_color || '#e2e8f0' }}
-                    />
-                    <TextInput
-                      value={branding.secondary_color}
-                      onChange={(e) => updateField('secondary_color', e.target.value)}
-                      placeholder="#F8FAFC"
-                      className="font-mono"
-                    />
-                  </div>
-                </Field>
+              <div className="grid gap-5 border-t border-slate-100 pt-5 sm:col-span-2 sm:grid-cols-2 xl:grid-cols-3">
+                {[
+                  ['primary_color', 'Primary color (Hex)'],
+                  ['secondary_color', 'Secondary color (Hex)'],
+                  ['accent_color', 'Accent color (Hex)'],
+                  ['surface_color', 'Surface color (Hex)'],
+                  ['text_color', 'Text color (Hex)'],
+                ].map(([key, label]) => (
+                  <Field key={key} label={label}>
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className="h-9 w-9 shrink-0 rounded-md border border-slate-200"
+                        style={{ backgroundColor: branding[key] || '#e2e8f0' }}
+                      />
+                      <TextInput
+                        value={branding[key]}
+                        onChange={(e) => updateField(key, e.target.value)}
+                        placeholder="#455548"
+                        className="font-mono"
+                      />
+                    </div>
+                  </Field>
+                ))}
                 <div className="sm:col-span-2">
                   <Field label="Logo URL">
                     <TextInput

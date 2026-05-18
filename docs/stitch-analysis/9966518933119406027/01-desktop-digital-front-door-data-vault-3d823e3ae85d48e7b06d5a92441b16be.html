@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aetheris Health - Entry</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdcc4",
+                        "secondary-fixed-dim": "#d7c3b0",
+                        "surface-tint": "#526255",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#bacbba",
+                        "tertiary-fixed-dim": "#efbc98",
+                        "surface-container-highest": "#e5e2db",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#6d492c",
+                        "on-primary-fixed": "#101f14",
+                        "primary-container": "#5d6d5f",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#ddeedd",
+                        "inverse-on-surface": "#f3f0e9",
+                        "on-tertiary-fixed": "#2f1501",
+                        "secondary-container": "#f4dfcb",
+                        "on-tertiary-fixed-variant": "#613f24",
+                        "primary-fixed": "#d6e7d6",
+                        "on-background": "#1c1c18",
+                        "surface-bright": "#fcf9f2",
+                        "on-surface-variant": "#434843",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#241a0e",
+                        "surface-container-low": "#f6f3ec",
+                        "on-error": "#ffffff",
+                        "surface": "#fcf9f2",
+                        "secondary": "#6b5c4c",
+                        "surface-container": "#f1eee7",
+                        "on-tertiary-container": "#ffe4d2",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dcdad3",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#524436",
+                        "on-secondary-container": "#716252",
+                        "primary": "#455548",
+                        "outline": "#747872",
+                        "secondary-fixed": "#f4dfcb",
+                        "outline-variant": "#c3c8c1",
+                        "tertiary-container": "#886042",
+                        "primary-fixed-dim": "#bacbba",
+                        "background": "#fcf9f2",
+                        "surface-variant": "#e5e2db",
+                        "inverse-surface": "#31312c",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#3b4a3e",
+                        "on-surface": "#1c1c18",
+                        "surface-container-high": "#ebe8e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "organic-offset": "12px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Fira Sans"],
+                        "narrative-action": ["Newsreader"],
+                        "display-lg": ["Newsreader"],
+                        "headline-lg-mobile": ["Newsreader"],
+                        "label-md": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"],
+                        "headline-lg": ["Newsreader"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "narrative-action": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Organic Texture Overlay */
+        .texture-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+        }
+
+        /* Tactile Inputs */
+        .tactile-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid theme('colors.outline-variant');
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            outline: none;
+            box-shadow: none !important;
+        }
+        .tactile-input:focus {
+            border-bottom-color: theme('colors.primary');
+            font-weight: 500;
+        }
+
+        /* Friction Lock */
+        .friction-track {
+            background: theme('colors.surface-container-high');
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .friction-thumb {
+            cursor: grab;
+            transition: transform 0.1s;
+        }
+        .friction-thumb:active {
+            cursor: grabbing;
+        }
+        .friction-text {
+            background: linear-gradient(90deg, theme('colors.on-surface-variant') 0%, theme('colors.surface-container-high') 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col items-center justify-center relative font-body-md">
+<div class="texture-overlay"></div>
+<main class="w-full max-w-lg px-margin-mobile md:px-0 py-16 flex flex-col gap-12">
+<!-- Header -->
+<header class="flex flex-col items-start gap-4">
+<h1 class="font-display-lg text-headline-lg-mobile md:text-display-lg text-primary tracking-tight italic">
+                Aetheris Health
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-sm">
+                Enter quietly. Your sanctuary awaits.
+            </p>
+</header>
+<!-- Magic Link Section -->
+<section class="flex flex-col gap-8 bg-surface-container-lowest p-8 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-surface-container-high">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="identity">Identity (Email or Phone)</label>
+<input class="tactile-input w-full py-2 font-body-lg text-body-lg text-on-surface placeholder:text-outline-variant focus:ring-0" id="identity" placeholder="e.g. name@domain.com" type="text"/>
+</div>
+<button class="self-start group flex items-center gap-3 py-3 px-6 rounded-full bg-primary-container text-on-primary-container hover:bg-surface-variant/50 transition-all duration-300 ease-out">
+<span class="font-label-md text-label-md font-medium">Send Entrance Link</span>
+<span class="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+<!-- Error State Example (Hidden by default, shown here for design) -->
+<div class="flex items-start gap-3 text-error/80 mt-2">
+<span class="material-symbols-outlined text-[18px] mt-0.5" style="font-variation-settings: 'FILL' 1;">error</span>
+<p class="font-body-md text-body-md italic text-sm">This link has faded. Please request a new one.</p>
+</div>
+<div class="relative flex items-center py-4">
+<div class="flex-grow border-t border-outline-variant/30"></div>
+<span class="flex-shrink-0 mx-4 font-label-md text-label-md text-outline-variant">or</span>
+<div class="flex-grow border-t border-outline-variant/30"></div>
+</div>
+<button class="w-full flex justify-center items-center gap-3 py-4 rounded-xl border border-outline-variant/50 text-on-surface hover:bg-surface-variant/30 transition-all duration-300">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">fingerprint</span>
+<span class="font-label-md text-label-md">Recognize Me (Biometrics)</span>
+</button>
+</section>
+<!-- The Data Vault Anteroom -->
+<section class="flex flex-col gap-6 pl-organic-offset border-l-2 border-surface-tint/20">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-secondary">The Data Vault</h2>
+<div class="font-narrative-action text-narrative-action text-on-surface-variant leading-relaxed">
+                We safeguard your clinical narrative. By entering, you grant this session permission to temporarily weave your health records into your view. When you leave, the threads dissolve.
+            </div>
+<!-- Friction Lock Component -->
+<div class="mt-4 friction-track w-full h-16 rounded-full flex items-center px-2">
+<div class="friction-thumb h-12 w-12 rounded-full bg-primary flex items-center justify-center shadow-md z-10 hover:scale-105 active:scale-95 active:bg-surface-tint">
+<span class="material-symbols-outlined text-on-primary" style="font-variation-settings: 'FILL' 1;">lock_open</span>
+</div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 pl-10">
+<span class="font-label-md text-label-md friction-text uppercase tracking-widest font-bold">Slide to Grant Access</span>
+</div>
+</div>
+</section>
+</main>
+</body></html>

@@ -9,6 +9,9 @@ function safeBranding(branding = {}) {
     app_tagline: branding.app_tagline || DEFAULT_BRANDING.app_tagline,
     primary_color: branding.primary_color || DEFAULT_BRANDING.primary_color,
     secondary_color: branding.secondary_color || DEFAULT_BRANDING.secondary_color,
+    accent_color: branding.accent_color || DEFAULT_BRANDING.accent_color,
+    surface_color: branding.surface_color || DEFAULT_BRANDING.surface_color,
+    text_color: branding.text_color || DEFAULT_BRANDING.text_color,
   }
 }
 
@@ -65,10 +68,10 @@ export default function BrandPreviewCard({ branding: inputBranding, doctorName =
             </h3>
             <p className="mt-1.5 text-sm leading-snug text-white/80">{branding.app_tagline}</p>
           </div>
-          <div className="grid gap-2 p-4 text-sm font-medium">
-            <div className="rounded-md bg-slate-100 px-3 py-2 text-slate-700">Appointments</div>
-            <div className="rounded-md bg-slate-100 px-3 py-2 text-slate-700">Messages</div>
-            <div className="rounded-md bg-slate-100 px-3 py-2 text-slate-700">Clinic documents</div>
+          <div className="grid gap-2 p-4 text-sm font-medium" style={{ backgroundColor: branding.surface_color, color: branding.text_color }}>
+            <div className="rounded-md px-3 py-2" style={{ backgroundColor: `${branding.primary_color}1f` }}>Appointments</div>
+            <div className="rounded-md px-3 py-2" style={{ backgroundColor: `${branding.accent_color}1f` }}>Messages</div>
+            <div className="rounded-md px-3 py-2" style={{ backgroundColor: `${branding.primary_color}14` }}>Clinic documents</div>
           </div>
         </div>
 

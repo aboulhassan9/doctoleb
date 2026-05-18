@@ -1,281 +1,179 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
-import { useBrand } from '@/contexts/BrandContext';
-import { getHomeRouteForRole } from '@/lib/routes';
-import { getClinicOpsLoginUrl, isClinicOpsRole } from '@/lib/appBoundaries';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Eye, EyeOff, Fingerprint, Lock, Mail, ShieldCheck } from 'lucide-react';
+import { useAuth } from '@ui/contexts/AuthContext';
+import { useToast } from '@ui/contexts/ToastContext';
+import { useBrand } from '@ui/contexts/BrandContext';
+import { getHomeRouteForRole } from '@core/lib/routes';
+import { getClinicOpsLoginUrl, isClinicOpsRole } from '@core/lib/appBoundaries';
+import { patientFadeRise, patientStagger } from '@ui/styles/patientMotion';
 
-const LoginPage = () => {
-    const navigate = useNavigate();
-    const { signIn, logout } = useAuth();
-    const { displayName } = useBrand();
-    const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const { showToast } = useToast();
-    const clinicOpsLoginUrl = getClinicOpsLoginUrl();
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const { signIn, logout } = useAuth();
+  const { showToast } = useToast();
+  const { displayName } = useBrand();
+  const clinicOpsLoginUrl = getClinicOpsLoginUrl();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-    const features = [
-        { icon: 'calendar_month', text: 'Book and review your appointments' },
-        { icon: 'assignment',     text: 'Complete required intake before visits' },
-        { icon: 'description',    text: 'View shared medical documents and forms' },
-        { icon: 'notifications',  text: 'Receive clinic reminders in one place' },
-        { icon: 'security',       text: 'Private access protected by clinic permissions' },
-    ];
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setLoading(true);
 
-    return (
-        <div className="flex min-h-screen w-full font-display">
+    const { success, error: authError, user } = await signIn(email, password);
+    setLoading(false);
 
-            {/* ─── LEFT PANEL ─── */}
-            <div className="hidden lg:flex w-[520px] bg-background-dark flex-col relative overflow-hidden shrink-0">
-                <motion.div
-                    animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0], borderRadius: ['40%', '50%', '40%'] }}
-                    transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-                    className="absolute top-[-10%] left-[35%] w-[480px] h-[480px] bg-primary/20 rounded-full blur-[80px] pointer-events-none"
+    if (!success || authError) {
+      setError(authError || 'Invalid email or password');
+      return;
+    }
+
+    if (user && isClinicOpsRole(user.role)) {
+      showToast('Staff accounts belong in the Operations Portal.', 'info');
+      await logout();
+      window.location.assign(clinicOpsLoginUrl);
+      return;
+    }
+
+    if (user) {
+      showToast(`Welcome, ${user.first_name}!`, 'success');
+      navigate(getHomeRouteForRole(user.role));
+    }
+  };
+
+  return (
+    <div className="patient-sanctuary patient-grain min-h-screen">
+      <main className="patient-entry-canvas">
+        <motion.section
+          variants={patientStagger}
+          initial="hidden"
+          animate="visible"
+          className="patient-entry-main flex flex-col gap-12"
+        >
+          <motion.header variants={patientFadeRise} className="flex flex-col items-start gap-4">
+            <h1 className="patient-display text-5xl font-normal italic tracking-tight text-[var(--patient-sage)]">
+              {displayName}
+            </h1>
+            <p className="max-w-sm text-lg leading-8 text-[var(--patient-muted)]">
+              Sign in to view your appointments, records, messages, and billing.
+            </p>
+          </motion.header>
+
+          <motion.form
+            variants={patientFadeRise}
+            onSubmit={handleSubmit}
+            className="patient-entry-panel flex flex-col gap-8"
+            aria-labelledby="patient-login-title"
+          >
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium tracking-[0.01em] text-[var(--patient-muted)]" htmlFor="patient-login-email">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--patient-muted)]" />
+                <input
+                  className="patient-field-input py-3 pl-8"
+                  id="patient-login-email"
+                  placeholder="e.g. name@domain.com"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  disabled={loading}
+                  required
                 />
-                <motion.div
-                    animate={{ scale: [1, 1.3, 1], rotate: [0, -90, 0] }}
-                    transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-                    className="absolute bottom-[-10%] left-[-10%] w-[380px] h-[380px] bg-primary/10 rounded-full blur-[60px] pointer-events-none"
-                />
-
-                <div className="relative z-10 p-14 flex flex-col h-full">
-                    <Link to="/" className="flex items-center gap-3 mb-14">
-                        <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
-                            <span className="material-symbols-outlined text-xl">health_metrics</span>
-                        </div>
-                        <span className="text-white font-black text-2xl tracking-tight">{displayName}</span>
-                    </Link>
-
-                    <div className="mb-10">
-                        <h1 className="text-white font-black text-4xl leading-tight mb-4">
-                            Your care, <span className="text-primary">clearly</span> organized
-                        </h1>
-                        <p className="text-slate-400 text-base leading-relaxed">
-                            Access appointments, intake forms, and medical records shared by your clinic.
-                        </p>
-                    </div>
-
-                    <div className="flex-1 flex flex-col gap-5">
-                        {features.map((f, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.2 + i * 0.08 }}
-                                className="flex items-center gap-4"
-                            >
-                                <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-                                    <span className="material-symbols-outlined text-primary text-xl">{f.icon}</span>
-                                </div>
-                                <p className="text-slate-300 text-sm font-medium">{f.text}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    <div className="mt-10 pt-8 border-t border-slate-800">
-                        <div className="flex items-center gap-8 mb-5">
-                            <div className="flex items-center gap-2 opacity-50">
-                                <span className="material-symbols-outlined text-sm text-slate-400">verified_user</span>
-                                <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">Private Portal</span>
-                            </div>
-                            <div className="flex items-center gap-2 opacity-50">
-                                <span className="material-symbols-outlined text-sm text-slate-400">security</span>
-                                <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">256-Bit SSL</span>
-                            </div>
-                        </div>
-                        <div className="flex justify-between text-slate-600 text-xs font-semibold uppercase tracking-wider">
-                            <span>v2.0 · April 2026</span>
-                            <span>Authorized Access Only</span>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
 
-            {/* ─── RIGHT PANEL ─── */}
-            <div className="flex-1 bg-background-light flex flex-col overflow-y-auto">
-
-                {/* Top bar */}
-                <div className="flex items-center justify-between px-8 py-5 border-b border-slate-200">
-                    <Link to="/" className="flex lg:hidden items-center gap-2">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
-                            <span className="material-symbols-outlined text-base">health_metrics</span>
-                        </div>
-                        <span className="text-slate-900 font-black text-lg">{displayName}</span>
-                    </Link>
-                    <div className="hidden lg:block" />
-                    <div className="flex items-center gap-4">
-                        <p className="text-sm text-slate-500 hidden sm:block">Don't have an account?</p>
-                        <Link
-                            to="/signup"
-                            className="px-5 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
-                        >
-                            Sign Up Free
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Form */}
-                <div className="flex-1 flex flex-col justify-center max-w-[520px] w-full mx-auto px-8 py-12">
-
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                            <span className="material-symbols-outlined text-primary text-3xl">health_metrics</span>
-                        </div>
-                        <h2 className="text-4xl font-black text-slate-900 mb-2">Welcome back</h2>
-                        <p className="text-slate-500 text-base">Sign in to your patient account to continue</p>
-                    </motion.div>
-
-                    {/* Staff nudge banner */}
-                    <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-2.5">
-                        <span className="material-symbols-outlined text-slate-400 text-lg mt-0.5">shield_person</span>
-                        <p className="text-xs text-slate-500 leading-relaxed">
-                            Clinic staff? Use the <a href={clinicOpsLoginUrl} className="text-primary font-semibold hover:underline">Operations Portal</a> instead.
-                        </p>
-                    </div>
-
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            className="p-4 rounded-xl bg-critical/10 border border-critical/20 text-critical text-sm mb-4"
-                        >
-                            {error}
-                        </motion.div>
-                    )}
-
-                    <motion.form
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-                        className="space-y-5"
-                        onSubmit={async (e) => {
-                            e.preventDefault();
-                            setError('');
-                            setLoading(true);
-
-                            const { success, error: authError, user } = await signIn(email, password);
-                            setLoading(false);
-
-                            if (!success || authError) {
-                                setError(authError || 'Invalid email or password');
-                                return;
-                            }
-
-                            if (user) {
-                                if (isClinicOpsRole(user.role)) {
-                                    showToast('Staff accounts belong in the Operations Portal.', 'info');
-                                    await logout();
-                                    window.location.assign(clinicOpsLoginUrl);
-                                    return;
-                                } else {
-                                    showToast(`Welcome, ${user.first_name}!`, 'success');
-                                }
-                                navigate(getHomeRouteForRole(user.role));
-                            }
-                        }}
-                    >
-                        {/* Email */}
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="patient-login-email" className="text-slate-700 text-sm font-bold px-1">Email Address</label>
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-xl">mail</span>
-                                <input
-                                    id="patient-login-email"
-                                    type="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="cp@clinic.com"
-                                    className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 text-sm shadow-sm"
-                                    disabled={loading}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password */}
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between px-1">
-                                <label htmlFor="patient-login-password" className="text-slate-700 text-sm font-bold">Password</label>
-                                <Link
-                                    to="/forgot-password"
-                                    className="text-primary hover:underline text-xs font-bold"
-                                >
-                                    Forgot Password?
-                                </Link>
-                            </div>
-                            <div className="relative group">
-                                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors text-xl">lock</span>
-                                <input
-                                    id="patient-login-password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="w-full pl-12 pr-12 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400 text-sm shadow-sm"
-                                    disabled={loading}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                                    disabled={loading}
-                                >
-                                    <span className="material-symbols-outlined text-xl">{showPassword ? 'visibility_off' : 'visibility'}</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Remember me */}
-                        <label className="flex items-center gap-2.5 px-1 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                className="w-4 h-4 rounded border-slate-300 accent-primary"
-                            />
-                            <span className="text-sm text-slate-600 font-medium select-none">Remember this device</span>
-                        </label>
-
-                        {/* Submit */}
-                        <motion.button
-                            whileHover={{ scale: !loading ? 1.02 : 1 }}
-                            whileTap={{ scale: !loading ? 0.98 : 1 }}
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-300 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/25 flex items-center justify-center gap-3 transition-all text-base"
-                        >
-                            {loading ? (
-                                <>
-                                    <span className="animate-spin">
-                                        <span className="material-symbols-outlined text-xl">hourglass_top</span>
-                                    </span>
-                                    <span>Signing in...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span>Sign In</span>
-                                    <span className="material-symbols-outlined text-xl">login</span>
-                                </>
-                            )}
-                        </motion.button>
-                    </motion.form>
-
-                    {/* Security note */}
-                    <motion.div
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-                        className="mt-8 p-4 rounded-xl bg-primary/5 border border-primary/20 flex items-start gap-3"
-                    >
-                        <span className="material-symbols-outlined text-primary text-xl mt-0.5">lock</span>
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                            All sessions are encrypted and protected by role-based access control.
-                        </p>
-                    </motion.div>
-                </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-4">
+                <label className="text-sm font-medium tracking-[0.01em] text-[var(--patient-muted)]" htmlFor="patient-login-password">
+                  Password
+                </label>
+                <Link to="/forgot-password" className="text-xs font-bold text-[var(--patient-sage)] underline-offset-4 hover:underline">
+                  Reset access
+                </Link>
+              </div>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--patient-muted)]" />
+                <input
+                  className="patient-field-input py-3 pl-8 pr-12"
+                  id="patient-login-password"
+                  placeholder="Your password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  disabled={loading}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  disabled={loading}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-[var(--patient-muted)] transition hover:text-[var(--patient-ink)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--patient-sage)]"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
-        </div>
-    );
-};
 
-export default LoginPage;
+            {error ? (
+              <div className="flex items-start gap-3 text-red-700" role="alert">
+                <span className="mt-0.5 text-lg leading-none">!</span>
+                <p className="text-sm italic leading-6">{error}</p>
+              </div>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="group self-start inline-flex items-center gap-3 rounded-full bg-[color-mix(in_srgb,var(--patient-sage)_14%,var(--patient-surface))] px-6 py-3 text-sm font-medium text-[var(--patient-sage)] transition hover:bg-[color-mix(in_srgb,var(--patient-sage)_20%,var(--patient-surface))] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <span>{loading ? 'Signing in...' : 'Sign in'}</span>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </button>
+
+            <div className="relative flex items-center py-2">
+              <div className="h-px flex-grow bg-[color-mix(in_srgb,var(--patient-ink)_12%,transparent)]" />
+              <span className="mx-4 shrink-0 text-sm font-medium text-[color-mix(in_srgb,var(--patient-muted)_55%,transparent)]">
+                or
+              </span>
+              <div className="h-px flex-grow bg-[color-mix(in_srgb,var(--patient-ink)_12%,transparent)]" />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Link
+                to="/signup"
+                className="inline-flex items-center justify-center gap-3 bg-transparent py-4 text-sm font-medium text-[var(--patient-ink)] transition hover:bg-[color-mix(in_srgb,var(--patient-sage)_8%,transparent)]"
+              >
+                <Fingerprint className="h-4 w-4" />
+                Create account
+              </Link>
+              <a
+                href={clinicOpsLoginUrl}
+                className="inline-flex items-center justify-center gap-3 bg-transparent py-4 text-sm font-medium text-[var(--patient-muted)] transition hover:bg-[color-mix(in_srgb,var(--patient-sage)_8%,transparent)] hover:text-[var(--patient-ink)]"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Staff portal
+              </a>
+            </div>
+          </motion.form>
+
+          <motion.section variants={patientFadeRise} className="patient-entry-vault flex flex-col gap-4">
+            <h2 className="patient-display text-3xl font-medium text-[var(--patient-clay)]">Your records stay private</h2>
+            <p className="text-base leading-7 text-[var(--patient-muted)]">
+              Your account is protected by clinic authentication. Appointments, records, messages, and billing are
+              visible only to you after you sign in.
+            </p>
+          </motion.section>
+        </motion.section>
+      </main>
+    </div>
+  );
+}

@@ -70,6 +70,7 @@ const DEFAULT_NOT_MOCKED = (label) => () => ({
  *   mock.onAuth(methodName, handler)   — handler(args) => { data, error }
  *   mock.onFrom(tableName, handler)    — handler(call) => { data, error }
  *   mock.onRpc(rpcName, handler)       — handler(args) => { data, error }
+ *   mock.onFunction(functionName, handler) — handler(options) => { data, error }
  *
  * Inspecting calls (assertions):
  *   mock.calls.auth                    — [{ method, args }]
@@ -80,11 +81,13 @@ export function createSupabaseMock() {
   const fromHandlers = new Map();
   const rpcHandlers = new Map();
   const authHandlers = new Map();
+  const functionHandlers = new Map();
 
   const calls = {
     auth: [],
     from: [],
     rpc: [],
+    functions: [],
   };
 
   const recordFromCall = (table) => {
@@ -151,6 +154,14 @@ export function createSupabaseMock() {
       if (handler) return Promise.resolve(handler(args));
       return Promise.resolve(DEFAULT_NOT_MOCKED(`rpc('${name}')`)());
     },
+    functions: {
+      invoke(name, options = {}) {
+        calls.functions.push({ name, options });
+        const handler = functionHandlers.get(name);
+        if (handler) return Promise.resolve(handler(options));
+        return Promise.resolve(DEFAULT_NOT_MOCKED(`functions.invoke('${name}')`)());
+      },
+    },
     channel() {
       return {
         on() { return this; },
@@ -167,13 +178,16 @@ export function createSupabaseMock() {
     onAuth(method, handler) { authHandlers.set(method, handler); },
     onFrom(table, handler) { fromHandlers.set(table, handler); },
     onRpc(name, handler) { rpcHandlers.set(name, handler); },
+    onFunction(name, handler) { functionHandlers.set(name, handler); },
     reset() {
       fromHandlers.clear();
       rpcHandlers.clear();
       authHandlers.clear();
+      functionHandlers.clear();
       calls.auth.length = 0;
       calls.from.length = 0;
       calls.rpc.length = 0;
+      calls.functions.length = 0;
     },
   };
 }

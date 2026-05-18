@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aetheris Health | Care Navigation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Fira+Sans:wght@300;400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#efbc98",
+                      "on-tertiary-container": "#ffe4d2",
+                      "surface-bright": "#fcf9f2",
+                      "secondary": "#6b5c4c",
+                      "inverse-on-surface": "#f3f0e9",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#ddeedd",
+                      "on-tertiary-fixed": "#2f1501",
+                      "background": "#fcf9f2",
+                      "surface-dim": "#dcdad3",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed": "#241a0e",
+                      "on-primary": "#ffffff",
+                      "secondary-container": "#f4dfcb",
+                      "primary-fixed-dim": "#bacbba",
+                      "on-error-container": "#93000a",
+                      "primary": "#455548",
+                      "on-secondary-container": "#716252",
+                      "surface-container-high": "#ebe8e1",
+                      "primary-container": "#5d6d5f",
+                      "surface-container-highest": "#e5e2db",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#f4dfcb",
+                      "outline-variant": "#c3c8c1",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "surface-variant": "#e5e2db",
+                      "tertiary-container": "#886042",
+                      "inverse-primary": "#bacbba",
+                      "secondary-fixed-dim": "#d7c3b0",
+                      "surface-tint": "#526255",
+                      "on-primary-fixed": "#101f14",
+                      "surface-container-low": "#f6f3ec",
+                      "surface": "#fcf9f2",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#31312c",
+                      "surface-container": "#f1eee7",
+                      "on-tertiary-fixed-variant": "#613f24",
+                      "tertiary-fixed": "#ffdcc4",
+                      "on-secondary-fixed-variant": "#524436",
+                      "tertiary": "#6d492c",
+                      "outline": "#747872",
+                      "on-background": "#1c1c18",
+                      "primary-fixed": "#d6e7d6",
+                      "on-surface-variant": "#434843",
+                      "on-surface": "#1c1c18",
+                      "on-primary-fixed-variant": "#3b4a3e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "organic-offset": "12px",
+                      "unit": "8px",
+                      "margin-desktop": "64px",
+                      "gutter": "24px",
+                      "margin-mobile": "20px"
+              },
+              "fontFamily": {
+                      "label-md": ["Fira Sans"],
+                      "headline-lg-mobile": ["Newsreader"],
+                      "headline-lg": ["Newsreader"],
+                      "display-lg": ["Newsreader"],
+                      "narrative-action": ["Newsreader"],
+                      "body-md": ["Fira Sans"],
+                      "body-lg": ["Fira Sans"]
+              },
+              "fontSize": {
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                      "narrative-action": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>.organic-grain {
+    position: relative
+    }
+.organic-grain::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuC0-gh1xSaJSadEf8eRXgJpjkMXpegSRoe8-EtPeBazlbND_lusXhovNw9qdaBf9slsjyqAZoCkBsDmUQHV1cdfibe2yHWcGr3B5gHlvzOXtAZHy2Ad7d7kVJEdraPgrMik8z8Id939zPvg0vR6ecCGdeyjhtriutXBL_0StrL5feDQHO5kWGSP7CbPlL8QGC7GrULTUoOkhCSlirhKXVVaxkyDXC-VYuyFfuKptrx-Kvyuq9VDBbenYVIqCz9fcwZ5XS9KpPjhhw);
+    z-index: 1
+    }
+.asymmetric-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 48px
+    }
+.hand-drawn-line {
+    border-bottom: 2px solid;
+    border-image: linear-gradient(to right, #455548 0%, #455548 80%, transparent 100%) 1;
+    border-radius: 40% 60% 70% 30%/5% 5% 5% 5%
+    }
+.breathing-glow {
+    box-shadow: 0 0 15px rgba(69, 85, 72, 0.1)
+    }</style>
+</head>
+<body class="bg-surface font-body-lg text-on-surface organic-grain min-h-screen">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-xl">
+<div class="font-display-lg text-headline-lg-mobile md:text-headline-lg text-primary tracking-tight italic">
+            Aetheris Health
+        </div>
+<nav class="hidden md:flex gap-8 items-center">
+<a class="font-body-lg text-primary font-bold transition-colors duration-300" href="#">Presence</a>
+<a class="font-body-lg text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Pathways</a>
+<a class="font-body-lg text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Chronicle</a>
+<div class="flex gap-4 ml-4">
+<span class="material-symbols-outlined text-primary cursor-pointer">notifications_none</span>
+<span class="material-symbols-outlined text-primary cursor-pointer">account_circle</span>
+</div>
+</nav>
+</header>
+<!-- Side Navigation Anchor (Desktop) -->
+<aside class="hidden lg:flex flex-col h-screen fixed left-0 top-0 py-8 px-6 bg-surface-container-low w-72 pt-24 z-40 border-r border-outline-variant/10">
+<div class="mb-12 px-5">
+<h2 class="font-headline-lg text-primary mb-1">Your Presence</h2>
+<p class="font-body-md text-on-surface-variant">Steady &amp; Whole</p>
+</div>
+<div class="flex-1 space-y-2">
+<a class="flex items-center gap-4 py-3 text-primary font-bold border-l-4 border-primary pl-4 bg-surface-variant/20 rounded-r-xl transition-all" href="#">
+<span class="material-symbols-outlined">spa</span>
+<span class="font-body-lg">Presence</span>
+</a>
+<a class="flex items-center gap-4 py-3 text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span class="font-body-lg">Sanctuary</span>
+</a>
+<a class="flex items-center gap-4 py-3 text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-body-lg">Pathways</span>
+</a>
+<a class="flex items-center gap-4 py-3 text-on-surface-variant pl-5 hover:bg-surface-variant/50 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-body-lg">Chronicle</span>
+</a>
+</div>
+<div class="mt-auto space-y-4 pt-8 border-t border-outline-variant/20">
+<button class="w-full py-4 px-6 bg-error text-on-error font-bold rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">emergency_home</span>
+                Emergency Access
+            </button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="pt-32 pb-32 px-margin-mobile md:pl-[340px] md:pr-margin-desktop min-h-screen">
+<div class="max-w-6xl mx-auto asymmetric-grid">
+<!-- Left Column: Primary Navigation & Triage -->
+<div class="space-y-16">
+<!-- 1. Conversational Triage (Narrative Block) -->
+<section class="narrative-block relative pr-8">
+<h1 class="font-display-lg text-primary leading-tight mb-8">
+                        Who do you need to <span class="italic underline decoration-tertiary-container/30">see</span>, and what is this <span class="italic">regarding</span>?
+                    </h1>
+<div class="relative group">
+<textarea class="w-full bg-transparent border-none border-b-2 border-primary/20 focus:ring-0 focus:border-primary font-narrative-action text-on-surface-variant placeholder:text-on-surface-variant/40 py-4 resize-none transition-all duration-500" placeholder="Describe your symptoms or needs here..." rows="2"></textarea>
+<div class="hand-drawn-line absolute bottom-0 left-0 w-full opacity-50 group-focus-within:opacity-100 transition-opacity"></div>
+</div>
+</section>
+<!-- 2. Modality Suggestion -->
+<section class="opacity-0 translate-y-4 animate-[fadeIn_0.8s_ease-out_forwards] delay-300">
+<div class="bg-surface-container-low p-8 rounded-[2rem] border border-outline-variant/20 shadow-sm relative overflow-hidden">
+<div class="flex items-start gap-6 relative z-10">
+<div class="bg-primary-container/20 p-4 rounded-2xl">
+<span class="material-symbols-outlined text-primary text-3xl">physical_therapy</span>
+</div>
+<div>
+<h3 class="font-headline-lg text-primary mb-2">In-Person Evaluation Suggested</h3>
+<p class="font-body-lg text-on-surface-variant leading-relaxed max-w-md">
+                                    Given the physical nature of your complaint, a tactile assessment will ensure the most accurate diagnostic path. We recommend seeing a specialist at our Sage Creek facility.
+                                </p>
+</div>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-5">
+<span class="material-symbols-outlined text-[12rem]">medical_services</span>
+</div>
+</div>
+</section>
+<!-- 5. Friction Lock (Cancellation) -->
+<section class="pt-12">
+<div class="max-w-md">
+<h4 class="font-label-md text-on-surface-variant uppercase tracking-widest mb-6">Modify Intention</h4>
+<div class="relative h-20 bg-surface-container-highest rounded-full p-2 border border-outline-variant/30 flex items-center group cursor-pointer overflow-hidden">
+<div class="h-16 w-16 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg transform transition-all group-active:scale-95 z-20">
+<span class="material-symbols-outlined">keyboard_double_arrow_right</span>
+</div>
+<span class="absolute inset-0 flex items-center justify-center font-label-md text-on-surface-variant/60 uppercase tracking-widest pointer-events-none z-10">Slide to cancel appointment</span>
+<div class="absolute inset-0 bg-error/10 translate-x-[-100%] group-hover:translate-x-[-90%] transition-transform duration-700"></div>
+</div>
+<p class="mt-4 font-body-md text-on-surface-variant italic opacity-70">Requires deliberate action to ensure your care journey remains intentional.</p>
+</div>
+</section>
+</div>
+<!-- Right Column: Contextual Actions & Status -->
+<div class="space-y-12 flex flex-col pt-12 md:pt-0">
+<!-- 4. Virtual Waiting Room -->
+<section class="bg-surface-container p-10 rounded-[3rem] breathing-glow border border-primary/10 relative overflow-hidden group">
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-8">
+<span class="font-label-md bg-primary-container text-on-primary-container px-4 py-1 rounded-full uppercase tracking-tighter">Today's Visit</span>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="font-label-md text-primary">Live Connection</span>
+</div>
+</div>
+<h3 class="font-headline-lg text-primary mb-4 italic">Dr. Elara Smith</h3>
+<p class="font-body-lg text-on-surface-variant leading-relaxed mb-10">
+                            Dr. Smith is finishing notes on a previous patient. They will join you shortly. Thank you for your patience.
+                        </p>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-primary">4</span>
+<span class="font-headline-lg text-on-surface-variant italic">minutes estimated</span>
+</div>
+</div>
+<!-- Organic Background Shape -->
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-1000"></div>
+</section>
+<!-- 3. Optimal Windows (Time Slots) -->
+<section>
+<h4 class="font-label-md text-on-surface-variant uppercase tracking-widest mb-6 px-4">Optimal Windows</h4>
+<div class="space-y-4">
+<!-- Slot 1 -->
+<div class="group bg-surface-container-low hover:bg-surface-container-high p-6 rounded-2xl transition-all cursor-pointer flex items-center justify-between border border-outline-variant/10 hover:border-primary/20">
+<div class="flex items-center gap-5">
+<span class="material-symbols-outlined text-primary-container">calendar_today</span>
+<div>
+<h5 class="font-narrative-action text-primary">Tomorrow 10:00 AM</h5>
+<p class="font-body-md text-on-surface-variant">Morning Clarity Session</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">arrow_forward_ios</span>
+</div>
+<!-- Slot 2 -->
+<div class="group bg-surface-container-low hover:bg-surface-container-high p-6 rounded-2xl transition-all cursor-pointer flex items-center justify-between border border-outline-variant/10 hover:border-primary/20 translate-x-4">
+<div class="flex items-center gap-5">
+<span class="material-symbols-outlined text-primary-container">wb_twilight</span>
+<div>
+<h5 class="font-narrative-action text-primary">Tomorrow 2:30 PM</h5>
+<p class="font-body-md text-on-surface-variant">Afternoon Review</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">arrow_forward_ios</span>
+</div>
+<!-- Slot 3 -->
+<div class="group bg-surface-container-low hover:bg-surface-container-high p-6 rounded-2xl transition-all cursor-pointer flex items-center justify-between border border-outline-variant/10 hover:border-primary/20">
+<div class="flex items-center gap-5">
+<span class="material-symbols-outlined text-primary-container">event</span>
+<div>
+<h5 class="font-narrative-action text-primary">Friday 9:15 AM</h5>
+<p class="font-body-md text-on-surface-variant">End of Week Synthesis</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">arrow_forward_ios</span>
+</div>
+</div>
+</section>
+<div class="flex flex-col gap-8 opacity-40 hover:opacity-100 transition-opacity pt-8">
+<img class="w-full h-48 object-cover rounded-[2.5rem] mix-blend-multiply grayscale hover:grayscale-0 transition-all duration-700" data-alt="A tranquil, high-key photograph of smooth river stones stacked in an asymmetrical, balanced pile. The lighting is soft and diffused, creating a serene and grounded atmosphere that complements the wabi-sabi aesthetic of the health platform. The color palette is composed of warm grays, sand tones, and subtle charcoal accents, maintaining a tactile and organic feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAugUb1B0QKkPaaH28-xQrhS9fjAMC3mgDtcuuGFQEZz8iCRdlc569oX8lK1gHqjoPT9c7jOkH4LRGyHm8-9Wsnd4CZp4ZfiL9LdvYM3EIywNsZkU-wOtPYwHYBFnvxtY6wvLmt-OvQ9_8hWAJxCF2FW99CMgJc0AFMj6ZSK_f1tFX3ZbwwysFggUoSHaZCnuArqjwYyGwL6LhaC4ZR1vH7b9vDWWdT8TQKnw2RoMmeIWK8JAehFfdZLkuIz1oIKaTYEnyCwJs0Jg"/>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Anchor (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 lg:hidden bg-surface-container rounded-t-xl shadow-lg">
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-5 py-1">
+<span class="material-symbols-outlined">home_app_logo</span>
+<span class="font-label-md">Presence</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-md">Pathways</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md">Chronicle</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">lock_open</span>
+<span class="font-label-md">Vault</span>
+</div>
+</nav>
+<style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(1rem); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</body></html>
