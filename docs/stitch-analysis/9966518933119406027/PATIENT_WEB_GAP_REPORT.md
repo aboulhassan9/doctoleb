@@ -90,3 +90,57 @@ Residual QA note:
 
 - Protected patient routes still require an authenticated tenant/test patient to capture true dashboard, booking, timeline, messages, billing, and profile runtime states. The unauthenticated visual pass confirms the route guard and public patient-auth pages, but not patient-owned data states.
 - Screenshot pass captured `ERR_NAME_NOT_RESOLVED` console noise from external resources in the local environment; app build/lint and local rendering still completed.
+
+## 2026-05-18 Senior Gap Scan + Auth Polish (Session 2)
+
+A second senior-level scan reviewed every patient-web route, the patient shell, all
+nine `packages/core/services/patient*` services, and the live dev tenant
+(`gezmfmskhmjgnquoyosq`).
+
+### Schema / contract verification
+
+All 18 patient-facing RPCs and the `patient_form_field_config`,
+`appointment_patient_answers`, `patient_payment_checkout_sessions`,
+`patient_payment_gateway_events` tables exist in the dev tenant.
+`audit:rpc-signatures` and `audit:selects-drift` report no drift.
+`submit_patient_check_in` is present and writes only allowlisted `precheck_forms`
+columns with ownership, appointment-status, and `custom.*` allowlist guards.
+
+### Findings
+
+| Severity | Surface | Finding | Status |
+|---|---|---|---|
+| High | `PatientAppointmentsPage`, `NotFoundPage` | Material Symbols icon font used for 2 icons while the whole app is `lucide-react`; the font `<link>` shipped in `apps/patient-web/index.html`. Generic-AI / Stitch leftover and an unnecessary web-font download. | Fixed |
+| High | `LoginPage` | Shipped forbidden Stitch vocabulary: heading "The Data Vault", "Enter quietly", "weave records", label "Identity (email)". `DESIGN.md` §8 and `ANALYSIS.md` explicitly forbid this. | Fixed |
+| Medium | `LoginPage` | Decorative non-functional `patient-friction` slide element (`role="img"`) — a Stitch slide-to-confirm artifact with no behavior. | Removed (+ dead CSS) |
+| Medium | `SignUpPage`, `ForgotPasswordPage`, `ResetPasswordPage` | Poetic copy: "Clinical Identity", "Return to entrance", "Restore access calmly", "Choose a new key", "Send entrance link", "Identity email", "Creating identity...". | Fixed |
+| Low | `src/index.css` | Pre-existing unused patient CSS classes: `patient-narrative-line`, `patient-narrative-field`, `patient-art-line`, `patient-rule-grid` (zero usages in `apps/`). | Open — flagged, not removed this slice |
+| Info | Patient portal pages | Dashboard, Appointments, Check-In, Billing, Timeline, Profile, Messages, Onboarding are service-driven, tokenized, accessible, with loading/empty/error states. No generic bordered-card stacks, no `transition-all`, no hardcoded patient hexes. Architecturally sound. | No action |
+
+### Fixed this session
+
+- Removed the Material Symbols font dependency from patient-web: replaced the booking
+  spinner with `lucide-react` `Loader2`, the 404 icon with `Compass`, and deleted the
+  font `<link>` from `apps/patient-web/index.html`.
+- De-poeticized Login, Signup, Forgot Password, and Reset Password copy into clear
+  DoctoLeb healthcare language per the `ANALYSIS.md` translation table.
+- Removed the decorative `patient-friction` slider from `LoginPage` and its now-dead
+  `.patient-friction*` CSS rules.
+
+### Verified
+
+- `npm run lint`, `npm run build:patient`, `npm run test:unit` (935 pass / 0 fail),
+  `npm run audit:rpc-signatures`, `npm run audit:selects-drift` — all pass.
+- Browser QA at 390 px and ~560 px on the dev tenant: `/login`, `/signup`,
+  `/forgot-password`, `/reset-password`, and the 404 route render the new copy,
+  the `Compass` SVG icon, zero `.material-symbols-outlined` nodes, and zero console
+  errors.
+
+### Still open for the next session
+
+- Authenticated portal pages (dashboard, appointments, check-in, billing, timeline,
+  profile, messages) still need true runtime visual QA with a real test patient
+  session — only public/auth routes were browser-verified.
+- The booking-page `Loader2` spinner change is behind auth; verified by build only.
+- Unused `patient-narrative-*` / `patient-art-line` / `patient-rule-grid` CSS can be
+  pruned.
