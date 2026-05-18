@@ -14,11 +14,14 @@ import { formatClinicTime, isSameClinicDay } from '@/lib/time';
 import { useAppointments } from '@/hooks/features/useAppointments';
 import { useNotifications } from '@/hooks/features/useNotifications';
 import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
+import { getClinicOpsNotificationTarget, getClinicOpsSearchTarget } from '@/lib/clinicOpsNavigation';
+import { timeAgo } from '@/lib/dateUtils';
 
 export default function DoctorDashboardPage() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [showSettings, setShowSettings] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
     const { showToast } = useToast();
     const { user, logout } = useAuth();
 
@@ -29,7 +32,7 @@ export default function DoctorDashboardPage() {
     } : { name: 'Doctor', role: 'Doctor', initials: '??' };
 
     const { appointments, loading: loadingAppointments, refresh: refreshAppointments } = useAppointments({ mode: 'doctor' });
-    const { notifications, unreadCount, loading: loadingNotifs, refresh: refreshNotifs } = useNotifications({ userId: user?.id });
+    const { notifications, unreadCount, loading: loadingNotifs, refresh: refreshNotifs, markRead, markAllRead } = useNotifications({ userId: user?.id });
     const { doctor: doctorRecord, loading: loadingProfile } = useDoctorProfile();
 
     const loading = loadingAppointments || loadingNotifs || loadingProfile;
@@ -94,11 +97,33 @@ export default function DoctorDashboardPage() {
 
     const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
+    const handleNotificationClick = async (notification) => {
+        await markRead(notification.id);
+        setShowNotifications(false);
+        navigate(getClinicOpsNotificationTarget(notification, 'doctor'));
+    };
+
+    const handleMarkAllRead = async () => {
+        await markAllRead();
+        setShowNotifications(false);
+    };
+
+    const handleSearchSubmit = (event) => {
+        event.preventDefault();
+        const q = searchQuery.trim();
+        if (!q) return;
+        setSearchQuery('');
+        navigate(getClinicOpsSearchTarget(q, 'doctor'));
+    };
+
     // Click-outside for settings dropdown
     const headerRef = useRef(null);
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (headerRef.current && !headerRef.current.contains(e.target)) setShowSettings(false);
+            if (headerRef.current && !headerRef.current.contains(e.target)) {
+                setShowSettings(false);
+                setShowNotifications(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -110,15 +135,49 @@ export default function DoctorDashboardPage() {
                 {/* Header */}
                 <header className="sticky top-0 z-20 h-20 hidden md:flex bg-white/80 backdrop-blur-md border-b border-slate-200 items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
-                        <div className="relative w-full">
+                        <form className="relative w-full" onSubmit={handleSearchSubmit}>
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10">search</span>
                             <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search patients, records..." className="w-full bg-slate-100 border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/50" />
-                        </div>
+                        </form>
                     </div>
                     <div ref={headerRef} className="flex items-center gap-4 relative">
-                        <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary transition-all">
+                        <button
+                            type="button"
+                            onClick={() => { setShowNotifications(!showNotifications); setShowSettings(false); }}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary transition-all relative"
+                            aria-label="Open notifications"
+                        >
                             <span className="material-symbols-outlined">notifications</span>
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-critical px-1 text-[10px] font-black text-white flex items-center justify-center">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
                         </button>
+                        <AnimatePresence>
+                            {showNotifications && (
+                                <motion.div initial={{ opacity: 0, scale: 0.96, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 8 }} className="absolute top-[120%] right-12 z-50 w-80 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl">
+                                    <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3">
+                                        <span className="text-sm font-black text-slate-900">Notifications</span>
+                                        <button type="button" onClick={handleMarkAllRead} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">Mark all read</button>
+                                    </div>
+                                    <div className="max-h-80 space-y-1 overflow-y-auto p-2">
+                                        {notifications.length === 0 ? (
+                                            <div className="p-6 text-center text-sm font-medium text-slate-400">All caught up.</div>
+                                        ) : notifications.map((notification) => (
+                                            <button key={notification.id} type="button" onClick={() => handleNotificationClick(notification)} className="flex w-full items-start gap-3 rounded-xl p-3 text-left transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                                <span className="material-symbols-outlined mt-1 rounded-lg bg-primary/10 p-2 text-[16px] text-primary">notifications</span>
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="block truncate text-xs font-black text-slate-900">{notification.title}</span>
+                                                    {notification.message && <span className="mt-0.5 block line-clamp-2 text-[11px] text-slate-500">{notification.message}</span>}
+                                                    <span className="mt-1 block text-[10px] font-bold text-slate-400">{timeAgo(notification.created_at)}</span>
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                         <button onClick={() => setShowSettings(!showSettings)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary transition-all">
                             <span className="material-symbols-outlined">settings</span>
                         </button>
@@ -160,10 +219,14 @@ export default function DoctorDashboardPage() {
                             <p className="text-slate-500 mt-2 text-base">Welcome back, {doctorUser.name}. Here's your clinic status for today.</p>
                         </div>
                         <div className="flex items-center gap-3 mt-4 md:mt-0">
-                            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
+                            <button
+                                type="button"
+                                onClick={() => navigate(`/doctor-appointments?view=daily&date=${new Date().toISOString().slice(0, 10)}`)}
+                                className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 transition-colors hover:border-primary/40 hover:bg-primary/5"
+                            >
                                 <span className="material-symbols-outlined text-primary text-lg">calendar_today</span>
                                 <span className="text-sm font-bold text-slate-900">{today}</span>
-                            </div>
+                            </button>
                         </div>
                     </motion.div>
 
@@ -201,7 +264,13 @@ export default function DoctorDashboardPage() {
                                         <div>
                                             <p className={`text-sm font-bold ${alert.type === 'critical' || alert.type === 'appointment' ? 'text-critical' : 'text-slate-900'}`}>{alert.title}</p>
                                             <p className="text-xs text-slate-500 mt-1">{alert.message}</p>
-                                            <button className={`mt-2 text-[10px] font-bold uppercase tracking-widest ${alert.type === 'critical' || alert.type === 'appointment' ? 'text-critical' : 'text-primary'} hover:underline`}>View Details</button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleNotificationClick(alert)}
+                                                className={`mt-2 text-[10px] font-bold uppercase tracking-widest ${alert.type === 'critical' || alert.type === 'appointment' ? 'text-critical' : 'text-primary'} hover:underline`}
+                                            >
+                                                View Details
+                                            </button>
                                         </div>
                                     </motion.div>
                                 )) : (

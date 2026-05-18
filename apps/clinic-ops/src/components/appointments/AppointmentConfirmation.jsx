@@ -2,7 +2,6 @@
  * AppointmentConfirmation — success step shown after booking.
  * Displays a bento-style summary card with download/print actions.
  */
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useToast } from '@ui/contexts/ToastContext';
 
@@ -14,17 +13,10 @@ export default function AppointmentConfirmation({
     onModify,
 }) {
     const { showToast } = useToast();
-    const [isDownloading, setIsDownloading] = useState(false);
-
-    const handleDownload = async () => {
-        setIsDownloading(true);
-        await new Promise(r => setTimeout(r, 1500));
-        setIsDownloading(false);
-        showToast('Patient appointment PDF generated and downloaded to your system.', 'success');
-    };
 
     const handlePrint = () => {
         window.print();
+        showToast('Print dialog opened for the appointment confirmation.', 'success');
     };
 
     const patientName = selectedPatientData
@@ -108,25 +100,18 @@ export default function AppointmentConfirmation({
                     {/* Action Buttons */}
                     <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <button
-                            onClick={handleDownload}
-                            disabled={isDownloading}
-                            className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-wait"
-                        >
-                            <motion.span
-                                animate={isDownloading ? { rotate: 360 } : {}}
-                                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                                className="material-symbols-outlined text-[20px]"
-                            >
-                                {isDownloading ? 'progress_activity' : 'download'}
-                            </motion.span>
-                            {isDownloading ? 'Downloading…' : 'Download PDF'}
-                        </button>
-                        <button
                             onClick={handlePrint}
-                            className="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 px-6 py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all"
+                            className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
                             <span className="material-symbols-outlined text-[20px]">print</span>
-                            Print Slip
+                            Print Confirmation
+                        </button>
+                        <button
+                            onClick={onModify}
+                            className="flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 px-6 py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all"
+                        >
+                            <span className="material-symbols-outlined text-[20px]">event_repeat</span>
+                            Modify Booking
                         </button>
                     </div>
 

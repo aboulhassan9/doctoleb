@@ -75,16 +75,16 @@ export default function DataTable({
   const totalPages = pagination ? Math.ceil(pagination.total / pagination.pageSize) : 0;
 
   return (
-    <div className={`bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-none border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden ${className}`}>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
+            <tr className="bg-slate-50 border-b-2 border-black">
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider ${
-                    sortable && col.sortable !== false ? 'cursor-pointer hover:text-slate-700 select-none' : ''
+                  className={`px-4 py-3 text-left font-label text-[11px] font-bold text-black uppercase tracking-wider ${
+                    sortable && col.sortable !== false ? 'cursor-pointer hover:bg-slate-200 select-none' : ''
                   } ${col.className || ''}`}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
                 >
@@ -124,8 +124,8 @@ export default function DataTable({
 
       {/* Pagination */}
       {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50">
-          <p className="text-sm text-slate-500">
+        <div className="flex items-center justify-between px-4 py-3 border-t-2 border-black bg-slate-50">
+          <p className="font-label text-[13px] text-slate-700">
             Showing {pagination.page * pagination.pageSize + 1}–
             {Math.min((pagination.page + 1) * pagination.pageSize, pagination.total)} of {pagination.total}
           </p>
@@ -133,18 +133,18 @@ export default function DataTable({
             <button
               onClick={() => pagination.onPageChange(pagination.page - 1)}
               disabled={pagination.page === 0}
-              className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-none border-2 border-transparent hover:border-black hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               aria-label="Previous page"
             >
               <span className="material-symbols-outlined text-lg">chevron_left</span>
             </button>
-            <span className="text-sm font-medium text-slate-700 px-2">
+            <span className="font-label text-[13px] font-bold text-black px-2">
               {pagination.page + 1} / {totalPages}
             </span>
             <button
               onClick={() => pagination.onPageChange(pagination.page + 1)}
               disabled={pagination.page >= totalPages - 1}
-              className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-none border-2 border-transparent hover:border-black hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               aria-label="Next page"
             >
               <span className="material-symbols-outlined text-lg">chevron_right</span>

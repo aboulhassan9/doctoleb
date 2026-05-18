@@ -8,7 +8,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBrand } from '@/contexts/BrandContext';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
-import { escapeHtml, openPrintableHtml, safeFilenamePart } from '@/lib/html';
+import { escapeHtml, openPrintableHtml } from '@/lib/html';
 
 function buildPatientHistoryPrintHtml({ patient, visits, brandName }) {
     const printableBrandName = escapeHtml(brandName);
@@ -110,18 +110,6 @@ function buildPatientHistoryPrintHtml({ patient, visits, brandName }) {
     `;
 }
 
-function downloadHtmlDocument(html, filename) {
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
 export default function DoctorMedicalHistoryPage() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -133,6 +121,8 @@ export default function DoctorMedicalHistoryPage() {
     const [patient, setPatient] = useState(null);
     const [visits, setVisits] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [historyPageSize, setHistoryPageSize] = useState(10);
+    const [totalVisits, setTotalVisits] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -141,7 +131,7 @@ export default function DoctorMedicalHistoryPage() {
             try {
                 const [patientRes, encountersRes, diagnosesRes] = await Promise.all([
                     patientService.getById(id),
-                    clinicalService.getEncountersByPatient(id, { pageSize: 100 }),
+                    clinicalService.getEncountersByPatient(id, { pageSize: historyPageSize }),
                     clinicalService.getDiagnoses(id, { pageSize: 100 })
                 ]);
 
@@ -161,6 +151,7 @@ export default function DoctorMedicalHistoryPage() {
                 }
 
                 if (encountersRes.data) {
+                    setTotalVisits(encountersRes.count || encountersRes.data.length);
                     const diagnosesByEncounter = new Map(
                         (diagnosesRes.data || []).map((diagnosis) => [diagnosis.encounter_id, diagnosis])
                     );
@@ -169,6 +160,10 @@ export default function DoctorMedicalHistoryPage() {
                         const doc = c.doctors?.users || {};
                         const diagnosis = diagnosesByEncounter.get(c.id);
                         return {
+                            id: c.id,
+                            encounterId: c.id,
+                            appointmentId: c.appointment_id,
+                            occurredAt: date,
                             date: date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }).toUpperCase(),
                             year: date.getFullYear().toString(),
                             reason: c.chief_complaint || c.appointments?.reason || 'Clinical encounter',
@@ -193,7 +188,26 @@ export default function DoctorMedicalHistoryPage() {
             }
         };
         fetchData();
-    }, [id]);
+    }, [historyPageSize, id]);
+
+    const filteredVisits = visits.filter((visit) => {
+        const q = searchQuery.trim().toLowerCase();
+        const matchesSearch = !q || [
+            visit.reason,
+            visit.diagnosis,
+            visit.physician,
+            visit.reference,
+            visit.status,
+        ].filter(Boolean).join(' ').toLowerCase().includes(q);
+
+        if (!matchesSearch) return false;
+        if (timeFilter === 'all') return true;
+
+        const threshold = new Date();
+        if (timeFilter === '6months') threshold.setMonth(threshold.getMonth() - 6);
+        if (timeFilter === '1year') threshold.setFullYear(threshold.getFullYear() - 1);
+        return visit.occurredAt >= threshold;
+    });
 
     if (loading) {
         return (
@@ -216,7 +230,7 @@ export default function DoctorMedicalHistoryPage() {
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <header className="flex justify-between items-center h-16 px-8 bg-white/80 backdrop-blur-md border-b border-slate-200 shrink-0">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => navigate(`/doctor-patient/${id}`)} className="flex items-center gap-2 text-slate-500 hover:text-slate-700">
+                        <button type="button" onClick={() => navigate(`/doctor-patient/${id}`)} className="flex items-center gap-2 text-slate-500 hover:text-slate-700" aria-label="Back to patient profile">
                             <span className="material-symbols-outlined">arrow_back</span>
                         </button>
                         <div className="flex items-center gap-2">
@@ -237,11 +251,10 @@ export default function DoctorMedicalHistoryPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full relative">
+                        <button type="button" disabled title="Use the shared dashboard notification inbox to review patient alerts." className="p-2 text-slate-300 rounded-full relative cursor-not-allowed" aria-label="Notifications unavailable here">
                             <span className="material-symbols-outlined">notifications</span>
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                         </button>
-                        <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full">
+                        <button type="button" disabled title="Patient-history help content is not configured yet." className="p-2 text-slate-300 rounded-full cursor-not-allowed" aria-label="Help unavailable">
                             <span className="material-symbols-outlined">help</span>
                         </button>
                         <div className="h-8 w-px bg-slate-200 mx-2"></div>
@@ -289,7 +302,7 @@ export default function DoctorMedicalHistoryPage() {
                             </div>
                         </div>
                         <div className="flex gap-3">
-                            <button onClick={() => {
+                            <button type="button" onClick={() => {
                                 const printContent = buildPatientHistoryPrintHtml({ patient, visits, brandName: displayName });
                                 if (!openPrintableHtml(printContent)) {
                                     showToast('Unable to open print preview. Please allow popups for this site.', 'error');
@@ -298,13 +311,9 @@ export default function DoctorMedicalHistoryPage() {
                                 <span className="material-symbols-outlined text-[18px]">print</span>
                                 Print View
                             </button>
-                            <button onClick={() => {
-                                const printContent = buildPatientHistoryPrintHtml({ patient, visits, brandName: displayName });
-                                const filename = `Patient_History_${safeFilenamePart(patient.name, 'patient')}_${new Date().toISOString().split('T')[0]}.html`;
-                                downloadHtmlDocument(printContent, filename);
-                            }} className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white hover:text-primary font-bold text-sm rounded-xl transition-all shadow-lg">
+                            <button type="button" disabled title="Document export must use the persisted clinical document renderer before downloads are enabled." className="flex items-center gap-2 px-6 py-2.5 bg-slate-100 text-slate-400 font-bold text-sm rounded-xl transition-all cursor-not-allowed">
                                 <span className="material-symbols-outlined text-[18px]">download</span>
-                                Download All Records
+                                Export unavailable
                             </button>
                         </div>
                     </section>
@@ -322,19 +331,18 @@ export default function DoctorMedicalHistoryPage() {
                                     <option value="6months">Last 6 Months</option>
                                     <option value="1year">Past Year</option>
                                 </select>
-                                <button className="p-1.5 bg-slate-50 rounded-lg text-slate-500 hover:text-primary transition-colors">
+                                <button type="button" disabled title="Use the search and time range filters already shown here." className="p-1.5 bg-slate-50 rounded-lg text-slate-300 cursor-not-allowed transition-colors" aria-label="Additional filters unavailable">
                                     <span className="material-symbols-outlined">filter_list</span>
                                 </button>
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            {visits.filter(v => 
-                                searchQuery === '' || 
-                                v.reason.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                v.diagnosis.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                v.physician.toLowerCase().includes(searchQuery.toLowerCase())
-                            ).map((visit, i) => (
+                            {filteredVisits.length === 0 ? (
+                                <div className="rounded-xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400">
+                                    No clinical records match the current filters.
+                                </div>
+                            ) : filteredVisits.map((visit, i) => (
                                 <motion.div 
                                     key={i}
                                     initial={{ opacity: 0, y: 20 }}
@@ -382,10 +390,10 @@ export default function DoctorMedicalHistoryPage() {
                                             <span className="text-[11px] font-bold uppercase tracking-wide">{visit.status}</span>
                                         </div>
                                         <div className="flex gap-2 mt-4">
-                                            <button className="flex-1 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold text-[11px] py-2 rounded-lg transition-all flex items-center justify-center gap-1">
+                                            <button type="button" onClick={() => navigate(`/doctor-reports?patientId=${encodeURIComponent(id)}&encounterId=${encodeURIComponent(visit.encounterId)}`)} className="flex-1 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold text-[11px] py-2 rounded-lg transition-all flex items-center justify-center gap-1">
                                                 <span className="material-symbols-outlined text-[14px]">visibility</span> Report
                                             </button>
-                                            <button className="flex-1 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold text-[11px] py-2 rounded-lg transition-all flex items-center justify-center gap-1">
+                                            <button type="button" onClick={() => navigate(`/doctor-encounter-id/${encodeURIComponent(visit.encounterId)}`)} className="flex-1 bg-white border border-slate-200 hover:border-blue-300 text-slate-700 font-bold text-[11px] py-2 rounded-lg transition-all flex items-center justify-center gap-1">
                                                 <span className="material-symbols-outlined text-[14px]">medical_services</span> Presc.
                                             </button>
                                         </div>
@@ -403,16 +411,17 @@ export default function DoctorMedicalHistoryPage() {
                         </div>
 
                         <div className="flex justify-center pt-4">
-                            <button className="text-sm font-bold text-primary hover:text-blue-800 flex items-center gap-2">
-                                Load Older Records
+                            <button
+                                type="button"
+                                disabled={visits.length >= totalVisits}
+                                onClick={() => setHistoryPageSize((value) => value + 10)}
+                                className="text-sm font-bold text-primary hover:text-blue-800 flex items-center gap-2 disabled:cursor-not-allowed disabled:text-slate-400"
+                            >
+                                {visits.length >= totalVisits ? 'All records loaded' : 'Load older records'}
                                 <span className="material-symbols-outlined">expand_more</span>
                             </button>
                         </div>
                     </section>
-
-                <button className="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform">
-                    <span className="material-symbols-outlined text-2xl" style={{ fontWeight: 700 }}>add</span>
-                </button>
             </div>
             </div>
         </DashboardLayout>

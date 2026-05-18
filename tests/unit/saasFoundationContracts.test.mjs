@@ -21,6 +21,15 @@ function readControlPlaneFunctionSources() {
     .join('\n');
 }
 
+function readControlPlaneFunctionPackage(functionName) {
+  const functionDir = path.join(root, 'supabase-control-plane/functions', functionName);
+  return fs
+    .readdirSync(functionDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
+    .map((entry) => fs.readFileSync(path.join(functionDir, entry.name), 'utf8'))
+    .join('\n');
+}
+
 // After F1 (schema split), schema definitions live in domain files like
 // `appointments.js`, `clinical.js`, etc. The index.js barrel only re-exports.
 // Tests that assert on `export const ...` declarations need to read all
@@ -88,6 +97,51 @@ describe('SaaS foundation contracts', () => {
     assert.match(entitlementSync, /insurance_billing/);
   });
 
+  it('SaaS admin can seed tenant operational data only through a server-side preflighted admin function', () => {
+    const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
+    const consoleScreen = read('apps/control-plane/src/components/ConsoleScreen.jsx');
+    const panel = read('apps/control-plane/src/components/ProvisioningStepsPanel.jsx');
+    const seedFunction = readControlPlaneFunctionPackage('admin-seed-tenant-operational-data');
+
+    assert.match(api, /seedTenantOperationalData/);
+    assert.match(api, /admin-seed-tenant-operational-data/);
+    assert.match(consoleScreen, /handleSeedTenantOperationalData/);
+    assert.match(consoleScreen, /controlPlaneApi\.seedTenantOperationalData/);
+    assert.match(panel, /OperationalSeedCard/);
+    assert.match(panel, /Seed tenant operational data/);
+    assert.match(panel, /LegacyActiveTenantCard/);
+    assert.match(panel, /Active without provisioning ledger/);
+    assert.match(panel, /hasLegacyActiveTenant/);
+    assert.match(panel, /Dry run/);
+    assert.match(panel, /Seed test data/);
+    assert.match(panel, /browser never receives\s+privileged tenant keys/);
+
+    assert.match(seedFunction, /Deno\.serve\(handleSeedTenantOperationalData\)/);
+    assert.match(seedFunction, /export async function handleSeedTenantOperationalData/);
+    assert.match(seedFunction, /export async function executeSeed/);
+    assert.match(seedFunction, /requireSuperAdmin\(req, \['operator'\]\)/);
+    assert.match(seedFunction, /resolveTenantServiceRoleKey/);
+    assert.match(seedFunction, /TENANT_SEED_PREFLIGHT_FAILED/);
+    assert.match(seedFunction, /SEED_OPERATOR_EMAIL/);
+    assert.match(seedFunction, /seed\.operator@example\.invalid/);
+    assert.match(seedFunction, /auth\.admin\.createUser/);
+    assert.match(seedFunction, /role:\s*'secretary'/);
+    assert.match(seedFunction, /ensureSeedOperator/);
+    assert.match(seedFunction, /Seed write will create a synthetic secretary operator/);
+    assert.match(seedFunction, /bootstrapActions/);
+    assert.match(seedFunction, /REQUIRED_OPERATIONAL_TABLES/);
+    assert.match(seedFunction, /OPTIONAL_ANALYTICS_TABLES/);
+    assert.match(seedFunction, /book_slot/);
+    assert.match(seedFunction, /start_encounter/);
+    assert.match(seedFunction, /finalize_clinical_document/);
+    assert.match(seedFunction, /safeErrorMessage/);
+    assert.match(seedFunction, /tenant_seed\.completed/);
+    assert.match(seedFunction, /createAuthenticatedClient/);
+    assert.doesNotMatch(api, /TENANT_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE_KEY|serviceRole/i);
+    assert.doesNotMatch(consoleScreen, /TENANT_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE_KEY|serviceRole/i);
+    assert.doesNotMatch(panel, /TENANT_SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE_KEY|serviceRole/i);
+  });
+
   it('control-plane browser app uses control-plane env names and never references service-role keys', () => {
     const client = read('apps/control-plane/src/lib/controlPlaneClient.js');
     const api = read('apps/control-plane/src/lib/controlPlaneApi.js');
@@ -130,6 +184,19 @@ describe('SaaS foundation contracts', () => {
     assert.match(audit, /patient_consents/);
     assert.match(audit, /message_attachments/);
     assert.match(audit, /diagnosis_text/);
+    assert.match(audit, /admin-seed-tenant-operational-data/);
+    assert.match(audit, /tenantDataProxyFunctionPrefixes/);
+    assert.match(audit, /does not persist PHI\/clinical rows in the\s+\/\/\s+control-plane database/);
+  });
+
+  it('runtime env helper never exposes the full Vite env object into production bundles', () => {
+    const env = read('packages/core/lib/env.js');
+
+    assert.doesNotMatch(env, /import\.meta\.env\s*\[/);
+    assert.match(env, /case 'VITE_SUPABASE_URL'/);
+    assert.match(env, /case 'VITE_SUPABASE_ANON_KEY'/);
+    assert.match(env, /if \(import\.meta\.env\.DEV\) return import\.meta\.env\.VITE_SUPABASE_URL/);
+    assert.match(env, /if \(import\.meta\.env\.DEV\) return import\.meta\.env\.VITE_SUPABASE_ANON_KEY/);
   });
 
   it('patient app always boots the tenant-branded patient surface', () => {
@@ -217,7 +284,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(smoke, /doctoleb-clinic-ops\.vercel\.app/);
     assert.match(smoke, /doctoleb-control-plane\.vercel\.app/);
     assert.match(smoke, /Wrong portal/);
-    assert.match(smoke, /SURFACE_MISMATCH/);
+    assert.match(smoke, /Clinic not found/);
+    assert.match(smoke, /patient-web-root/);
     assert.match(helper, /net::ERR_ABORTED/);
   });
 
@@ -250,7 +318,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(smoke, /dev\.doctoleb\.com/);
     assert.match(smoke, /dev\.ops\.doctoleb\.com/);
     assert.match(smoke, /TENANT_NOT_FOUND/);
-    assert.match(smoke, /SURFACE_MISMATCH/);
+    assert.match(smoke, /bare patient Vercel host is not a tenant/);
+    assert.match(smoke, /bare ops Vercel host is not a tenant/);
     assert.match(smoke, /TENANT_INACTIVE/);
     assert.match(smoke, /assertNoSecretMarkers/);
     assert.match(smoke, /supabaseAnonKey/);
@@ -281,7 +350,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(audit, /apps\/control-plane\/dist/);
     assert.match(audit, /No bundle directories exist/);
     assert.match(audit, /app === 'control-plane'/);
-    assert.match(audit, /c2VydmljZV9yb2xl/);
+    assert.match(audit, /Supabase service-role JWT payload marker/);
     assert.match(audit, /service\[_-\]\?role\[_-\]\?key/);
     assert.match(audit, /sb_secret_/);
     assert.match(audit, /vcp_/);
@@ -618,6 +687,7 @@ describe('SaaS foundation contracts', () => {
 
   it('control-plane console can select provider connections and render the provisioning step ledger', () => {
     const consoleScreen = read('apps/control-plane/src/components/ConsoleScreen.jsx');
+    const consoleSidebar = read('apps/control-plane/src/components/ConsoleSidebar.jsx');
     const tenantCreationWorkspace = read('apps/control-plane/src/components/TenantCreationWorkspace.jsx');
     const tenantList = read('apps/control-plane/src/components/TenantList.jsx');
     const tenantDetailHook = read('apps/control-plane/src/hooks/useTenantDetail.js');
@@ -655,10 +725,11 @@ describe('SaaS foundation contracts', () => {
     assert.match(tenantDetailHook, /setError\(''\)/);
     assert.doesNotMatch(consoleScreen, /activeSection === 'setup'/);
     assert.doesNotMatch(consoleScreen, /sectionContextLabel/);
-    assert.match(tenantList, /\+ New tenant/);
-    assert.match(tenantList, /onCreateTenant/);
-    assert.match(tenantList, /isCreatingTenant/);
-    assert.match(tenantList, /Open tenant/);
+    assert.match(consoleSidebar, /Add New Tenant/);
+    assert.match(consoleSidebar, /onCreateTenant/);
+    assert.match(consoleScreen, /isCreatingTenant/);
+    assert.match(tenantList, /onSelect/);
+    assert.match(tenantList, /Get started by creating a new tenant/);
     assert.match(tenantCreationWorkspace, /New tenant setup/);
     assert.match(tenantCreationWorkspace, /Back to selected tenant/);
     assert.match(tenantCreationWorkspace, /CREATE_WORKSPACE_PANELS/);
@@ -697,7 +768,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(provisioningPanel, /role="region"/);
     assert.doesNotMatch(provisioningPanel, /role="tabpanel"/);
     assert.match(provisioningPanel, /Guided tenant launch/);
-    assert.match(provisioningPanel, /Separate from current tenant editing/);
+    assert.match(provisioningPanel, /readiness checklist until patient web/);
     assert.match(provisioningPanel, /ProvisioningClinicStep/);
     assert.match(provisioningPanel, /ProvisioningDoctorStep/);
     assert.match(provisioningPanel, /ProvisioningHostingStep/);
@@ -712,14 +783,14 @@ describe('SaaS foundation contracts', () => {
     assert.match(provisioningDoctorStep, /First doctor admin/);
     assert.match(provisioningHostingStep, /No purchased domain required now/);
     assert.match(provisioningReviewStep, /Pending routing rows/);
-    assert.match(provisioningWizardField, /grid gap-2/);
+    assert.match(provisioningWizardField, /grid gap-1\.5/);
     assert.match(brandPreviewCard, /Tenant app preview/);
     assert.match(brandPreviewCard, /Patient portal preview/);
     assert.match(brandPreviewCard, /Doctor workspace preview/);
     assert.match(brandPreviewCard, /branding\.primary_color/);
     assert.match(brandPreviewCard, /branding\.secondary_color/);
     assert.match(provisioningPanel, /getNextProvisioningWizardStepId/);
-    assert.match(tenantReadinessPanel, /Readiness proof/);
+    assert.match(tenantReadinessPanel, /Readiness Proof/i);
     assert.match(tenantReadinessPanel, /Zero-PHI SaaS checks/);
     assert.match(tenantReadiness, /Patient web online/);
     assert.match(tenantReadiness, /Doctor\/staff web online/);
@@ -729,7 +800,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(providerHelpers, /Assisted or automatic provisioning requires/);
     assert.match(providerPanel, /upsertProviderConnection/);
     assert.match(providerPanel, /archiveProviderConnection/);
-    assert.match(providerPanel, /Raw provider tokens, privileged database keys, and management keys never enter/);
+    assert.match(providerPanel, /Raw provider tokens, privileged database keys,[\s\S]+management keys never enter/);
     assert.match(stepsPanel, /Audit log/);
     assert.match(stepsPanel, /Open Supabase/);
     assert.match(stepsPanel, /Open Vercel/);
@@ -1076,7 +1147,7 @@ describe('SaaS foundation contracts', () => {
     assert.match(consoleScreen, /FirstDoctorAdminPanel/);
     assert.match(doctorAdminPanel, /Doctor login/);
     assert.match(doctorAdminPanel, /Login email/);
-    assert.match(doctorAdminPanel, /Save doctor login/);
+    assert.match(doctorAdminPanel, /Save Doctor Login/i);
     assert.match(doctorAdminPanel, /OTP uses this email/);
     assert.match(panel, /ProvisioningDoctorStep/);
     assert.match(doctorStep, /First doctor admin/);
@@ -1130,8 +1201,8 @@ describe('SaaS foundation contracts', () => {
     assert.match(entitlementSync, /tenant_runtime_not_configured/);
     assert.match(brandingPanel, /Runtime connection required first/);
     assert.match(brandingPanel, /runtimeBranding/);
-    assert.match(brandingPanel, /Live tenant brand/);
-    assert.match(brandingPanel, /without a redeploy/);
+    assert.match(brandingPanel, /Live Tenant Brand/i);
+    assert.match(brandingPanel, /Changes reflect across patient and staff apps/);
     assert.match(brandingDrafts, /buildTenantBrandingDraft/);
     assert.match(brandingDrafts, /updateTenantBrandingDraft/);
     assert.match(entitlementsPanel, /Runtime connection required first/);

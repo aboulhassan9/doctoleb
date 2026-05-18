@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { paymentService } from '@/services/payments';
 import { useToast } from '@/contexts/ToastContext';
 import { logError } from '@/lib/logger';
+import { formatBillingReference } from '@/lib/billingReference';
 
 /**
- * useBilling — Fetch, compute stats, and manage invoices.
+ * useBilling — Fetch, compute stats, and manage tenant billing records.
  *
  * Extracted from BillingPage's 97-line useEffect and scattered state.
  *
@@ -36,7 +37,7 @@ export function useBilling() {
             ? 'bg-warning/10 text-warning'
             : 'bg-error-container text-on-error-container';
         return {
-          id: `#INV-${p.id.split('-')[0].toUpperCase()}`,
+          id: formatBillingReference(p),
           dbId: p.id,
           patient: `${fname} ${lname}`,
           initials: `${fname[0] || ''}${lname[0] || ''}`.toUpperCase(),
@@ -64,17 +65,17 @@ export function useBilling() {
     const totalInvoices = invoices.length;
     const totalRevenue = invoices.filter(i => i.status === 'Paid').reduce((s, i) => s + i.amount, 0);
     const unpaidBalance = invoices.filter(i => i.status !== 'Paid').reduce((s, i) => s + i.amount, 0);
-    const overdueCount = invoices.filter(i => i.status === 'Overdue').length;
+    const reviewCount = invoices.filter(i => i.status !== 'Paid').length;
     return [
-      { label: 'Total Invoices', value: totalInvoices, icon: 'description', badge: 'Active system records', badgeCls: 'text-success bg-success/10' },
+      { label: 'Total Bills', value: totalInvoices, icon: 'description', badge: 'Active system records', badgeCls: 'text-success bg-success/10' },
       { label: 'Total Revenue', value: totalRevenue, icon: 'payments', badge: 'Lifetime Collected', badgeCls: 'text-primary bg-primary/5' },
-      { label: 'Unpaid Balance', value: unpaidBalance, icon: 'account_balance_wallet', badge: `${overdueCount} overdue invoices`, badgeCls: 'text-critical bg-red-50' },
+      { label: 'Unpaid Balance', value: unpaidBalance, icon: 'account_balance_wallet', badge: `${reviewCount} records need review`, badgeCls: 'text-critical bg-red-50' },
     ];
   }, [invoices]);
 
   const activity = useMemo(() =>
     invoices.slice(0, 5).map(inv => ({
-      title: `Invoice ${inv.status}`,
+      title: `Payment ${inv.status}`,
       sub: `Patient: ${inv.patient}`,
       amount: `$${inv.amount.toFixed(2)}`,
       icon: inv.status === 'Paid' ? 'check_circle' : 'pending',
@@ -113,10 +114,19 @@ export function useBilling() {
     showToast('Invoice updated successfully', 'success');
   }, [showToast]);
 
-  const deleteInvoice = useCallback((id) => {
-    setInvoices(prev => prev.filter(inv => inv.id !== id));
-    showToast('Invoice deleted', 'success');
-  }, [showToast]);
+  const deleteInvoice = useCallback(async (id) => {
+    const invoice = invoices.find(inv => inv.id === id || inv.dbId === id);
+    const paymentId = invoice?.dbId || id;
+    const { error: archiveError } = await paymentService.archive(paymentId);
+    if (archiveError) {
+      showToast(`Failed to archive billing record: ${archiveError?.message || archiveError}`, 'error');
+      return { error: archiveError };
+    }
+
+    await fetch();
+    showToast('Billing record archived', 'success');
+    return { error: null };
+  }, [fetch, invoices, showToast]);
 
   return { invoices, stats, activity, barData, loading, error, refresh: fetch, updateInvoice, deleteInvoice };
 }

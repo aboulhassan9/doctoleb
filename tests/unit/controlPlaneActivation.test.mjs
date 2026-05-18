@@ -99,6 +99,9 @@ describe('SaaS activation contracts', () => {
     assert.match(source, /Referrer-Policy/);
     assert.match(source, /stale-while-revalidate/);
     assert.match(source, /normalizePayload/);
+    assert.match(source, /TENANT_RESOLVE_SHARED_APP_HOSTS/);
+    assert.match(source, /isSharedAppHost/);
+    assert.match(source, /TENANT_NOT_FOUND/);
   });
 
   it('tenant resolver logs only safe RPC failure metadata', () => {

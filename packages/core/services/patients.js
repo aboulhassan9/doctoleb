@@ -207,13 +207,13 @@ export const patientService = {
       const names = walkIn.full_name.trim().split(' ');
       const firstName = names[0] || 'Unknown';
       const lastName = names.length > 1 ? names.slice(1).join(' ') : '';
-      const dummyEmail = walkIn.email || `walkin_${Date.now()}_${crypto.randomUUID()}@clinic.local`;
+      const syntheticWalkInEmail = walkIn.email || `walkin_${Date.now()}_${crypto.randomUUID()}@clinic.local`;
 
       // 1. Create user record
       const { data: newUser, error: userError } = await supabase
         .from('users')
         .insert([{
-          email: dummyEmail,
+          email: syntheticWalkInEmail,
           first_name: firstName,
           last_name: lastName,
           phone: walkIn.phone || null,

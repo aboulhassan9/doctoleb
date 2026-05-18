@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { DEFAULT_BRANDING } from '../data/saasCatalog'
 import { controlPlaneApi } from '../lib/controlPlaneApi'
 import { buildTenantBrandingDraft } from '../lib/tenantBrandingDrafts'
@@ -26,8 +27,8 @@ import ProvisioningClinicStep from './provisioning/ProvisioningClinicStep'
 import ProvisioningDoctorStep from './provisioning/ProvisioningDoctorStep'
 import ProvisioningHostingStep from './provisioning/ProvisioningHostingStep'
 import ProvisioningReviewStep from './provisioning/ProvisioningReviewStep'
-import { PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from './provisioning/styles'
 import ProvisioningWizardStepNav from './ProvisioningWizardStepNav'
+import { Button, FormMessage } from './ui'
 
 export default function ProvisioningPanel({ providerConnections = [], onCreated }) {
   const [activeWizardStep, setActiveWizardStep] = useState('clinic')
@@ -83,24 +84,30 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
     }
 
     if (stepId === 'doctor') {
-      return validateFirstDoctorAdminDraft(normalizeFirstDoctorAdminDraft({
-        displayName: firstDoctorDisplayName,
-        email: firstDoctorEmail,
-        phone: firstDoctorPhone,
-      }))
+      return validateFirstDoctorAdminDraft(
+        normalizeFirstDoctorAdminDraft({
+          displayName: firstDoctorDisplayName,
+          email: firstDoctorEmail,
+          phone: firstDoctorPhone,
+        }),
+      )
     }
 
     if (stepId === 'hosting') {
       return validateProvisioningProviderSelection({ automationMode, supabaseConnectionId, vercelConnectionId })
     }
 
-    return validateProvisioningDraft({ requestedSlug, requestedDisplayName, clientRequestId })
-      || validateFirstDoctorAdminDraft(normalizeFirstDoctorAdminDraft({
-        displayName: firstDoctorDisplayName,
-        email: firstDoctorEmail,
-        phone: firstDoctorPhone,
-      }))
-      || validateProvisioningProviderSelection({ automationMode, supabaseConnectionId, vercelConnectionId })
+    return (
+      validateProvisioningDraft({ requestedSlug, requestedDisplayName, clientRequestId }) ||
+      validateFirstDoctorAdminDraft(
+        normalizeFirstDoctorAdminDraft({
+          displayName: firstDoctorDisplayName,
+          email: firstDoctorEmail,
+          phone: firstDoctorPhone,
+        }),
+      ) ||
+      validateProvisioningProviderSelection({ automationMode, supabaseConnectionId, vercelConnectionId })
+    )
   }
 
   function goNext() {
@@ -138,9 +145,10 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
       email: firstDoctorEmail,
       phone: firstDoctorPhone,
     })
-    const validationError = validateProvisioningDraft({ requestedSlug, requestedDisplayName, clientRequestId })
-      || validateFirstDoctorAdminDraft(firstDoctorAdmin)
-      || validateProvisioningProviderSelection({ automationMode, supabaseConnectionId, vercelConnectionId })
+    const validationError =
+      validateProvisioningDraft({ requestedSlug, requestedDisplayName, clientRequestId }) ||
+      validateFirstDoctorAdminDraft(firstDoctorAdmin) ||
+      validateProvisioningProviderSelection({ automationMode, supabaseConnectionId, vercelConnectionId })
     if (validationError) {
       setMessage(validationError)
       return
@@ -184,94 +192,115 @@ export default function ProvisioningPanel({ providerConnections = [], onCreated 
   }
 
   return (
-    <section className="rounded-[2rem] bg-slate-950 p-6 text-white shadow-sm">
-      <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-300">New doctor tenant</p>
-      <h2 className="mt-2 text-2xl font-black">Guided tenant launch</h2>
-      <p className="mt-2 text-sm text-slate-400">
-        Create the SaaS tenant draft one decision group at a time. After creation, the console moves you to the readiness checklist until patient web, doctor web, and the future Flutter path are prepared.
-      </p>
-      <div className="mt-4 rounded-2xl border border-cyan-300/30 bg-cyan-300/10 p-4 text-sm text-cyan-50">
-        <p className="font-black">Separate from current tenant editing</p>
-        <p className="mt-1 text-cyan-100/80">
-          These steps create a new tenant draft only. Existing tenants are changed from the Tenant, Domains, Branding, Features, and Provisioning tabs.
+    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white text-slate-900">
+      <div className="border-b border-slate-800 bg-slate-950 px-6 py-7 md:px-8">
+        <h2 className="text-xl font-semibold tracking-tight text-white">Guided tenant launch</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">
+          Create the SaaS tenant draft one decision group at a time. After creation, the console moves you to the
+          readiness checklist until patient web, doctor web, and the future Flutter path are prepared.
         </p>
       </div>
 
-      <ProvisioningWizardStepNav
-        activeStepId={activeWizardStep}
-        unlockedStepIndex={unlockedWizardStepIndex}
-        onStepChange={goToUnlockedStep}
-      />
+      <div className="p-6 md:p-8">
+        <ProvisioningWizardStepNav
+          activeStepId={activeWizardStep}
+          unlockedStepIndex={unlockedWizardStepIndex}
+          onStepChange={goToUnlockedStep}
+        />
 
-      <div
-        role="region"
-        id={`tenant-wizard-step-${activeStep.id}`}
-        aria-labelledby={`tenant-wizard-heading-${activeStep.id}`}
-        className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5"
-      >
-        <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Step {activeStep.number}</p>
-        <h3 id={`tenant-wizard-heading-${activeStep.id}`} className="mt-2 text-xl font-black">{activeStep.title}</h3>
-        <p className="mt-1 text-sm text-slate-400">{activeStep.description}</p>
-        <div className="mt-5">
-          {activeWizardStep === 'clinic' ? (
-            <ProvisioningClinicStep
-              requestedDisplayName={requestedDisplayName}
-              requestedSlug={requestedSlug}
-              requestedPlan={requestedPlan}
-              firstDoctorDisplayName={firstDoctorDisplayName}
-              previewBranding={previewBranding}
-              onDisplayNameChange={updateDisplayName}
-              onSlugChange={updateSlug}
-              onPlanChange={updatePlan}
-            />
-          ) : null}
-          {activeWizardStep === 'doctor' ? (
-            <ProvisioningDoctorStep
-              firstDoctorDisplayName={firstDoctorDisplayName}
-              firstDoctorEmail={firstDoctorEmail}
-              firstDoctorPhone={firstDoctorPhone}
-              onFirstDoctorDisplayNameChange={setFirstDoctorDisplayName}
-              onFirstDoctorEmailChange={setFirstDoctorEmail}
-              onFirstDoctorPhoneChange={setFirstDoctorPhone}
-            />
-          ) : null}
-          {activeWizardStep === 'hosting' ? (
-            <ProvisioningHostingStep
-              automationMode={automationMode}
-              supabaseConnectionId={supabaseConnectionId}
-              vercelConnectionId={vercelConnectionId}
-              supabaseConnections={supabaseConnections}
-              vercelConnections={vercelConnections}
-              onAutomationModeChange={setAutomationMode}
-              onSupabaseConnectionChange={setSupabaseConnectionId}
-              onVercelConnectionChange={setVercelConnectionId}
-            />
-          ) : null}
-          {activeWizardStep === 'review' ? (
-            <ProvisioningReviewStep
-              requestedSlug={requestedSlug}
-              requestedDisplayName={requestedDisplayName}
-              requestedPlan={requestedPlan}
-              automationMode={automationMode}
-              firstDoctorDisplayName={firstDoctorDisplayName}
-              firstDoctorEmail={firstDoctorEmail}
-              firstDoctorPhone={firstDoctorPhone}
-              previewBranding={previewBranding}
-            />
-          ) : null}
+        <div
+          role="region"
+          id={`tenant-wizard-step-${activeStep.id}`}
+          aria-labelledby={`tenant-wizard-heading-${activeStep.id}`}
+          className="mt-8"
+        >
+          <div className="mb-5">
+            <h3 id={`tenant-wizard-heading-${activeStep.id}`} className="text-base font-semibold tracking-tight text-slate-900">
+              {activeStep.title}
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">{activeStep.description}</p>
+          </div>
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-5">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeWizardStep}
+                initial={{ opacity: 0, x: 14 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -14 }}
+                transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {activeWizardStep === 'clinic' ? (
+                  <ProvisioningClinicStep
+                    requestedDisplayName={requestedDisplayName}
+                    requestedSlug={requestedSlug}
+                    requestedPlan={requestedPlan}
+                    firstDoctorDisplayName={firstDoctorDisplayName}
+                    previewBranding={previewBranding}
+                    onDisplayNameChange={updateDisplayName}
+                    onSlugChange={updateSlug}
+                    onPlanChange={updatePlan}
+                  />
+                ) : null}
+                {activeWizardStep === 'doctor' ? (
+                  <ProvisioningDoctorStep
+                    firstDoctorDisplayName={firstDoctorDisplayName}
+                    firstDoctorEmail={firstDoctorEmail}
+                    firstDoctorPhone={firstDoctorPhone}
+                    onFirstDoctorDisplayNameChange={setFirstDoctorDisplayName}
+                    onFirstDoctorEmailChange={setFirstDoctorEmail}
+                    onFirstDoctorPhoneChange={setFirstDoctorPhone}
+                  />
+                ) : null}
+                {activeWizardStep === 'hosting' ? (
+                  <ProvisioningHostingStep
+                    automationMode={automationMode}
+                    supabaseConnectionId={supabaseConnectionId}
+                    vercelConnectionId={vercelConnectionId}
+                    supabaseConnections={supabaseConnections}
+                    vercelConnections={vercelConnections}
+                    onAutomationModeChange={setAutomationMode}
+                    onSupabaseConnectionChange={setSupabaseConnectionId}
+                    onVercelConnectionChange={setVercelConnectionId}
+                  />
+                ) : null}
+                {activeWizardStep === 'review' ? (
+                  <ProvisioningReviewStep
+                    requestedSlug={requestedSlug}
+                    requestedDisplayName={requestedDisplayName}
+                    requestedPlan={requestedPlan}
+                    automationMode={automationMode}
+                    firstDoctorDisplayName={firstDoctorDisplayName}
+                    firstDoctorEmail={firstDoctorEmail}
+                    firstDoctorPhone={firstDoctorPhone}
+                    previewBranding={previewBranding}
+                  />
+                ) : null}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        {activeWizardStep !== 'clinic' ? <button type="button" onClick={goBack} className={SECONDARY_BUTTON_CLASS}>Back</button> : null}
-        {!isLastStep ? (
-          <button type="button" onClick={goNext} className={PRIMARY_BUTTON_CLASS}>Next step</button>
-        ) : (
-          <button type="button" onClick={createJob} disabled={saving} className={PRIMARY_BUTTON_CLASS}>
-            {saving ? 'Creating...' : 'Create tenant draft'}
-          </button>
-        )}
-        {message ? <p className="text-sm font-semibold text-slate-300">{message}</p> : null}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
+        <div>
+          {activeWizardStep !== 'clinic' ? (
+            <Button variant="secondary" onClick={goBack}>
+              Back
+            </Button>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-3">
+          {message ? (
+            <FormMessage tone={message.includes('created') ? 'success' : 'error'}>{message}</FormMessage>
+          ) : null}
+          {!isLastStep ? (
+            <Button onClick={goNext}>Next Step</Button>
+          ) : (
+            <Button onClick={createJob} disabled={saving}>
+              {saving ? 'Creating...' : 'Create Tenant Draft'}
+            </Button>
+          )}
+        </div>
       </div>
     </section>
   )

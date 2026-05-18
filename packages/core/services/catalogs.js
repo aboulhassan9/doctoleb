@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
 import {
   BLOOD_GROUP_SELECT_FIELDS,
   CITY_SELECT_FIELDS,
@@ -10,9 +10,9 @@ import {
   SURGERY_TYPE_SELECT_FIELDS,
   VACCINE_SELECT_FIELDS,
   VISIT_TYPE_SELECT_FIELDS,
-} from '@/lib/selects';
-import { catalogEntrySchema } from '@/schemas';
-import { validationError, parse } from '@/lib/serviceHelpers';
+} from '../lib/selects.js';
+import { catalogEntrySchema } from '../schemas/index.js';
+import { validationError, parse } from '../lib/serviceHelpers.js';
 
 const CATALOGS = {
   cities: CITY_SELECT_FIELDS,

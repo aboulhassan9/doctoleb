@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import { STAFF_MEMBER_SELECT_FIELDS } from '@/lib/selects';
+import { supabase } from '../lib/supabase.js';
+import { STAFF_MEMBER_SELECT_FIELDS } from '../lib/selects.js';
 import {
   staffInviteReissueSchema,
   staffInviteSchema,
@@ -7,10 +7,10 @@ import {
   staffMemberDisableSchema,
   staffMemberReactivateSchema,
   staffMemberUpdateSchema,
-} from '@/schemas';
-import { apiCall, apiPaged } from './api';
+} from '../schemas/index.js';
+import { apiCall, apiPaged } from './api.js';
 
-import { validationError, parse } from '@/lib/serviceHelpers';
+import { validationError, parse } from '../lib/serviceHelpers.js';
 
 export const staffService = {
   async getAll({ activeOnly = true, page = 1, pageSize = 100 } = {}) {

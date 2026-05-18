@@ -5,7 +5,6 @@
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getUserDisplayName } from '@/lib/userDisplay';
 
@@ -15,7 +14,6 @@ export default function DashboardSettingsModals({
     showSecurity, onCloseSecurity,
 }) {
     const { user } = useAuth();
-    const { showToast } = useToast();
     const { isDarkMode, setIsDarkMode, customBg, setCustomBg } = useTheme();
 
     return (
@@ -30,7 +28,7 @@ export default function DashboardSettingsModals({
                         <div className="space-y-4">
                             <div>
                                 <label className="text-[10px] font-semibold uppercase text-slate-400">Name</label>
-                                <input type="text" defaultValue={getUserDisplayName(user, '')} className="w-full px-4 py-2 border border-slate-200 rounded-xl" />
+                                <input type="text" readOnly defaultValue={getUserDisplayName(user, '')} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-600" />
                             </div>
                             <div>
                                 <label className="text-[10px] font-semibold uppercase text-slate-400">Role</label>
@@ -38,12 +36,14 @@ export default function DashboardSettingsModals({
                             </div>
                             <div>
                                 <label className="text-[10px] font-semibold uppercase text-slate-400">Email</label>
-                                <input type="email" defaultValue={user?.email || ''} className="w-full px-4 py-2 border border-slate-200 rounded-xl" />
+                                <input type="email" readOnly defaultValue={user?.email || ''} className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-600" />
                             </div>
+                            <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-900">
+                                Account profile edits are intentionally read-only here until the staff account update service is wired with audit logging.
+                            </p>
                         </div>
                         <div className="mt-8 flex gap-3">
-                            <button onClick={onCloseProfile} className="flex-1 py-3 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-xl">Cancel</button>
-                            <button onClick={() => { onCloseProfile(); showToast('Profile updated', 'success'); }} className="flex-1 py-3 bg-primary text-white text-sm font-semibold rounded-xl">Save</button>
+                            <button onClick={onCloseProfile} className="flex-1 py-3 bg-primary text-white text-sm font-semibold rounded-xl">Close</button>
                         </div>
                     </motion.div>
                 </motion.div>
@@ -94,13 +94,13 @@ export default function DashboardSettingsModals({
                             <span className="material-symbols-outlined text-primary">security</span> Security Settings
                         </h2>
                         <div className="space-y-4">
-                            <button onClick={() => showToast('Password reset link sent', 'success')} className="w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 flex items-center justify-between">
+                            <button disabled title="Password reset requires the authenticated account recovery flow to be wired here" className="w-full text-left px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-400 flex items-center justify-between cursor-not-allowed">
                                 Change Password <span className="material-symbols-outlined text-slate-400">chevron_right</span>
                             </button>
-                            <button onClick={() => showToast('2FA settings opened', 'info')} className="w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 flex items-center justify-between">
+                            <button disabled title="Two-factor management is not available in the tenant app yet" className="w-full text-left px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-400 flex items-center justify-between cursor-not-allowed">
                                 Two-Factor Authentication <span className="material-symbols-outlined text-slate-400">chevron_right</span>
                             </button>
-                            <button onClick={() => showToast('Active sessions view opened', 'info')} className="w-full text-left px-4 py-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl text-sm font-medium text-slate-700 flex items-center justify-between">
+                            <button disabled title="Session management needs a server-side auth audit endpoint before it can be exposed" className="w-full text-left px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-400 flex items-center justify-between cursor-not-allowed">
                                 Active Sessions <span className="material-symbols-outlined text-slate-400">chevron_right</span>
                             </button>
                         </div>

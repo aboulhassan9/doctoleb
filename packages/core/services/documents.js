@@ -1,7 +1,7 @@
-import { supabase } from '@/lib/supabase';
-import { CLINICAL_DOCUMENT_SELECT_FIELDS } from '@/lib/selects';
-import { apiCall, apiPaged } from './api';
-import { clinicalService } from './clinical';
+import { supabase } from '../lib/supabase.js';
+import { CLINICAL_DOCUMENT_SELECT_FIELDS } from '../lib/selects.js';
+import { apiCall, apiPaged } from './api.js';
+import { clinicalService } from './clinical.js';
 
 const DOCUMENT_TYPE_LABELS = {
   report: 'Medical Report',

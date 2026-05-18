@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { paymentService } from '@/services/payments';
 import { hasPaymentMethodAccess } from '@/lib/billingEntitlements';
+import { formatBillingReference } from '@/lib/billingReference';
 import { usePatients } from '@/hooks/features/usePatients';
 import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
 import { useEntitlements } from '@/hooks/features/useEntitlements';
@@ -48,9 +49,11 @@ export default function CreateBillPage() {
     const [selectedPatientId, setSelectedPatientId] = useState('');
     const [billingDoctorId,   setBillingDoctorId]   = useState(null);
     const [tenderedAmount,    setTenderedAmount]    = useState(150);
+    const [billSearch,        setBillSearch]        = useState('');
     const [submitState,       setSubmitState]       = useState('idle');
     const [isDownloading,     setIsDownloading]     = useState(false);
     const [showAddService,    setShowAddService]    = useState(false);
+    const [postedPayment,     setPostedPayment]     = useState(null);
 
     /* ── Derived ── */
     const canUseInsuranceBilling = hasPaymentMethodAccess(entitlements, 'insurance');
@@ -68,24 +71,53 @@ export default function CreateBillPage() {
     React.useEffect(() => { (async () => { const { data } = await paymentService.getBillableServices(); if (data) setAvailableServices(data); setIsLoadingServices(false); })(); }, []);
 
     /* ── Handlers ── */
-    const handleSavePost = async () => {
+    const paymentReference = formatBillingReference(postedPayment);
+
+    const handleSavePost = async ({ printAfter = false } = {}) => {
         if (!selectedPatientId)  { showToast('Please select a patient', 'error'); return; }
         if (services.length === 0) { showToast('Please add at least one service to the bill', 'error'); return; }
         if (totalDue <= 0)       { showToast('Total amount must be greater than zero', 'error'); return; }
         if (!billingDoctorId)    { showToast('Cannot create bill before a clinic doctor is configured', 'error'); return; }
 
         setSubmitState('processing');
-        const { error } = await paymentService.create({
+        const { data, error } = await paymentService.create({
             patient_id: selectedPatientId, doctor_id: billingDoctorId,
             amount: totalDue, status: invoiceStatus, payment_method: paymentMethod,
         }, { entitlements });
 
         if (error) { setSubmitState('idle'); showToast(`Failed to create bill: ${error?.message || error}`, 'error'); return; }
+        setPostedPayment(data);
         setSubmitState('success');
         showToast('Bill successfully submitted and posted.', 'success');
+        if (printAfter) {
+            requestAnimationFrame(() => window.print());
+        }
     };
 
-    const handleDownloadReceipt = async () => { setIsDownloading(true); await new Promise(r => setTimeout(r, 1500)); setIsDownloading(false); alert("Receipt PDF downloaded successfully!"); };
+    const handleHeaderSearch = (event) => {
+        event.preventDefault();
+        const query = billSearch.trim().toLowerCase();
+        if (!query) return;
+
+        const match = patientsList.find((patient) => {
+            const fullName = `${patient.users?.first_name || ''} ${patient.users?.last_name || ''}`.trim().toLowerCase();
+            return fullName.includes(query) || patient.id?.toLowerCase().includes(query) || patient.users?.email?.toLowerCase().includes(query);
+        });
+
+        if (match) {
+            setSelectedPatientId(match.id);
+            showToast(`Selected ${match.users?.first_name || 'patient'} for this bill.`, 'success');
+        } else {
+            showToast('No matching patient found for this bill search.', 'error');
+        }
+    };
+
+    const handleDownloadReceipt = async () => {
+        setIsDownloading(true);
+        window.print();
+        setIsDownloading(false);
+        showToast('Print dialog opened for the receipt.', 'success');
+    };
     const handleAddService = (svc) => setServices(prev => [...prev, svc]);
     const removeService = (index) => setServices(services.filter((_, i) => i !== index));
 
@@ -96,22 +128,22 @@ export default function CreateBillPage() {
                 <header className="sticky top-0 z-40 flex items-center justify-between px-8 h-20 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
                     <div className="flex items-center gap-8 flex-1">
                         <span className="text-[22px] font-black tracking-tighter text-slate-900">{displayName}</span>
-                        <div className="relative w-full max-w-md">
+                        <form onSubmit={handleHeaderSearch} className="relative w-full max-w-md">
                             <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
-                            <input className="w-full pl-11 pr-4 py-2.5 bg-slate-100/50 rounded-xl border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium" placeholder="Search patient or bill ID..." type="text" />
-                        </div>
+                            <input value={billSearch} onChange={(e) => setBillSearch(e.target.value)} className="w-full pl-11 pr-4 py-2.5 bg-slate-100/50 rounded-xl border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium" placeholder="Search patient or bill ID..." type="search" />
+                        </form>
                     </div>
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-3 pr-6 border-r border-slate-200">
-                            <button onClick={() => showToast('Opening notifications...', 'info')} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors relative">
+                            <button type="button" onClick={() => navigate('/dashboard')} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors relative" aria-label="View notification activity on dashboard">
                                 <span className="material-symbols-outlined">notifications</span>
                                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                             </button>
-                            <button onClick={() => showToast('Connecting to Help Center...', 'info')} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+                            <button type="button" disabled title="Help center is not configured for this tenant yet" className="p-2 text-slate-300 rounded-lg cursor-not-allowed">
                                 <span className="material-symbols-outlined">help_outline</span>
                             </button>
                         </div>
-                        <button onClick={() => showToast('Opening profile options...', 'info')} className="flex items-center gap-3 p-1 pr-4 hover:bg-slate-100 transition-colors rounded-full transition-all active:scale-95 group">
+                        <button type="button" disabled title="Profile options are managed from the authenticated account menu" className="flex items-center gap-3 p-1 pr-4 rounded-full opacity-70 cursor-not-allowed group">
                             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white ring-4 ring-primary/10">
                                 <span className="material-symbols-outlined font-light">account_circle</span>
                             </div>
@@ -170,7 +202,7 @@ export default function CreateBillPage() {
                                         <p className="text-lg font-black text-slate-900 tracking-tight">{user?.first_name ? `Dr. ${user.first_name} ${user.last_name || ''}`.trim() : 'Attending Provider'}</p>
                                         <p className="text-[12px] text-slate-500 font-medium italic">{user?.role || 'Physician'}</p>
                                     </div>
-                                    <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"><span className="material-symbols-outlined">edit</span></button>
+                                    <button type="button" disabled title="Provider changes must be made from staff/doctor settings" className="w-10 h-10 rounded-xl bg-slate-50 text-slate-300 cursor-not-allowed"><span className="material-symbols-outlined">edit</span></button>
                                 </div>
                             </div>
                         </section>
@@ -294,7 +326,9 @@ export default function CreateBillPage() {
                             paymentMethod={paymentMethod}
                             invoiceStatus={invoiceStatus}
                             submitState={submitState}
-                            onSavePost={handleSavePost}
+                            onSavePost={() => handleSavePost()}
+                            onSavePrint={() => handleSavePost({ printAfter: true })}
+                            paymentReference={postedPayment ? paymentReference : null}
                         />
                     </div>
                 </div>
@@ -307,6 +341,7 @@ export default function CreateBillPage() {
                         totalDue={totalDue}
                         paymentMethod={paymentMethod}
                         invoiceStatus={invoiceStatus}
+                        paymentReference={paymentReference}
                         onDownloadReceipt={handleDownloadReceipt}
                         isDownloading={isDownloading}
                     />

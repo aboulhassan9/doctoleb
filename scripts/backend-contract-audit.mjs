@@ -401,6 +401,16 @@ function assertNoClinicalDataInControlPlane() {
   // The control-plane Supabase project is zero-PHI. It may store tenant
   // routing, provisioning, plan, entitlement, and audit metadata only.
   // Clinical/operational tenant data belongs in tenant Supabase projects.
+  //
+  // Narrow exception:
+  //   admin-seed-tenant-operational-data is a privileged server-side test-data
+  //   runner. It resolves a tenant service-role secret, writes only to that
+  //   tenant's Supabase project, and does not persist PHI/clinical rows in the
+  //   control-plane database. The audit still scans all control-plane
+  //   migrations and every other Edge Function.
+  const tenantDataProxyFunctionPrefixes = new Set([
+    'supabase-control-plane/functions/admin-seed-tenant-operational-data/',
+  ]);
   const forbiddenTables = new Set([
     'patients',
     'patient_consents',
@@ -479,10 +489,15 @@ function assertNoClinicalDataInControlPlane() {
   }
 
   for (const file of functionFiles) {
+    const relativeFile = rel(file);
+    if ([...tenantDataProxyFunctionPrefixes].some((prefix) => relativeFile.startsWith(prefix))) {
+      continue;
+    }
+
     read(file).split(/\r?\n/).forEach((line, index) => {
       const tableMatch = line.match(fromTablePattern);
       if (tableMatch && forbiddenTables.has(tableMatch[1].toLowerCase())) {
-        violations.push(`${rel(file)}:${index + 1}: control-plane function touches tenant clinical table ${tableMatch[1]}`);
+        violations.push(`${relativeFile}:${index + 1}: control-plane function touches tenant clinical table ${tableMatch[1]}`);
       }
     });
   }

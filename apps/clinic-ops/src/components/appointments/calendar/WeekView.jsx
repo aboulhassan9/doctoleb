@@ -19,6 +19,8 @@ export default function WeekView({
     today,
     weekAppts,
     onShiftWeek,
+    onSlotSelect,
+    onAppointmentSelect,
 }) {
     const wkDays     = Array.from({ length: 7 }, (_, i) => { const d = new Date(wkStart); d.setDate(d.getDate() + i); return d; });
     const wkEnd      = new Date(wkStart); wkEnd.setDate(wkEnd.getDate() + 6);
@@ -96,6 +98,22 @@ export default function WeekView({
                                         key={dayIdx}
                                         className={`relative border-l border-slate-50 ${isTodayCol ? 'bg-primary/[0.025]' : ''}`}
                                     >
+                                        {HOURS.map((hour, hourIdx) => {
+                                            const slotDate = new Date(wkDays[dayIdx]);
+                                            slotDate.setHours(START_HOUR + hourIdx, 0, 0, 0);
+                                            return (
+                                                <button
+                                                    key={`${dayIdx}-${hour}`}
+                                                    type="button"
+                                                    aria-label={`Book appointment on ${slotDate.toLocaleDateString()} at ${fmtH(START_HOUR + hourIdx)}`}
+                                                    onClick={() => onSlotSelect?.(slotDate)}
+                                                    className="absolute left-0 right-0 border-b border-transparent text-left focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                                    style={{ top: hourIdx * HOUR_HEIGHT, height: HOUR_HEIGHT }}
+                                                >
+                                                    <span className="sr-only">Book empty slot</span>
+                                                </button>
+                                            );
+                                        })}
                                         {colAppts.map((appt, ai) => {
                                             const top    = (appt.startH - START_HOUR) * HOUR_HEIGHT + (appt.startM / 60) * HOUR_HEIGHT;
                                             const height = Math.max((appt.dur / 60) * HOUR_HEIGHT, 44);
@@ -107,6 +125,10 @@ export default function WeekView({
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     transition={{ delay: ai * 0.06, duration: 0.25 }}
                                                     whileHover={{ scale: 1.03, zIndex: 50 }}
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        onAppointmentSelect?.(appt.record || appt);
+                                                    }}
                                                     className={`absolute mx-1 rounded-xl p-2.5 cursor-pointer z-10 border overflow-hidden ${s.card}`}
                                                     style={{ top, height, left: 0, right: 0 }}
                                                 >

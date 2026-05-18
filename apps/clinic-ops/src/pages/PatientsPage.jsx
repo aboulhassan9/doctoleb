@@ -20,6 +20,7 @@ import PatientStatsFooter from '@clinic-ops/components/patients/PatientStatsFoot
 import RegisterPatientModal from '@clinic-ops/components/patients/RegisterPatientModal';
 import ViewPatientModal from '@clinic-ops/components/patients/ViewPatientModal';
 import EditPatientModal from '@clinic-ops/components/patients/EditPatientModal';
+import ConfirmActionDialog from '@clinic-ops/components/common/ConfirmActionDialog';
 
 /* ── Avatar color palette ── */
 const COLORS = [
@@ -33,6 +34,7 @@ export default function PatientsPage() {
     const [viewingPatient, setViewingPatient] = useState(null);
     const [editingPatient, setEditingPatient] = useState(null);
     const [patientList,    setPatientList]    = useState([]);
+    const [deleteCandidate, setDeleteCandidate] = useState(null);
 
     const { patients, loading, refresh: fetchPatients } = usePatients();
     const { showToast } = useToast();
@@ -67,8 +69,11 @@ export default function PatientsPage() {
     }, [patients]);
 
     /* ── Handlers ── */
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to remove this patient?')) return;
+    const handleDelete = (id) => setDeleteCandidate(id);
+    const confirmDelete = async () => {
+        const id = deleteCandidate;
+        if (!id) return;
+        setDeleteCandidate(null);
         try {
             setPatientList(prev => prev.filter(p => p.id !== id));
             showToast('Patient record archived', 'success');
@@ -153,6 +158,15 @@ export default function PatientsPage() {
             <AnimatePresence>
                 {editingPatient && <EditPatientModal patient={editingPatient} onClose={() => setEditingPatient(null)} onSave={handleEditSave} />}
             </AnimatePresence>
+            <ConfirmActionDialog
+                open={Boolean(deleteCandidate)}
+                title="Archive patient record?"
+                description="The patient will leave the active list, but the clinical record remains retained for audit and safety."
+                confirmLabel="Archive patient"
+                cancelLabel="Keep patient"
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteCandidate(null)}
+            />
         </DashboardLayout>
     );
 }

@@ -953,3 +953,20 @@ export const ANALYTICAL_REPORT_SHARE_SELECT_FIELDS = [
   'granted_by',
   'created_at',
 ].join(', ');
+
+export const ANALYTICAL_REPORT_SCHEDULE_SELECT_FIELDS = [
+  'id',
+  'report_id',
+  'frequency',
+  'hour',
+  'day_of_week',
+  'day_of_month',
+  'timezone',
+  'is_active',
+  'next_run_at',
+  'last_run_at',
+  'last_status',
+  'created_by',
+  'created_at',
+  'updated_at',
+].join(', ');

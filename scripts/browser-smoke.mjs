@@ -28,36 +28,30 @@ const VIEWPORTS = Object.freeze([
 
 const APPS = Object.freeze([
   {
-    app: 'patient-web',
+    app: 'patient-web-root',
     url: process.env.PATIENT_WEB_SMOKE_URL || 'https://doctoleb-patient-web.vercel.app/',
     title: /Patient Portal/i,
-    h1: 'Patient care starts here.',
+    h1: 'Clinic not found',
     includeText: [
-      'Doctor-led clinic access',
-      'Available patient services',
-      'Private patient access',
-      'Patient Registration',
+      'This address is not connected to any DoctoLeb clinic',
+      'TENANT_NOT_FOUND',
+    ],
+    expectedBadResponses: [
+      {
+        status: 404,
+        urlIncludes: 'functions/v1/tenant-resolve',
+      },
     ],
     excludeText: [
+      'Patient care starts here',
       'Clinic SaaS for doctors',
       'Run the digital side of your clinic without duct tape.',
       'Wrong portal',
       'SURFACE_MISMATCH',
-      'TENANT_NOT_FOUND',
-    ],
-    links: [
-      {
-        text: /Patient Registration/i,
-        expectedPath: '/signup',
-      },
-      {
-        text: /Patient Login/i,
-        expectedPath: '/login',
-      },
     ],
   },
   {
-    app: 'patient-web-path',
+    app: 'patient-web',
     url: process.env.PATIENT_WEB_PATH_SMOKE_URL || 'https://doctoleb-patient-web.vercel.app/t/dev',
     title: /Patient Portal/i,
     h1: 'Patient care starts here.',
@@ -86,28 +80,28 @@ const APPS = Object.freeze([
     ],
   },
   {
-    app: 'clinic-ops',
+    app: 'clinic-ops-root',
     url: process.env.CLINIC_OPS_SMOKE_URL || 'https://doctoleb-clinic-ops.vercel.app/login',
-    title: /Clinic Operations|Clinic Portal/i,
-    h1: 'Clinic Operations Portal',
+    title: /Clinic Operations|Clinic Portal|DoctoLeb/i,
+    h1: 'Clinic not found',
     includeText: [
-      'Sign in with your staff credentials',
-      'Patient accounts should use the',
-    ],
-    excludeText: [
-      'Wrong portal',
-      'SURFACE_MISMATCH',
+      'This address is not connected to any DoctoLeb clinic',
       'TENANT_NOT_FOUND',
     ],
-    links: [
+    expectedBadResponses: [
       {
-        text: /Patient Portal/i,
-        expectedUrl: process.env.PATIENT_WEB_LOGIN_URL || 'https://doctoleb-patient-web.vercel.app/login',
+        status: 404,
+        urlIncludes: 'functions/v1/tenant-resolve',
       },
+    ],
+    excludeText: [
+      'Clinic Operations Portal',
+      'Wrong portal',
+      'SURFACE_MISMATCH',
     ],
   },
   {
-    app: 'clinic-ops-path',
+    app: 'clinic-ops',
     url: process.env.CLINIC_OPS_PATH_SMOKE_URL || 'https://doctoleb-clinic-ops.vercel.app/t/dev/login',
     title: /Clinic Operations|Clinic Portal/i,
     h1: 'Clinic Operations Portal',
@@ -131,10 +125,11 @@ const APPS = Object.freeze([
     app: 'control-plane',
     url: process.env.CONTROL_PLANE_SMOKE_URL || 'https://doctoleb-control-plane.vercel.app/',
     title: /DoctoLeb Console/i,
-    h1: 'SaaS control without clinical data.',
+    h1: 'Welcome back',
     includeText: [
-      'Super admin',
-      'Uses control-plane Supabase Auth',
+      'Welcome back',
+      'Sign in with your control-plane credentials',
+      'Only authorized staff',
     ],
     excludeText: [
       'Missing Control Plane',
@@ -213,6 +208,23 @@ async function assertLinks(page, rules, context) {
   }
 }
 
+function isExpectedBadResponse(response, expectedBadResponses = []) {
+  return expectedBadResponses.some((expected) => (
+    response.status === expected.status
+      && String(response.url || '').includes(expected.urlIncludes)
+  ));
+}
+
+function filterExpectedRuntimeIssues(runtimeIssues, appConfig) {
+  return {
+    ...runtimeIssues,
+    badResponses: runtimeIssues.badResponses.filter((response) => !isExpectedBadResponse(
+      response,
+      appConfig.expectedBadResponses,
+    )),
+  };
+}
+
 async function verifyApp(browser, appConfig, viewportConfig) {
   const context = await browser.newContext({
     ...viewportConfig.use,
@@ -243,7 +255,8 @@ async function verifyApp(browser, appConfig, viewportConfig) {
     }
     await assertLinks(page, appConfig.links, contextLabel);
 
-    assertNoRuntimeIssues(runtimeIssues, contextLabel);
+    const filteredRuntimeIssues = filterExpectedRuntimeIssues(runtimeIssues, appConfig);
+    assertNoRuntimeIssues(filteredRuntimeIssues, contextLabel);
 
     const screenshotPath = path.join(playwrightOutputDir, `${appConfig.app}-${viewportConfig.name}.png`);
     await page.screenshot({ path: screenshotPath, fullPage: true, timeout: 20_000 });
@@ -255,10 +268,10 @@ async function verifyApp(browser, appConfig, viewportConfig) {
       title,
       h1: String(appConfig.h1),
       screenshotPath,
-      consoleErrors: runtimeIssues.consoleErrors,
-      pageErrors: runtimeIssues.pageErrors,
-      failedRequests: runtimeIssues.failedRequests,
-      badResponses: runtimeIssues.badResponses,
+      consoleErrors: filteredRuntimeIssues.consoleErrors,
+      pageErrors: filteredRuntimeIssues.pageErrors,
+      failedRequests: filteredRuntimeIssues.failedRequests,
+      badResponses: filteredRuntimeIssues.badResponses,
     };
   } finally {
     await context.close();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useTenantList } from '../hooks/useTenantList'
 import { useTenantDetail } from '../hooks/useTenantDetail'
 import { useProviderConnections } from '../hooks/useProviderConnections'
@@ -16,6 +16,12 @@ import ProvisioningStepsPanel from './ProvisioningStepsPanel'
 import ConsoleWorkspaceTabs, { getControlPlaneSection } from './ConsoleWorkspaceTabs'
 import TenantReadinessPanel from './TenantReadinessPanel'
 import TenantCreationWorkspace from './TenantCreationWorkspace'
+import ConsoleSidebar from './ConsoleSidebar'
+import ConsoleHeader from './ConsoleHeader'
+
+const DashboardScreen = lazy(() => import('./DashboardScreen'))
+const AnalyticsScreen = lazy(() => import('./AnalyticsScreen'))
+const SettingsScreen = lazy(() => import('./SettingsScreen'))
 
 const AUTH_ERROR_CODES = new Set(['AUTH_REQUIRED', 'JWT_EXPIRED', 'INVALID_JWT'])
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i
@@ -34,9 +40,20 @@ function isTenantSlug(value) {
   return TENANT_SLUG.test(String(value || ''))
 }
 
+function WorkspaceScreenFallback() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <span className="font-mono text-xs uppercase tracking-[0.18em] text-slate-400">
+        Loading...
+      </span>
+    </div>
+  )
+}
+
 export default function ConsoleScreen({ session, onSignOut }) {
   const [selectedTenant, setSelectedTenant] = useState(null)
   const [workspaceMode, setWorkspaceMode] = useState('tenant')
+  const [tenantQuery, setTenantQuery] = useState('')
   const [activeSection, setActiveSection] = useState('tenant')
   const [runningStepId, setRunningStepId] = useState(null)
   const [cancellingJob, setCancellingJob] = useState(false)
@@ -44,18 +61,25 @@ export default function ConsoleScreen({ session, onSignOut }) {
   const [compensatingStepId, setCompensatingStepId] = useState(null)
   const [storingTenantSecret, setStoringTenantSecret] = useState(false)
   const [provisioningRunMessage, setProvisioningRunMessage] = useState('')
+  const [seedingTenant, setSeedingTenant] = useState(false)
+  const [tenantSeedMessage, setTenantSeedMessage] = useState('')
+  const [tenantSeedResult, setTenantSeedResult] = useState(null)
+
   const {
     tenants,
     loading,
     error: listError,
     reload: reloadTenants,
   } = useTenantList()
+
   const tenantDetailId = workspaceMode === 'tenant' ? selectedTenant?.id : null
+
   const {
     tenantDetail,
     error: detailError,
     reload: reloadTenantDetail,
   } = useTenantDetail(tenantDetailId)
+
   const {
     connections: providerConnections,
     loading: providerConnectionsLoading,
@@ -63,16 +87,18 @@ export default function ConsoleScreen({ session, onSignOut }) {
     reload: reloadProviderConnections,
   } = useProviderConnections()
 
-  useEffect(() => {
-    if (!selectedTenant && tenants[0]) setSelectedTenant(tenants[0])
-  }, [selectedTenant, tenants])
-
   const tenant = workspaceMode === 'tenant' ? tenantDetail?.tenant || selectedTenant : null
   const error = listError || detailError || providerConnectionsError
   const authError = isAuthError(error)
   const provisioningJob = [...(tenant?.tenant_provisioning_jobs || [])]
     .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))[0]
   const section = getControlPlaneSection(activeSection)
+  const tenantQueryText = tenantQuery.trim().toLowerCase()
+  const visibleTenants = tenantQueryText
+    ? tenants.filter((item) =>
+        `${item.display_name || ''} ${item.slug || ''}`.toLowerCase().includes(tenantQueryText),
+      )
+    : tenants
 
   function handleSelectTenant(tenantToOpen) {
     setSelectedTenant(tenantToOpen)
@@ -207,44 +233,85 @@ export default function ConsoleScreen({ session, onSignOut }) {
     }
   }
 
-  return (
-    <main className="min-h-screen bg-[#eef5f2] text-slate-950">
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-[#eef5f2]/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-cyan-700">DoctoLeb SaaS</p>
-            <h1 className="text-2xl font-black">Control plane</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm font-semibold text-slate-500 sm:inline">{session?.user?.email}</span>
-            <SecondaryButton onClick={onSignOut}>Sign out</SecondaryButton>
-          </div>
-        </div>
-      </header>
+  async function handleSeedTenantOperationalData({ mode = 'dry_run', volume = 'tiny', seedTag, allowDuplicates = false }) {
+    if (!tenant?.id) {
+      setTenantSeedMessage('Open an active tenant before running synthetic operational data.')
+      return { data: null, error: 'TENANT_REQUIRED' }
+    }
 
-      <div className="mx-auto grid max-w-7xl gap-5 px-5 py-6 lg:grid-cols-[330px_1fr]">
-        <TenantList
-          tenants={tenants}
-          selectedTenantId={selectedTenant?.id}
-          isCreatingTenant={workspaceMode === 'create'}
-          onCreateTenant={handleCreateTenant}
-          onSelect={handleSelectTenant}
+    setSeedingTenant(true)
+    setTenantSeedMessage('')
+    setTenantSeedResult(null)
+
+    try {
+      const result = await controlPlaneApi.seedTenantOperationalData({
+        tenantId: tenant.id,
+        mode,
+        volume,
+        seedTag,
+        allowDuplicates,
+      })
+      setTenantSeedResult(result)
+      setTenantSeedMessage(result.error
+        ? (result.details?.summary || result.error)
+        : (mode === 'dry_run'
+          ? 'Dry run passed. The tenant is ready for synthetic operational data.'
+          : 'Synthetic operational data seeded successfully.'))
+      await reloadTenantDetail()
+      return result
+    } finally {
+      setSeedingTenant(false)
+    }
+  }
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-900">
+      <ConsoleSidebar
+        selectedTenant={selectedTenant}
+        workspaceMode={workspaceMode}
+        onNavigate={(mode) => {
+          setSelectedTenant(null);
+          setWorkspaceMode(mode);
+        }}
+        onCreateTenant={handleCreateTenant}
+        onSignOut={onSignOut}
+      />
+
+      {/* Main Canvas Wrapper */}
+      <main className="relative z-10 ml-64 flex w-full flex-1 flex-col overflow-hidden bg-slate-50">
+        <ConsoleHeader
+          selectedTenant={selectedTenant}
+          workspaceMode={workspaceMode}
+          onBack={() => setSelectedTenant(null)}
+          userEmail={session?.user?.email}
+          tenantQuery={tenantQuery}
+          onTenantQueryChange={setTenantQuery}
         />
-        <section className="grid gap-5">
-          {loading ? <p className="rounded-[2rem] bg-white p-6 text-sm font-semibold text-slate-500">Loading tenants...</p> : null}
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-8 pb-12">
+          {loading ? (
+            <p className="rounded-lg border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500">
+              Loading tenants...
+            </p>
+          ) : null}
+
           {authError ? (
-            <div className="rounded-[2rem] bg-amber-50 p-6 text-sm font-bold text-amber-900 ring-1 ring-amber-100">
-              <p className="text-base font-black">Admin session expired</p>
-              <p className="mt-1 font-semibold">
-                The control-plane API rejected the current browser token. Sign in again, then reopen the tenant and continue provisioning.
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
+              <p className="text-sm font-semibold text-amber-900">Admin session expired</p>
+              <p className="mt-1 text-sm text-amber-700">
+                The control-plane API rejected the current browser token. Sign in again.
               </p>
               <div className="mt-4">
                 <SecondaryButton onClick={onSignOut}>Sign in again</SecondaryButton>
               </div>
             </div>
           ) : error ? (
-            <p className="rounded-[2rem] bg-rose-50 p-6 text-sm font-bold text-rose-700">{error}</p>
+            <p className="rounded-lg border border-rose-200 bg-rose-50 p-5 text-sm font-medium text-rose-700">
+              {error}
+            </p>
           ) : null}
+
           {workspaceMode === 'create' ? (
             <TenantCreationWorkspace
               providerConnections={providerConnections}
@@ -254,30 +321,28 @@ export default function ConsoleScreen({ session, onSignOut }) {
               onProviderConnectionsChanged={reloadProviderConnections}
               onProvisioningCreated={handleProvisioningCreated}
             />
-          ) : (
-            <>
-              <ConsoleWorkspaceTabs activeSection={activeSection} onSectionChange={setActiveSection} />
-              <div
-                role="tabpanel"
-                id={`control-plane-section-${section.id}`}
-                aria-labelledby={`control-plane-tab-${section.id}`}
-                className="grid gap-5"
-              >
-                <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200">
-                  <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-700">{section.eyebrow}</p>
-                  <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                      <h2 className="text-2xl font-black">{section.label}</h2>
-                      <p className="mt-1 text-sm font-semibold text-slate-500">{section.description}</p>
-                    </div>
-                    {tenant?.slug ? (
-                      <p className="rounded-full bg-slate-100 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-500">
-                        {tenant.slug}
-                      </p>
-                    ) : null}
+          ) : selectedTenant ? (
+            <div className="grid gap-6">
+              <div className="rounded-lg border border-slate-200 bg-white p-5">
+                <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                  {section.eyebrow}
+                </p>
+                <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold tracking-tight text-slate-900">{section.label}</h2>
+                    <p className="mt-1 text-sm text-slate-500">{section.description}</p>
                   </div>
+                  {tenant?.slug ? (
+                    <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-medium text-slate-600">
+                      {tenant.slug}
+                    </span>
+                  ) : null}
                 </div>
+              </div>
 
+              <ConsoleWorkspaceTabs activeSection={activeSection} onSectionChange={setActiveSection} />
+
+              <div role="tabpanel" id={`control-plane-section-${section.id}`} aria-labelledby={`control-plane-tab-${section.id}`} className="grid gap-6">
                 {tenant && activeSection === 'tenant' ? (
                   <>
                     <TenantReadinessPanel tenant={tenant} />
@@ -302,12 +367,16 @@ export default function ConsoleScreen({ session, onSignOut }) {
                     onResumeJob={handleResumeProvisioningJob}
                     onCompensateStep={handleCompensateProvisioningStep}
                     onStoreTenantSecret={handleStoreTenantSecret}
+                    onSeedTenantOperationalData={handleSeedTenantOperationalData}
                     runningStepId={runningStepId}
                     cancellingJob={cancellingJob}
                     resumingJob={resumingJob}
                     compensatingStepId={compensatingStepId}
                     storingTenantSecret={storingTenantSecret}
+                    seedingTenant={seedingTenant}
                     runMessage={provisioningRunMessage}
+                    seedMessage={tenantSeedMessage}
+                    seedResult={tenantSeedResult}
                   />
                 ) : null}
 
@@ -329,15 +398,40 @@ export default function ConsoleScreen({ session, onSignOut }) {
                 ) : null}
 
                 {tenant && activeSection === 'audit' ? <AuditPanel events={tenantDetail?.events || []} /> : null}
-
-                {!tenant ? (
-                  <p className="rounded-[2rem] bg-white p-6 text-sm font-semibold text-slate-500">No tenant selected yet. Use + New tenant to create one, or choose an existing tenant.</p>
-                ) : null}
               </div>
-            </>
+            </div>
+          ) : (
+            <Suspense fallback={<WorkspaceScreenFallback />}>
+              {workspaceMode === 'dashboard' ? (
+                <DashboardScreen
+                  tenants={tenants}
+                  loading={loading}
+                  onSelectTenant={handleSelectTenant}
+                  onCreateTenant={handleCreateTenant}
+                />
+              ) : workspaceMode === 'analytics' ? (
+                <AnalyticsScreen tenants={tenants} />
+              ) : workspaceMode === 'settings' ? (
+                <SettingsScreen
+                  providerConnections={providerConnections}
+                  providerConnectionsLoading={providerConnectionsLoading}
+                  onProviderConnectionsChanged={reloadProviderConnections}
+                  session={session}
+                  onSignOut={onSignOut}
+                />
+              ) : (
+                <TenantList
+                  tenants={visibleTenants}
+                  selectedTenantId={null}
+                  isCreatingTenant={false}
+                  onCreateTenant={handleCreateTenant}
+                  onSelect={handleSelectTenant}
+                />
+              )}
+            </Suspense>
           )}
-        </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   )
 }

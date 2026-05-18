@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
-import { PRECHECK_SELECT_FIELDS } from '@/lib/selects';
-import { assertTransition } from '@/lib/stateMachines';
-import { parseWithSchema, precheckDraftSchema, precheckSubmitSchema } from '@/schemas';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
+import { PRECHECK_SELECT_FIELDS } from '../lib/selects.js';
+import { assertTransition } from '../lib/stateMachines.js';
+import { parseWithSchema, precheckDraftSchema, precheckSubmitSchema } from '../schemas/index.js';
 
 function buildPrecheckPayload(data, status) {
   return {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { notificationCoreService } from '@/services/notificationCore';
 import { appointmentService } from '@/services/appointments';
 import { precheckService } from '@/services/prechecks';
+import { buildPrecheckSubmissionPayload } from '@/lib/precheckPayload';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { stagger, fadeUp, formFade } from '@/lib/animations';
 
@@ -28,20 +29,58 @@ export default function PreDoctorCheckPage() {
     const [observations, setObservations] = useState({ symptoms: '', reports: '' });
     const [showAdditionalAllergyInput, setShowAdditionalAllergyInput] = useState(false);
     const [additionalAllergy, setAdditionalAllergy] = useState('');
+    const [appointmentContext, setAppointmentContext] = useState(state?.appointment || null);
+    const [fileUploads, setFileUploads] = useState([]);
+    const [medicationDraft, setMedicationDraft] = useState('');
+    const [currentMedications, setCurrentMedications] = useState([]);
 
-    const patientInfo = state?.patient?.users;
-    const ptId = state?.patient?.id;
-    const appointmentId = state?.appointment?.id;
+    const appointmentId = state?.appointment?.id || state?.appointmentId || appointmentContext?.id;
+    const patientRecord = state?.patient || appointmentContext?.patients || null;
+    const patientInfo = patientRecord?.users;
+    const ptId = patientRecord?.id || appointmentContext?.patient_id;
     const patientDisplay = {
         name: patientInfo ? `${patientInfo.first_name || ''} ${patientInfo.last_name || ''}`.trim() : 'Unknown Patient',
         initials: patientInfo ? `${(patientInfo.first_name?.[0] || '').toUpperCase()}${(patientInfo.last_name?.[0] || '').toUpperCase()}` : '?',
         id: ptId ? ptId.split('-')[0] : 'N/A',
-        age: state?.patient?.date_of_birth ? new Date().getFullYear() - new Date(state.patient.date_of_birth).getFullYear() : 'N/A',
+        age: patientRecord?.date_of_birth ? new Date().getFullYear() - new Date(patientRecord.date_of_birth).getFullYear() : 'N/A',
     };
-    const patientAllergies = state?.patient?.allergies
-        ? state.patient.allergies.split(',').map(a => a.trim()).filter(Boolean)
+    const patientAllergies = patientRecord?.allergies
+        ? patientRecord.allergies.split(',').map(a => a.trim()).filter(Boolean)
         : [];
     const combinedAllergies = [...patientAllergies, additionalAllergy.trim()].filter(Boolean).join(', ');
+
+    useEffect(() => {
+        if (!appointmentId || appointmentContext?.id === appointmentId) return;
+        let cancelled = false;
+        appointmentService.getById(appointmentId).then(({ data, error }) => {
+            if (cancelled) return;
+            if (error || !data) {
+                showToast('Could not load appointment context. Reopen this pre-check from the queue.', 'error');
+                return;
+            }
+            setAppointmentContext(data);
+        });
+        return () => { cancelled = true; };
+    }, [appointmentId, appointmentContext?.id, showToast]);
+
+    const buildPrecheckPayload = () => buildPrecheckSubmissionPayload({
+        patientId: ptId,
+        predoctorId: null,
+        vitals,
+        allergies: [...patientAllergies, additionalAllergy],
+        medications: currentMedications,
+        observations: {
+            symptoms: observations.symptoms,
+            reports: [
+                background.medicalHistory ? `Medical history: ${background.medicalHistory}` : '',
+                background.surgicalHistory ? `Surgical history: ${background.surgicalHistory}` : '',
+                background.familyHistory ? `Family history: ${background.familyHistory}` : '',
+                background.vaccinationHistory ? `Vaccination history: ${background.vaccinationHistory}` : '',
+                observations.reports,
+            ].filter(Boolean).join('\n\n'),
+        },
+        fileNames: fileUploads.map(file => file.name),
+    });
 
     const handleSubmit = async () => {
         if (!ptId) {
@@ -52,21 +91,16 @@ export default function PreDoctorCheckPage() {
             showToast('Blood pressure, heart rate and temperature are required.', 'error');
             return;
         }
+        let payload;
+        try {
+            payload = buildPrecheckPayload();
+        } catch (error) {
+            showToast(error.message || 'Vitals must be valid numbers.', 'error');
+            return;
+        }
         setIsSaving(true);
         try {
-            const { error } = await precheckService.submit({
-                patientId: ptId,
-                predoctorId: null,
-                bloodPressure: vitals.bloodPressure,
-                heartRate: vitals.heartRate,
-                temperature: vitals.temperature,
-                weight: vitals.weight,
-                height: vitals.height,
-                currentMedications: background.medicalHistory,
-                allergies: combinedAllergies,
-                symptoms: observations.symptoms,
-                isUrgent: false,
-            });
+            const { error } = await precheckService.submit(payload);
 
             if (error) throw error;
 
@@ -101,19 +135,8 @@ export default function PreDoctorCheckPage() {
 
         setIsSaving(true);
         try {
-            const { error } = await precheckService.saveDraft({
-                patientId: ptId,
-                predoctorId: null,
-                bloodPressure: vitals.bloodPressure,
-                heartRate: vitals.heartRate,
-                temperature: vitals.temperature,
-                weight: vitals.weight,
-                height: vitals.height,
-                currentMedications: background.medicalHistory,
-                allergies: combinedAllergies,
-                symptoms: observations.symptoms,
-                isUrgent: false,
-            });
+            const payload = buildPrecheckPayload();
+            const { error } = await precheckService.saveDraft(payload);
 
             if (error) throw new Error(error);
             showToast('Draft saved successfully', 'success');
@@ -135,8 +158,23 @@ export default function PreDoctorCheckPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary transition-all"><span className="material-symbols-outlined">help</span></button>
-                        <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary transition-all"><span className="material-symbols-outlined">settings</span></button>
+                        <button
+                            type="button"
+                            disabled
+                            title="Help center is not enabled for pre-doctor workflow yet."
+                            aria-label="Help center unavailable"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 transition-all disabled:cursor-not-allowed"
+                        >
+                            <span className="material-symbols-outlined">help</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/predoctor-schedule')}
+                            aria-label="Open pre-doctor schedule"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary transition-all"
+                        >
+                            <span className="material-symbols-outlined">calendar_month</span>
+                        </button>
                     </div>
                 </header>
 
@@ -240,12 +278,41 @@ export default function PreDoctorCheckPage() {
                                 <div className="space-y-3">
                                     <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Current Medications</label>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <p className="text-xs text-slate-400 italic col-span-2">No current medications recorded. Add below if applicable.</p>
+                                        {currentMedications.length === 0 ? (
+                                            <p className="text-xs text-slate-400 italic col-span-2">No current medications recorded. Add below if applicable.</p>
+                                        ) : currentMedications.map((medication, index) => (
+                                            <div key={`${medication}-${index}`} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700">
+                                                <span>{medication}</span>
+                                                <button type="button" onClick={() => setCurrentMedications(prev => prev.filter((_, itemIndex) => itemIndex !== index))} className="text-slate-400 hover:text-critical">
+                                                    <span className="material-symbols-outlined text-base">close</span>
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="border-2 border-dashed border-slate-200 rounded-xl p-4 flex items-center justify-center gap-2 hover:bg-slate-50 w-full md:w-auto">
-                                        <span className="material-symbols-outlined text-slate-400">add_circle</span>
-                                        <span className="text-sm font-bold text-slate-500">Add Medication</span>
-                                    </motion.button>
+                                    <div className="flex flex-col gap-3 md:flex-row">
+                                        <input
+                                            type="text"
+                                            value={medicationDraft}
+                                            onChange={(event) => setMedicationDraft(event.target.value)}
+                                            placeholder="Medication, dose, frequency..."
+                                            className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                        />
+                                        <motion.button
+                                            type="button"
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => {
+                                                const nextMedication = medicationDraft.trim();
+                                                if (!nextMedication) return;
+                                                setCurrentMedications(prev => [...prev, nextMedication]);
+                                                setMedicationDraft('');
+                                            }}
+                                            className="border-2 border-dashed border-slate-200 rounded-xl px-5 py-3 flex items-center justify-center gap-2 hover:bg-slate-50 w-full md:w-auto"
+                                        >
+                                            <span className="material-symbols-outlined text-slate-400">add_circle</span>
+                                            <span className="text-sm font-bold text-slate-500">Add Medication</span>
+                                        </motion.button>
+                                    </div>
                                 </div>
                             </div>
                         </motion.section>
@@ -269,25 +336,51 @@ export default function PreDoctorCheckPage() {
                                 <div className="space-y-3">
                                     <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Diagnostic Report Upload</label>
                                     <motion.label whileHover={{ scale: 1.01 }} className="border-2 border-dashed border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-100/50 cursor-pointer">
-                                        <input type="file" className="hidden" accept=".pdf,.jpg,.png" onChange={(e) => { if (e.target.files?.[0]) alert(`File: ${e.target.files[0].name}`); }} />
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept=".pdf,.jpg,.png"
+                                            multiple
+                                            onChange={(event) => {
+                                                const files = Array.from(event.target.files || []);
+                                                const accepted = files.filter(file => file.size <= 10 * 1024 * 1024);
+                                                if (accepted.length !== files.length) {
+                                                    showToast('Some files were skipped because they are larger than 10MB.', 'error');
+                                                }
+                                                setFileUploads(prev => [...prev, ...accepted.map(file => ({ name: file.name, size: file.size, type: file.type }))]);
+                                                event.target.value = '';
+                                            }}
+                                        />
                                         <motion.div animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
                                             <span className="material-symbols-outlined text-slate-400 text-3xl">cloud_upload</span>
                                         </motion.div>
                                         <p className="text-sm font-bold text-slate-700">Drop files here or click to browse</p>
                                         <p className="text-[10px] text-slate-500 uppercase font-semibold mt-2">PDF, JPG, PNG • Max 10MB</p>
                                     </motion.label>
+                                    {fileUploads.length > 0 && (
+                                        <div className="mt-3 space-y-2">
+                                            {fileUploads.map((file, index) => (
+                                                <div key={`${file.name}-${index}`} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+                                                    <span>{file.name}</span>
+                                                    <button type="button" onClick={() => setFileUploads(prev => prev.filter((_, fileIndex) => fileIndex !== index))} className="text-slate-400 hover:text-critical">
+                                                        <span className="material-symbols-outlined text-base">close</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </motion.section>
                     </div>
 
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-12 flex items-center justify-between pt-8 border-t border-slate-200">
-                        <motion.button whileHover={{ x: -5 }} onClick={() => navigate('/predoctor-patients')} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-sm">
+                        <motion.button type="button" whileHover={{ x: -5 }} onClick={() => navigate(ptId ? `/patient-profile/${ptId}` : '/predoctor-patients')} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-sm">
                             <span className="material-symbols-outlined text-lg">arrow_back</span>Back to Patient Profile
                         </motion.button>
                         <div className="flex items-center gap-4">
-                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleSaveDraft} className="px-8 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl">Save as Draft</motion.button>
-                            <motion.button disabled={isSaving} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleSubmit} className="px-12 py-3.5 bg-primary text-white rounded-xl font-bold text-sm shadow-xl hover:opacity-90 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <motion.button type="button" disabled={isSaving} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleSaveDraft} className="px-8 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl disabled:cursor-not-allowed disabled:opacity-50">Save as Draft</motion.button>
+                            <motion.button type="button" disabled={isSaving} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleSubmit} className="px-12 py-3.5 bg-primary text-white rounded-xl font-bold text-sm shadow-xl hover:opacity-90 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
                                 {isSaving ? 'Submitting...' : 'Submit to Doctor'}<span className="material-symbols-outlined text-sm">send</span>
                             </motion.button>
                         </div>

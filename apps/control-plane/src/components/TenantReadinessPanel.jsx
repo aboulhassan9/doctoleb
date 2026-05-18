@@ -1,10 +1,10 @@
 import { buildTenantReadinessItems, summarizeTenantReadiness } from '../lib/tenantReadiness'
 
 const TONE_MAP = {
-  ready: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
-  prepared: 'bg-cyan-100 text-cyan-800 ring-cyan-200',
-  pending: 'bg-amber-100 text-amber-800 ring-amber-200',
-  needs_work: 'bg-rose-100 text-rose-800 ring-rose-200',
+  ready: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+  prepared: 'bg-teal-50 text-teal-700 ring-teal-600/20',
+  pending: 'bg-amber-50 text-amber-700 ring-amber-600/20',
+  needs_work: 'bg-rose-50 text-rose-700 ring-rose-600/20',
 }
 
 function ReadinessPill({ status }) {
@@ -12,7 +12,9 @@ function ReadinessPill({ status }) {
   const label = String(status || 'needs_work').replaceAll('_', ' ')
 
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-black capitalize ring-1 ${tone}`}>
+    <span
+      className={`inline-flex shrink-0 rounded-full px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wide ring-1 ring-inset ${tone}`}
+    >
       {label}
     </span>
   )
@@ -23,28 +25,31 @@ export default function TenantReadinessPanel({ tenant }) {
   const items = buildTenantReadinessItems(tenant)
 
   return (
-    <section className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section className="rounded-lg border border-slate-200 bg-white">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">Readiness proof</p>
-          <h2 className="mt-2 text-2xl font-black">{summary.label}</h2>
-          <p className="mt-2 max-w-3xl text-sm text-slate-500">
-            Zero-PHI SaaS checks for whether this tenant can boot today on the shared web apps without buying the real domain yet.
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">
+            Readiness Proof: {summary.label}
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-500">
+            Zero-PHI SaaS checks for whether this tenant can boot today on the shared web apps without buying the real
+            domain yet.
           </p>
         </div>
         <ReadinessPill status={summary.status} />
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 p-5 md:grid-cols-2">
         {items.map((item) => (
-          <div key={item.id} className="rounded-2xl bg-slate-50 p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="font-black">{item.label}</p>
-                <p className="mt-1 text-sm text-slate-500">{item.detail}</p>
-              </div>
-              <ReadinessPill status={item.status} />
+          <div
+            key={item.id}
+            className="flex items-start justify-between gap-4 rounded-md border border-slate-200 bg-slate-50 p-4"
+          >
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-900">{item.label}</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-500">{item.detail}</p>
             </div>
+            <ReadinessPill status={item.status} />
           </div>
         ))}
       </div>

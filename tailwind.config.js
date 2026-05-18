@@ -10,52 +10,53 @@ export default {
   theme: {
     extend: {
       colors: {
-        "primary": "rgb(var(--color-primary-rgb) / <alpha-value>)", // Tenant-configured primary
+        "primary": "rgb(var(--color-primary-rgb) / <alpha-value>)",
         "primary-hover": "rgb(var(--color-primary-hover-rgb) / <alpha-value>)",
-        "secondary": "rgb(var(--color-secondary-rgb) / <alpha-value>)", // Tenant-configured secondary
-        "background": "#f4f7fa", // Icy sterile white
-        "background-light": "#f4f7fa", // Alias for legacy usages
-        "background-dark": "#0f172a", // Dark panel used in auth pages
+        "secondary": "rgb(var(--color-secondary-rgb) / <alpha-value>)",
+        "background": "#ffffff",
+        "background-light": "#fafafa",
+        "background-dark": "#09090b",
         "surface": "#ffffff",
-        "error": "#e11d48", // Deep Rose
-        "success": "#059669", // Emerald/Sage
-        "warning": "#d97706", // Muted Amber
-        "critical": "#be123c",
-        "outline": "#cbd5e1", // Soft cooler gray
-        // Legacy overrides mapped to new palettes:
-        "primary-container": "#cffafe",
+        "error": "#ef4444",
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "critical": "#dc2626",
+        "outline": "#e2e8f0",
+        "primary-container": "#e0f2fe",
         "on-primary": "#ffffff",
         "on-secondary": "#f8fafc",
         "surface-tint": "rgb(var(--color-primary-rgb) / <alpha-value>)",
-        "tertiary": "#14b8a6", // Teal/Mint
+        "tertiary": "#0ea5e9",
       },
       fontFamily: {
-        "display": ["Inter", "sans-serif"],
-        "headline": ["Inter", "sans-serif"],
-        "body": ["Inter", "sans-serif"],
-        "label": ["Inter", "sans-serif"]
+        "display": ["Inter", "system-ui", "sans-serif"],
+        "headline": ["Inter", "system-ui", "sans-serif"],
+        "body": ["Inter", "system-ui", "sans-serif"],
+        "label": ["SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"]
       },
       borderRadius: {
-        "DEFAULT": "0.25rem",
-        "lg": "0.5rem",
-        "xl": "0.75rem",
-        "2xl": "var(--radius-card)",
+        "DEFAULT": "0.5rem",
+        "sm": "0.375rem",
+        "md": "0.5rem",
+        "lg": "0.75rem",
+        "xl": "1rem",
+        "2xl": "1.5rem",
         "full": "9999px"
       },
       width: {
-        "sidebar": "var(--sidebar-width)",
+        "sidebar": "16rem",
       },
       height: {
-        "header": "var(--header-height)",
+        "header": "4rem",
       },
       spacing: {
-        "page": "var(--spacing-page)",
-        "card": "var(--spacing-card)",
-        "section": "var(--spacing-section)",
+        "page": "2rem",
+        "card": "1.5rem",
+        "section": "2.5rem",
       },
       boxShadow: {
-        "card": "var(--shadow-card)",
-        "elevated": "var(--shadow-elevated)",
+        "card": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "elevated": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
       },
       transitionDuration: {
         "fast": "150ms",

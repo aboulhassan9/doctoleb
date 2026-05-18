@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
-export default function BillSuccessModal({ totalDue, paymentMethod, invoiceStatus, onDownloadReceipt, isDownloading }) {
+export default function BillSuccessModal({ totalDue, paymentMethod, invoiceStatus, paymentReference, onDownloadReceipt, isDownloading }) {
     const navigate = useNavigate();
 
     return (
@@ -29,7 +29,7 @@ export default function BillSuccessModal({ totalDue, paymentMethod, invoiceStatu
 
                 <h2 className="text-2xl font-black text-slate-900 mb-2 relative z-10">Payment Posted!</h2>
                 <p className="text-slate-500 text-center font-medium mb-8 relative z-10">
-                    Invoice <span className="font-bold text-slate-700">#INV-8842X</span> has been successfully generated and recorded.
+                    Payment reference <span className="font-bold text-slate-700">{paymentReference}</span> has been recorded in the tenant ledger.
                 </p>
 
                 <div className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 mb-8 relative z-10">
@@ -62,9 +62,9 @@ export default function BillSuccessModal({ totalDue, paymentMethod, invoiceStatu
                             transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                             className="material-symbols-outlined text-[18px]"
                         >
-                            {isDownloading ? 'progress_activity' : 'file_download'}
+                            {isDownloading ? 'progress_activity' : 'print'}
                         </motion.span>
-                        {isDownloading ? 'Generating...' : 'Receipt'}
+                        {isDownloading ? 'Preparing...' : 'Print Receipt'}
                     </button>
                     <button
                         onClick={() => navigate('/billing')}

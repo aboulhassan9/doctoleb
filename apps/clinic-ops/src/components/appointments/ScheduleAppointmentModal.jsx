@@ -29,14 +29,14 @@ import MiniCalendar from './calendar/MiniCalendar';
 import QuickAddPatientModal from './QuickAddPatientModal';
 import AppointmentConfirmation from './AppointmentConfirmation';
 
-export default function ScheduleAppointmentModal({ onClose }) {
+export default function ScheduleAppointmentModal({ onClose, initialDate = null, initialDoctorId = '', initialTime = '', onBooked }) {
     const { showToast } = useToast();
     const { user } = useAuth();
 
     /* ── Form state ── */
     const [form, setForm]             = useState(BLANK_APPT);
     const set = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
-    const [selectedDate, setSelectedDate]   = useState(null);
+    const [selectedDate, setSelectedDate]   = useState(initialDate ? new Date(initialDate) : null);
     const [saving, setSaving]         = useState(false);
     const [showQuickAdd, setShowQuickAdd] = useState(false);
     const [step, setStep]             = useState('form');
@@ -46,6 +46,15 @@ export default function ScheduleAppointmentModal({ onClose }) {
     const { patients: patientsList, loading: loadingPatients, refresh: refreshPatients } = usePatients();
     const [doctorsList, setDoctorsList] = useState([]);
     const [availableSlots, setAvailableSlots] = useState([]);
+
+    useEffect(() => {
+        if (!initialDoctorId && !initialTime) return;
+        setForm(prev => ({
+            ...prev,
+            doctor_id: initialDoctorId || prev.doctor_id,
+            time: initialTime || prev.time,
+        }));
+    }, [initialDoctorId, initialTime]);
 
     useEffect(() => {
         doctorService.getAll().then(res => setDoctorsList(res.data || []));
@@ -63,6 +72,9 @@ export default function ScheduleAppointmentModal({ onClose }) {
 
     const selectedPatientData = patientsList.find(p => p.id === form.patient_id);
     const availableSlotTimes = new Set(availableSlots.map(slot => String(slot.start_time || '').slice(0, 5)));
+    const bookableTimeSlots = availableSlots.length > 0
+        ? [...availableSlotTimes].sort()
+        : TIME_SLOTS;
 
     useEffect(() => {
         const nextAvailableSlotTimes = new Set(availableSlots.map(slot => String(slot.start_time || '').slice(0, 5)));
@@ -99,6 +111,7 @@ export default function ScheduleAppointmentModal({ onClose }) {
             if (result.error) throw result.error;
 
             showToast('Appointment booked successfully', 'success');
+            onBooked?.(result.data);
             setStep('success');
         } catch (error) {
             logError('Failed to book appointment:', error);
@@ -310,7 +323,7 @@ export default function ScheduleAppointmentModal({ onClose }) {
                                                 Time Slot
                                             </h3>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {TIME_SLOTS.map(t => {
+                                                {bookableTimeSlots.map(t => {
                                                     const available = availableSlotTimes.has(t);
                                                     const sel = form.time === t;
                                                     return (

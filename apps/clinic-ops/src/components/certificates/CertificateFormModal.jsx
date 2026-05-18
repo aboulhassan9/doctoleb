@@ -123,7 +123,7 @@ export default function CertificateFormModal({ isOpen, onClose, patients, doctor
                         <h3 className="text-xl font-bold tracking-tight text-slate-900">Certificate Issuance</h3>
                         <p className="text-sm text-slate-500">Complete the fields below to generate the formal document.</p>
                     </div>
-                    <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200">
+                    <button type="button" onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" aria-label="Close certificate form">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </header>
@@ -138,7 +138,13 @@ export default function CertificateFormModal({ isOpen, onClose, patients, doctor
                                     <h4 className="text-lg font-bold tracking-tight text-slate-900">Certificate Details</h4>
                                     <p className="text-sm text-slate-500">Complete the fields below to generate the formal document.</p>
                                 </div>
-                                <button className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-all">
+                                <button
+                                    type="button"
+                                    disabled
+                                    title="Voice dictation is not enabled for certificate creation yet."
+                                    aria-label="Voice dictation unavailable"
+                                    className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center disabled:cursor-not-allowed"
+                                >
                                     <span className="material-symbols-outlined">mic</span>
                                 </button>
                             </div>
@@ -195,7 +201,7 @@ export default function CertificateFormModal({ isOpen, onClose, patients, doctor
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Digital Signature</label>
-                                        <button onClick={clearSignature} className="text-[10px] font-bold uppercase text-slate-400 hover:text-critical transition-colors">Clear</button>
+                                        <button type="button" onClick={clearSignature} className="text-[10px] font-bold uppercase text-slate-400 hover:text-critical transition-colors">Clear</button>
                                     </div>
                                     <canvas
                                         ref={canvasRef}
@@ -217,10 +223,10 @@ export default function CertificateFormModal({ isOpen, onClose, patients, doctor
 
                         {/* Action buttons */}
                         <div className="flex justify-end gap-4">
-                            <button disabled={isSaving} onClick={() => saveCertificate(true)} className="px-6 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+                            <button type="button" disabled={isSaving} onClick={() => saveCertificate(true)} className="px-6 py-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50">
                                 {isSaving ? 'Saving...' : 'Save as Draft'}
                             </button>
-                            <button disabled={isSaving} onClick={() => saveCertificate(false)} className="px-8 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg flex items-center gap-2 hover:translate-y-[-1px] transition-all">
+                            <button type="button" disabled={isSaving} onClick={() => saveCertificate(false)} className="px-8 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg flex items-center gap-2 hover:translate-y-[-1px] transition-all disabled:cursor-not-allowed disabled:opacity-50">
                                 <span className="material-symbols-outlined text-sm">check_circle</span>
                                 {isSaving ? 'Issuing...' : 'Issue Certificate'}
                             </button>
@@ -264,10 +270,10 @@ export default function CertificateFormModal({ isOpen, onClose, patients, doctor
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="inline-block p-2 border border-slate-100 rounded-lg">
-                                        <div className="w-12 h-12 bg-slate-200"></div>
+                                    <div className="inline-block rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-left">
+                                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Verification</p>
+                                        <p className="mt-1 text-[10px] font-semibold text-slate-500">Saved certificates are verified by their persisted document record.</p>
                                     </div>
-                                    <p className="text-[8px] text-slate-400 mt-2">Scan to verify document integrity</p>
                                 </div>
                             </div>
 
@@ -277,8 +283,8 @@ export default function CertificateFormModal({ isOpen, onClose, patients, doctor
                         </div>
 
                         <div className="mt-4 flex gap-2">
-                            <button className="flex-1 bg-slate-100 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:bg-slate-200 transition-colors">Edit Header</button>
-                            <button onClick={handlePrint} className="flex-1 bg-slate-100 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:bg-slate-200 transition-colors">Print Preview</button>
+                            <button type="button" disabled title="Certificate header uses tenant branding settings." className="flex-1 bg-slate-100 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-slate-400 transition-colors disabled:cursor-not-allowed">Header from branding</button>
+                            <button type="button" onClick={handlePrint} className="flex-1 bg-slate-100 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest text-slate-600 hover:bg-slate-200 transition-colors">Print Preview</button>
                         </div>
                     </div>
                 </div>

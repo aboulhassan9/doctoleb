@@ -47,12 +47,13 @@ export default function PreDoctorQueueList({ appointments, loading, onPatientRea
                 const name = pt ? `${pt.first_name} ${pt.last_name}` : 'Unknown Patient';
                 const initials = pt ? `${(pt.first_name?.[0]||'').toUpperCase()}${(pt.last_name?.[0]||'').toUpperCase()}` : '?';
                 const time = new Date(appt.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const canMarkReady = appt.status === 'pre_check' || appt.precheck_submitted === true;
                 return (
                     <motion.div
                         key={appt.id || i}
                         initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 + i * 0.08 }}
                         whileHover={{ backgroundColor: 'rgba(var(--primary-rgb), 0.03)' }}
-                        onClick={() => navigate('/predoctor-new-check', { state: { patient: appt.patients, appointmentId: appt.id } })}
+                        onClick={() => navigate('/predoctor-new-check', { state: { patient: appt.patients, appointment: appt, appointmentId: appt.id } })}
                         className="flex items-center gap-4 px-5 py-4 border-b border-slate-100 last:border-0 cursor-pointer transition-colors"
                     >
                         <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-primary/10 text-primary">
@@ -68,14 +69,16 @@ export default function PreDoctorQueueList({ appointments, loading, onPatientRea
                         </div>
                         <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                             <button
-                                onClick={() => navigate('/predoctor-new-check', { state: { patient: appt.patients, appointmentId: appt.id } })}
+                                onClick={() => navigate('/predoctor-new-check', { state: { patient: appt.patients, appointment: appt, appointmentId: appt.id } })}
                                 className="px-3 py-1.5 text-xs font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all"
                             >
                                 Pre-Check
                             </button>
                             <button
-                                onClick={() => onPatientReady(appt)}
-                                className="px-3 py-1.5 text-xs font-bold text-success border border-success/20 rounded-lg hover:bg-success hover:text-white transition-all"
+                                onClick={() => canMarkReady && onPatientReady(appt)}
+                                disabled={!canMarkReady}
+                                title={canMarkReady ? 'Notify doctor that patient is ready' : 'Submit a valid pre-check before marking the patient ready'}
+                                className="px-3 py-1.5 text-xs font-bold text-success border border-success/20 rounded-lg hover:bg-success hover:text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-success"
                             >
                                 Ready ✓
                             </button>

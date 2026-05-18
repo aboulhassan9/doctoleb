@@ -8,18 +8,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import CountUp from '@/components/CountUp';
-import { useToast } from '@/contexts/ToastContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { useBilling } from '@/hooks/features/useBilling';
+import { useNotifications } from '@/hooks/features/useNotifications';
+import { getClinicOpsNotificationTarget, isUnreadNotification } from '@/lib/clinicOpsNavigation';
+import { timeAgo } from '@/lib/dateUtils';
 
 import ViewInvoiceModal from '@clinic-ops/components/billing/ViewInvoiceModal';
 import EditInvoiceModal from '@clinic-ops/components/billing/EditInvoiceModal';
 import InvoicePrintView from '@clinic-ops/components/billing/InvoicePrintView';
+import ConfirmActionDialog from '@clinic-ops/components/common/ConfirmActionDialog';
 
 export default function BillingPage() {
     const navigate = useNavigate();
-    const { showToast } = useToast();
+    const { user, logout } = useAuth();
     const { displayName } = useBrand();
+    const { notifications, unreadCount, markRead, markAllRead } = useNotifications({ userId: user?.id });
     const { invoices, stats, activity, barData, updateInvoice: updateInvoiceHook, deleteInvoice: deleteInvoiceHook } = useBilling();
 
     /* ── Local state ── */
@@ -31,6 +36,7 @@ export default function BillingPage() {
     const [printInv, setPrintInv] = useState(null);
     const [viewInv, setViewInv]   = useState(null);
     const [editInv, setEditInv]   = useState(null);
+    const [deleteCandidate, setDeleteCandidate] = useState(null);
 
     const ITEMS_PER_PAGE = 3;
 
@@ -48,14 +54,33 @@ export default function BillingPage() {
 
     /* ── Handlers ── */
     const handleSaveEdit = (updatedInv) => { updateInvoiceHook(updatedInv); setEditInv(null); };
-    const handleDelete = (id) => {
-        if (window.confirm(`Are you sure you want to delete Invoice ${id}?`)) {
-            deleteInvoiceHook(id);
-            if (paginatedInvoices.length === 1 && currentPage > 1) setCurrentPage(currentPage - 1);
-        }
+    const handleDelete = (id) => setDeleteCandidate(id);
+    const confirmDelete = async () => {
+        if (!deleteCandidate) return;
+        await deleteInvoiceHook(deleteCandidate);
+        if (paginatedInvoices.length === 1 && currentPage > 1) setCurrentPage(currentPage - 1);
+        setDeleteCandidate(null);
     };
-    const handlePrintInvoice = (inv) => { setPrintInv(inv); setTimeout(() => window.print(), 100); };
+    const handlePrintInvoice = (inv) => {
+        setPrintInv(inv);
+        requestAnimationFrame(() => window.print());
+    };
     const handleViewToEdit = (inv) => { setEditInv(inv); setViewInv(null); };
+    const handleNotificationClick = async (notification) => {
+        await markRead(notification.id);
+        setShowNotifications(false);
+        navigate(getClinicOpsNotificationTarget(notification, user?.role || 'secretary'));
+    };
+    const handleMarkAllRead = async () => {
+        await markAllRead();
+        setShowNotifications(false);
+    };
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
+    };
+
+    const userInitials = user?.initials || `${user?.first_name?.[0] || ''}${user?.last_name?.[0] || ''}`.toUpperCase() || '—';
 
     useEffect(() => {
         const handleAfterPrint = () => setPrintInv(null);
@@ -69,6 +94,15 @@ export default function BillingPage() {
             <AnimatePresence>{viewInv && <ViewInvoiceModal invoice={viewInv} onClose={() => setViewInv(null)} onPrint={handlePrintInvoice} onEdit={handleViewToEdit} />}</AnimatePresence>
             <AnimatePresence>{editInv && <EditInvoiceModal invoice={editInv} onClose={() => setEditInv(null)} onSave={handleSaveEdit} />}</AnimatePresence>
             <InvoicePrintView invoice={printInv} clinicName={displayName} />
+            <ConfirmActionDialog
+                open={Boolean(deleteCandidate)}
+                title="Archive billing record?"
+                description={`This will move payment ${deleteCandidate || ''} out of the active billing list while preserving the financial audit trail.`}
+                confirmLabel="Archive record"
+                cancelLabel="Keep record"
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteCandidate(null)}
+            />
 
             <DashboardLayout role="secretary">
                 <div className={`flex-1 relative flex flex-col ${printInv ? 'print:hidden' : ''}`}>
@@ -82,39 +116,51 @@ export default function BillingPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-4 relative">
-                            <button onClick={() => { setShowNotifications(!showNotifications); setShowSettings(false); }} className="p-2 text-slate-500 hover:text-primary transition-colors relative">
+                            <button type="button" onClick={() => { setShowNotifications(!showNotifications); setShowSettings(false); }} className="p-2 text-slate-500 hover:text-primary transition-colors relative" aria-label="Open billing notifications">
                                 <span className="material-symbols-outlined">notifications</span>
-                                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-critical text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
                             </button>
                             <AnimatePresence>
                                 {showNotifications && (
                                     <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} className="absolute top-[120%] right-12 w-80 bg-white shadow-2xl rounded-2xl border border-slate-100 z-50 overflow-hidden">
                                         <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
                                             <span className="font-semibold text-slate-900 text-sm">Notifications</span>
-                                            <span className="text-[11px] text-primary font-semibold uppercase tracking-wider cursor-pointer hover:underline">Mark Read</span>
+                                            <button type="button" onClick={handleMarkAllRead} disabled={unreadCount === 0} className="text-[11px] text-primary font-semibold uppercase tracking-wider cursor-pointer hover:underline disabled:text-slate-300 disabled:cursor-not-allowed">Mark Read</button>
                                         </div>
                                         <div className="max-h-60 overflow-y-auto p-2 space-y-1">
-                                            <div className="p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-slate-100">
-                                                <p className="text-xs font-semibold text-slate-900 leading-tight">Payment Verified</p>
-                                                <p className="text-[10px] font-medium text-slate-400 mt-1">Invoice #INV-88241 settled.</p>
-                                            </div>
+                                            {notifications.length === 0 ? (
+                                                <div className="p-6 text-center">
+                                                    <span className="material-symbols-outlined text-slate-300 text-3xl block mb-2">notifications_off</span>
+                                                    <p className="text-sm text-slate-400 font-medium">No billing notifications.</p>
+                                                </div>
+                                            ) : notifications.slice(0, 6).map((notification) => (
+                                                <button key={notification.id} type="button" onClick={() => handleNotificationClick(notification)} className="w-full p-3 text-left hover:bg-slate-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-slate-100">
+                                                    <p className={`text-xs leading-tight ${isUnreadNotification(notification) ? 'font-black text-slate-950' : 'font-semibold text-slate-700'}`}>{notification.title || 'Clinic notification'}</p>
+                                                    {notification.message && <p className="text-[10px] font-medium text-slate-500 mt-1 line-clamp-2">{notification.message}</p>}
+                                                    <p className="text-[10px] font-bold text-slate-400 mt-1">{timeAgo(notification.created_at)}</p>
+                                                </button>
+                                            ))}
                                         </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
                             <div className="h-8 w-[1px] bg-slate-200 mx-2"></div>
-                            <button onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); }} className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-colors">
-                                <div className="w-8 h-8 rounded-full bg-primary-hover flex items-center justify-center text-white font-bold text-xs">—</div>
+                            <button type="button" onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); }} className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-colors" aria-label="Open account menu">
+                                <div className="w-8 h-8 rounded-full bg-primary-hover flex items-center justify-center text-white font-bold text-xs">{userInitials}</div>
                                 <span className="material-symbols-outlined text-slate-400 text-[18px]">keyboard_arrow_down</span>
                             </button>
                             <AnimatePresence>
                                 {showSettings && (
                                     <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} className="absolute top-[120%] right-0 w-56 bg-white shadow-2xl rounded-2xl border border-slate-100 z-50 overflow-hidden py-1.5">
-                                        <button className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-medium text-slate-700 flex items-center gap-3 transition-colors">
-                                            <span className="material-symbols-outlined text-[18px]">manage_accounts</span> Profile Options
+                                        <button type="button" disabled title="Billing profile edits are read-only until staff account audit support is wired" className="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-400 flex items-center gap-3 cursor-not-allowed">
+                                            <span className="material-symbols-outlined text-[18px]">manage_accounts</span> Profile Read-only
                                         </button>
                                         <div className="border-t border-slate-100 my-1.5 mx-3"></div>
-                                        <button className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-xs font-medium text-critical flex items-center gap-3 transition-colors">
+                                        <button type="button" onClick={handleLogout} className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-xs font-medium text-critical flex items-center gap-3 transition-colors">
                                             <span className="material-symbols-outlined text-[18px]">logout</span> Secure Sign Out
                                         </button>
                                     </motion.div>

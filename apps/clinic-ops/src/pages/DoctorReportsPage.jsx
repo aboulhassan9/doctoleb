@@ -23,7 +23,6 @@ import { useToast } from '@/contexts/ToastContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { usePatients } from '@/hooks/features/usePatients';
 import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
-import { escapeHtml, openPrintableHtml } from '@/lib/html';
 
 export default function DoctorReportsPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -35,6 +34,7 @@ export default function DoctorReportsPage() {
     const [showSuccess, setShowSuccess] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [savedReportId, setSavedReportId] = useState(null);
 
     // Settings modals state
     const [showProfile, setShowProfile] = useState(false);
@@ -75,7 +75,7 @@ export default function DoctorReportsPage() {
                 '', 'Recommendations', recommendations || 'Not provided.',
             ].join('\n');
 
-            const { error } = await documentService.createReport({
+            const { data, error } = await documentService.createReport({
                 patient_id: selectedPatient.id,
                 doctor_id: doctorId,
                 title: `Comprehensive Report - ${patientName || selectedPatient.id.slice(0, 8)}`,
@@ -84,6 +84,8 @@ export default function DoctorReportsPage() {
             });
 
             if (error) throw error;
+            const saved = Array.isArray(data) ? data[0] : data;
+            setSavedReportId(saved?.id || null);
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 3000);
         } catch (error) {
@@ -96,28 +98,6 @@ export default function DoctorReportsPage() {
 
     const handlePrint = () => {
         window.print();
-    };
-
-    const handleExport = () => {
-        if (!selectedPatient) {
-            showToast('Please select a patient before exporting', 'error');
-            return;
-        }
-        const patientName = escapeHtml(`${selectedPatient.users?.first_name} ${selectedPatient.users?.last_name}`);
-        const content = `<!DOCTYPE html><html><head><title>Medical Report - ${patientName}</title></head><body>
-            <h1>Comprehensive Medical Report</h1><h2>Patient: ${patientName}</h2><hr/>
-            <h3>Medical History</h3><p>${escapeHtml(medicalHistory)}</p>
-            <h3>Clinical Findings</h3><p>${escapeHtml(clinicalFindings)}</p>
-            <h3>Diagnosis</h3><p>${escapeHtml(diagnosis)}</p>
-            <h3>Treatment Plan</h3><p>${escapeHtml(treatmentPlan)}</p>
-            <h3>Recommendations</h3><p>${escapeHtml(recommendations)}</p>
-            <br/><p>Report Generated On: ${new Date().toLocaleDateString()}</p></body></html>`;
-        const blob = new Blob([content], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Medical_Report_${selectedPatient.users?.first_name}_${selectedPatient.users?.last_name}.html`;
-        a.click();
     };
 
     const doctorDisplayName = user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor';
@@ -141,13 +121,13 @@ export default function DoctorReportsPage() {
                             <h1 className="text-[30px] font-black tracking-tighter text-slate-900 mt-1 leading-none uppercase">Comprehensive Medical Report</h1>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-primary hover:text-primary transition-all text-sm font-bold shadow-sm">
+                            <button type="button" onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-primary hover:text-primary transition-all text-sm font-bold shadow-sm">
                                 <span className="material-symbols-outlined text-lg">print</span> Print
                             </button>
-                            <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-primary hover:text-primary transition-all text-sm font-bold shadow-sm">
-                                <span className="material-symbols-outlined text-lg">picture_as_pdf</span> Export PDF
+                            <button type="button" disabled title="PDF export will be enabled after the report renderer is connected to saved report records." className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-slate-400 border border-slate-200 transition-all text-sm font-bold shadow-sm disabled:cursor-not-allowed">
+                                <span className="material-symbols-outlined text-lg">picture_as_pdf</span> Export unavailable
                             </button>
-                            <button onClick={handleSave} className="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary text-white shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all text-sm font-bold">
+                            <button type="button" disabled={isSaving} onClick={handleSave} className="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary text-white shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50">
                                 <span className="material-symbols-outlined text-lg">save</span> Save Report
                             </button>
                         </div>
@@ -185,7 +165,7 @@ export default function DoctorReportsPage() {
                         </div>
 
                         {/* Right: Sidebar */}
-                        <ReportSidebar />
+                        <ReportSidebar reportId={savedReportId} />
                     </div>
 
                     {/* Footer */}
@@ -219,7 +199,7 @@ export default function DoctorReportsPage() {
                   <span className="material-symbols-outlined text-green-600 text-4xl">check</span>
                 </div>
                 <p className="text-lg font-bold text-slate-900">Report saved successfully!</p>
-                <button onClick={() => setShowSuccess(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
+                <button type="button" onClick={() => setShowSuccess(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
                   Close
                 </button>
               </div>

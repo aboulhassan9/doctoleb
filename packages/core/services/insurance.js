@@ -1,19 +1,19 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase.js';
 import {
   CLAIM_FORM_TEMPLATE_SELECT_FIELDS,
   DOCTOR_INSURANCE_CONTRACT_SELECT_FIELDS,
   INSURANCE_CLAIM_SELECT_FIELDS,
   INSURANCE_PROVIDER_SELECT_FIELDS,
   PATIENT_INSURANCE_POLICY_SELECT_FIELDS,
-} from '@/lib/selects';
+} from '../lib/selects.js';
 import {
   doctorInsuranceContractSchema,
   insuranceClaimSchema,
   patientInsurancePolicySchema,
-} from '@/schemas';
-import { apiCall, apiPaged } from './api';
+} from '../schemas/index.js';
+import { apiCall, apiPaged } from './api.js';
 
-import { validationError, parse } from '@/lib/serviceHelpers';
+import { validationError, parse } from '../lib/serviceHelpers.js';
 
 export const insuranceService = {
   async getProviders({ activeOnly = true, page = 1, pageSize = 100 } = {}) {

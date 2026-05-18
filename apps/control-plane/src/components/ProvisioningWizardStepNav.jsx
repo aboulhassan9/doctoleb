@@ -2,7 +2,7 @@ import { PROVISIONING_WIZARD_STEPS } from '../lib/provisioningWizard'
 
 export default function ProvisioningWizardStepNav({ activeStepId, unlockedStepIndex = 0, onStepChange }) {
   return (
-    <nav aria-label="New tenant creation steps" className="mt-6">
+    <nav aria-label="New tenant creation steps">
       <ol className="grid gap-2 md:grid-cols-4">
         {PROVISIONING_WIZARD_STEPS.map((step, index) => {
           const isActive = step.id === activeStepId
@@ -17,16 +17,24 @@ export default function ProvisioningWizardStepNav({ activeStepId, unlockedStepIn
                 disabled={isLocked}
                 onClick={() => onStepChange(step.id)}
                 className={[
-                  'min-h-full w-full rounded-2xl border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+                  'min-h-full w-full rounded-md border px-4 py-3 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/40',
                   isActive
-                    ? 'border-cyan-300 bg-cyan-300 text-slate-950'
-                    : 'border-white/10 bg-white/10 text-slate-300 hover:border-white/25 hover:bg-white/15',
-                  isLocked ? 'cursor-not-allowed opacity-45 hover:border-white/10 hover:bg-white/10' : '',
+                    ? 'border-teal-600 bg-teal-50 text-slate-900'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+                  isLocked ? 'cursor-not-allowed bg-slate-50 text-slate-400 opacity-70 hover:border-slate-200 hover:bg-slate-50' : '',
                 ].join(' ')}
               >
-                <span className="block text-xs font-black uppercase tracking-[0.2em] opacity-70">Step {step.number}</span>
-                <span className="mt-1 block text-sm font-black">{step.label}</span>
-                {isLocked ? <span className="mt-1 block text-xs font-semibold opacity-75">Complete previous steps first.</span> : null}
+                <span
+                  className={`block font-mono text-[10px] uppercase tracking-wide ${
+                    isActive ? 'text-teal-600' : 'text-slate-400'
+                  }`}
+                >
+                  Step {step.number}
+                </span>
+                <span className="mt-1 block text-sm font-semibold">{step.label}</span>
+                {isLocked ? (
+                  <span className="mt-1 block text-xs text-slate-400">Complete previous steps first.</span>
+                ) : null}
               </button>
             </li>
           )

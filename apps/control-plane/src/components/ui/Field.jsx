@@ -1,8 +1,11 @@
-export default function Field({ label, children }) {
+export default function Field({ label, htmlFor, hint, children }) {
   return (
-    <label className="grid gap-2 text-sm font-semibold text-slate-700">
-      <span>{label}</span>
+    <label htmlFor={htmlFor} className="grid gap-1.5">
+      <span className="font-mono text-[11px] font-medium uppercase tracking-wide text-slate-500">
+        {label}
+      </span>
       {children}
+      {hint ? <span className="text-xs text-slate-400">{hint}</span> : null}
     </label>
   );
 }

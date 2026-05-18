@@ -1,10 +1,10 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
 import {
   APPOINTMENT_SELECT_FIELDS,
   CLINIC_SELECT_FIELDS,
-} from '@/lib/selects';
-import { archiveMutationSchema, clinicSchema, parseWithSchema } from '@/schemas';
+} from '../lib/selects.js';
+import { archiveMutationSchema, clinicSchema, parseWithSchema } from '../schemas/index.js';
 
 const clinicArchiveSchema = archiveMutationSchema.partial();
 

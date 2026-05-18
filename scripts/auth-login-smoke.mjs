@@ -19,35 +19,35 @@ const required = process.env.AUTH_SMOKE_REQUIRED === 'true';
 const scenarios = Object.freeze([
   {
     name: 'patient-web-patient',
-    url: process.env.PATIENT_WEB_LOGIN_URL || 'https://doctoleb-patient-web.vercel.app/login',
+    url: process.env.PATIENT_WEB_LOGIN_URL || 'https://doctoleb-patient-web.vercel.app/t/dev/login',
     emailEnv: 'AUTH_SMOKE_PATIENT_EMAIL',
     passwordEnv: 'AUTH_SMOKE_PATIENT_PASSWORD',
     submitName: 'Sign In',
-    expectedPath: '/patient-dashboard',
+    expectedPath: '/t/dev/patient-dashboard',
   },
   {
     name: 'clinic-ops-doctor',
-    url: process.env.CLINIC_OPS_LOGIN_URL || 'https://doctoleb-clinic-ops.vercel.app/login',
+    url: process.env.CLINIC_OPS_LOGIN_URL || 'https://doctoleb-clinic-ops.vercel.app/t/dev/login',
     emailEnv: 'AUTH_SMOKE_DOCTOR_EMAIL',
     passwordEnv: 'AUTH_SMOKE_DOCTOR_PASSWORD',
     submitName: 'Sign In',
-    expectedPath: '/doctor-dashboard',
+    expectedPath: '/t/dev/doctor-dashboard',
   },
   {
     name: 'clinic-ops-secretary',
-    url: process.env.CLINIC_OPS_LOGIN_URL || 'https://doctoleb-clinic-ops.vercel.app/login',
+    url: process.env.CLINIC_OPS_LOGIN_URL || 'https://doctoleb-clinic-ops.vercel.app/t/dev/login',
     emailEnv: 'AUTH_SMOKE_SECRETARY_EMAIL',
     passwordEnv: 'AUTH_SMOKE_SECRETARY_PASSWORD',
     submitName: 'Sign In',
-    expectedPath: '/dashboard',
+    expectedPath: '/t/dev/dashboard',
   },
   {
     name: 'clinic-ops-predoctor',
-    url: process.env.CLINIC_OPS_LOGIN_URL || 'https://doctoleb-clinic-ops.vercel.app/login',
+    url: process.env.CLINIC_OPS_LOGIN_URL || 'https://doctoleb-clinic-ops.vercel.app/t/dev/login',
     emailEnv: 'AUTH_SMOKE_PREDOCTOR_EMAIL',
     passwordEnv: 'AUTH_SMOKE_PREDOCTOR_PASSWORD',
     submitName: 'Sign In',
-    expectedPath: '/predoctor-dashboard',
+    expectedPath: '/t/dev/predoctor-dashboard',
   },
   {
     name: 'control-plane-owner',
@@ -76,7 +76,9 @@ function scenarioMatchesSelection(name, selectedScenarios) {
 }
 
 async function verifyPatientBookingEntry(page) {
-  const appointmentsUrl = new URL('/patient-appointments', page.url()).toString();
+  const currentPath = new URL(page.url()).pathname;
+  const tenantPrefix = currentPath.match(/^\/t\/[^/]+/)?.[0] || '';
+  const appointmentsUrl = new URL(`${tenantPrefix}/patient-appointments`, page.url()).toString();
   await page.goto(appointmentsUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
   await page.getByRole('heading', { name: 'Appointments', exact: true }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByRole('button', { name: /book new/i }).click({ timeout: 15_000 });

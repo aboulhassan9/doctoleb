@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import ProviderConnectionsPanel from './ProviderConnectionsPanel'
 import ProvisioningPanel from './ProvisioningPanel'
-import { SecondaryButton } from './ui'
 
 const CREATE_WORKSPACE_PANELS = Object.freeze([
   {
@@ -34,19 +33,28 @@ export default function TenantCreationWorkspace({
   const panel = getPanel(activePanel)
 
   return (
-    <section className="grid gap-5">
-      <div className="overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-sm">
-        <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+    <section className="grid gap-6">
+      <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-950 text-white">
+        <div className="flex flex-col justify-between gap-6 p-6 md:p-8 lg:flex-row lg:items-start">
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.28em] text-cyan-300">New tenant</p>
-            <h2 className="mt-3 text-3xl font-black">New tenant setup</h2>
-            <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-slate-300">
-              Create a separate clinic workspace. This installer creates a new tenant draft only and does not edit {selectedTenant?.display_name || 'the selected tenant'} or any existing tenant configuration.
+            <span className="mb-4 inline-flex items-center rounded-md border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 font-mono text-[11px] uppercase tracking-wide text-teal-400">
+              New tenant
+            </span>
+            <h2 className="text-2xl font-semibold tracking-tight text-white">New tenant setup</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
+              Create a separate clinic workspace. This installer creates a new tenant draft only and does not edit{' '}
+              <span className="font-semibold text-white">{selectedTenant?.display_name || 'the selected tenant'}</span>{' '}
+              or any existing tenant configuration.
             </p>
           </div>
-          <SecondaryButton onClick={onCancel}>Back to selected tenant</SecondaryButton>
+          <button
+            onClick={onCancel}
+            className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-900 px-3.5 text-sm font-semibold text-slate-100 transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40"
+          >
+            Back to selected tenant
+          </button>
         </div>
-        <div className="grid gap-3 border-t border-white/10 bg-white/[0.04] p-4 md:grid-cols-2">
+        <div className="grid gap-px bg-slate-800 md:grid-cols-2">
           {CREATE_WORKSPACE_PANELS.map((item) => {
             const isActive = item.id === activePanel
 
@@ -55,39 +63,47 @@ export default function TenantCreationWorkspace({
                 key={item.id}
                 type="button"
                 onClick={() => setActivePanel(item.id)}
-                className={[
-                  'rounded-2xl p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
-                  isActive
-                    ? 'bg-cyan-300 text-slate-950'
-                    : 'bg-white/10 text-slate-300 ring-1 ring-white/10 hover:bg-white/15 hover:text-white',
-                ].join(' ')}
+                className={`p-5 text-left transition-colors focus:outline-none ${
+                  isActive ? 'bg-slate-900' : 'bg-slate-950 hover:bg-slate-900/70'
+                }`}
               >
-                <span className="block text-xs font-black uppercase tracking-[0.22em] opacity-70">{item.eyebrow}</span>
-                <span className="mt-1 block text-lg font-black">{item.label}</span>
-                <span className="mt-2 block text-sm font-semibold opacity-75">{item.description}</span>
+                <span
+                  className={`block font-mono text-[10px] uppercase tracking-wide ${
+                    isActive ? 'text-teal-400' : 'text-slate-500'
+                  }`}
+                >
+                  {item.eyebrow}
+                </span>
+                <span className={`mt-1.5 block text-sm font-semibold ${isActive ? 'text-white' : 'text-slate-300'}`}>
+                  {item.label}
+                </span>
+                <span className={`mt-1 block text-sm ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {item.description}
+                </span>
               </button>
             )
           })}
         </div>
       </div>
 
-      <div className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-slate-200">
-        <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-700">{panel.eyebrow}</p>
-        <h2 className="mt-2 text-2xl font-black">{panel.label}</h2>
-        <p className="mt-1 text-sm font-semibold text-slate-500">{panel.description}</p>
+      <div className="rounded-lg border border-slate-200 bg-white px-5 py-4">
+        <h2 className="text-base font-semibold tracking-tight text-slate-900">{panel.label}</h2>
+        <p className="mt-1 text-sm text-slate-500">{panel.description}</p>
       </div>
 
-      {activePanel === 'create' ? (
-        <ProvisioningPanel providerConnections={providerConnections} onCreated={onProvisioningCreated} />
-      ) : null}
+      <div className="mb-8">
+        {activePanel === 'create' ? (
+          <ProvisioningPanel providerConnections={providerConnections} onCreated={onProvisioningCreated} />
+        ) : null}
 
-      {activePanel === 'providers' ? (
-        <ProviderConnectionsPanel
-          connections={providerConnections}
-          loading={providerConnectionsLoading}
-          onChanged={onProviderConnectionsChanged}
-        />
-      ) : null}
+        {activePanel === 'providers' ? (
+          <ProviderConnectionsPanel
+            connections={providerConnections}
+            loading={providerConnectionsLoading}
+            onChanged={onProviderConnectionsChanged}
+          />
+        ) : null}
+      </div>
     </section>
   )
 }

@@ -12,7 +12,9 @@ import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { notificationCoreService } from '@/services/notificationCore';
 import { appointmentService } from '@/services/appointments';
+import { precheckService } from '@/services/prechecks';
 import { normalizeAppointments } from '@/lib/appointments';
+import { getClinicOpsNotificationTarget, getClinicOpsSearchTarget } from '@/lib/clinicOpsNavigation';
 import { stagger, fadeUp } from '@/lib/animations';
 import { timeAgo } from '@/lib/dateUtils';
 
@@ -60,9 +62,30 @@ export default function PreDoctorDashboardPage() {
         showToast('All notifications marked as read', 'success');
     };
 
+    const handleNotificationClick = async (notification) => {
+        await notificationCoreService.markAsRead(notification.id);
+        setNotifications(prev => prev.filter(x => x.id !== notification.id));
+        setShowNotifications(false);
+        navigate(getClinicOpsNotificationTarget(notification, 'predoctor'));
+    };
+
+    const handleSearchSubmit = (event) => {
+        event.preventDefault();
+        const q = searchQuery.trim();
+        if (!q) return;
+        setSearchQuery('');
+        navigate(getClinicOpsSearchTarget(q, 'predoctor'));
+    };
+
     const handlePatientReady = async (appt) => {
         const pt = appt.patients?.users;
         const name = pt ? `${pt.first_name} ${pt.last_name}` : 'Patient';
+        const { data: prechecks, error: precheckError } = await precheckService.getByPatientId(appt.patient_id || appt.patients?.id, { limit: 1 });
+        const submittedPrecheck = Array.isArray(prechecks) ? prechecks.find((item) => item.status === 'submitted') : null;
+        if (precheckError || !submittedPrecheck) {
+            showToast('Submit a valid pre-check before marking the patient ready.', 'error');
+            return;
+        }
         const { error } = await appointmentService.markPreChecked(appt.id);
         if (error) {
             showToast(error, 'error');
@@ -130,7 +153,7 @@ export default function PreDoctorDashboardPage() {
                 {/* Header */}
                 <header className="sticky top-0 z-20 h-20 hidden md:flex bg-white/80 backdrop-blur-md border-b border-slate-200 items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
-                        <div className="relative w-full">
+                        <form className="relative w-full" onSubmit={handleSearchSubmit}>
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10">search</span>
                             <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search patients, records, or files..." className="w-full bg-slate-100 border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/50 transition-all relative z-10" />
                             <AnimatePresence>
@@ -139,13 +162,13 @@ export default function PreDoctorDashboardPage() {
                                         <div className="p-3 text-sm text-slate-500 font-medium">
                                             Searching for <span className="font-semibold text-slate-900">"{searchQuery}"</span>...
                                         </div>
-                                        <button onClick={() => navigate('/predoctor-patients')} className="w-full text-left px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg">
+                                        <button type="button" onClick={() => navigate(getClinicOpsSearchTarget(searchQuery, 'predoctor'))} className="w-full text-left px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg">
                                             View all results
                                         </button>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
-                        </div>
+                        </form>
                     </div>
                     <div ref={headerRef} className="flex items-center gap-4 relative">
                         {/* Notification bell */}
@@ -172,7 +195,7 @@ export default function PreDoctorDashboardPage() {
                                                 <p className="text-sm text-slate-400 font-medium">All caught up!</p>
                                             </div>
                                         ) : notifications.map(n => (
-                                            <div key={n.id} onClick={async () => { await notificationCoreService.markAsRead(n.id); setNotifications(prev => prev.filter(x => x.id !== n.id)); setShowNotifications(false); }} className="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors">
+                                            <button key={n.id} type="button" onClick={() => handleNotificationClick(n)} className="flex w-full items-start gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors text-left">
                                                 <div className="w-8 h-8 rounded-lg bg-warning/10 text-warning flex items-center justify-center shrink-0">
                                                     <span className="material-symbols-outlined text-[16px]">fact_check</span>
                                                 </div>
@@ -181,7 +204,7 @@ export default function PreDoctorDashboardPage() {
                                                     {n.message && <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{n.message}</p>}
                                                     <p className="text-[10px] font-bold text-slate-400 mt-1">{timeAgo(n.created_at)}</p>
                                                 </div>
-                                            </div>
+                                            </button>
                                         ))}
                                     </div>
                                 </motion.div>

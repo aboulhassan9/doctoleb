@@ -206,6 +206,10 @@ export const controlPlaneApi = {
     return invokeAdminFunction('admin-sync-entitlements', { tenantId, entitlements })
   },
 
+  seedTenantOperationalData(payload) {
+    return invokeAdminFunction('admin-seed-tenant-operational-data', payload)
+  },
+
   setTenantRuntimeConfig(payload) {
     return invokeAdminFunction('admin-set-tenant-runtime-config', payload)
   },

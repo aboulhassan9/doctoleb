@@ -148,7 +148,13 @@ export default function PatientRegistrationSuccess({ form, patientId, onClose })
                             <div className="flex gap-3">
                                 <motion.button
                                     whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                                    onClick={() => alert(`Opening full record for ${form.fullName}...`)}
+                                    onClick={() => {
+                                        if (patientId) {
+                                            navigate(`/patient-profile/${patientId}`);
+                                        }
+                                    }}
+                                    disabled={!patientId}
+                                    title={patientId ? 'Open the created patient record' : 'Patient record id is not available yet'}
                                     className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">badge</span>

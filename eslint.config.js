@@ -8,6 +8,10 @@ export default defineConfig([
   globalIgnores([
     'dist',
     'apps/*/dist',
+    '.cache',
+    '.deploy-temp',
+    '.vercel',
+    'output',
     'supabase/.temp',
     'tests/unit',                 // node:test files use process/globalThis (Node, not browser)
     'supabase-control-plane',     // separate Supabase project; Deno + SQL, not browser JS

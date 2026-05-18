@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { PrimaryButton, SecondaryButton, StatusPill } from './ui'
+import { ChevronDown } from 'lucide-react'
+import { Badge, PrimaryButton, SecondaryButton, StatusPill, TextInput } from './ui'
 
 const STEP_LABELS = {
   tenant_draft_created: 'Tenant draft',
@@ -73,12 +74,8 @@ const TENANT_DATABASE_CONNECTION_FAILED_CODE = 'TENANT_DATABASE_CONNECTION_FAILE
 const FIRST_DOCTOR_INVITE_FAILED_CODE = 'FIRST_DOCTOR_ADMIN_INVITE_FAILED'
 
 const QUICK_LINKS = {
-  create_supabase_project: [
-    { label: 'Open Supabase', href: 'https://supabase.com/dashboard/projects' },
-  ],
-  configure_vercel_project: [
-    { label: 'Open Vercel', href: 'https://vercel.com/dashboard' },
-  ],
+  create_supabase_project: [{ label: 'Open Supabase', href: 'https://supabase.com/dashboard/projects' }],
+  configure_vercel_project: [{ label: 'Open Vercel', href: 'https://vercel.com/dashboard' }],
   smoke_test_resolver: [
     { label: 'Patient app', href: 'https://doctoleb-patient-web.vercel.app' },
     { label: 'Staff app', href: 'https://doctoleb-clinic-ops.vercel.app' },
@@ -120,9 +117,11 @@ function findCurrentStep(steps) {
 }
 
 function findCompletedDatabaseStep(steps) {
-  return steps.find((step) => (
-    step.step_code === 'apply_tenant_migrations' && ['succeeded', 'skipped'].includes(step.status)
-  )) || null
+  return (
+    steps.find(
+      (step) => step.step_code === 'apply_tenant_migrations' && ['succeeded', 'skipped'].includes(step.status),
+    ) || null
+  )
 }
 
 function canCancelJob(job) {
@@ -138,9 +137,11 @@ function canCompensateStep(step) {
 }
 
 function needsTenantSecret(step) {
-  return step?.last_error_code === TENANT_PRIVILEGED_SECRET_REQUIRED_CODE
-    || (step?.step_code === 'seed_first_doctor_admin' && step?.last_error_code === FIRST_DOCTOR_INVITE_FAILED_CODE)
-    || Boolean(extractTenantSecret(step))
+  return (
+    step?.last_error_code === TENANT_PRIVILEGED_SECRET_REQUIRED_CODE ||
+    (step?.step_code === 'seed_first_doctor_admin' && step?.last_error_code === FIRST_DOCTOR_INVITE_FAILED_CODE) ||
+    Boolean(extractTenantSecret(step))
+  )
 }
 
 function extractTenantSecret(step) {
@@ -180,9 +181,13 @@ function progressLabel(completedCount, totalCount) {
   return `${completedCount}/${totalCount} complete`
 }
 
+function FieldLabel({ children }) {
+  return <span className="font-mono text-[11px] font-medium uppercase tracking-wide text-slate-500">{children}</span>
+}
+
 function ProgressStrip({ steps, currentStep }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200">
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
       <div className="flex gap-2 overflow-x-auto pb-1">
         {steps.map((step, index) => {
           const isCurrent = step.id === currentStep?.id
@@ -190,15 +195,15 @@ function ProgressStrip({ steps, currentStep }) {
           return (
             <div
               key={step.id}
-              className={`min-w-[8rem] rounded-xl px-3 py-2 text-xs font-black ${
+              className={`min-w-[8rem] rounded-md px-3 py-2 text-xs font-semibold ${
                 isCurrent
-                  ? 'bg-cyan-950 text-white'
+                  ? 'bg-slate-900 text-white'
                   : isDone
-                    ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100'
-                    : 'bg-white text-slate-500 ring-1 ring-slate-200'
+                    ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                    : 'border border-slate-200 bg-white text-slate-500'
               }`}
             >
-              <span className="block uppercase tracking-[0.16em]">Step {index + 1}</span>
+              <span className="block font-mono text-[10px] uppercase tracking-wide opacity-70">Step {index + 1}</span>
               <span className="mt-1 block truncate">{labelForStep(step.step_code)}</span>
             </div>
           )
@@ -223,7 +228,7 @@ function QuickLinks({ step }) {
           href={link.href}
           target="_blank"
           rel="noreferrer"
-          className="rounded-full bg-white px-4 py-2 text-xs font-black text-cyan-900 ring-1 ring-cyan-200 transition hover:bg-cyan-50"
+          className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
         >
           {link.label}
         </a>
@@ -258,34 +263,28 @@ function DatabaseSetupAction({
 
   return (
     <form onSubmit={saveAndRun} className="mt-5 grid gap-3">
-      <label className="grid gap-2">
-        <span className="text-sm font-black">Database URL</span>
-        <input
+      <label className="grid gap-1.5">
+        <FieldLabel>Database URL</FieldLabel>
+        <TextInput
           type="password"
           autoComplete="off"
           value={databaseUrl}
           onChange={(event) => setDatabaseUrl(event.target.value)}
           placeholder="postgresql://..."
-          className="rounded-2xl border border-cyan-200 bg-white px-4 py-3 font-mono text-sm font-bold outline-none transition focus:border-cyan-500"
+          className="font-mono"
         />
       </label>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="mt-1 flex flex-wrap items-center gap-3">
         <PrimaryButton type="submit" disabled={isBusy}>
           {isBusy ? 'Working...' : databaseUrl.trim() ? savedActionLabel : actionLabel}
         </PrimaryButton>
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-cyan-900 ring-1 ring-cyan-200">{badgeLabel}</span>
+        <Badge variant="neutral">{badgeLabel}</Badge>
       </div>
     </form>
   )
 }
 
-function TenantSecretAction({
-  step,
-  onRunStep,
-  onStoreTenantSecret,
-  runningStepId,
-  storingTenantSecret,
-}) {
+function TenantSecretAction({ step, onRunStep, onStoreTenantSecret, runningStepId, storingTenantSecret }) {
   const [secretValue, setSecretValue] = useState('')
   const shouldAskForSecret = needsTenantSecret(step)
   const isBusy = runningStepId === step.id || storingTenantSecret
@@ -305,18 +304,18 @@ function TenantSecretAction({
 
   return (
     <form onSubmit={saveAndContinue} className="mt-5 grid gap-3">
-      <label className="grid gap-2">
-        <span className="text-sm font-black">Service role key</span>
-        <input
+      <label className="grid gap-1.5">
+        <FieldLabel>Service role key</FieldLabel>
+        <TextInput
           type="password"
           autoComplete="off"
           value={secretValue}
           onChange={(event) => setSecretValue(event.target.value)}
           placeholder="Paste privileged tenant key"
-          className="rounded-2xl border border-amber-200 bg-white px-4 py-3 font-mono text-sm font-bold outline-none transition focus:border-amber-500"
+          className="border-amber-300 font-mono focus:border-amber-500 focus:ring-amber-500/20"
         />
       </label>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="mt-1 flex flex-wrap items-center gap-3">
         <PrimaryButton type="submit" disabled={isBusy}>
           {isBusy ? 'Working...' : secretValue.trim() ? 'Save & retry' : 'Retry'}
         </PrimaryButton>
@@ -325,37 +324,28 @@ function TenantSecretAction({
   )
 }
 
-function CurrentStepCard({
-  step,
-  stepNumber,
-  totalSteps,
-  onRunStep,
-  onStoreTenantSecret,
-  runningStepId,
-  storingTenantSecret,
-}) {
+function CurrentStepCard({ step, stepNumber, totalSteps, onRunStep, onStoreTenantSecret, runningStepId, storingTenantSecret }) {
   const isRunning = runningStepId === step.id || IN_PROGRESS_STEP_STATUSES.has(step.status)
   const canRun = canRunStep(step)
   const errorMessage = friendlyError(step)
   const showTenantSecretAction = needsTenantSecret(step)
 
   return (
-    <div className="rounded-[2rem] bg-cyan-50 p-6 shadow-[0_22px_70px_rgba(8,145,178,0.18)] ring-2 ring-cyan-300">
+    <div className="rounded-lg border border-slate-200 bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">
+          <Badge variant="accent">
             Step {stepNumber} / {totalSteps}
-          </p>
-          <h3 className="mt-2 text-3xl font-black">{labelForStep(step.step_code)}</h3>
+          </Badge>
+          <h3 className="mt-2.5 text-base font-semibold tracking-tight text-slate-900">
+            {labelForStep(step.step_code)}
+          </h3>
         </div>
-        <div className="flex items-center gap-2">
-          {canRun ? <span className="h-3 w-3 rounded-full bg-cyan-500 motion-safe:animate-pulse" /> : null}
-          <StatusPill status={step.status} />
-        </div>
+        <StatusPill status={step.status} />
       </div>
 
       {errorMessage ? (
-        <p className="mt-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-rose-700 ring-1 ring-rose-100">
+        <p className="mt-4 inline-flex items-center rounded-md bg-rose-50 px-2.5 py-1 text-sm font-medium text-rose-700 ring-1 ring-inset ring-rose-600/20">
           {errorMessage}
         </p>
       ) : null}
@@ -377,17 +367,17 @@ function CurrentStepCard({
             runningStepId={runningStepId}
             storingTenantSecret={storingTenantSecret}
           />
-          {!showTenantSecretAction ? <div className="mt-5 flex flex-wrap items-center gap-3">
-            {canRun ? (
-              <PrimaryButton onClick={() => onRunStep?.(step)} disabled={isRunning}>
-                {isRunning ? 'Working...' : STEP_BUTTON_LABELS[step.step_code] || 'Continue'}
-              </PrimaryButton>
-            ) : (
-              <SecondaryButton disabled>
-                {isRunning ? 'Working...' : 'Waiting'}
-              </SecondaryButton>
-            )}
-          </div> : null}
+          {!showTenantSecretAction ? (
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {canRun ? (
+                <PrimaryButton onClick={() => onRunStep?.(step)} disabled={isRunning}>
+                  {isRunning ? 'Working...' : STEP_BUTTON_LABELS[step.step_code] || 'Continue'}
+                </PrimaryButton>
+              ) : (
+                <SecondaryButton disabled>{isRunning ? 'Working...' : 'Waiting'}</SecondaryButton>
+              )}
+            </div>
+          ) : null}
         </>
       )}
 
@@ -396,77 +386,271 @@ function CurrentStepCard({
   )
 }
 
+function StatusCard({ tone, badge, title, children }) {
+  const tones = {
+    amber: 'border-amber-200 bg-amber-50',
+    emerald: 'border-emerald-200 bg-emerald-50',
+    slate: 'border-slate-200 bg-white',
+  }
+  const titleTones = {
+    amber: 'text-amber-900',
+    emerald: 'text-emerald-900',
+    slate: 'text-slate-900',
+  }
+  return (
+    <div className={`rounded-lg border p-5 ${tones[tone]}`}>
+      {badge}
+      <h3 className={`mt-2.5 text-base font-semibold tracking-tight ${titleTones[tone]}`}>{title}</h3>
+      {children}
+    </div>
+  )
+}
+
 function PausedSetupCard({ job, onResumeJob, resumingJob }) {
   return (
-    <div className="rounded-[2rem] bg-amber-50 p-6 ring-2 ring-amber-200">
-      <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-700">Paused</p>
-      <h3 className="mt-2 text-3xl font-black text-amber-950">Continue setup</h3>
+    <StatusCard tone="amber" badge={<Badge variant="warning">Paused</Badge>} title="Continue setup">
       <div className="mt-5">
         <PrimaryButton onClick={() => onResumeJob?.(job)} disabled={resumingJob}>
           {resumingJob ? 'Resuming...' : 'Resume'}
         </PrimaryButton>
       </div>
-    </div>
+    </StatusCard>
   )
 }
 
 function DoneCard() {
   return (
-    <div className="rounded-[2rem] bg-emerald-50 p-6 ring-2 ring-emerald-200">
-      <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">Ready</p>
-      <h3 className="mt-2 text-3xl font-black text-emerald-950">Tenant is online</h3>
+    <StatusCard tone="emerald" badge={<Badge variant="success">Ready</Badge>} title="Tenant is online" />
+  )
+}
+
+function LegacyActiveTenantCard() {
+  return (
+    <StatusCard tone="emerald" badge={<Badge variant="success">Active</Badge>} title="Legacy active tenant">
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-emerald-800">
+        This tenant is active and routable, but it was created before the guided provisioning ledger existed. New
+        tenants show every setup step; this older tenant keeps its active status without a historical step timeline.
+      </p>
+    </StatusCard>
+  )
+}
+
+function DatabaseUpgradeCard({ step, onRunStep, onStoreTenantSecret, runningStepId, storingTenantSecret }) {
+  return (
+    <div className="mt-3">
+      <StatusCard tone="slate" badge={<Badge variant="neutral">Database</Badge>} title="Update schema">
+        <DatabaseSetupAction
+          step={step}
+          onRunStep={onRunStep}
+          onStoreTenantSecret={onStoreTenantSecret}
+          runningStepId={runningStepId}
+          storingTenantSecret={storingTenantSecret}
+          actionLabel="Update database"
+          savedActionLabel="Save & update"
+          badgeLabel="Safe upgrade"
+        />
+      </StatusCard>
     </div>
   )
 }
 
-function DatabaseUpgradeCard({
-  step,
-  onRunStep,
-  onStoreTenantSecret,
-  runningStepId,
-  storingTenantSecret,
-}) {
+function defaultSeedTag() {
+  const now = new Date()
+  const yyyy = now.getUTCFullYear()
+  const mm = String(now.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(now.getUTCDate()).padStart(2, '0')
+  return `ops_seed_${yyyy}${mm}${dd}`
+}
+
+function resultRows(seedResult) {
+  const plan = seedResult?.data?.plan || seedResult?.details?.plan
+  const counts = seedResult?.data?.counts
+
+  if (counts && Object.keys(counts).length > 0) {
+    return Object.entries(counts)
+      .filter(([, value]) => typeof value === 'number' && value > 0)
+      .slice(0, 8)
+      .map(([key, value]) => `${key.replaceAll('_', ' ')}: ${value}`)
+  }
+
+  if (plan?.rows) {
+    return Object.entries(plan.rows)
+      .slice(0, 8)
+      .map(([key, value]) => `${key.replace(/([A-Z])/g, ' $1').toLowerCase()}: ${value}`)
+  }
+
+  return []
+}
+
+function OperationalSeedCard({ tenant, onSeedTenantOperationalData, seedingTenant, seedMessage, seedResult }) {
+  const [volume, setVolume] = useState('tiny')
+  const [seedTag, setSeedTag] = useState(defaultSeedTag)
+  const [allowDuplicates, setAllowDuplicates] = useState(false)
+  const isActiveTenant = tenant?.status === 'active'
+  const canRun = Boolean(onSeedTenantOperationalData) && isActiveTenant && !seedingTenant
+  const blockers = seedResult?.details?.blockers || []
+  const rows = resultRows(seedResult)
+
+  async function runSeed(mode) {
+    await onSeedTenantOperationalData?.({ mode, volume, seedTag: seedTag.trim(), allowDuplicates })
+  }
+
+  const darkInput =
+    'h-9 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white outline-none transition-colors placeholder:text-slate-500 focus:border-teal-400 focus:ring-1 focus:ring-teal-400/30'
+
   return (
-    <div className="rounded-[2rem] bg-cyan-50 p-6 ring-2 ring-cyan-200">
-      <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">Database</p>
-      <h3 className="mt-2 text-2xl font-black text-cyan-950">Update schema</h3>
-      <DatabaseSetupAction
-        step={step}
-        onRunStep={onRunStep}
-        onStoreTenantSecret={onStoreTenantSecret}
-        runningStepId={runningStepId}
-        storingTenantSecret={storingTenantSecret}
-        actionLabel="Update database"
-        savedActionLabel="Save & update"
-        badgeLabel="Safe upgrade"
-      />
+    <div className="mt-3 rounded-lg bg-slate-950 p-6 text-white">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <span className="font-mono text-[10px] uppercase tracking-wide text-slate-500">Test data</span>
+          <h3 className="mt-1.5 text-base font-semibold tracking-tight text-white">Seed tenant operational data</h3>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
+            Creates tagged synthetic patients, appointments, encounters, reports, payments, conversations,
+            notifications, and insurance rows through a server-side admin function. The browser never receives
+            privileged tenant keys.
+          </p>
+        </div>
+        <span
+          className={`inline-flex shrink-0 items-center rounded-md px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wide ring-1 ring-inset ${
+            isActiveTenant
+              ? 'bg-emerald-400/10 text-emerald-400 ring-emerald-400/20'
+              : 'bg-amber-400/10 text-amber-400 ring-amber-400/20'
+          }`}
+        >
+          {isActiveTenant ? 'Active tenant' : 'Activate first'}
+        </span>
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_10rem]">
+        <label className="grid gap-1.5">
+          <span className="font-mono text-[11px] font-medium uppercase tracking-wide text-slate-400">Seed tag</span>
+          <input
+            value={seedTag}
+            onChange={(event) => setSeedTag(event.target.value)}
+            className={`${darkInput} font-mono`}
+            placeholder="ops_seed_20260517"
+          />
+        </label>
+        <label className="grid gap-1.5">
+          <span className="font-mono text-[11px] font-medium uppercase tracking-wide text-slate-400">Volume</span>
+          <select value={volume} onChange={(event) => setVolume(event.target.value)} className={darkInput}>
+            <option className="text-slate-900" value="tiny">
+              Tiny
+            </option>
+            <option className="text-slate-900" value="small">
+              Small
+            </option>
+          </select>
+        </label>
+      </div>
+
+      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-md border border-white/10 bg-white/5 p-4 text-sm text-slate-300 transition-colors hover:bg-white/10">
+        <input
+          type="checkbox"
+          checked={allowDuplicates}
+          onChange={(event) => setAllowDuplicates(event.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-teal-500"
+        />
+        <span className="leading-relaxed">
+          Allow appending to the same seed tag. Keep this off unless you intentionally want more rows in the same test
+          namespace.
+        </span>
+      </label>
+
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => runSeed('dry_run')}
+          disabled={!canRun}
+          className="inline-flex h-9 items-center justify-center rounded-md border border-slate-700 px-3.5 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {seedingTenant ? 'Checking...' : 'Dry run'}
+        </button>
+        <button
+          type="button"
+          onClick={() => runSeed('write')}
+          disabled={!canRun}
+          className="inline-flex h-9 items-center justify-center rounded-md bg-white px-3.5 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-200 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {seedingTenant ? 'Seeding...' : 'Seed test data'}
+        </button>
+      </div>
+
+      {!isActiveTenant ? (
+        <p className="mt-5 rounded-md border border-amber-400/20 bg-amber-400/10 p-3 text-sm font-medium text-amber-400">
+          Tenant must be active first, otherwise the seed could create data for a tenant that is not routable from the
+          apps.
+        </p>
+      ) : null}
+
+      {seedMessage ? (
+        <p
+          className={`mt-5 rounded-md border p-3 text-sm font-medium ${
+            seedResult?.error
+              ? 'border-rose-400/20 bg-rose-400/10 text-rose-400'
+              : 'border-emerald-400/20 bg-emerald-400/10 text-emerald-400'
+          }`}
+        >
+          {seedMessage}
+        </p>
+      ) : null}
+
+      {blockers.length > 0 ? (
+        <div className="mt-5 rounded-md border border-rose-400/20 bg-rose-400/10 p-4 text-sm text-rose-300">
+          <p className="mb-2 font-semibold text-rose-400">Preflight blockers</p>
+          <ul className="list-disc space-y-1 pl-5">
+            {blockers.slice(0, 5).map((blocker) => (
+              <li key={blocker}>{blocker}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {rows.length > 0 ? (
+        <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {rows.map((row) => (
+            <span
+              key={row}
+              className="inline-flex items-center rounded-md bg-white/5 px-2.5 py-1.5 font-mono text-xs font-medium text-slate-300"
+            >
+              {row}
+            </span>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
 
-function AdvancedDetails({
-  steps,
-  migrationRuns,
-  onCompensateStep,
-  compensatingStepId,
-  runMessage,
-}) {
+function AdvancedDetails({ steps, migrationRuns, onCompensateStep, compensatingStepId, runMessage }) {
   return (
-    <details className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-      <summary className="cursor-pointer text-sm font-black text-slate-700">Details</summary>
-      <div className="mt-4 grid gap-3">
-        <p className="text-xs font-bold text-slate-500">Audit log</p>
-        {runMessage ? <p className="rounded-xl bg-white p-3 text-sm font-bold text-cyan-800 ring-1 ring-slate-200">{runMessage}</p> : null}
-        {steps.map((step) => (
-          <div key={step.id} className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+    <details className="group mt-4 rounded-lg border border-slate-200 bg-white [&_summary::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer items-center justify-between px-5 py-3.5 text-sm font-semibold text-slate-900">
+        Advanced Details
+        <ChevronDown className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="grid gap-3 border-t border-slate-100 bg-slate-50 p-5">
+        <h4 className="font-mono text-[11px] font-medium uppercase tracking-wide text-slate-500">Audit log</h4>
+        {runMessage ? (
+          <p className="rounded-md border border-slate-200 bg-white p-3 text-sm font-medium text-slate-700">
+            {runMessage}
+          </p>
+        ) : null}
+
+        <div className="grid gap-2.5">
+          {steps.map((step) => (
+            <div
+              key={step.id}
+              className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-slate-200 bg-white p-4"
+            >
               <div>
-                <p className="font-black">{labelForStep(step.step_code)}</p>
-                <p className="mt-1 text-xs font-semibold text-slate-500">
-                  {step.provider || 'doctoleb'} · undo: {step.undo_strategy || 'none'} · attempts: {step.attempt_count ?? 0}
+                <p className="text-sm font-medium text-slate-900">{labelForStep(step.step_code)}</p>
+                <p className="mt-1 font-mono text-xs text-slate-500">
+                  {step.provider || 'doctoleb'} &middot; undo: {step.undo_strategy || 'none'} &middot; attempts:{' '}
+                  {step.attempt_count ?? 0}
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-3">
                 {canCompensateStep(step) ? (
                   <SecondaryButton onClick={() => onCompensateStep?.(step)} disabled={compensatingStepId === step.id}>
                     {compensatingStepId === step.id ? 'Undoing...' : 'Undo'}
@@ -475,13 +659,16 @@ function AdvancedDetails({
                 <StatusPill status={step.status} />
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
         {migrationRuns?.[0] ? (
-          <div className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Latest DB setup</p>
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-              <p className="font-black">{migrationRuns[0].status}</p>
+          <div className="mt-1 rounded-md border border-slate-200 bg-white p-4">
+            <h4 className="font-mono text-[11px] font-medium uppercase tracking-wide text-slate-500">
+              Latest DB setup
+            </h4>
+            <div className="mt-3 flex items-center justify-between">
+              <p className="text-sm font-medium capitalize text-slate-900">{migrationRuns[0].status}</p>
               <StatusPill status={migrationRuns[0].status} />
             </div>
           </div>
@@ -492,6 +679,7 @@ function AdvancedDetails({
 }
 
 export default function ProvisioningStepsPanel({
+  tenant,
   steps,
   migrationRuns,
   job,
@@ -500,12 +688,16 @@ export default function ProvisioningStepsPanel({
   onResumeJob,
   onCompensateStep,
   onStoreTenantSecret,
+  onSeedTenantOperationalData,
   runningStepId,
   cancellingJob,
   resumingJob,
   compensatingStepId,
   storingTenantSecret,
+  seedingTenant,
   runMessage,
+  seedMessage,
+  seedResult,
 }) {
   const currentSteps = activeJobSteps(steps, job)
   const currentStep = findCurrentStep(currentSteps)
@@ -513,16 +705,18 @@ export default function ProvisioningStepsPanel({
   const currentStepIndex = currentStep ? currentSteps.findIndex((step) => step.id === currentStep.id) : -1
   const completedCount = currentSteps.filter((step) => step.status === 'succeeded' || step.status === 'skipped').length
   const totalSteps = currentSteps.length
+  const hasLegacyActiveTenant = tenant?.status === 'active' && totalSteps === 0
+  const setupSummary = hasLegacyActiveTenant ? 'Active without provisioning ledger' : progressLabel(completedCount, totalSteps)
   const jobCanResume = canResumeJob(job)
   const currentStepNeedsTenantSecret = needsTenantSecret(currentStep)
   const shouldShowCurrentStep = Boolean(currentStep && (!jobCanResume || currentStepNeedsTenantSecret))
 
   return (
-    <section className="grid gap-5 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <section className="rounded-lg border border-slate-200 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">Setup</p>
-          <h2 className="mt-2 text-2xl font-black">{progressLabel(completedCount, totalSteps)}</h2>
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">Provisioning Setup</h2>
+          <p className="mt-1 text-sm text-slate-500">{setupSummary}</p>
         </div>
         {canCancelJob(job) ? (
           <SecondaryButton onClick={() => onCancelJob?.(job)} disabled={cancellingJob}>
@@ -531,44 +725,68 @@ export default function ProvisioningStepsPanel({
         ) : null}
       </div>
 
-      {totalSteps > 0 ? <ProgressStrip steps={currentSteps} currentStep={currentStep} /> : null}
+      <div className="p-5">
+        {totalSteps > 0 ? <ProgressStrip steps={currentSteps} currentStep={currentStep} /> : null}
 
-      {shouldShowCurrentStep ? (
-        <CurrentStepCard
-          step={currentStep}
-          stepNumber={currentStepIndex + 1}
-          totalSteps={totalSteps}
-          onRunStep={onRunStep}
-          onStoreTenantSecret={onStoreTenantSecret}
-          runningStepId={runningStepId}
-          storingTenantSecret={storingTenantSecret}
-        />
-      ) : jobCanResume ? (
-        <PausedSetupCard job={job} onResumeJob={onResumeJob} resumingJob={resumingJob} />
-      ) : totalSteps > 0 ? (
-        <>
-          <DoneCard />
-          {completedDatabaseStep ? (
-            <DatabaseUpgradeCard
-              step={completedDatabaseStep}
+        <div className="mt-6">
+          {shouldShowCurrentStep ? (
+            <CurrentStepCard
+              step={currentStep}
+              stepNumber={currentStepIndex + 1}
+              totalSteps={totalSteps}
               onRunStep={onRunStep}
               onStoreTenantSecret={onStoreTenantSecret}
               runningStepId={runningStepId}
               storingTenantSecret={storingTenantSecret}
             />
-          ) : null}
-        </>
-      ) : (
-        <p className="rounded-2xl bg-slate-50 p-4 text-sm font-bold text-slate-500">No setup steps yet.</p>
-      )}
+          ) : jobCanResume ? (
+            <PausedSetupCard job={job} onResumeJob={onResumeJob} resumingJob={resumingJob} />
+          ) : totalSteps > 0 ? (
+            <>
+              <DoneCard />
+              {completedDatabaseStep ? (
+                <DatabaseUpgradeCard
+                  step={completedDatabaseStep}
+                  onRunStep={onRunStep}
+                  onStoreTenantSecret={onStoreTenantSecret}
+                  runningStepId={runningStepId}
+                  storingTenantSecret={storingTenantSecret}
+                />
+              ) : null}
+              <OperationalSeedCard
+                tenant={tenant}
+                onSeedTenantOperationalData={onSeedTenantOperationalData}
+                seedingTenant={seedingTenant}
+                seedMessage={seedMessage}
+                seedResult={seedResult}
+              />
+            </>
+          ) : hasLegacyActiveTenant ? (
+            <>
+              <LegacyActiveTenantCard />
+              <OperationalSeedCard
+                tenant={tenant}
+                onSeedTenantOperationalData={onSeedTenantOperationalData}
+                seedingTenant={seedingTenant}
+                seedMessage={seedMessage}
+                seedResult={seedResult}
+              />
+            </>
+          ) : (
+            <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
+              No setup steps yet.
+            </div>
+          )}
+        </div>
 
-      <AdvancedDetails
-        steps={currentSteps}
-        migrationRuns={migrationRuns}
-        onCompensateStep={onCompensateStep}
-        compensatingStepId={compensatingStepId}
-        runMessage={runMessage}
-      />
+        <AdvancedDetails
+          steps={currentSteps}
+          migrationRuns={migrationRuns}
+          onCompensateStep={onCompensateStep}
+          compensatingStepId={compensatingStepId}
+          runMessage={runMessage}
+        />
+      </div>
     </section>
   )
 }

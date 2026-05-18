@@ -12,6 +12,8 @@ export default function MonthView({
     monthAppts,
     onPrevMonth,
     onNextMonth,
+    onDaySelect,
+    onAppointmentSelect,
 }) {
     const cells  = monthCells(viewYear, viewMonth);
     const rows   = cells.length / 7;
@@ -57,8 +59,17 @@ export default function MonthView({
                         return (
                             <div
                                 key={idx}
+                                onClick={() => day && onDaySelect?.(new Date(viewYear, viewMonth, day))}
+                                role={day ? 'button' : undefined}
+                                tabIndex={day ? 0 : undefined}
+                                onKeyDown={(event) => {
+                                    if (day && (event.key === 'Enter' || event.key === ' ')) {
+                                        event.preventDefault();
+                                        onDaySelect?.(new Date(viewYear, viewMonth, day));
+                                    }
+                                }}
                                 className={`border-b p-2 flex flex-col ${idx % 7 === 6 ? '' : 'border-r'} border-slate-100 transition-colors
-                                    ${!day ? 'bg-slate-50/40' : isToday ? 'bg-primary/5' : 'bg-white hover:bg-slate-50/60'}`}
+                                    ${!day ? 'bg-slate-50/40 cursor-default' : isToday ? 'bg-primary/5 text-left hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/30' : 'bg-white text-left hover:bg-slate-50/60 focus:outline-none focus:ring-2 focus:ring-primary/20'}`}
                             >
                                 {day && (
                                     <>
@@ -68,9 +79,25 @@ export default function MonthView({
                                         </span>
                                         <div className="flex flex-col gap-1 overflow-hidden">
                                             {appts.map((a, ai) => (
-                                                <div key={ai} className={`px-2 py-0.5 rounded text-[10px] font-bold truncate ${a.cls}`}>
+                                                <span
+                                                    key={ai}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        onAppointmentSelect?.(a.record || a);
+                                                    }}
+                                                    onKeyDown={(event) => {
+                                                        if (event.key === 'Enter' || event.key === ' ') {
+                                                            event.preventDefault();
+                                                            event.stopPropagation();
+                                                            onAppointmentSelect?.(a.record || a);
+                                                        }
+                                                    }}
+                                                    className={`px-2 py-0.5 rounded text-[10px] font-bold truncate focus:outline-none focus:ring-2 focus:ring-primary/30 ${a.cls}`}
+                                                >
                                                     {a.time} {a.patient}
-                                                </div>
+                                                </span>
                                             ))}
                                         </div>
                                     </>

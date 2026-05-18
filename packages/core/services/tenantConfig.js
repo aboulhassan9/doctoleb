@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase.js';
 import {
   CONSENT_DOCUMENT_SELECT_FIELDS,
   CONTENT_PAGE_SELECT_FIELDS,
@@ -6,14 +6,14 @@ import {
   PATIENT_CONSENT_SELECT_FIELDS,
   TENANT_APP_CONFIG_SELECT_FIELDS,
   TENANT_PROFILE_SELECT_FIELDS,
-} from '@/lib/selects';
+} from '../lib/selects.js';
 import {
   patientConsentSchema,
   tenantAppConfigUpdateSchema,
   tenantProfileUpdateSchema,
-} from '@/schemas';
-import { apiCall, apiPaged } from './api';
-import { validationError, parse } from '@/lib/serviceHelpers';
+} from '../schemas/index.js';
+import { apiCall, apiPaged } from './api.js';
+import { validationError, parse } from '../lib/serviceHelpers.js';
 
 const FEATURE_FLAG_AUDIENCES = new Set(['public', 'patient', 'staff', 'admin']);
 

@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
-import { CLINICAL_DOCUMENT_SELECT_FIELDS, DOCTOR_SELECT_FIELDS } from '@/lib/selects';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
+import { CLINICAL_DOCUMENT_SELECT_FIELDS, DOCTOR_SELECT_FIELDS } from '../lib/selects.js';
 
 export const doctorService = {
   async getAll(options = {}) {

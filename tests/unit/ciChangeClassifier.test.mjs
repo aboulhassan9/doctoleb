@@ -143,6 +143,26 @@ describe('CI change classifier', () => {
     assertIncludesAll(result.requiredProofs, ['auth-smoke', 'flow-smoke', 'db-contracts']);
   });
 
+  it('routes tenant operational seed admin API changes to SaaS admin and operational proofs', () => {
+    const result = classifyFiles(['supabase-control-plane/functions/admin-seed-tenant-operational-data/index.ts']);
+
+    assert.equal(result.lane, 'backend');
+    assert.deepEqual(result.controlPlaneFunctions, ['admin-seed-tenant-operational-data']);
+    assertIncludesAll(result.affectedSystems, ['saas-admin']);
+    assertIncludesAll(result.domains, [
+      'appointments',
+      'billing-insurance',
+      'clinical',
+      'messaging',
+      'notifications',
+      'patients',
+      'scheduling',
+      'security',
+    ]);
+    assertIncludesAll(result.apps, ['control-plane']);
+    assertIncludesAll(result.requiredProofs, ['control-plane-build', 'admin-cors-smoke']);
+  });
+
   it('forces full for package changes', () => {
     const result = classifyFiles(['package.json']);
 

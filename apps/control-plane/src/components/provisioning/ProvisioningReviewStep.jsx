@@ -1,6 +1,16 @@
 import { buildPendingTenantDomains, normalizeFirstDoctorAdminDraft } from '../../lib/provisioningDrafts'
 import BrandPreviewCard from '../BrandPreviewCard'
 
+function SummaryCard({ label, primary, secondary }) {
+  return (
+    <div className="rounded-md border border-slate-200 bg-white p-4">
+      <p className="font-mono text-[10px] font-medium uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-slate-900">{primary}</p>
+      <p className="mt-1 text-xs leading-snug text-slate-500">{secondary}</p>
+    </div>
+  )
+}
+
 export default function ProvisioningReviewStep({
   requestedSlug,
   requestedDisplayName,
@@ -19,32 +29,41 @@ export default function ProvisioningReviewStep({
   })
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-5">
       <div className="grid gap-3 md:grid-cols-3">
-        <div className="rounded-2xl bg-white/10 p-4">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">Tenant</p>
-          <p className="mt-2 font-black text-white">{requestedDisplayName || 'Missing clinic name'}</p>
-          <p className="text-sm text-slate-400">{requestedSlug || 'missing-slug'} · {requestedPlan}</p>
-        </div>
-        <div className="rounded-2xl bg-white/10 p-4">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">First doctor</p>
-          <p className="mt-2 font-black text-white">{firstDoctorAdmin.displayName || 'Missing doctor name'}</p>
-          <p className="text-sm text-slate-400">{firstDoctorAdmin.email || 'missing email'}</p>
-        </div>
-        <div className="rounded-2xl bg-white/10 p-4">
-          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">Mode</p>
-          <p className="mt-2 font-black text-white">{automationMode}</p>
-          <p className="text-sm text-slate-400">Undoable provisioning ledger will be created.</p>
-        </div>
+        <SummaryCard
+          label="Tenant"
+          primary={requestedDisplayName || 'Missing clinic name'}
+          secondary={`${requestedSlug || 'missing-slug'} · ${requestedPlan}`}
+        />
+        <SummaryCard
+          label="First doctor"
+          primary={firstDoctorAdmin.displayName || 'Missing doctor name'}
+          secondary={firstDoctorAdmin.email || 'missing email'}
+        />
+        <SummaryCard
+          label="Mode"
+          primary={automationMode.replaceAll('_', ' ')}
+          secondary="Undoable provisioning ledger will be created."
+        />
       </div>
+
       <BrandPreviewCard branding={previewBranding} doctorName={firstDoctorAdmin.displayName} />
+
       {domains.length > 0 ? (
-        <div className="rounded-2xl bg-white/10 p-4 text-sm text-slate-300">
-          <p className="font-black text-white">Pending routing rows</p>
-          <p className="mb-2 text-xs text-slate-400">These are placeholders. They do not block Vercel/free-host launch.</p>
-          {domains.map((domain) => (
-            <p key={`${domain.surface}:${domain.hostname}`}>{domain.hostname} - {domain.surface}</p>
-          ))}
+        <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-semibold text-slate-900">Pending routing rows</p>
+          <p className="mb-3 text-xs text-slate-500">
+            These are placeholders. They do not block Vercel/free-host launch.
+          </p>
+          <ul className="flex flex-col gap-1">
+            {domains.map((domain) => (
+              <li key={`${domain.surface}:${domain.hostname}`} className="text-sm">
+                <span className="font-mono font-medium text-slate-900">{domain.hostname}</span>{' '}
+                <span className="text-slate-500">&mdash; {domain.surface}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
     </div>

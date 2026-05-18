@@ -27,6 +27,7 @@ export default function DoctorCertificatesPage() {
     const [filter, setFilter] = useState('all');
     const [showNewCert, setShowNewCert] = useState(false);
     const [doctorId, setDoctorId] = useState(null);
+    const [selectedCertificate, setSelectedCertificate] = useState(null);
 
     // Settings modals state
     const [showProfile, setShowProfile] = useState(false);
@@ -83,7 +84,7 @@ export default function DoctorCertificatesPage() {
                             <option value="all">All Certificates</option>
                             <option value="Medical Certificate">Medical Certificate</option>
                         </select>
-                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowNewCert(true)} className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-primary text-white rounded-xl shadow-lg">
+                        <motion.button type="button" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowNewCert(true)} className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-primary text-white rounded-xl shadow-lg">
                             <span className="material-symbols-outlined text-lg">add</span>
                             New Certificate
                         </motion.button>
@@ -91,8 +92,46 @@ export default function DoctorCertificatesPage() {
                 </motion.div>
 
                 {/* Certificate list */}
-                <CertificateTable certificates={filteredCertificates} />
+                <CertificateTable certificates={filteredCertificates} onViewCertificate={setSelectedCertificate} />
             </div>
+
+            {selectedCertificate && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-6" role="dialog" aria-modal="true" aria-label="Certificate details">
+                    <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
+                        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">Certificate</p>
+                                <h3 className="mt-1 text-xl font-black text-slate-950">{selectedCertificate.title || 'Medical Certificate'}</h3>
+                            </div>
+                            <button type="button" onClick={() => setSelectedCertificate(null)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Close certificate details">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="space-y-4 px-6 py-5">
+                            <div className="rounded-xl bg-slate-50 p-4">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Document ID</p>
+                                <p className="mt-1 font-mono text-sm font-bold text-slate-900">{selectedCertificate.id}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="rounded-xl border border-slate-100 p-4">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Status</p>
+                                    <p className="mt-1 text-sm font-bold text-slate-900">{selectedCertificate.status || (selectedCertificate.is_archived ? 'Archived' : 'Active')}</p>
+                                </div>
+                                <div className="rounded-xl border border-slate-100 p-4">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Created</p>
+                                    <p className="mt-1 text-sm font-bold text-slate-900">{selectedCertificate.created_at ? new Date(selectedCertificate.created_at).toLocaleDateString() : 'Not recorded'}</p>
+                                </div>
+                            </div>
+                            <p className="rounded-xl border border-primary/10 bg-primary/5 p-4 text-xs font-semibold leading-relaxed text-slate-600">
+                                This view is backed by the saved clinical document row. Editing/export actions stay disabled until the document renderer supports certificate artifacts for this record type.
+                            </p>
+                        </div>
+                        <div className="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
+                            <button type="button" onClick={() => setSelectedCertificate(null)} className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Certificate creation modal */}
             <CertificateFormModal

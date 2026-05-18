@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { logError } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -10,14 +10,59 @@ import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { Modal } from '@/components/ui';
 import { escapeHtml, openPrintableHtml } from '@/lib/html';
+import { TITLE_TO_TESTS, resolveLabTests } from '@/lib/labOrderToTestMap';
 
 
-const CATEGORIES = ['Hematology', 'Biochemistry', 'Immunology', 'Toxicology'];
+const LAB_CATEGORIES = ['All', 'Hematology', 'Biochemistry', 'Immunology', 'Endocrine', 'Urinalysis', 'Other'];
+const QUICK_JUSTIFICATIONS = Object.freeze([
+    'Routine screening based on current clinical assessment.',
+    'Follow-up testing for reported symptoms and clinical monitoring.',
+    'Pre-operative baseline evaluation before planned intervention.',
+]);
+
+const CATEGORY_META = Object.freeze({
+    Hematology: { icon: 'hematology', color: 'bg-red-50 text-red-600', turnaround: 'Same day' },
+    Biochemistry: { icon: 'science', color: 'bg-blue-50 text-blue-600', turnaround: '24 hours' },
+    Immunology: { icon: 'biotech', color: 'bg-purple-50 text-purple-600', turnaround: '48 hours' },
+    Endocrine: { icon: 'monitor_heart', color: 'bg-amber-50 text-amber-600', turnaround: '48 hours' },
+    Urinalysis: { icon: 'water_drop', color: 'bg-cyan-50 text-cyan-600', turnaround: '24 hours' },
+    Other: { icon: 'lab_panel', color: 'bg-slate-100 text-slate-600', turnaround: 'Lab triage' },
+});
+
+function classifyLabTest(name) {
+    const normalized = String(name || '').toLowerCase();
+    if (/cbc|esr|smear|coagulation|pt\/inr|aptt|d-dimer|fibrinogen|reticulocyte/.test(normalized)) return 'Hematology';
+    if (/glucose|hba1c|lipid|bun|urea|creatinine|egfr|electrolytes|calcium|magnesium|phosphorus|alt|ast|alp|ggt|bilirubin|albumin|protein|uric/.test(normalized)) return 'Biochemistry';
+    if (/crp|rf|ana|anti-|complement|hiv|hepatitis|hbsag|hcv|rpr|vdrl|cmv|ebv|pylori|culture/.test(normalized)) return 'Immunology';
+    if (/thyroid|tsh|free t|cortisol|prolactin|fsh|lh|estradiol|testosterone|dhea|insulin|pth|vitamin d/.test(normalized)) return 'Endocrine';
+    if (/urine|urinalysis|microalbumin/.test(normalized)) return 'Urinalysis';
+    return 'Other';
+}
+
+function buildLabTestOptions() {
+    const names = [...new Set(TITLE_TO_TESTS.flatMap(entry => entry.tests))].sort((a, b) => a.localeCompare(b));
+    return names.map((name) => {
+        const category = classifyLabTest(name);
+        return {
+            id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+            name,
+            category,
+            ...CATEGORY_META[category],
+        };
+    });
+}
+
+function getEstimatedResultLabel(urgency) {
+    if (urgency === 'stat') return 'Same-day STAT queue';
+    if (urgency === 'urgent') return 'Priority lab queue';
+    return 'Routine lab queue';
+}
 
 export default function DoctorLabRequestPage() {
     const navigate = useNavigate();
     const [tests, setTests] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
     const [justification, setJustification] = useState('');
     const [urgency, setUrgency] = useState('normal');
     const [specimenType, setSpecimenType] = useState('Venous Blood');
@@ -27,6 +72,7 @@ export default function DoctorLabRequestPage() {
     const [successMessage, setSuccessMessage] = useState('');
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
     const { user } = useAuth();
     const { showToast } = useToast();
 
@@ -39,18 +85,46 @@ export default function DoctorLabRequestPage() {
         }
     }, [patients, selectedPatient]);
 
+    const labTestOptions = useMemo(() => buildLabTestOptions(), []);
+    const selectedTestNames = useMemo(() => new Set(tests.map(test => test.name)), [tests]);
+    const suggestedTests = useMemo(() => {
+        const query = searchQuery.trim();
+        const queryMatches = query
+            ? resolveLabTests(query)
+                .map(name => labTestOptions.find(option => option.name === name))
+                .filter(Boolean)
+            : [];
+
+        const catalogMatches = labTestOptions.filter((option) => {
+            const matchesCategory = selectedCategory === 'All' || option.category === selectedCategory;
+            const matchesSearch = !query || option.name.toLowerCase().includes(query.toLowerCase());
+            return matchesCategory && matchesSearch;
+        });
+
+        const merged = [...queryMatches, ...catalogMatches];
+        return merged
+            .filter((option, index, all) => option && all.findIndex(item => item.name === option.name) === index)
+            .filter(option => !selectedTestNames.has(option.name))
+            .slice(0, 10);
+    }, [labTestOptions, searchQuery, selectedCategory, selectedTestNames]);
+
     const removeTest = (index) => {
         setTests(tests.filter((_, i) => i !== index));
     };
 
-    const handleSaveDraft = () => {
-        showToast('Draft feature coming soon — please submit to save.', 'info');
+    const addTest = (test) => {
+        if (!test || selectedTestNames.has(test.name)) return;
+        setTests(prev => [...prev, test]);
+        setSearchQuery('');
     };
 
     const handleDiscard = () => {
-        if (confirm('Are you sure you want to discard this lab request?')) {
-            navigate(selectedPatient?.id ? `/doctor-patient/${selectedPatient.id}` : '/doctor-patients');
-        }
+        setShowDiscardConfirm(true);
+    };
+
+    const confirmDiscard = () => {
+        setShowDiscardConfirm(false);
+        navigate(selectedPatient?.id ? `/doctor-patient/${selectedPatient.id}` : '/doctor-patients');
     };
 
     const handlePrint = () => {
@@ -117,9 +191,9 @@ export default function DoctorLabRequestPage() {
         }
     };
 
-    const handleSubmit = async () => {
+    const persistLabRequest = async ({ finalize = false } = {}) => {
         if (tests.length === 0) {
-            showToast('Please select at least one test before submitting.', 'error');
+            showToast('Please select at least one test before saving.', 'error');
             return;
         }
         if (!selectedPatient) {
@@ -143,25 +217,27 @@ export default function DoctorLabRequestPage() {
                 `Collection date: ${collectionDate}`,
             ].join('\n');
 
-            const { error } = await documentService.createLabRequest({
+            const clientRequestId = globalThis.crypto?.randomUUID?.() || `lab-request-${Date.now()}`;
+            const { data, error } = await documentService.createLabRequest({
                 patient_id: selectedPatient.id,
                 doctor_id: doctorId,
                 title: `Lab Request - ${testNames.join(', ').slice(0, 160)}`,
                 content,
                 created_by: user.id,
+                client_request_id: clientRequestId,
             });
 
             if (error) throw error;
+            if (finalize && data?.id) {
+                const { error: finalizeError } = await documentService.finalize(data.id);
+                if (finalizeError) throw finalizeError;
+            }
 
             setShowSuccess(true);
-            setSuccessMessage('Lab request submitted successfully!');
-            setTimeout(() => {
-                setShowSuccess(false);
-                navigate('/doctor-dashboard');
-            }, 2000);
+            setSuccessMessage(finalize ? 'Lab request finalized and saved to the clinical document record.' : 'Lab request draft saved to the clinical document record.');
         } catch (error) {
-            logError('Failed to submit lab request:', error);
-            showToast('Failed to submit lab request', 'error');
+            logError('Failed to save lab request:', error);
+            showToast(`Failed to save lab request: ${error?.message || error}`, 'error');
         } finally {
             setIsSaving(false);
         }
@@ -178,10 +254,10 @@ export default function DoctorLabRequestPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-primary/5 rounded-lg transition-colors">
+                        <button type="button" disabled title="Open the dashboard notification inbox to review alerts" className="w-10 h-10 flex items-center justify-center text-slate-300 rounded-lg cursor-not-allowed">
                             <span className="material-symbols-outlined">notifications</span>
                         </button>
-                        <button className="w-10 h-10 flex items-center justify-center text-slate-500 hover:bg-primary/5 rounded-lg transition-colors">
+                        <button type="button" disabled title="Help center is not configured for lab requests yet" className="w-10 h-10 flex items-center justify-center text-slate-300 rounded-lg cursor-not-allowed">
                             <span className="material-symbols-outlined">help_outline</span>
                         </button>
                         <div className="h-8 w-[1px] bg-slate-200 mx-2"></div>
@@ -260,7 +336,7 @@ export default function DoctorLabRequestPage() {
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                                 className="flex-1 bg-transparent border-none text-sm p-0 focus:ring-0" 
                                                 placeholder="Type test name (e.g. Lipid, CBC, Glucose)..." 
-                                                type="text"
+                                                type="search"
                                             />
                                         </div>
                                     </div>
@@ -289,10 +365,29 @@ export default function DoctorLabRequestPage() {
                                     <div className="pt-4 border-t border-slate-50">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Browse Categories</p>
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                            {CATEGORIES.map((cat) => (
-                                                <button key={cat} className="px-3 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:border-[#0d6cf2] hover:text-[#0d6cf2] transition-all">{cat}</button>
+                                            {LAB_CATEGORIES.map((cat) => (
+                                                <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} className={`px-3 py-2 text-xs font-bold bg-white border rounded-lg transition-all ${selectedCategory === cat ? 'border-[#0d6cf2] text-[#0d6cf2] shadow-sm' : 'border-slate-200 text-slate-600 hover:border-[#0d6cf2] hover:text-[#0d6cf2]'}`}>{cat}</button>
                                             ))}
                                         </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Available tests</p>
+                                        {suggestedTests.length === 0 ? (
+                                            <p className="rounded-xl bg-slate-50 p-4 text-xs font-semibold text-slate-500">No matching tests remain for this filter.</p>
+                                        ) : suggestedTests.map((test) => (
+                                            <button key={test.name} type="button" onClick={() => addTest(test)} className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white p-3 text-left transition-all hover:border-[#0d6cf2]/40 hover:bg-primary/5">
+                                                <span className="flex items-center gap-3">
+                                                    <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${test.color}`}>
+                                                        <span className="material-symbols-outlined text-lg">{test.icon}</span>
+                                                    </span>
+                                                    <span>
+                                                        <span className="block text-sm font-black text-slate-900">{test.name}</span>
+                                                        <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">{test.category} · {test.turnaround}</span>
+                                                    </span>
+                                                </span>
+                                                <span className="material-symbols-outlined text-primary">add_circle</span>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             </section>
@@ -310,9 +405,9 @@ export default function DoctorLabRequestPage() {
                                         rows="4"
                                     ></textarea>
                                     <div className="mt-3 flex gap-2">
-                                        <button className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded cursor-pointer hover:bg-slate-200 transition-colors">Routine Screen</button>
-                                        <button className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded cursor-pointer hover:bg-slate-200 transition-colors">Symptom Follow-up</button>
-                                        <button className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded cursor-pointer hover:bg-slate-200 transition-colors">Pre-operative</button>
+                                        {QUICK_JUSTIFICATIONS.map((copy) => (
+                                            <button key={copy} type="button" onClick={() => setJustification(copy)} className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded cursor-pointer hover:bg-slate-200 transition-colors">{copy.split(' ').slice(0, 2).join(' ')}</button>
+                                        ))}
                                     </div>
                                 </div>
                             </section>
@@ -376,7 +471,9 @@ export default function DoctorLabRequestPage() {
                                                 onChange={(e) => setVolume(e.target.value)}
                                                 className="w-full bg-[#f8fafc] border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-[#0d6cf2]/20" 
                                                 placeholder="5" 
-                                                type="number"
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.5"
                                             />
                                         </div>
                                         <div>
@@ -386,7 +483,7 @@ export default function DoctorLabRequestPage() {
                                                     value={collectionDate}
                                                     onChange={(e) => setCollectionDate(e.target.value)}
                                                     className="w-full bg-[#f8fafc] border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-[#0d6cf2]/20" 
-                                                    type="text"
+                                                    type="date"
                                                 />
                                                 <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">calendar_month</span>
                                             </div>
@@ -415,7 +512,7 @@ export default function DoctorLabRequestPage() {
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-slate-400">Est. Results</span>
-                                        <span className="font-bold">By tomorrow, 09:00 AM</span>
+                                        <span className="font-bold">{getEstimatedResultLabel(urgency)}</span>
                                     </div>
                                     <div className="pt-3 border-t border-slate-700 mt-3">
                                         <div className="flex justify-between text-sm">
@@ -430,9 +527,9 @@ export default function DoctorLabRequestPage() {
 
                     <div className="sticky bottom-0 bg-white/80 backdrop-blur-md border border-slate-100 rounded-2xl p-4 shadow-2xl flex flex-wrap items-center justify-between gap-4 z-30">
                         <div className="flex items-center gap-4">
-                            <button onClick={handleSaveDraft} className="px-6 py-3 bg-slate-100 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2">
+                            <button onClick={() => persistLabRequest({ finalize: false })} disabled={isSaving} className="px-6 py-3 bg-slate-100 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait">
                                 <span className="material-symbols-outlined text-lg">save</span>
-                                Save as Draft
+                                {isSaving ? 'Saving…' : 'Save as Draft'}
                             </button>
                             <button onClick={handleDiscard} className="px-4 py-3 text-critical text-sm font-bold hover:bg-red-50 rounded-xl transition-all">
                                 Discard Request
@@ -442,9 +539,9 @@ export default function DoctorLabRequestPage() {
                             <button onClick={handlePrint} className="px-6 py-3 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:border-[#0d6cf2] hover:text-[#0d6cf2] transition-all">
                                 Print Label Preview
                             </button>
-                            <button onClick={handleSubmit} className="px-10 py-3 bg-[#0d6cf2] text-white text-sm font-black rounded-xl hover:text-primary shadow-lg shadow-[#0d6cf2]/20 active:scale-95 transition-all flex items-center gap-2">
+                            <button onClick={() => persistLabRequest({ finalize: true })} disabled={isSaving} className="px-10 py-3 bg-[#0d6cf2] text-white text-sm font-black rounded-xl hover:text-primary shadow-lg shadow-[#0d6cf2]/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait">
                                 <span className="material-symbols-outlined">send</span>
-                                Submit Lab Request
+                                {isSaving ? 'Saving…' : 'Submit Lab Request'}
                             </button>
                         </div>
                     </div>
@@ -454,9 +551,21 @@ export default function DoctorLabRequestPage() {
                           <span className="material-symbols-outlined text-green-600 text-4xl">check</span>
                         </div>
                         <p className="text-lg font-bold text-slate-900">{successMessage}</p>
-                        <button onClick={() => setShowSuccess(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
+                        <button onClick={() => { setShowSuccess(false); navigate(selectedPatient?.id ? `/doctor-patient/${selectedPatient.id}` : '/doctor-dashboard'); }} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
                           Close
                         </button>
+                      </div>
+                    </Modal>
+                    <Modal isOpen={showDiscardConfirm} onClose={() => setShowDiscardConfirm(false)} size="sm">
+                      <div className="space-y-5">
+                        <div>
+                          <p className="text-lg font-black text-slate-900">Discard lab request?</p>
+                          <p className="mt-2 text-sm text-slate-500">Unsaved lab test selections and clinical justification will be lost.</p>
+                        </div>
+                        <div className="flex justify-end gap-3">
+                          <button onClick={() => setShowDiscardConfirm(false)} className="px-5 py-2 rounded-lg bg-slate-100 text-sm font-bold text-slate-600 hover:bg-slate-200">Keep editing</button>
+                          <button onClick={confirmDiscard} className="px-5 py-2 rounded-lg bg-critical text-sm font-bold text-white hover:brightness-110">Discard</button>
+                        </div>
                       </div>
                     </Modal>
                 </div>

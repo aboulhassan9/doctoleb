@@ -21,8 +21,8 @@ const mutateControlPlane = process.env.FLOW_SMOKE_MUTATE_CONTROL_PLANE === 'true
 const smokeId = (process.env.FLOW_SMOKE_ID || `qa-e2e-${Date.now()}`).toLowerCase();
 
 const URLS = Object.freeze({
-  patientLogin: process.env.PATIENT_WEB_LOGIN_URL || 'https://doctoleb-patient-web.vercel.app/login',
-  clinicOpsLogin: process.env.CLINIC_OPS_LOGIN_URL || 'https://doctoleb-clinic-ops.vercel.app/login',
+  patientLogin: process.env.PATIENT_WEB_LOGIN_URL || 'https://doctoleb-patient-web.vercel.app/t/dev/login',
+  clinicOpsLogin: process.env.CLINIC_OPS_LOGIN_URL || 'https://doctoleb-clinic-ops.vercel.app/t/dev/login',
   controlPlaneLogin: process.env.CONTROL_PLANE_LOGIN_URL || 'https://doctoleb-control-plane.vercel.app/',
 });
 
@@ -34,7 +34,7 @@ const scenarios = Object.freeze([
     emailEnv: 'AUTH_SMOKE_PATIENT_EMAIL',
     passwordEnv: 'AUTH_SMOKE_PATIENT_PASSWORD',
     submitName: 'Sign In',
-    expectedPath: '/patient-dashboard',
+    expectedPath: '/t/dev/patient-dashboard',
   },
   {
     name: 'doctor-first-band',
@@ -43,7 +43,7 @@ const scenarios = Object.freeze([
     emailEnv: 'AUTH_SMOKE_DOCTOR_EMAIL',
     passwordEnv: 'AUTH_SMOKE_DOCTOR_PASSWORD',
     submitName: 'Sign In',
-    expectedPath: '/doctor-dashboard',
+    expectedPath: '/t/dev/doctor-dashboard',
   },
   {
     name: 'secretary-first-band',
@@ -52,7 +52,7 @@ const scenarios = Object.freeze([
     emailEnv: 'AUTH_SMOKE_SECRETARY_EMAIL',
     passwordEnv: 'AUTH_SMOKE_SECRETARY_PASSWORD',
     submitName: 'Sign In',
-    expectedPath: '/dashboard',
+    expectedPath: '/t/dev/dashboard',
   },
   {
     name: 'predoctor-first-band',
@@ -61,7 +61,7 @@ const scenarios = Object.freeze([
     emailEnv: 'AUTH_SMOKE_PREDOCTOR_EMAIL',
     passwordEnv: 'AUTH_SMOKE_PREDOCTOR_PASSWORD',
     submitName: 'Sign In',
-    expectedPath: '/predoctor-dashboard',
+    expectedPath: '/t/dev/predoctor-dashboard',
   },
   {
     name: 'control-plane-first-band',
@@ -76,7 +76,8 @@ const scenarios = Object.freeze([
 
 function appUrl(loginUrl, routePath) {
   const url = new URL(loginUrl);
-  url.pathname = routePath;
+  const tenantPrefix = url.pathname.match(/^\/t\/[^/]+/)?.[0] || '';
+  url.pathname = `${tenantPrefix}${routePath}`;
   url.search = '';
   url.hash = '';
   return url.toString();

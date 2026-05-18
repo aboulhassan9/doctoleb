@@ -7,8 +7,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/contexts/ToastContext';
 import { useNotifications } from '@/hooks/features/useNotifications';
+import { getClinicOpsNotificationTarget, getClinicOpsSearchTarget, isUnreadNotification } from '@/lib/clinicOpsNavigation';
 import { timeAgo } from '@/lib/dateUtils';
 
 const NOTIF_ICONS = {
@@ -29,7 +29,7 @@ export default function DashboardHeader({
 }) {
     const navigate = useNavigate();
     const { logout, user } = useAuth();
-    const { notifications, markRead, markAllRead } = useNotifications({ userId: user?.id });
+    const { notifications, unreadCount, markRead, markAllRead } = useNotifications({ userId: user?.id });
     const [showNotifications, setShowNotifications] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const headerRef = useRef(null);
@@ -53,12 +53,21 @@ export default function DashboardHeader({
     const handleNotifClick = async (notif) => {
         await markRead(notif.id);
         setShowNotifications(false);
+        navigate(getClinicOpsNotificationTarget(notif, user?.role || 'secretary'));
+    };
+
+    const handleSearchSubmit = (event) => {
+        event.preventDefault();
+        const q = searchQuery.trim();
+        if (!q) return;
+        onSearchChange('');
+        navigate(getClinicOpsSearchTarget(q, user?.role || 'secretary'));
     };
 
     return (
         <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
             <div className="flex items-center gap-4 flex-1 max-w-xl">
-                <div className="relative w-full">
+                <form className="relative w-full" onSubmit={handleSearchSubmit}>
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10">search</span>
                     <input
                         type="text"
@@ -80,7 +89,7 @@ export default function DashboardHeader({
                                     onClick={() => {
                                         const q = searchQuery;
                                         onSearchChange('');
-                                        navigate('/patients', { state: { searchQuery: q } });
+                                        navigate(getClinicOpsSearchTarget(q, user?.role || 'secretary'));
                                     }}
                                     className="w-full text-left px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg transition-colors"
                                 >
@@ -89,7 +98,7 @@ export default function DashboardHeader({
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
+                </form>
             </div>
             <div ref={headerRef} className="flex items-center gap-4 relative">
                 {/* Notifications */}
@@ -98,10 +107,10 @@ export default function DashboardHeader({
                     className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary transition-all relative"
                 >
                     <span className="material-symbols-outlined">notifications</span>
-                    {notifications.length > 0 && (
+                    {unreadCount > 0 && (
                         <>
                             <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-critical text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
-                                {notifications.length > 9 ? '9+' : notifications.length}
+                                {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
                             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                         </>
@@ -132,7 +141,7 @@ export default function DashboardHeader({
                                                     <span className="material-symbols-outlined text-[16px]">{ni.icon}</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-xs font-semibold text-slate-900 leading-tight truncate">{notif.title}</p>
+                                                    <p className={`text-xs leading-tight truncate ${isUnreadNotification(notif) ? 'font-black text-slate-950' : 'font-semibold text-slate-700'}`}>{notif.title}</p>
                                                     {notif.message && <p className="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">{notif.message}</p>}
                                                     <p className="text-[10px] font-bold text-slate-400 mt-1">{timeAgo(notif.created_at)}</p>
                                                 </div>

@@ -47,6 +47,16 @@ const SUCCESS_CACHE_CONTROL = 'public, max-age=60, s-maxage=300, stale-while-rev
 const ERROR_CACHE_CONTROL = 'no-store'
 const MAX_HOST_LENGTH = 300
 const TENANT_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/
+const DEFAULT_SHARED_APP_HOSTS = [
+  'doctoleb-patient-web.vercel.app',
+  'doctoleb-clinic-ops.vercel.app',
+]
+const SHARED_APP_HOSTS = new Set(
+  (Deno.env.get('TENANT_RESOLVE_SHARED_APP_HOSTS') || DEFAULT_SHARED_APP_HOSTS.join(','))
+    .split(',')
+    .map((value) => normalizeHost(value))
+    .filter((value): value is string => Boolean(value)),
+)
 
 function corsHeaders(origin: string | null): Record<string, string> {
   let allow: string
@@ -105,6 +115,10 @@ function normalizeSlug(value: string | null): string | null {
   if (!slug) return null
   if (!TENANT_SLUG.test(slug)) return ''
   return slug
+}
+
+function isSharedAppHost(host: string): boolean {
+  return SHARED_APP_HOSTS.has(host)
 }
 
 function normalizePayload(data: unknown): ResolverEnvelope {
@@ -243,6 +257,18 @@ Deno.serve(async (req) => {
     return jsonResponse(
       { data: null, error: 'INVALID_REQUEST' },
       400,
+      cors,
+      ERROR_CACHE_CONTROL,
+    )
+  }
+
+  // Shared Vercel app hosts are multi-tenant entrypoints. They must resolve by
+  // explicit /t/<tenant-slug> path only; otherwise the bare project alias would
+  // accidentally become "the dev clinic" for every visitor.
+  if (!slug && isSharedAppHost(host)) {
+    return jsonResponse(
+      { data: null, error: 'TENANT_NOT_FOUND' },
+      404,
       cors,
       ERROR_CACHE_CONTROL,
     )

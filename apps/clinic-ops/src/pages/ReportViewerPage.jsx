@@ -33,6 +33,7 @@ import '@ui/styles/print-report.css';
 import { timeAgo, RELATIVE_DATE_SHORTCUTS } from '@core/lib/dateUtils';
 import { stagger, fadeUp } from '@core/lib/animations';
 import ReportSharePanel from '../components/reports/ReportSharePanel';
+import ReportSchedulePanel from '../components/reports/ReportSchedulePanel';
 
 export default function ReportViewerPage() {
   const { id } = useParams();
@@ -67,6 +68,12 @@ export default function ReportViewerPage() {
 
   // Sharing
   const [showShare, setShowShare] = useState(false);
+
+  // PDF export
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  // Scheduling
+  const [showSchedule, setShowSchedule] = useState(false);
 
   // Drill-down — each entry is { column, operator, value, label }
   const [drillDownFilters, setDrillDownFilters] = useState([]);
@@ -263,6 +270,39 @@ export default function ReportViewerPage() {
     URL.revokeObjectURL(url);
   }
 
+  // ── PDF export ──
+  // Hands the displayed rows + definition to the render Edge Function and
+  // downloads the returned PDF. Matches exactly what the viewer shows.
+  async function handleExportPdf() {
+    if (!definition || rows.length === 0) return;
+    setExportingPdf(true);
+    setError('');
+    const columnLabels = Object.fromEntries(
+      Object.keys(rows[0] || {}).map((k) => [k, resolveColumnLabel(definition.dataSource, k)]),
+    );
+    const { data, error: err } = await analyticalReportService.exportReportPdf({
+      reportName: report?.name || definition?.header?.title || 'Analytical report',
+      definition,
+      rows,
+      columnLabels,
+    });
+    setExportingPdf(false);
+    if (err) {
+      setError(err);
+      return;
+    }
+    const bytes = Uint8Array.from(atob(data.pdfBase64), (c) => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = data.filename || 'report.pdf';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+
   // ── Archive ──
   async function handleArchive() {
     if (!user?.id) return;
@@ -390,6 +430,17 @@ export default function ReportViewerPage() {
                 {rows.length > 0 && (
                   <button
                     type="button"
+                    onClick={handleExportPdf}
+                    disabled={exportingPdf}
+                    className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                    aria-label="Export report as PDF"
+                  >
+                    {exportingPdf ? 'Exporting…' : 'Export PDF'}
+                  </button>
+                )}
+                {rows.length > 0 && (
+                  <button
+                    type="button"
                     onClick={handlePrint}
                     className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     aria-label="Print this report"
@@ -405,6 +456,16 @@ export default function ReportViewerPage() {
                     aria-label="Share this report"
                   >
                     Share
+                  </button>
+                )}
+                {(isOwner || isAdmin) && (
+                  <button
+                    type="button"
+                    onClick={() => setShowSchedule(true)}
+                    className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    aria-label="Schedule this report"
+                  >
+                    Schedule
                   </button>
                 )}
                 {canManage && (
@@ -784,6 +845,15 @@ export default function ReportViewerPage() {
           isAdmin={isAdmin}
           onClose={() => setShowShare(false)}
           onOwnershipChanged={(updated) => setReport(updated)}
+        />
+      )}
+
+      {showSchedule && report && (
+        <ReportSchedulePanel
+          report={report}
+          currentUserId={user?.id}
+          isAdmin={isAdmin}
+          onClose={() => setShowSchedule(false)}
         />
       )}
     </DashboardLayout>

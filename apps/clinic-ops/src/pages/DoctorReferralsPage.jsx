@@ -24,6 +24,7 @@ export default function DoctorReferralsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [doctors, setDoctors] = useState([]);
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [savedReferralId, setSavedReferralId] = useState(null);
     const { user } = useAuth();
     const { showToast } = useToast();
     const [doctorRecord, setDoctorRecord] = useState(null);
@@ -55,7 +56,7 @@ export default function DoctorReferralsPage() {
     }, [doctorId, user?.id]);
 
     const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const refNumber = `REF-${Date.now().toString().slice(-6)}`;
+    const refNumber = savedReferralId ? `REF-${String(savedReferralId).replace(/-/g, '').slice(0, 10).toUpperCase()}` : 'Pending until saved';
     const selectedPatientName = selectedPatient?.users
         ? getUserDisplayName(selectedPatient.users)
         : 'Patient not selected';
@@ -66,6 +67,13 @@ export default function DoctorReferralsPage() {
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const handleSearchSubmit = (event) => {
+        event.preventDefault();
+        const query = event.currentTarget.elements.referralSearch?.value?.trim();
+        if (!query) return;
+        navigate(`/doctor-patients?q=${encodeURIComponent(query)}`);
     };
 
     const handleSend = async () => {
@@ -85,7 +93,7 @@ export default function DoctorReferralsPage() {
                 ? `Dr. ${recipient.users?.first_name || ''} ${recipient.users?.last_name || ''}`.trim()
                 : 'Selected specialist';
 
-            const { error } = await documentService.createReferral({
+            const { data, error } = await documentService.createReferral({
                 patient_id: selectedPatient.id,
                 doctor_id: doctorId,
                 title: `Referral Letter - ${selectedPatient.users?.first_name || ''} ${selectedPatient.users?.last_name || ''}`.trim(),
@@ -95,7 +103,6 @@ export default function DoctorReferralsPage() {
                 clinical_findings: clinicalFindings,
                 treatment_plan: treatmentPlan,
                 content: [
-                    `Reference: ${refNumber}`,
                     `Referred to: ${recipientName}`,
                     `Priority: ${patientStatus}`,
                     `Reason: ${reason}`,
@@ -106,12 +113,10 @@ export default function DoctorReferralsPage() {
             });
 
             if (error) throw error;
+            const saved = Array.isArray(data) ? data[0] : data;
+            setSavedReferralId(saved?.id || null);
 
             setShowSuccess(true);
-            setTimeout(() => {
-                setShowSuccess(false);
-                navigate('/doctor-dashboard');
-            }, 3000);
         } catch (error) {
             logError('Failed to send referral:', error);
             showToast('Failed to send referral letter', 'error');
@@ -124,10 +129,10 @@ export default function DoctorReferralsPage() {
         <DashboardLayout role="doctor">
                 <header className="sticky top-0 z-20 h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center gap-4 flex-1 max-w-xl">
-                        <div className="relative w-full">
+                        <form onSubmit={handleSearchSubmit} className="relative w-full">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10">search</span>
-                            <input className="w-full bg-slate-100 border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/50" placeholder="Search patients or reports..." type="text"/>
-                        </div>
+                            <input name="referralSearch" className="w-full bg-slate-100 border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/50" placeholder="Search patients or reports..." type="search"/>
+                        </form>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
@@ -135,10 +140,10 @@ export default function DoctorReferralsPage() {
                             <span className="h-2 w-2 rounded-full bg-success/100"></span>
                             <span className="text-xs font-medium text-success">Available</span>
                         </div>
-                        <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary">
+                        <button type="button" disabled title="Use the dashboard notification inbox to review referral alerts" className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-300 cursor-not-allowed">
                             <span className="material-symbols-outlined">notifications</span>
                         </button>
-                        <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-primary/10 hover:text-primary">
+                        <button type="button" disabled title="Referral help content is not configured for this tenant yet" className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-300 cursor-not-allowed">
                             <span className="material-symbols-outlined">help_outline</span>
                         </button>
                         <div className="h-8 w-px bg-slate-200 mx-2"></div>
@@ -164,11 +169,11 @@ export default function DoctorReferralsPage() {
                                 <h2 className="text-[30px] font-black tracking-tight text-slate-900 leading-none">Draft Referral Letter</h2>
                             </div>
                             <div className="flex gap-3">
-                                <button onClick={handlePrint} className="bg-white border border-slate-200 px-6 py-2.5 rounded-xl font-bold text-sm text-slate-700 flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm">
+                                <button type="button" onClick={handlePrint} className="bg-white border border-slate-200 px-6 py-2.5 rounded-xl font-bold text-sm text-slate-700 flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm">
                                     <span className="material-symbols-outlined text-lg">print</span>
                                     Print Letter
                                 </button>
-                                <button onClick={handleSend} className="bg-primary text-white px-8 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:text-primary transition-shadow shadow-lg shadow-primary/20 active:scale-95">
+                                <button type="button" disabled={isSaving} onClick={handleSend} className="bg-primary text-white px-8 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:text-primary transition-shadow shadow-lg shadow-primary/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
                                     <span className="material-symbols-outlined text-lg">send</span>
                                     Send via Secure Message
                                 </button>
@@ -223,7 +228,7 @@ export default function DoctorReferralsPage() {
                                                 ))}
                                             </select>
                                             <p className="print-only border-b-2 border-slate-900 py-2 font-bold text-slate-900">{recipientDoctorName}</p>
-                                            <button className="print-hidden absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                            <button type="button" disabled title="Use the recipient dropdown to choose an existing doctor" className="print-hidden absolute right-0 top-1/2 -translate-y-1/2 text-slate-300 cursor-not-allowed">
                                                 <span className="material-symbols-outlined">person_search</span>
                                             </button>
                                         </div>
@@ -290,7 +295,7 @@ export default function DoctorReferralsPage() {
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Pertinent Test Results</label>
                                             <div className="bg-slate-50 rounded-xl p-4 min-h-[160px] flex flex-col gap-2 items-center justify-center">
                                                 <p className="print-only w-full text-sm font-medium text-slate-600">No attached test results listed.</p>
-                                                <button className="print-hidden w-full border-2 border-dashed border-slate-200 rounded-lg p-6 text-slate-400 flex flex-col items-center justify-center gap-2 hover:border-primary hover:text-primary transition-colors">
+                                                <button type="button" disabled title="Referral attachments need the clinical document storage flow before they can be sent" className="print-hidden w-full border-2 border-dashed border-slate-200 rounded-lg p-6 text-slate-300 flex flex-col items-center justify-center gap-2 cursor-not-allowed">
                                                     <span className="material-symbols-outlined text-3xl">upload_file</span>
                                                     <span className="text-[10px] font-bold uppercase tracking-wider">Attach Test Results</span>
                                                 </button>
@@ -335,7 +340,7 @@ export default function DoctorReferralsPage() {
                                             onTouchEnd={stopDraw}
                                         />
                                         <div className="print-hidden flex justify-between">
-                                            <button onClick={clearSignature} className="text-[10px] font-bold uppercase text-slate-400 hover:text-critical transition-colors">Clear</button>
+                                            <button type="button" onClick={clearSignature} className="text-[10px] font-bold uppercase text-slate-400 hover:text-critical transition-colors">Clear</button>
                                             <span className="text-[10px] font-bold uppercase text-success">Draw your signature above</span>
                                         </div>
                                     </div>
@@ -353,7 +358,7 @@ export default function DoctorReferralsPage() {
                             </div>
 
                             <div className="mt-12 text-center text-slate-400 border-t border-slate-100 pt-6">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em]">Confidential Medical Correspondence • HIPAA Compliant Infrastructure</p>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em]">Confidential Medical Correspondence • Tenant clinical data boundary enforced</p>
                             </div>
 
                             <div className="absolute -top-4 -right-4 bg-primary text-white text-[10px] font-black uppercase px-4 py-2 rotate-1 shadow-lg">
@@ -369,7 +374,7 @@ export default function DoctorReferralsPage() {
                   <span className="material-symbols-outlined text-green-600 text-4xl">check</span>
                 </div>
                 <p className="text-lg font-bold text-slate-900">Referral letter sent successfully!</p>
-                <button onClick={() => setShowSuccess(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
+                <button type="button" onClick={() => { setShowSuccess(false); navigate('/doctor-dashboard'); }} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
                   Close
                 </button>
               </div>

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { controlPlaneApi } from '../lib/controlPlaneApi';
+import { staggerContainer, staggerItem } from '../lib/motion';
 import { Field, TextInput, PrimaryButton } from './ui';
+import BrandLockup from './BrandLockup';
 
 export default function LoginScreen({ onSignedIn }) {
   const [email, setEmail] = useState('');
@@ -16,12 +18,10 @@ export default function LoginScreen({ onSignedIn }) {
 
     try {
       const result = await controlPlaneApi.signIn(email, password);
-
       if (result.error) {
         setError(result.error);
         return;
       }
-
       onSignedIn(result.data);
     } catch (_error) {
       setError('Unable to sign in right now. Please retry.');
@@ -31,47 +31,111 @@ export default function LoginScreen({ onSignedIn }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#071317] text-white">
-      <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="relative overflow-hidden p-8 sm:p-12">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(20,184,166,0.28),transparent_35%),radial-gradient(circle_at_80%_80%,rgba(8,145,178,0.2),transparent_30%)]" />
-          <div className="relative z-10 flex h-full flex-col justify-between">
-            <div className="text-sm font-black uppercase tracking-[0.35em] text-cyan-200">DoctoLeb Console</div>
-            <div className="max-w-2xl">
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-5xl font-black leading-[0.95] sm:text-7xl"
-              >
-                SaaS control without clinical data.
-              </motion.h1>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">
-                Manage tenants, pending domains, plans, entitlements, branding sync, and provisioning
-                checklists from the zero-PHI control plane.
-              </p>
-            </div>
-            <p className="text-sm text-slate-400">Designed for `console.doctoleb.com` once the domain is owned.</p>
-          </div>
+    <main className="flex min-h-screen text-slate-900">
+      <div className="grid min-h-screen w-full lg:grid-cols-[1.2fr_0.8fr]">
+        <section className="relative hidden flex-col justify-between overflow-hidden bg-slate-950 p-16 text-slate-100 lg:flex">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-60 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="relative z-10 flex h-full flex-col justify-between"
+          >
+            <motion.div variants={staggerItem}>
+              <BrandLockup />
+            </motion.div>
+
+            <motion.div variants={staggerItem} className="max-w-xl">
+              <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight text-white sm:text-5xl">
+                SaaS Control Plane.
+                <br />
+                <span className="text-slate-500">Zero-PHI Operations.</span>
+              </h1>
+
+              <div className="mt-8 space-y-6 text-sm text-slate-400">
+                <p className="leading-relaxed">
+                  Manage tenants, pending domains, branding configurations, and provisioning checklists safely. This
+                  interface operates exclusively on control-plane metadata, strictly segregated from clinical databases.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 border-t border-slate-900 pt-6">
+                  <div>
+                    <div className="font-mono text-[11px] font-semibold uppercase tracking-wide text-white">Security</div>
+                    <div className="mt-1 text-xs text-slate-500">MFA &amp; role-based access control</div>
+                  </div>
+                  <div>
+                    <div className="font-mono text-[11px] font-semibold uppercase tracking-wide text-white">Compliance</div>
+                    <div className="mt-1 text-xs text-slate-500">Strict zero-PHI audit logging</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div variants={staggerItem} className="font-mono text-xs text-slate-600">
+              console.doctoleb.com &middot; v3.0.0
+            </motion.div>
+          </motion.div>
         </section>
 
-        <section className="flex items-center justify-center bg-slate-50 p-6 text-slate-950">
-          <form onSubmit={handleSubmit} className="w-full max-w-md rounded-[2rem] bg-white p-8 shadow-2xl shadow-slate-950/10">
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-cyan-700">Super admin</p>
-            <h2 className="mt-3 text-3xl font-black">Sign in</h2>
-            <p className="mt-2 text-sm text-slate-500">Uses control-plane Supabase Auth and `super_admins` RBAC.</p>
-            <div className="mt-8 grid gap-4">
-              <Field label="Email">
-                <TextInput type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+        <section className="flex items-center justify-center bg-[#faf8f4] p-8 sm:p-12 md:p-16">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="flex w-full max-w-sm flex-col gap-8"
+          >
+            <motion.div variants={staggerItem} className="flex flex-col gap-5">
+              <div className="lg:hidden">
+                <BrandLockup tone="light" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Welcome back</h2>
+                <p className="text-sm text-slate-500">
+                  Sign in with your control-plane credentials to access administration utilities.
+                </p>
+              </div>
+            </motion.div>
+
+            <motion.form variants={staggerItem} onSubmit={handleSubmit} className="flex flex-col gap-5">
+              <Field label="Administrator email">
+                <TextInput
+                  type="email"
+                  placeholder="admin@doctoleb.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                />
               </Field>
+
               <Field label="Password">
-                <TextInput type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+                <TextInput
+                  type="password"
+                  placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
               </Field>
-            </div>
-            {error ? <p className="mt-4 rounded-2xl bg-rose-50 p-3 text-sm font-semibold text-rose-700">{error}</p> : null}
-            <PrimaryButton disabled={submitting} className="mt-6 w-full">
-              {submitting ? 'Signing in...' : 'Open console'}
-            </PrimaryButton>
-          </form>
+
+              {error && (
+                <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs text-rose-700">
+                  {error}
+                </div>
+              )}
+
+              <PrimaryButton disabled={submitting} className="mt-1 h-11 w-full">
+                {submitting ? 'Authenticating...' : 'Sign In to Console'}
+              </PrimaryButton>
+            </motion.form>
+
+            <motion.p
+              variants={staggerItem}
+              className="border-t border-slate-200 pt-5 text-center text-xs leading-relaxed text-slate-400"
+            >
+              Only authorized staff are permitted to access this panel. All attempts are monitored and logged.
+            </motion.p>
+          </motion.div>
         </section>
       </div>
     </main>

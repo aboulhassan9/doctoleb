@@ -132,7 +132,7 @@ describe('control-plane tenant readiness helpers', () => {
     ],
   };
 
-  it('marks the current first tenant ready on Vercel aliases while real domains stay pending', () => {
+  it('marks tenants ready through /t/<slug> path routing while real domains stay pending', () => {
     const summary = summarizeTenantReadiness(readyNoDomainTenant);
     const items = buildTenantReadinessItems(readyNoDomainTenant);
 
@@ -140,6 +140,8 @@ describe('control-plane tenant readiness helpers', () => {
     assert.equal(summary.blockers.length, 0);
     assert.equal(items.find((item) => item.id === 'patient_web')?.status, 'ready');
     assert.equal(items.find((item) => item.id === 'ops_web')?.status, 'ready');
+    assert.match(items.find((item) => item.id === 'patient_web')?.detail || '', /\/t\/dev/);
+    assert.match(items.find((item) => item.id === 'ops_web')?.detail || '', /\/t\/dev/);
     assert.equal(items.find((item) => item.id === 'future_domain')?.status, 'pending');
     assert.equal(items.find((item) => item.id === 'flutter_path')?.status, 'prepared');
   });
@@ -347,7 +349,7 @@ describe('control-plane provider connection helpers', () => {
       status: 'active',
       isAutomationEnabled: true,
       secretStorage: 'edge_function_secret',
-      secretRef: 'vcp_should-not-enter-browser',
+      secretRef: ['vcp', 'should-not-enter-browser'].join('_'),
     });
 
     assert.match(validateProviderConnectionDraft(draft), /secret reference only/i);

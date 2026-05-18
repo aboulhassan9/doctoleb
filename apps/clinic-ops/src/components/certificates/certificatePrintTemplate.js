@@ -75,9 +75,8 @@ export function buildCertificatePrintHtml({
             <p><strong>${safe.doctorName}</strong></p>
             <p style="font-size: 12px; text-transform: capitalize;">${safe.doctorRole}</p>
         </div>
-        <div>
-            <div style="width: 80px; height: 80px; border: 1px solid #ccc;"></div>
-            <p style="font-size: 10px; color: #666;">Scan to verify</p>
+        <div style="max-width: 180px; font-size: 10px; color: #666;">
+            Saved certificates are verified by their persisted clinical document record.
         </div>
     </div>
     <div class="watermark">${safe.brandName}</div>

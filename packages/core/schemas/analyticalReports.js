@@ -755,3 +755,37 @@ export const analyticalReportShareCreateSchema = z.object({
   permission_level: z.enum(['view', 'edit']).default('edit'),
   granted_by: z.string().uuid(),
 }).strict();
+
+/** Closed set of run frequencies for scheduled reports (review FEAT-4). */
+export const REPORT_SCHEDULE_FREQUENCIES = Object.freeze(['daily', 'weekly', 'monthly']);
+
+/**
+ * A scheduled / automated run of a report. `day_of_week` (0=Sun..6=Sat) is
+ * required for weekly; `day_of_month` (1..28) for monthly. `hour` and the
+ * IANA `timezone` set the wall-clock time. The DB recomputes `next_run_at`.
+ */
+export const analyticalReportScheduleCreateSchema = z.object({
+  report_id: z.string().uuid(),
+  frequency: z.enum(REPORT_SCHEDULE_FREQUENCIES),
+  hour: z.number().int().min(0).max(23).default(8),
+  day_of_week: z.number().int().min(0).max(6).optional().nullable(),
+  day_of_month: z.number().int().min(1).max(28).optional().nullable(),
+  timezone: z.string().trim().min(1).max(64).default('UTC'),
+  is_active: z.boolean().default(true),
+  created_by: z.string().uuid(),
+}).strict().superRefine((v, ctx) => {
+  if (v.frequency === 'weekly' && (v.day_of_week === undefined || v.day_of_week === null)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['day_of_week'],
+      message: 'Weekly schedules need a day of week.',
+    });
+  }
+  if (v.frequency === 'monthly' && (v.day_of_month === undefined || v.day_of_month === null)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['day_of_month'],
+      message: 'Monthly schedules need a day of month.',
+    });
+  }
+});

@@ -1,10 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Stethoscope, Loader2, Save } from 'lucide-react';
 import { controlPlaneApi } from '../lib/controlPlaneApi';
-import { Field, TextInput, PrimaryButton } from './ui';
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardFooter,
+  Field,
+  FormMessage,
+  PrimaryButton,
+  SettingsSection,
+  TextInput,
+} from './ui';
 
 function latestProvisioningJob(tenant) {
-  return [...(tenant?.tenant_provisioning_jobs || [])]
-    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))[0] || null;
+  return (
+    [...(tenant?.tenant_provisioning_jobs || [])].sort((a, b) =>
+      String(b.created_at || '').localeCompare(String(a.created_at || '')),
+    )[0] || null
+  );
 }
 
 export default function FirstDoctorAdminPanel({ tenant, onSaved }) {
@@ -32,8 +46,9 @@ export default function FirstDoctorAdminPanel({ tenant, onSaved }) {
         email,
         phone,
       });
-
-      setMessage(result.error ? (result.details?.summary || result.error) : 'Doctor login saved. OTP uses this email.');
+      setMessage(
+        result.error ? result.details?.summary || result.error : 'Doctor login saved. OTP uses this email.',
+      );
       if (!result.error) onSaved();
     } finally {
       setSaving(false);
@@ -43,33 +58,36 @@ export default function FirstDoctorAdminPanel({ tenant, onSaved }) {
   if (!job) return null;
 
   return (
-    <section className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-cyan-700">Doctor login</p>
-          <h2 className="mt-2 text-2xl font-black">First doctor admin</h2>
-        </div>
-        <p className="rounded-full bg-cyan-50 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-cyan-700">
-          Email OTP
-        </p>
-      </div>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <Field label="Doctor name">
-          <TextInput value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
-        </Field>
-        <Field label="Login email">
-          <TextInput type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-        </Field>
-        <Field label="Phone">
-          <TextInput value={phone} onChange={(event) => setPhone(event.target.value)} />
-        </Field>
-      </div>
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <PrimaryButton onClick={save} disabled={saving}>
-          {saving ? 'Saving...' : 'Save doctor login'}
-        </PrimaryButton>
-        {message ? <p className="text-sm font-semibold text-slate-500">{message}</p> : null}
-      </div>
-    </section>
+    <SettingsSection
+      title="First Doctor Admin"
+      description="Doctor login credentials"
+      icon={Stethoscope}
+      headerAction={<Badge variant="accent">Email OTP</Badge>}
+    >
+      <Card>
+        <CardContent>
+          <div className="grid gap-5 md:grid-cols-3">
+            <Field label="Doctor name">
+              <TextInput value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
+            </Field>
+            <Field label="Login email">
+              <TextInput type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+            </Field>
+            <Field label="Phone">
+              <TextInput value={phone} onChange={(event) => setPhone(event.target.value)} />
+            </Field>
+          </div>
+        </CardContent>
+        <CardFooter className="flex-wrap gap-3">
+          <PrimaryButton onClick={save} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {saving ? 'Saving...' : 'Save Doctor Login'}
+          </PrimaryButton>
+          {message && (
+            <FormMessage tone={message.includes('saved') ? 'success' : 'error'}>{message}</FormMessage>
+          )}
+        </CardFooter>
+      </Card>
+    </SettingsSection>
   );
 }

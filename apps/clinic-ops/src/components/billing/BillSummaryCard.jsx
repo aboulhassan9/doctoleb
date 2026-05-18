@@ -11,6 +11,8 @@ export default function BillSummaryCard({
     invoiceStatus,
     submitState,
     onSavePost,
+    onSavePrint,
+    paymentReference,
 }) {
     const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ export default function BillSummaryCard({
                             <h3 className="text-xl font-black tracking-tight">Payment Summary</h3>
                             <div className="px-3 py-1 bg-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest border border-white/10">In Draft</div>
                         </div>
-                        <p className="text-slate-400 text-xs font-bold font-mono">INV-{(new Date().getFullYear())}-8842X</p>
+                        <p className="text-slate-400 text-xs font-bold font-mono">{paymentReference || 'Server reference appears after posting'}</p>
                     </div>
                 </div>
 
@@ -94,9 +96,13 @@ export default function BillSummaryCard({
                     {submitState === 'processing' ? 'Processing Transaction...' : 'Save & Post Bill'}
                 </button>
 
-                <button className="w-full py-5 bg-white border-2 border-slate-200 text-slate-700 rounded-[1.5rem] font-black text-lg hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                <button
+                    onClick={onSavePrint}
+                    disabled={submitState === 'processing'}
+                    className="w-full py-5 bg-white border-2 border-slate-200 text-slate-700 rounded-[1.5rem] font-black text-lg hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-wait"
+                >
                     <span className="material-symbols-outlined text-2xl">print</span>
-                    Save & Print Receipt
+                    Save, Post & Print Receipt
                 </button>
 
                 <button

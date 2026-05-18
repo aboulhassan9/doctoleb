@@ -1,6 +1,10 @@
 import { buildNoDomainTenantAccess } from './noDomainAccess.js'
 
 const READY_STATUSES = new Set(['ready', 'prepared'])
+const SHARED_VERCEL_HOSTS = new Set([
+  'doctoleb-patient-web.vercel.app',
+  'doctoleb-clinic-ops.vercel.app',
+])
 
 function domainsFor(tenant) {
   return Array.isArray(tenant?.tenant_domains) ? tenant.tenant_domains : []
@@ -10,13 +14,18 @@ function isLocalHostname(hostname) {
   return /^localhost(?::|$)/i.test(hostname) || /^127\.0\.0\.1(?::|$)/.test(hostname)
 }
 
+function isSharedVercelHost(hostname) {
+  return SHARED_VERCEL_HOSTS.has(String(hostname || '').trim().toLowerCase())
+}
+
 function isVerifiedOnlineDomain(domain, surface) {
   return Boolean(
     domain?.surface === surface
       && domain.status === 'active'
       && domain.dns_status === 'verified'
       && domain.ssl_status === 'issued'
-      && !isLocalHostname(String(domain.hostname || '')),
+      && !isLocalHostname(String(domain.hostname || ''))
+      && !isSharedVercelHost(domain.hostname),
   )
 }
 

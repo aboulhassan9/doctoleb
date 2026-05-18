@@ -1,12 +1,50 @@
+/* DoctoLeb Console — control-plane base layer.
+   Design system: warm paper canvas, single teal accent, monospace structure,
+   flat bordered surfaces, motion only as feedback. Scoped to this app. */
+
 :root {
-  --control-plane-ink: #071317;
+  --cp-ink: #0f172a;     /* slate-900 — primary ink              */
+  --cp-accent: #0d9488;  /* teal-600  — the only accent          */
+  --cp-surface: #faf8f4; /* warm paper white — the app canvas    */
+}
+
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
-  background: #eef5f2;
+  background: var(--cp-surface);
+  color: var(--cp-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: #67e8f9;
-  color: var(--control-plane-ink);
+  background: #ccfbf1; /* teal-100 */
+  color: var(--cp-ink);
+}
+
+/* Restrained scrollbars — an instrument, not a marketing page. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
 }

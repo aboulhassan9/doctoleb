@@ -21,24 +21,6 @@ const SECRET_MARKERS = Object.freeze([
 
 const SUCCESS_CASES = Object.freeze([
   {
-    name: 'patient Vercel host resolves',
-    host: patientHost,
-    surface: 'patient',
-    expectedSurface: 'patient',
-  },
-  {
-    name: 'ops Vercel host resolves',
-    host: opsHost,
-    surface: 'ops',
-    expectedSurface: 'ops',
-  },
-  {
-    name: 'uppercase patient host resolves case-insensitively',
-    host: patientHost.toUpperCase(),
-    surface: 'patient',
-    expectedSurface: 'patient',
-  },
-  {
     name: 'patient no-domain slug resolves without a domain row',
     host: patientHost,
     surface: 'patient',
@@ -54,9 +36,38 @@ const SUCCESS_CASES = Object.freeze([
     expectedSlug: noDomainSlug,
     expectedSurface: 'ops',
   },
+  {
+    name: 'uppercase patient host resolves by explicit slug',
+    host: patientHost.toUpperCase(),
+    surface: 'patient',
+    slug: noDomainSlug,
+    expectedSlug: noDomainSlug,
+    expectedSurface: 'patient',
+  },
 ]);
 
 const ERROR_CASES = Object.freeze([
+  {
+    name: 'bare patient Vercel host is not a tenant',
+    host: patientHost,
+    surface: 'patient',
+    expectedStatus: 404,
+    expectedError: 'TENANT_NOT_FOUND',
+  },
+  {
+    name: 'bare ops Vercel host is not a tenant',
+    host: opsHost,
+    surface: 'ops',
+    expectedStatus: 404,
+    expectedError: 'TENANT_NOT_FOUND',
+  },
+  {
+    name: 'uppercase bare patient Vercel host is not a tenant',
+    host: patientHost.toUpperCase(),
+    surface: 'patient',
+    expectedStatus: 404,
+    expectedError: 'TENANT_NOT_FOUND',
+  },
   {
     name: 'unknown host returns tenant not found',
     host: unknownHost,
@@ -65,11 +76,11 @@ const ERROR_CASES = Object.freeze([
     expectedError: 'TENANT_NOT_FOUND',
   },
   {
-    name: 'wrong surface returns surface mismatch',
+    name: 'bare ops Vercel host on patient surface is not a tenant',
     host: opsHost,
     surface: 'patient',
-    expectedStatus: 403,
-    expectedError: 'SURFACE_MISMATCH',
+    expectedStatus: 404,
+    expectedError: 'TENANT_NOT_FOUND',
   },
   {
     name: 'pending patient domain remains inactive before domain purchase',

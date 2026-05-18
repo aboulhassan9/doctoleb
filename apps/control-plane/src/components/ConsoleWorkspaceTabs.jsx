@@ -1,8 +1,10 @@
+import { motion } from 'framer-motion'
+
 export const CONTROL_PLANE_SECTIONS = Object.freeze([
   {
     id: 'tenant',
     label: 'Tenant',
-    eyebrow: 'Core controls',
+    eyebrow: 'Core',
     description: 'Status, plan, and runtime routing metadata.',
   },
   {
@@ -45,9 +47,9 @@ export default function ConsoleWorkspaceTabs({ activeSection, onSectionChange })
   return (
     <nav
       aria-label="Control plane workspace sections"
-      className="sticky top-[73px] z-20 border-b border-slate-200/70 bg-[#eef5f2]/95 py-3 backdrop-blur-xl"
+      className="sticky top-0 z-10 mb-8 border-b border-slate-200 bg-white"
     >
-      <div role="tablist" aria-label="Control plane sections" className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
+      <div className="flex items-center gap-1 overflow-x-auto" role="tablist">
         {CONTROL_PLANE_SECTIONS.map((section) => {
           const isActive = section.id === activeSection
 
@@ -60,15 +62,25 @@ export default function ConsoleWorkspaceTabs({ activeSection, onSectionChange })
               aria-controls={`control-plane-section-${section.id}`}
               id={`control-plane-tab-${section.id}`}
               onClick={() => onSectionChange(section.id)}
-              className={[
-                'rounded-2xl px-3 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2',
-                isActive
-                  ? 'bg-slate-950 text-white shadow-lg shadow-slate-950/10'
-                  : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-950',
-              ].join(' ')}
+              className={`relative flex flex-col gap-0.5 whitespace-nowrap px-4 py-3 text-left transition-colors focus:outline-none ${
+                isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900'
+              }`}
             >
-              <span className="block text-[11px] font-black uppercase tracking-[0.22em] opacity-70">{section.eyebrow}</span>
-              <span className="mt-1 block text-sm font-black">{section.label}</span>
+              <span
+                className={`font-mono text-[10px] uppercase tracking-wide transition-colors ${
+                  isActive ? 'text-teal-600' : 'text-slate-400'
+                }`}
+              >
+                {section.eyebrow}
+              </span>
+              <span className="text-sm font-semibold">{section.label}</span>
+              {isActive && (
+                <motion.span
+                  layoutId="workspaceTabMarker"
+                  transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+                  className="absolute inset-x-0 bottom-[-1px] h-0.5 bg-teal-600"
+                />
+              )}
             </button>
           )
         })}

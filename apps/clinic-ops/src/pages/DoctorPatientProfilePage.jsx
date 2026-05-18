@@ -113,6 +113,13 @@ export default function DoctorPatientProfilePage() {
         </div>
     );
 
+    const handleSearchSubmit = (event) => {
+        event.preventDefault();
+        const query = searchQuery.trim();
+        if (!query) return;
+        navigate(`/doctor-patients?q=${encodeURIComponent(query)}`);
+    };
+
     return (
         <DashboardLayout role="doctor">
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -120,23 +127,23 @@ export default function DoctorPatientProfilePage() {
                     <div className="flex items-center gap-4">
                         <span className="text-xl font-black text-slate-900 tracking-tighter">{displayName}</span>
                         <div className="hidden md:flex items-center ml-8 space-x-6 h-full">
-                            <button className="text-primary border-b-2 border-blue-600 h-16 flex items-center text-sm font-medium">Profile</button>
-                            <button className="text-slate-500 hover:bg-primary/5 h-16 flex items-center text-sm font-medium">Records</button>
-                            <button className="text-slate-500 hover:bg-primary/5 h-16 flex items-center text-sm font-medium">Analytics</button>
+                            <button type="button" aria-current="page" className="text-primary border-b-2 border-blue-600 h-16 flex items-center text-sm font-medium">Profile</button>
+                            <button type="button" onClick={() => navigate(`/doctor-patient-history/${id}`)} className="text-slate-500 hover:bg-primary/5 h-16 flex items-center text-sm font-medium">Records</button>
+                            <button type="button" disabled title="Patient-level analytics requires the BI/reporting service to be provisioned first" className="text-slate-300 h-16 flex items-center text-sm font-medium cursor-not-allowed">Analytics</button>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="relative hidden sm:block">
+                        <form onSubmit={handleSearchSubmit} className="relative hidden sm:block">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
                             <input 
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="bg-slate-50 rounded-xl pl-10 pr-4 py-2 text-sm border-none focus:ring-2 focus:ring-primary w-64" 
                                 placeholder="Search records..." 
-                                type="text"
+                                type="search"
                             />
-                        </div>
-                        <button className="text-slate-500 hover:bg-primary/5 p-2 rounded-full">
+                        </form>
+                        <button type="button" disabled title="Use the dashboard notification inbox to review patient alerts" className="text-slate-300 p-2 rounded-full cursor-not-allowed">
                             <span className="material-symbols-outlined">notifications</span>
                         </button>
                         <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-black text-xs">—</div>

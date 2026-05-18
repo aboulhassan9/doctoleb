@@ -30,6 +30,7 @@ import {
   ANALYTICAL_REPORT_VERSION_SELECT_FIELDS,
   ANALYTICAL_REPORT_RUN_SELECT_FIELDS,
   ANALYTICAL_REPORT_SHARE_SELECT_FIELDS,
+  ANALYTICAL_REPORT_SCHEDULE_SELECT_FIELDS,
 } from '../lib/selects.js';
 import {
   resolveComparisonWindow,
@@ -42,6 +43,7 @@ import {
   analyticalReportVersionCreateSchema,
   analyticalReportRunRequestSchema,
   analyticalReportShareCreateSchema,
+  analyticalReportScheduleCreateSchema,
 } from '../schemas/analyticalReports.js';
 import { apiCall, apiPaged } from './api.js';
 
@@ -629,5 +631,101 @@ export const analyticalReportService = {
     );
 
     return runResult;
+  },
+
+  /**
+   * Render the current report rows to a branded PDF via the
+   * `render-analytical-report-pdf` Edge Function. The client passes the
+   * already-displayed rows + definition + friendly column labels, so the
+   * PDF matches exactly what the viewer shows (including period-comparison
+   * and drill-down state). Returns `{ data: { pdfBase64, filename }, error }`.
+   */
+  async exportReportPdf({
+    reportName, tenantName, definition, rows, columnLabels, filterSummary,
+  } = {}) {
+    if (!definition || typeof definition !== 'object') {
+      return validationError('A report definition is required.');
+    }
+    const { data, error } = await supabase.functions.invoke('render-analytical-report-pdf', {
+      body: {
+        report_name: reportName || 'Analytical report',
+        tenant_name: tenantName || '',
+        definition,
+        rows: Array.isArray(rows) ? rows : [],
+        column_labels: columnLabels || {},
+        filter_summary: filterSummary || '',
+      },
+    });
+    if (error) return { data: null, error: error.message || 'PDF export failed.' };
+    if (data?.error) return { data: null, error: data.error };
+    if (!data?.data?.pdfBase64) return { data: null, error: 'PDF export returned no document.' };
+    return { data: data.data, error: null };
+  },
+
+  // ── Schedules ──
+
+  /** The schedule for a report (one per report), or null if unscheduled. */
+  async getScheduleByReport(reportId) {
+    if (!reportId) return validationError('Report id is required.');
+    return apiCall(
+      supabase
+        .from('analytical_report_schedules')
+        .select(ANALYTICAL_REPORT_SCHEDULE_SELECT_FIELDS)
+        .eq('report_id', reportId)
+        .maybeSingle(),
+    );
+  },
+
+  /** Create a run schedule. RLS limits this to the report owner / admin. */
+  async createSchedule(payload) {
+    const parsed = parse(analyticalReportScheduleCreateSchema, payload);
+    if (parsed.error) return validationError(parsed.error);
+    return apiCall(
+      supabase
+        .from('analytical_report_schedules')
+        .insert([parsed.data])
+        .select(ANALYTICAL_REPORT_SCHEDULE_SELECT_FIELDS)
+        .single(),
+    );
+  },
+
+  /**
+   * Update a schedule's cadence / active state. The DB recomputes
+   * `next_run_at` from the new definition via a trigger.
+   */
+  async updateSchedule(scheduleId, patch) {
+    if (!scheduleId) return validationError('Schedule id is required.');
+    if (!patch || typeof patch !== 'object') return validationError('Patch object is required.');
+
+    const ALLOWED = ['frequency', 'hour', 'day_of_week', 'day_of_month', 'timezone', 'is_active'];
+    const filtered = {};
+    for (const key of ALLOWED) {
+      if (key in patch) filtered[key] = patch[key];
+    }
+    if (Object.keys(filtered).length === 0) {
+      return validationError('No allowed fields in patch.');
+    }
+
+    return apiCall(
+      supabase
+        .from('analytical_report_schedules')
+        .update(filtered)
+        .eq('id', scheduleId)
+        .select(ANALYTICAL_REPORT_SCHEDULE_SELECT_FIELDS)
+        .single(),
+    );
+  },
+
+  /** Remove a schedule. Schedule rows are config metadata — hard delete. */
+  async deleteSchedule(scheduleId) {
+    if (!scheduleId) return validationError('Schedule id is required.');
+    return apiCall(
+      supabase
+        .from('analytical_report_schedules')
+        .delete()
+        .eq('id', scheduleId)
+        .select(ANALYTICAL_REPORT_SCHEDULE_SELECT_FIELDS)
+        .single(),
+    );
   },
 };

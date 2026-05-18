@@ -87,7 +87,7 @@ export default function StatusBadge({ status, size = 'md', className = '' }) {
   return (
     <span
       data-status={status}
-      className={`inline-flex items-center font-semibold rounded-full ring-1 ring-inset ${style} ${sizeClass} ${className}`}
+      className={`inline-flex items-center font-label font-bold uppercase tracking-wider rounded-none border-2 border-black ${style} ${sizeClass} ${className}`}
     >
       {label}
     </span>

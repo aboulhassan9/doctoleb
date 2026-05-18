@@ -18,6 +18,8 @@ export default function DayView({
     dayAppts,
     nowPx,
     onShiftDay,
+    onSlotSelect,
+    onAppointmentSelect,
 }) {
     const isToday = same(dayDate, today);
 
@@ -30,9 +32,7 @@ export default function DayView({
                         {dayDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                     </h1>
                     <p className="text-slate-500 mt-1">
-                        {isToday
-                            ? `${dayAppts.length} appointments scheduled for today`
-                            : 'Navigate to today to see appointments.'}
+                        {`${dayAppts.length} appointments scheduled for this day`}
                     </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -58,10 +58,10 @@ export default function DayView({
 
                 <div className="divide-y divide-slate-100">
                     {HOURS.map((h, hi) => {
-                        const appt    = isToday ? dayAppts.find(a => a.startH === h) : null;
+                        const apptsAtHour = dayAppts.filter(a => a.startH === h);
                         const isLunch = h === 12;
-                        const s       = appt ? (DSM[appt.sn] ?? DSM.confirmed) : null;
-                        const endMin  = appt ? appt.startH * 60 + appt.startM + appt.dur : 0;
+                        const slotDate = new Date(dayDate);
+                        slotDate.setHours(h, 0, 0, 0);
 
                         return (
                             <motion.div
@@ -87,36 +87,51 @@ export default function DayView({
                                             </span>
                                         </div>
 
-                                    ) : appt && s ? (
-                                        <motion.div
-                                            initial={{ opacity: 0, x: -10 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            whileHover={{ scale: 1.01 }}
-                                            className={`rounded-xl p-4 cursor-pointer ${s.card}`}
-                                        >
-                                            <div className="flex justify-between items-start gap-3">
-                                                <div className="min-w-0">
-                                                    <p className={`text-xs font-black uppercase tracking-tight ${s.time}`}>
-                                                        {fmtHM(appt.startH, appt.startM)} – {fmtHM(Math.floor(endMin / 60), endMin % 60)}
-                                                    </p>
-                                                    <h4 className={`font-black mt-0.5 truncate ${s.name}`}>{appt.patient}</h4>
-                                                    <p className={`text-xs mt-0.5 ${s.type}`}>{appt.type}</p>
-                                                </div>
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 ${s.badge}`}>
-                                                    {appt.status === 'In Progress' && (
-                                                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                                                    )}
-                                                    {appt.status}
-                                                </span>
-                                            </div>
-                                        </motion.div>
+                                    ) : apptsAtHour.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {apptsAtHour.map((appt, apptIdx) => {
+                                                const s = DSM[appt.sn] ?? DSM.confirmed;
+                                                const endMin = appt.startH * 60 + appt.startM + appt.dur;
+                                                return (
+                                                    <motion.button
+                                                        type="button"
+                                                        key={appt.id || apptIdx}
+                                                        initial={{ opacity: 0, x: -10 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        whileHover={{ scale: 1.01 }}
+                                                        onClick={() => onAppointmentSelect?.(appt.record || appt)}
+                                                        className={`w-full rounded-xl p-4 cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-primary/30 ${s.card}`}
+                                                    >
+                                                        <div className="flex justify-between items-start gap-3">
+                                                            <div className="min-w-0">
+                                                                <p className={`text-xs font-black uppercase tracking-tight ${s.time}`}>
+                                                                    {fmtHM(appt.startH, appt.startM)} – {fmtHM(Math.floor(endMin / 60), endMin % 60)}
+                                                                </p>
+                                                                <h4 className={`font-black mt-0.5 truncate ${s.name}`}>{appt.patient}</h4>
+                                                                <p className={`text-xs mt-0.5 ${s.type}`}>{appt.type}</p>
+                                                            </div>
+                                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 ${s.badge}`}>
+                                                                {appt.status === 'In Progress' && (
+                                                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                                                                )}
+                                                                {appt.status}
+                                                            </span>
+                                                        </div>
+                                                    </motion.button>
+                                                );
+                                            })}
+                                        </div>
 
                                     ) : (
-                                        <div className="flex items-center h-full">
+                                        <button
+                                            type="button"
+                                            onClick={() => onSlotSelect?.(slotDate)}
+                                            className="flex items-center h-full w-full text-left focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-lg"
+                                        >
                                             <span className="text-xs text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 + Add appointment
                                             </span>
-                                        </div>
+                                        </button>
                                     )}
                                 </div>
                             </motion.div>

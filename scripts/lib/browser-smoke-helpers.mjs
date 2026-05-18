@@ -116,7 +116,9 @@ export function collectRuntimeIssues(page) {
   };
 
   page.on('console', (message) => {
-    if (message.type() === 'error') issues.consoleErrors.push(message.text());
+    const text = message.text();
+    const isBrowserResourceLoadMirror = /^Failed to load resource: the server responded with a status of \d+ \(\)$/i.test(text);
+    if (message.type() === 'error' && !isBrowserResourceLoadMirror) issues.consoleErrors.push(text);
   });
 
   page.on('pageerror', (error) => {

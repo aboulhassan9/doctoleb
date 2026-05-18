@@ -1,8 +1,8 @@
-import { supabase } from '@/lib/supabase';
-import { DOCTOR_SCHEDULE_TEMPLATE_SELECT_FIELDS, SECRETARY_SLOT_SELECT_FIELDS } from '@/lib/selects';
-import { doctorScheduleTemplateSchema } from '@/schemas';
-import { validationError, parse } from '@/lib/serviceHelpers';
-import { apiCall, apiPaged } from './api';
+import { supabase } from '../lib/supabase.js';
+import { DOCTOR_SCHEDULE_TEMPLATE_SELECT_FIELDS, SECRETARY_SLOT_SELECT_FIELDS } from '../lib/selects.js';
+import { doctorScheduleTemplateSchema } from '../schemas/index.js';
+import { validationError, parse } from '../lib/serviceHelpers.js';
+import { apiCall, apiPaged } from './api.js';
 
 function toDateKey(date) {
   if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(date)) {

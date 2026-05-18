@@ -221,12 +221,12 @@ const VERCEL_APP_CONFIG = Object.freeze({
   'patient-web': {
     app: 'patient-web',
     project_id: 'prj_2MK3W0zlvtVXwHxrKi036CbXwwuQ',
-    smoke_url: 'https://doctoleb-patient-web.vercel.app/login',
+    smoke_url: 'https://doctoleb-patient-web.vercel.app/t/dev/login',
   },
   'clinic-ops': {
     app: 'clinic-ops',
     project_id: 'prj_sTzoaIuPiwD0zR1kFJi82Gy6Oozg',
-    smoke_url: 'https://doctoleb-clinic-ops.vercel.app/login',
+    smoke_url: 'https://doctoleb-clinic-ops.vercel.app/t/dev/login',
   },
   'control-plane': {
     app: 'control-plane',
@@ -247,6 +247,7 @@ const KNOWN_CONTROL_PLANE_FUNCTIONS = Object.freeze([
   'admin-resume-provisioning-job',
   'admin-revoke-tenant-secret',
   'admin-run-provisioning-step',
+  'admin-seed-tenant-operational-data',
   'admin-set-tenant-runtime-config',
   'admin-store-provider-secret',
   'admin-sync-entitlements',
@@ -449,6 +450,20 @@ function domainsForControlPlaneFunction(functionName) {
   if (/tenant-secret|tenant-db|migration/.test(functionName || '')) domains.push('tenant-db-setup');
   if (/runtime-config|sync-tenant-config/.test(functionName || '')) domains.push('tenant-config', 'branding');
   if (/sync-entitlements/.test(functionName || '')) domains.push('entitlements');
+  if (/seed-tenant-operational-data/.test(functionName || '')) {
+    domains.push(
+      'appointments',
+      'billing-insurance',
+      'clinical',
+      'documents',
+      'messaging',
+      'notifications',
+      'patients',
+      'provisioning',
+      'scheduling',
+      'tenant-db-setup',
+    );
+  }
   if (/first-doctor-admin/.test(functionName || '')) domains.push('auth', 'staff-lifecycle', 'provisioning');
   if (/get-tenant|list-tenants|update-tenant/.test(functionName || '')) domains.push('tenant-config', 'provisioning');
 
@@ -550,6 +565,7 @@ function systemsForPath(filePath) {
   if (filePath.startsWith('supabase-control-plane/migrations/')) return ALL_SYSTEMS;
   if (filePath.startsWith('supabase-control-plane/functions/tenant-resolve/')) return ['client', 'operations'];
   if (filePath.startsWith('supabase-control-plane/functions/admin-update-first-doctor-admin/')) return ['operations', 'saas-admin'];
+  if (filePath.startsWith('supabase-control-plane/functions/admin-seed-tenant-operational-data/')) return ['operations', 'saas-admin'];
   if (filePath.startsWith('supabase-control-plane/functions/admin-')) return ['saas-admin'];
   if (filePath.startsWith('supabase-control-plane/functions/_shared/')) return ALL_SYSTEMS;
   if (filePath === 'vercel.json') return ALL_SYSTEMS;

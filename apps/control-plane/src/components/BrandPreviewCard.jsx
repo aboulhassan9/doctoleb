@@ -13,26 +13,27 @@ function safeBranding(branding = {}) {
 }
 
 function LogoMark({ branding }) {
-  const initials = branding.app_name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('') || 'DL'
+  const initials =
+    branding.app_name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'DL'
 
   if (branding.splash_logo_url) {
     return (
       <img
         src={branding.splash_logo_url}
         alt={`${branding.app_name} logo preview`}
-        className="h-11 w-11 rounded-2xl object-cover ring-1 ring-black/10"
+        className="h-10 w-10 rounded-md object-cover ring-1 ring-black/10"
       />
     )
   }
 
   return (
     <div
-      className="grid h-11 w-11 place-items-center rounded-2xl text-sm font-black text-white"
+      className="grid h-10 w-10 place-items-center rounded-md text-sm font-semibold text-white"
       style={{ backgroundColor: branding.primary_color }}
       aria-label={`${branding.app_name} logo initials preview`}
     >
@@ -46,39 +47,42 @@ export default function BrandPreviewCard({ branding: inputBranding, doctorName =
   const visibleDoctorName = doctorName || branding.display_name
 
   return (
-    <aside className={`rounded-[1.5rem] bg-slate-50 p-4 text-slate-950 ring-1 ring-slate-200 ${className}`}>
-      <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">Tenant app preview</p>
+    <aside className={`rounded-lg border border-slate-200 bg-white p-5 text-slate-900 ${className}`}>
+      <p className="font-mono text-[10px] font-medium uppercase tracking-wide text-slate-400">Tenant app preview</p>
+
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
+        <div className="overflow-hidden rounded-md border border-slate-200">
           <div className="p-4" style={{ backgroundColor: branding.secondary_color }}>
             <div className="flex items-center gap-3">
               <LogoMark branding={branding} />
               <div className="min-w-0">
-                <p className="truncate text-sm font-black text-white">{branding.app_name}</p>
-                <p className="truncate text-xs font-semibold text-white/70">Patient portal preview</p>
+                <p className="truncate text-sm font-semibold text-white">{branding.app_name}</p>
+                <p className="truncate text-xs text-white/80">Patient portal preview</p>
               </div>
             </div>
-            <h3 className="mt-5 text-xl font-black text-white">Book care with {visibleDoctorName}</h3>
-            <p className="mt-2 text-sm text-white/75">{branding.app_tagline}</p>
+            <h3 className="mt-5 text-lg font-semibold leading-tight text-white">
+              Book care with {visibleDoctorName}
+            </h3>
+            <p className="mt-1.5 text-sm leading-snug text-white/80">{branding.app_tagline}</p>
           </div>
-          <div className="grid gap-2 p-4 text-sm font-bold">
-            <div className="rounded-2xl bg-slate-100 px-4 py-3">Appointments</div>
-            <div className="rounded-2xl bg-slate-100 px-4 py-3">Messages</div>
-            <div className="rounded-2xl bg-slate-100 px-4 py-3">Clinic documents</div>
+          <div className="grid gap-2 p-4 text-sm font-medium">
+            <div className="rounded-md bg-slate-100 px-3 py-2 text-slate-700">Appointments</div>
+            <div className="rounded-md bg-slate-100 px-3 py-2 text-slate-700">Messages</div>
+            <div className="rounded-md bg-slate-100 px-3 py-2 text-slate-700">Clinic documents</div>
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
-          <div className="flex items-center justify-between border-b border-slate-100 p-4">
+        <div className="overflow-hidden rounded-md border border-slate-200">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50 p-4">
             <div className="flex items-center gap-3">
               <LogoMark branding={branding} />
               <div>
-                <p className="text-sm font-black">{branding.display_name}</p>
-                <p className="text-xs font-semibold text-slate-500">Doctor workspace preview</p>
+                <p className="text-sm font-semibold text-slate-900">{branding.display_name}</p>
+                <p className="text-xs text-slate-500">Doctor workspace preview</p>
               </div>
             </div>
             <span
-              className="rounded-full px-3 py-1 text-xs font-black text-white"
+              className="rounded-md px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide text-white"
               style={{ backgroundColor: branding.primary_color }}
             >
               Live
@@ -86,10 +90,10 @@ export default function BrandPreviewCard({ branding: inputBranding, doctorName =
           </div>
           <div className="grid gap-3 p-4">
             {['Today schedule', 'Patient queue', 'Clinical notes'].map((label) => (
-              <div key={label} className="rounded-2xl border border-slate-100 p-3">
-                <div className="h-2 w-20 rounded-full" style={{ backgroundColor: branding.primary_color }} />
-                <p className="mt-2 text-sm font-black">{label}</p>
-                <p className="mt-1 text-xs font-semibold text-slate-500">Runtime brand applies without redeploy.</p>
+              <div key={label} className="rounded-md border border-slate-200 p-3">
+                <div className="h-1.5 w-16 rounded-full" style={{ backgroundColor: branding.primary_color }} />
+                <p className="mt-2 text-sm font-semibold text-slate-900">{label}</p>
+                <p className="mt-0.5 text-[11px] text-slate-500">Runtime brand applies without redeploy.</p>
               </div>
             ))}
           </div>

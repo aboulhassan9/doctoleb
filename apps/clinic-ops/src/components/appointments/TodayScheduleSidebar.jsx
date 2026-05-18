@@ -4,7 +4,9 @@
  */
 import { motion } from 'framer-motion';
 
-export default function TodayScheduleSidebar({ todaySchedule, onScheduleClick }) {
+export default function TodayScheduleSidebar({ todaySchedule, onScheduleClick, onAppointmentClick, dailyGoal = 15 }) {
+    const pendingCount = todaySchedule.filter((item) => !['completed', 'cancelled', 'no_show'].includes(item.rawStatus)).length;
+
     return (
         <motion.aside
             initial={{ x: 40, opacity: 0 }}
@@ -16,25 +18,27 @@ export default function TodayScheduleSidebar({ todaySchedule, onScheduleClick })
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-black text-slate-900">Today's Schedule</h3>
                     <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-black rounded-lg">
-                        {todaySchedule.length} Pending
+                        {pendingCount} Pending
                     </span>
                 </div>
 
                 <div className="space-y-3">
                     {todaySchedule.map((item, i) => (
-                        <motion.div
+                        <motion.button
+                            type="button"
                             key={i}
                             initial={{ opacity: 0, x: 16 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 + i * 0.09 }}
-                            className={`p-4 rounded-xl cursor-pointer hover:shadow-sm transition-all ${item.cc}`}
+                            onClick={() => onAppointmentClick?.(item.record || item)}
+                            className={`w-full text-left p-4 rounded-xl cursor-pointer hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 ${item.cc}`}
                         >
                             <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-black uppercase mb-2 ${item.sc}`}>
                                 {item.status}
                             </span>
                             <h4 className="font-bold text-sm text-slate-900 leading-tight">{item.patient}</h4>
                             <p className="text-xs text-slate-500 mt-0.5">{item.time} · {item.type}</p>
-                        </motion.div>
+                        </motion.button>
                     ))}
                 </div>
 
@@ -53,16 +57,16 @@ export default function TodayScheduleSidebar({ todaySchedule, onScheduleClick })
                 >
                     <div className="relative z-10">
                         <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1.5">Today's Goal</p>
-                        <h4 className="font-black text-xl">{todaySchedule.length} / 15 Appointments</h4>
+                        <h4 className="font-black text-xl">{todaySchedule.length} / {dailyGoal} Appointments</h4>
                         <div className="w-full bg-white/20 h-1.5 rounded-full mt-3 overflow-hidden">
                             <motion.div
                                 initial={{ width: 0 }}
-                                animate={{ width: `${Math.min(100, Math.round((todaySchedule.length / 15) * 100))}%` }}
+                                animate={{ width: `${Math.min(100, Math.round((todaySchedule.length / dailyGoal) * 100))}%` }}
                                 transition={{ delay: 0.9, duration: 1.2, ease: 'easeOut' }}
                                 className="bg-white h-full rounded-full"
                             />
                         </div>
-                        <p className="text-[11px] opacity-60 mt-2">{Math.round((todaySchedule.length / 15) * 100)}% of daily target</p>
+                        <p className="text-[11px] opacity-60 mt-2">{Math.round((todaySchedule.length / dailyGoal) * 100)}% of daily target</p>
                     </div>
                     <motion.span
                         animate={{ rotate: [12, 0, 12] }}

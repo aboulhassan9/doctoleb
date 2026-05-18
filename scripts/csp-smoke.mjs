@@ -5,7 +5,7 @@ const APPS = Object.freeze([
   },
   {
     app: 'clinic-ops',
-    url: process.env.CLINIC_OPS_SMOKE_URL || 'https://doctoleb-clinic-ops.vercel.app/login',
+    url: process.env.CLINIC_OPS_SMOKE_URL || 'https://doctoleb-clinic-ops.vercel.app/t/dev/login',
   },
   {
     app: 'control-plane',

@@ -5,7 +5,12 @@
  */
 import { motion } from 'framer-motion';
 
-export default function CertificateTable({ certificates }) {
+function formatCertificateId(id) {
+    if (!id) return 'Pending';
+    return `CERT-${String(id).replace(/-/g, '').slice(0, 10).toUpperCase()}`;
+}
+
+export default function CertificateTable({ certificates, onViewCertificate }) {
     if (certificates.length === 0) {
         return (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-12 text-center">
@@ -36,7 +41,7 @@ export default function CertificateTable({ certificates }) {
                             className="group"
                         >
                             <td className="px-6 py-4">
-                                <span className="text-sm font-bold font-mono text-primary">{cert.id}</span>
+                                <span className="text-sm font-bold font-mono text-primary">{formatCertificateId(cert.id)}</span>
                             </td>
                             <td className="px-6 py-4">
                                 <span className="text-sm text-slate-900">Medical Certificate</span>
@@ -60,10 +65,21 @@ export default function CertificateTable({ certificates }) {
                             </td>
                             <td className="px-6 py-4 text-right">
                                 <div className="flex items-center justify-end gap-2">
-                                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-3 py-1.5 text-xs font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all">
+                                    <motion.button
+                                        type="button"
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => onViewCertificate?.(cert)}
+                                        className="px-3 py-1.5 text-xs font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all"
+                                    >
                                         View
                                     </motion.button>
-                                    <button className="p-1.5 text-slate-400 hover:text-slate-600">
+                                    <button
+                                        type="button"
+                                        onClick={() => onViewCertificate?.(cert)}
+                                        className="p-1.5 text-slate-400 hover:text-slate-600"
+                                        aria-label="Open certificate actions"
+                                    >
                                         <span className="material-symbols-outlined text-lg">more_vert</span>
                                     </button>
                                 </div>

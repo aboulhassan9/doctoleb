@@ -1,20 +1,20 @@
-import { supabase } from '@/lib/supabase';
-import { apiCall, apiPaged } from './api';
+import { supabase } from '../lib/supabase.js';
+import { apiCall, apiPaged } from './api.js';
 import {
   MEDICAL_INTAKE_SELECT_FIELDS,
   PATIENT_DISEASE_SELECT_FIELDS,
   PATIENT_FAMILY_HISTORY_SELECT_FIELDS,
   PATIENT_SURGERY_SELECT_FIELDS,
   PATIENT_VACCINATION_SELECT_FIELDS,
-} from '@/lib/selects';
+} from '../lib/selects.js';
 import {
   archiveMutationSchema,
   medicalIntakeCompletionSchema,
   medicalIntakeDraftSchema,
   medicalIntakeReopenSchema,
   patientHistorySchemas,
-} from '@/schemas';
-import { validationError, parse } from '@/lib/serviceHelpers';
+} from '../schemas/index.js';
+import { validationError, parse } from '../lib/serviceHelpers.js';
 
 const HISTORY_TABLES = {
   vaccinations: {
