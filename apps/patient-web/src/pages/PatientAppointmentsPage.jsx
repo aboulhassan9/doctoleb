@@ -465,7 +465,7 @@ export default function PatientAppointmentsPage() {
   const pastAppointments = appointments.filter((appointment) => (
     appointment.status === 'cancelled' || !isFutureClinicDateTime(appointment.scheduled_at)
   ));
-  const bookingDisabled = submitting || !onboardingStatus?.isComplete;
+  const bookingInputDisabled = submitting;
 
   return (
     <PatientPortalShell title="Appointments" subtitle="Book, review, and cancel visits">
@@ -612,7 +612,7 @@ export default function PatientAppointmentsPage() {
                     id="patient-booking-visit-type"
                     value={selectedVisitTypeId}
                     onChange={(event) => setSelectedVisitTypeId(event.target.value)}
-                    disabled={bookingDisabled || visitTypes.length === 0}
+                    disabled={bookingInputDisabled || visitTypes.length === 0}
                     required={visitTypeRequired}
                     className="patient-field-input mt-2 px-4 py-3 disabled:bg-[var(--patient-disabled)] disabled:text-[color-mix(in_srgb,var(--patient-muted)_55%,transparent)]"
                   >
@@ -639,7 +639,7 @@ export default function PatientAppointmentsPage() {
                       setAvailableSlots([]);
                     }}
                     required
-                    disabled={bookingDisabled || doctorsLoading || doctorOptions.length === 0}
+                    disabled={bookingInputDisabled || doctorsLoading || doctorOptions.length === 0}
                     className="patient-field-input mt-2 px-4 py-3 disabled:bg-[var(--patient-disabled)] disabled:text-[color-mix(in_srgb,var(--patient-muted)_55%,transparent)]"
                   >
                     <option value="">{doctorsLoading ? 'Loading doctors...' : 'Select a doctor'}</option>
@@ -667,7 +667,7 @@ export default function PatientAppointmentsPage() {
                     onChange={(event) => setSelectedDate(event.target.value)}
                     min={getMinDate()}
                     required
-                    disabled={!selectedDoctorId || bookingDisabled}
+                    disabled={!selectedDoctorId || bookingInputDisabled}
                     className="patient-field-input mt-2 px-4 py-3 disabled:bg-[var(--patient-disabled)] disabled:text-[color-mix(in_srgb,var(--patient-muted)_55%,transparent)]"
                   />
                 </div>
@@ -683,7 +683,7 @@ export default function PatientAppointmentsPage() {
                             key={slot.id}
                             type="button"
                             onClick={() => setSelectedSlot(slot)}
-                            disabled={bookingDisabled}
+                            disabled={bookingInputDisabled || !onboardingStatus?.isComplete}
                             className={`patient-focus relative overflow-hidden rounded-[18px_4px_18px_4px] border px-4 py-3 text-left transition disabled:opacity-50 ${
                               selected
                                 ? 'border-[var(--patient-sage)] bg-[var(--patient-success)] text-[var(--patient-ink)]'
@@ -732,7 +732,7 @@ export default function PatientAppointmentsPage() {
                           field={field}
                           value={bookingForm[field.key]}
                           onChange={updateBookingField}
-                          disabled={bookingDisabled}
+                          disabled={bookingInputDisabled}
                         />
                       </div>
                     ))}
