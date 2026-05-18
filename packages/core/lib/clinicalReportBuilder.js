@@ -36,7 +36,20 @@ export const CLINICAL_REPORT_SECTIONS = Object.freeze([
 const DEFAULT_PURPOSE = CLINICAL_REPORT_PURPOSES[0];
 
 function cleanText(value) {
-  return String(value || '').replace(/\s+/g, ' ').trim();
+  return sanitizeClinicalReportText(value).replace(/\s+/g, ' ').trim();
+}
+
+export function sanitizeClinicalReportText(value) {
+  return String(value || '')
+    .replace(/\s*\[seed:[^\]]+\]/gi, '')
+    .replace(/\s*\((?:ops_)?seed[_: -][^)]+\)/gi, '')
+    .replace(/\bops_seed_[a-z0-9_-]+\b/gi, '')
+    .replace(/\bseed workload\b/gi, 'chart history')
+    .replace(/\bseeded workload\b/gi, 'chart history')
+    .replace(/\bseed data\b/gi, 'chart data')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 export function getClinicalReportPurpose(code) {
@@ -122,12 +135,12 @@ export function getReportReadiness({
 
 export function parseClinicalReportSections(content) {
   const result = {};
-  const source = String(content || '').replace(/\r\n/g, '\n');
+  const source = sanitizeClinicalReportText(content).replace(/\r\n/g, '\n');
   for (const section of CLINICAL_REPORT_SECTIONS) {
     const titles = CLINICAL_REPORT_SECTIONS.map((item) => item.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
     const pattern = new RegExp(`(?:^|\\n)${section.title}\\n([\\s\\S]*?)(?=\\n(?:${titles})\\n|$)`, 'i');
     const match = source.match(pattern);
-    if (match?.[1]) result[section.key] = match[1].trim();
+    if (match?.[1]) result[section.key] = sanitizeClinicalReportText(match[1]);
   }
   return result;
 }
@@ -152,7 +165,7 @@ export function buildClinicalReportContent({
 
   const body = CLINICAL_REPORT_SECTIONS
     .map((section) => {
-      const value = String(sections[section.key] || '').trim();
+      const value = sanitizeClinicalReportText(sections[section.key]);
       return [section.title, value || 'Not documented.'].join('\n');
     })
     .join('\n\n');

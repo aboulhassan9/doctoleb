@@ -15,9 +15,10 @@ export default function ReportSidebar({
     documents = [],
     lastSavedAt = null,
     onExport = null,
+    exportDisabled = false,
 }) {
     const readinessItems = readiness?.items || [];
-    const canExport = Boolean(onExport && reportId);
+    const canExport = Boolean(onExport && !exportDisabled);
 
     return (
         <div className="lg:col-span-4 space-y-8">
@@ -100,10 +101,10 @@ export default function ReportSidebar({
                 type="button"
                 onClick={onExport || undefined}
                 disabled={!canExport}
-                title={canExport ? 'Open the latest rendered report artifact.' : 'PDF export requires a saved report and renderer artifact.'}
+                title={canExport ? 'Export the rendered PDF or use Save as PDF fallback.' : 'Complete the required report fields before PDF export.'}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:border-slate-200"
             >
-                Export PDF when renderer artifact exists
+                Export PDF
             </button>
         </div>
     );

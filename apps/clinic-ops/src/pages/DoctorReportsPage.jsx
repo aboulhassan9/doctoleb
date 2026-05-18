@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DashboardHeader from '@clinic-ops/components/dashboard/DashboardHeader';
 import DashboardSettingsModals from '@clinic-ops/components/dashboard/DashboardSettingsModals';
 import PatientReportPicker from '@clinic-ops/components/reports/PatientReportPicker';
+import PrintableMedicalReport from '@clinic-ops/components/reports/PrintableMedicalReport';
 import ReportFormSection from '@clinic-ops/components/reports/ReportFormSection';
 import ReportHistoryPanel from '@clinic-ops/components/reports/ReportHistoryPanel';
 import ReportPatientContext from '@clinic-ops/components/reports/ReportPatientContext';
@@ -67,6 +68,7 @@ export default function DoctorReportsPage() {
     const [patientEncounters, setPatientEncounters] = useState([]);
     const [contextLoading, setContextLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
     const [savedReportId, setSavedReportId] = useState(null);
     const [lastSavedAt, setLastSavedAt] = useState('');
     const [dirty, setDirty] = useState(false);
@@ -243,14 +245,14 @@ export default function DoctorReportsPage() {
         showToast('Section copied from previous report.', 'success');
     }
 
-    async function handleSave() {
+    async function persistDraft({ showSuccessModal = true } = {}) {
         if (!readiness.canSave) {
             showToast(`Complete before saving: ${readiness.missingRequired.join(', ')}`, 'error');
-            return;
+            return null;
         }
         if (!user?.id) {
             showToast('Your user profile is still loading. Please retry in a moment.', 'error');
-            return;
+            return null;
         }
 
         setIsSaving(true);
@@ -277,56 +279,97 @@ export default function DoctorReportsPage() {
 
             if (result.error) throw result.error;
             const saved = Array.isArray(result.data) ? result.data[0] : result.data;
-            setSavedReportId(saved?.id || savedReportId || null);
-            setLastSavedAt(new Date().toISOString());
+            const nextReportId = saved?.id || savedReportId || null;
+            setSavedReportId(nextReportId);
+            const savedAt = new Date().toISOString();
+            setLastSavedAt(savedAt);
             setDirty(false);
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 2500);
+            if (showSuccessModal) {
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 2500);
+            }
             const documentsRes = await documentService.getByPatientId(selectedPatient.id, { pageSize: 12 });
             setPatientDocuments(documentsRes.data || []);
+            return nextReportId;
         } catch (error) {
             logError('Failed to save report:', error);
             showToast(error.message || error || 'Failed to save report', 'error');
+            return null;
         } finally {
             setIsSaving(false);
         }
     }
 
-    async function handleExport() {
-        if (!savedReportId) {
-            showToast('Save the report before exporting.', 'error');
-            return;
-        }
-        const { data, error } = await documentService.getDownloadUrl(savedReportId);
-        if (error || !data) {
-            showToast('No rendered PDF artifact exists for this draft yet.', 'error');
-            return;
-        }
-        window.open(data.signedUrl || data.signedURL || data, '_blank', 'noopener,noreferrer');
+    async function handleSave() {
+        await persistDraft({ showSuccessModal: true });
     }
 
-    function handlePrintDraft() {
-        if (!savedReportId) {
-            showToast('Save the draft before printing so the report has a stable record reference.', 'error');
+    async function ensureSavedBeforeOutput() {
+        if (savedReportId && !dirty) return savedReportId;
+        return persistDraft({ showSuccessModal: false });
+    }
+
+    async function handleExportPdf() {
+        const reportId = await ensureSavedBeforeOutput();
+        if (!reportId) return;
+
+        setIsExporting(true);
+        try {
+            const { data, error } = await documentService.getDownloadUrl(reportId);
+            const artifactUrl = typeof data === 'string' ? data : data?.signedUrl || data?.signedURL;
+            if (!error && artifactUrl) {
+                window.open(artifactUrl, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            showToast('Rendered PDF is not ready yet. Opening print dialog; choose Save as PDF.', 'info');
+            setTimeout(() => window.print(), 100);
+        } catch (error) {
+            logError('Failed to export report PDF:', error);
+            showToast('PDF renderer unavailable. Opening print dialog; choose Save as PDF.', 'info');
+            setTimeout(() => window.print(), 100);
+        } finally {
+            setIsExporting(false);
+        }
+    }
+
+    async function handlePrintReport() {
+        const reportId = await ensureSavedBeforeOutput();
+        if (!reportId) {
             return;
         }
-        window.print();
+        setTimeout(() => window.print(), 100);
     }
 
     const doctorDisplayName = user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor';
     const purpose = getClinicalReportPurpose(purposeCode);
+    const reportGeneratedAt = lastSavedAt || new Date().toISOString();
 
     return (
         <DashboardLayout role="doctor">
-            <DashboardHeader
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onOpenProfile={() => setShowProfile(true)}
-                onOpenTheme={() => setShowTheme(true)}
-                onOpenSecurity={() => setShowSecurity(true)}
+            <div className="report-builder-workspace print-hidden contents">
+                <DashboardHeader
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    onOpenProfile={() => setShowProfile(true)}
+                    onOpenTheme={() => setShowTheme(true)}
+                    onOpenSecurity={() => setShowSecurity(true)}
+                />
+            </div>
+
+            <PrintableMedicalReport
+                patient={selectedPatient}
+                purpose={purpose}
+                sections={sections}
+                sourceEncounter={sourceEncounter}
+                doctorName={doctorDisplayName}
+                doctorRole={user?.role || 'Physician'}
+                clinicName={displayName}
+                reportId={savedReportId}
+                generatedAt={reportGeneratedAt}
             />
 
-            <div className="flex-1 overflow-y-auto bg-[#f8faf7] p-6 pb-12 lg:p-8">
+            <div className="report-builder-workspace print-hidden flex-1 overflow-y-auto bg-[#f8faf7] p-6 pb-12 lg:p-8">
                 <div className="mx-auto max-w-7xl">
                     <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b-4 border-primary pb-6">
                         <div>
@@ -337,12 +380,21 @@ export default function DoctorReportsPage() {
                         <div className="flex flex-wrap items-center gap-3">
                             <button
                                 type="button"
-                                onClick={handlePrintDraft}
-                                disabled={!savedReportId}
-                                title={savedReportId ? 'Print the saved draft workspace.' : 'Save the draft first so the print has a stable record reference.'}
+                                onClick={handlePrintReport}
+                                disabled={isSaving || !readiness.canSave}
+                                title={readiness.canSave ? 'Print the clean medical report document.' : 'Complete required report fields before printing.'}
                                 className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:border-slate-200"
                             >
-                                <span className="material-symbols-outlined text-lg">print</span> Print saved draft
+                                <span className="material-symbols-outlined text-lg">print</span> Print report
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleExportPdf}
+                                disabled={isSaving || isExporting || !readiness.canSave}
+                                title={readiness.canSave ? 'Export rendered PDF or open Save as PDF print fallback.' : 'Complete required report fields before exporting.'}
+                                className="flex items-center gap-2 rounded-lg border border-primary/30 bg-white px-4 py-2 text-sm font-bold text-primary shadow-sm transition-all hover:bg-primary/5 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300"
+                            >
+                                <span className="material-symbols-outlined text-lg">picture_as_pdf</span> {isExporting ? 'Preparing PDF...' : 'Export PDF'}
                             </button>
                             <button type="button" disabled={isSaving} onClick={handleSave} className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
                                 <span className="material-symbols-outlined text-lg">save</span> {savedReportId ? 'Update Draft' : 'Save Draft'}
@@ -450,7 +502,8 @@ export default function DoctorReportsPage() {
                             readiness={readiness}
                             documents={patientDocuments}
                             lastSavedAt={dirty ? 'Unsaved changes' : formatDateTime(lastSavedAt)}
-                            onExport={handleExport}
+                            onExport={handleExportPdf}
+                            exportDisabled={isSaving || isExporting || !readiness.canSave}
                         />
                     </div>
 

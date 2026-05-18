@@ -1,4 +1,7 @@
-import { parseClinicalReportSections } from '@core/lib/clinicalReportBuilder';
+import {
+  parseClinicalReportSections,
+  sanitizeClinicalReportText,
+} from '@core/lib/clinicalReportBuilder';
 
 function formatDate(value) {
   if (!value) return 'Unknown date';
@@ -9,6 +12,14 @@ function formatDate(value) {
 
 function documentLabel(documentType) {
   return String(documentType || 'document').replaceAll('_', ' ');
+}
+
+function displayDocumentTitle(document) {
+  const cleanTitle = sanitizeClinicalReportText(document?.title)
+    .replace(/^Seed\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleanTitle || 'Medical report';
 }
 
 export default function ReportHistoryPanel({ documents = [], loading = false, onUseAsBase, onCopySection }) {
@@ -40,7 +51,7 @@ export default function ReportHistoryPanel({ documents = [], loading = false, on
               <article key={document.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-black text-slate-900">{document.title || 'Medical report'}</p>
+                    <p className="truncate text-sm font-black text-slate-900">{displayDocumentTitle(document)}</p>
                     <p className="mt-1 text-xs text-slate-500">{formatDate(document.created_at)} • {document.status || 'draft'}</p>
                   </div>
                   <button
@@ -77,7 +88,7 @@ export default function ReportHistoryPanel({ documents = [], loading = false, on
           <div className="mt-2 grid gap-2">
             {supportingDocuments.map((document) => (
               <div key={document.id} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
-                <span className="truncate text-xs font-bold capitalize text-slate-700">{documentLabel(document.document_type)} — {document.title || 'Untitled'}</span>
+                <span className="truncate text-xs font-bold capitalize text-slate-700">{documentLabel(document.document_type)} — {displayDocumentTitle(document)}</span>
                 <span className="shrink-0 text-[11px] text-slate-400">{formatDate(document.created_at)}</span>
               </div>
             ))}

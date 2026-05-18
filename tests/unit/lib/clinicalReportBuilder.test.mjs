@@ -8,6 +8,7 @@ import {
   getPatientIdentitySummary,
   getReportReadiness,
   parseClinicalReportSections,
+  sanitizeClinicalReportText,
 } from '../../../packages/core/lib/clinicalReportBuilder.js';
 
 const PATIENT = {
@@ -78,6 +79,21 @@ describe('clinical report builder readiness', () => {
 });
 
 describe('clinical report builder content reuse', () => {
+  it('removes seed and operational metadata from clinical report text', () => {
+    assert.equal(
+      sanitizeClinicalReportText('Migraine episodes with nausea [seed:ops_seed_20260518] Visit completed.'),
+      'Migraine episodes with nausea Visit completed.'
+    );
+    assert.equal(
+      sanitizeClinicalReportText('Chronic condition follow-up documented in seed workload.'),
+      'Chronic condition follow-up documented in chart history.'
+    );
+    assert.equal(
+      sanitizeClinicalReportText('Seed Medical Report 11 (ops_seed_20260518)'),
+      'Seed Medical Report 11'
+    );
+  });
+
   it('builds structured report text that can be parsed back into sections', () => {
     const content = buildClinicalReportContent({
       patient: PATIENT,
@@ -107,19 +123,32 @@ describe('clinical report builder content reuse', () => {
 
   it('creates snippets from chart data so the doctor does not retype everything by hand', () => {
     const snippets = buildClinicalSummarySnippets({
-      patient: PATIENT,
+      patient: { ...PATIENT, medical_history: 'Chronic condition follow-up documented in seed workload.' },
       diagnoses: [{ diagnosis_text: 'Essential hypertension' }, { diseases: { name: 'Type 2 diabetes' } }],
       prescriptions: [
         { medication_name: 'Amlodipine', dosage: '5 mg', frequency: 'daily', duration: '30 days' },
       ],
-      encounters: [{ chief_complaint: 'Headache', summary: 'No neurologic deficit.' }],
+      encounters: [{ chief_complaint: 'Headache [seed:ops_seed_20260518]', summary: 'No neurologic deficit.' }],
       documents: [],
     });
 
-    assert.equal(snippets.medicalHistory, 'Hypertension since 2020.');
+    assert.equal(snippets.medicalHistory, 'Chronic condition follow-up documented in chart history.');
     assert.equal(snippets.allergies, 'Allergies: Penicillin');
     assert.equal(snippets.diagnosisSummary, 'Essential hypertension; Type 2 diabetes');
     assert.equal(snippets.activeMedications, 'Amlodipine - 5 mg - daily - 30 days');
     assert.equal(snippets.latestEncounterSummary, 'Headache No neurologic deficit.');
+  });
+
+  it('sanitizes copied previous report sections before reuse', () => {
+    const parsed = parseClinicalReportSections(`
+Medical History
+Chronic condition follow-up documented in seed workload.
+
+Clinical Findings
+Migraine episodes with nausea [seed:ops_seed_20260518] Visit completed.
+`);
+
+    assert.equal(parsed.medicalHistory, 'Chronic condition follow-up documented in chart history.');
+    assert.equal(parsed.clinicalFindings, 'Migraine episodes with nausea Visit completed.');
   });
 });

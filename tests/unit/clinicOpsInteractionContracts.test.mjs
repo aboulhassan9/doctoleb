@@ -209,6 +209,26 @@ describe('clinic-ops fake UI canaries', () => {
       assert.equal(source.includes(token), false, `doctor reports must not contain old fake report-builder token: ${token}`);
     }
   });
+
+  it('prints a dedicated medical report document instead of the builder workspace', () => {
+    const pageSource = readRepoFile('apps/clinic-ops/src/pages/DoctorReportsPage.jsx');
+    const printSource = readRepoFile('apps/clinic-ops/src/components/reports/PrintableMedicalReport.jsx');
+
+    assert.match(pageSource, /<PrintableMedicalReport\b/, 'doctor reports must mount a print-only report document');
+    assert.match(pageSource, /report-builder-workspace print-hidden/, 'doctor report workspace must be hidden during print');
+    assert.match(pageSource, /handleExportPdf/, 'doctor reports must expose a real export action');
+    assert.match(pageSource, /window\.print\(\)/, 'doctor report export must fall back to browser Save as PDF');
+
+    assert.match(printSource, /doctor-report-print-document print-only/, 'print view must use the global print-only contract');
+    assert.match(printSource, /@page[\s\S]*A4 portrait/, 'print view must declare an A4 report page');
+    assert.match(printSource, /body \*[\s\S]*visibility: hidden/, 'print view must hide the application chrome');
+    assert.match(printSource, /position: static !important/, 'print view must stay in normal flow so long reports paginate');
+    assert.match(printSource, /break-inside: auto/, 'clinical report sections must be allowed to continue across pages');
+
+    for (const forbidden of ['<button', '<select', '<textarea', '<input']) {
+      assert.equal(printSource.includes(forbidden), false, `print view must not contain interactive builder control: ${forbidden}`);
+    }
+  });
 });
 
 describe('billing references', () => {

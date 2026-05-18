@@ -1,4 +1,7 @@
-import { getPatientIdentitySummary } from '@core/lib/clinicalReportBuilder';
+import {
+  getPatientIdentitySummary,
+  sanitizeClinicalReportText,
+} from '@core/lib/clinicalReportBuilder';
 
 function formatDate(value) {
   if (!value) return 'Unknown date';
@@ -27,11 +30,11 @@ export default function ReportPatientContext({
   }
 
   const activeDiagnoses = diagnoses
-    .map((item) => item.diagnosis_text || item.diseases?.name)
+    .map((item) => sanitizeClinicalReportText(item.diagnosis_text || item.diseases?.name))
     .filter(Boolean)
     .slice(0, 4);
   const activeMeds = prescriptions
-    .map((item) => [item.medication_name, item.dosage, item.frequency].filter(Boolean).join(' • '))
+    .map((item) => sanitizeClinicalReportText([item.medication_name, item.dosage, item.frequency].filter(Boolean).join(' • ')))
     .filter(Boolean)
     .slice(0, 4);
 
@@ -83,7 +86,7 @@ export default function ReportPatientContext({
           <option value="">No source encounter linked yet</option>
           {encounters.map((encounter) => (
             <option key={encounter.id} value={encounter.id}>
-              {formatDate(encounter.started_at || encounter.created_at)} — {encounter.chief_complaint || encounter.summary || encounter.status || 'Clinical encounter'}
+              {formatDate(encounter.started_at || encounter.created_at)} — {sanitizeClinicalReportText(encounter.chief_complaint || encounter.summary || encounter.status || 'Clinical encounter')}
             </option>
           ))}
         </select>
