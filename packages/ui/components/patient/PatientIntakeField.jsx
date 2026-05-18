@@ -2,6 +2,7 @@ import {
   BadgeDollarSign,
   BadgeHelp,
   CalendarDays,
+  ChevronDown,
   ClipboardPlus,
   ContactRound,
   Droplets,
@@ -92,22 +93,30 @@ export function PatientIntakeField({ field, value, onChange, disabled = false })
             className={`${withIconClass} resize-none leading-relaxed`}
           />
         ) : field.type === 'select' ? (
-          <select
-            id={inputId}
-            value={fieldValue}
-            onChange={handleChange}
-            disabled={disabled}
-            required={field.required}
-            aria-describedby={describedBy}
-            className={`${withIconClass} appearance-none pr-10`}
-          >
-            <option value="">Select...</option>
-            {(field.options || []).map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <>
+            <select
+              id={inputId}
+              value={fieldValue}
+              onChange={handleChange}
+              disabled={disabled}
+              required={field.required}
+              aria-describedby={describedBy}
+              className={`${withIconClass} appearance-none pr-10`}
+            >
+              <option value="">Select...</option>
+              {(field.options || []).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <span
+              className="pointer-events-none absolute right-0 top-3.5 z-10 text-[var(--patient-muted)] transition group-focus-within:text-[var(--patient-sage)]"
+              aria-hidden="true"
+            >
+              <ChevronDown className="h-4 w-4" />
+            </span>
+          </>
         ) : (
           <input
             id={inputId}
