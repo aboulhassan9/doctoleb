@@ -191,6 +191,9 @@ describe('CI change classifier', () => {
     assert.equal(result.reason, 'Shared or release-critical path touched; using full lane.');
     assertIncludesAll(result.domains, ['ci-deploy', 'test-infra']);
     assert.equal(result.runFlowSmoke, true);
+    assert.equal(result.deploySupabaseFunctions, true);
+    assertIncludesAll(result.controlPlaneFunctions, ['tenant-resolve']);
+    assertIncludesAll(result.tenantFunctions, ['patient-create-payment-session', 'stripe-patient-webhook']);
   });
 
   it('deploys all Supabase functions when the deploy script changes', () => {

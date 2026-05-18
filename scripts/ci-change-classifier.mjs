@@ -828,7 +828,7 @@ function collectBackendDetails(result, files) {
       result.authScenarios.push('ops');
     }
 
-    if (filePath === 'scripts/deploy-supabase-functions.mjs') {
+    if (filePath === 'scripts/deploy-supabase-functions.mjs' || filePath === 'scripts/ci-change-classifier.mjs') {
       for (const name of allControlPlaneFunctions) controlPlaneFunctions.add(name);
       for (const name of allTenantFunctions) tenantFunctions.add(name);
       result.runBackendContract = true;

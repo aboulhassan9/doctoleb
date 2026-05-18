@@ -29,7 +29,7 @@ import { patientEase, patientFadeRise, patientStagger } from '@ui/styles/patient
 const TAB_ITEMS = [
   { id: 'upcoming', label: 'Upcoming' },
   { id: 'past', label: 'Past' },
-  { id: 'book', label: 'Book' },
+  { id: 'book', label: 'Book new' },
 ];
 
 function StatusTimeline({ status }) {
