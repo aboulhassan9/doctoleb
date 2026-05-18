@@ -5,7 +5,9 @@ import path from 'node:path';
 
 const SUPABASE_CLI_VERSION = process.env.SUPABASE_CLI_VERSION || '2.72.7';
 const CONTROL_PLANE_PROJECT_REF = process.env.CONTROL_PLANE_SUPABASE_PROJECT_REF || 'xouqxgwccewvbtkqming';
-const TENANT_PROJECT_REF = process.env.TENANT_SUPABASE_PROJECT_REF || '';
+const TENANT_PROJECT_REF = process.env.TENANT_SUPABASE_PROJECT_REF
+  || process.env.DEV_TENANT_SUPABASE_PROJECT_REF
+  || 'gezmfmskhmjgnquoyosq';
 const CONTROL_PLANE_PUBLIC_FUNCTIONS = new Set([
   'marketing-capture-lead',
   'tenant-resolve',
