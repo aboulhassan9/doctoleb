@@ -54,8 +54,8 @@ const scenarios = Object.freeze([
     url: process.env.CONTROL_PLANE_LOGIN_URL || 'https://doctoleb-control-plane.vercel.app/',
     emailEnv: 'AUTH_SMOKE_CONTROL_OWNER_EMAIL',
     passwordEnv: 'AUTH_SMOKE_CONTROL_OWNER_PASSWORD',
-    submitName: 'Open console',
-    expectedHeading: 'Control plane',
+    submitName: /sign in to console/i,
+    expectedText: 'Tenants Overview',
   },
 ]);
 

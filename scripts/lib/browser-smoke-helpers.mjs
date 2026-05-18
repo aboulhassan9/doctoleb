@@ -23,6 +23,7 @@ const loginFailurePattern = /invalid (?:login )?(?:credentials|email or password
 function describePostLoginExpectation(scenario) {
   if (scenario.expectedPath) return `URL path ${scenario.expectedPath}`;
   if (scenario.expectedHeading) return `heading ${String(scenario.expectedHeading)}`;
+  if (scenario.expectedText) return `visible text ${String(scenario.expectedText)}`;
   return 'configured post-login state';
 }
 
@@ -57,6 +58,11 @@ export async function waitForExpectedPostLogin(page, scenario, { timeout = 45_00
     if (scenario.expectedHeading) {
       const heading = page.getByRole('heading', { name: scenario.expectedHeading }).first();
       if (await heading.isVisible({ timeout: 500 }).catch(() => false)) return;
+    }
+
+    if (scenario.expectedText) {
+      const bodyText = await visibleBodyText(page);
+      if (bodyText.includes(String(scenario.expectedText))) return;
     }
 
     await assertNoVisibleLoginFailure(page, scenario);
