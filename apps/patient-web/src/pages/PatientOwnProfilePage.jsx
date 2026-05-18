@@ -62,6 +62,7 @@ function validateRequired({ definition, form }) {
 
 function ProfileSummary({ user, patient, isEditing, onEdit, onCancel, onSave, submitting }) {
   const patientRef = patient?.id ? `PAT-${String(patient.id).replace(/-/g, '').slice(0, 10).toUpperCase()}` : 'Pending profile';
+  const displayName = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'Patient profile';
 
   return (
     <motion.section variants={patientFadeRise} className="patient-paper-strong patient-surface relative overflow-hidden p-6">
@@ -73,8 +74,11 @@ function ProfileSummary({ user, patient, isEditing, onEdit, onCancel, onSave, su
           </span>
           <div>
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--patient-sage)]">Patient identity</p>
-            <h1 className="patient-display mt-2 text-4xl font-medium tracking-tight text-[var(--patient-ink)]">
-              {[user?.first_name, user?.last_name].filter(Boolean).join(' ') || 'Patient profile'}
+            <h1
+              className="patient-display mt-2 text-4xl font-medium tracking-tight text-[var(--patient-ink)]"
+              aria-label={`My Profile - ${displayName}`}
+            >
+              {displayName}
             </h1>
             <p className="mt-2 font-mono text-xs font-bold text-[color-mix(in_srgb,var(--patient-muted)_75%,transparent)]">{patientRef}</p>
           </div>
@@ -99,7 +103,7 @@ function ProfileSummary({ user, patient, isEditing, onEdit, onCancel, onSave, su
                 className="patient-button-primary px-5 py-3 disabled:bg-[var(--patient-outline)]"
               >
                 <Save className="h-4 w-4" />
-                {submitting ? 'Saving...' : 'Save'}
+                {submitting ? 'Saving...' : 'Save changes'}
               </button>
             </>
           ) : (

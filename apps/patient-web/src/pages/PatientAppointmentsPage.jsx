@@ -593,7 +593,7 @@ export default function PatientAppointmentsPage() {
                 <div>
                   <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--patient-sage)]">Seek care</p>
                   <h2 className="patient-display mt-2 text-4xl font-medium tracking-tight text-[var(--patient-ink)]">
-                    Book a visit
+                    Book an appointment
                   </h2>
                 </div>
                 {!onboardingStatus?.isComplete && (
