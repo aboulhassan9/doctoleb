@@ -623,58 +623,6 @@
     padding-left: 12px;
   }
 
-  .patient-narrative-line {
-    color: var(--patient-ink);
-    font-size: clamp(22px, 3vw, 32px);
-    line-height: 1.8;
-  }
-
-  .patient-narrative-field {
-    appearance: none;
-    min-width: min(100%, 13rem);
-    border: 0;
-    border-bottom: 3px solid color-mix(in srgb, var(--patient-ink) 20%, var(--patient-surface));
-    border-radius: 0;
-    background: transparent;
-    color: var(--patient-sage);
-    margin: 0 0.35rem;
-    padding: 0 0.5rem 0.25rem;
-    text-align: center;
-    font-family: 'Newsreader', 'Source Serif 4', Georgia, serif;
-    font-size: clamp(24px, 3vw, 32px);
-    font-weight: 500;
-    outline: none;
-    transition:
-      transform 340ms cubic-bezier(0.175, 0.885, 0.32, 1.275),
-      border-color 340ms cubic-bezier(0.175, 0.885, 0.32, 1.275),
-      background-color 340ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .patient-narrative-field:focus {
-    border-bottom-color: var(--patient-sage);
-    background: color-mix(in srgb, var(--patient-surface) 78%, white);
-    transform: translateY(-2px);
-  }
-
-  .patient-narrative-field::placeholder {
-    color: color-mix(in srgb, var(--patient-muted) 50%, transparent);
-    font-style: italic;
-    font-weight: 400;
-  }
-
-  .patient-art-line {
-    height: 1px;
-    width: 100%;
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--patient-ink) 18%, transparent), transparent);
-  }
-
-  .patient-rule-grid {
-    background-image:
-      linear-gradient(color-mix(in srgb, var(--patient-ink) 6%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in srgb, var(--patient-ink) 5%, transparent) 1px, transparent 1px);
-    background-size: 44px 44px;
-  }
-
   .patient-tactile-underline {
     position: relative;
   }

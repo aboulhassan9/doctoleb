@@ -91,6 +91,51 @@ Residual QA note:
 - Protected patient routes still require an authenticated tenant/test patient to capture true dashboard, booking, timeline, messages, billing, and profile runtime states. The unauthenticated visual pass confirms the route guard and public patient-auth pages, but not patient-owned data states.
 - Screenshot pass captured `ERR_NAME_NOT_RESOLVED` console noise from external resources in the local environment; app build/lint and local rendering still completed.
 
+## 2026-05-18 Second Senior Pass — Generic-Pattern And Defect Sweep
+
+A second senior review scanned the patient service layer, hooks, shared UI
+primitives, and every patient route. Architecture is sound: no raw Supabase /
+`fetch` / `console` calls in patient pages, no `console` / `select('*')` in
+patient services, `{ data, error }` envelopes are consistent, and the timeline
+service correctly restricts to `status: 'final'` non-archived documents. The
+following concrete defects were found and fixed.
+
+### Findings fixed
+
+| # | Severity | Surface | Finding | Owner layer | Fix |
+|---|---|---|---|---|---|
+| 1 | Medium | `index.html`, `PatientAppointmentsPage`, `NotFoundPage` | Patient-web loaded the full Material Symbols web font for exactly two icons (booking spinner, 404 glyph) while every other icon is `lucide-react`. Inconsistent icon system and an unnecessary font download. | `apps/patient-web` | Replaced the two glyphs with `lucide-react` (`Loader2`, `Compass`); removed the Material Symbols `<link>` from `index.html`. |
+| 2 | High | `LoginPage`, `SignUpPage`, `ForgotPasswordPage`, `ResetPasswordPage` | Auth pages shipped the exact poetic Stitch vocabulary `DESIGN.md`/`ANALYSIS.md` forbid: "The Data Vault", "Enter quietly", "weave records", "Clinical Identity", "Restore access calmly", "Return to entrance", "Choose a new key", "Identity (email)". A decorative non-functional slide-to-confirm element (`patient-friction`, `role="img"`) sat on the login page. | `apps/patient-web` | Rewrote copy into plain DoctoLeb healthcare language (Email, Sign in, Create account, Reset your password, Set a new password, Back to sign in). Removed the decorative friction slider and its now-dead CSS. |
+| 3 | Medium | `usePatientPortal`, `useDoctorProfile` | Effects/`useCallback`s depended on the whole `user` object, which `AuthProvider` replaces on every `SIGNED_IN` / token-refresh event — re-running the 4-call dashboard fetch (and the doctor-profile fetch) needlessly. | `packages/core` | Keyed on the stable `user?.id` primitive, matching the rest of the codebase. |
+| 4 | Medium (a11y/UX) | `PatientIntakeField` | The shared configurable-form `<select>` used `appearance-none` with no replacement chevron, so every select across onboarding, profile, check-in, and booking custom fields looked like a plain text input with no dropdown affordance. | `packages/ui` | Added an `aria-hidden` `ChevronDown` indicator in the reserved `pr-10` space. |
+| 5 | Low | `src/index.css` | Six unused Stitch-leftover rules (`patient-narrative-line`, `patient-narrative-field*`, `patient-art-line`, `patient-rule-grid` — one even references the unloaded `Newsreader` font). Confirmed zero usage across `apps/` and `packages/`. | `src` | Removed. |
+
+### Verification
+
+- `npm run lint`, `npm run build:patient`, `npm run build:ops`, `npm run test:unit`
+  (936 pass / 0 fail), `npm run audit:rpc-signatures`, `npm run audit:selects-drift`
+  — all green.
+- Live dev tenant (`gezmfmskhmjgnquoyosq`) confirmed: all 18 patient RPCs and the
+  `patient_form_field_config` / `appointment_patient_answers` /
+  `patient_payment_checkout_sessions` / `patient_payment_gateway_events` tables
+  exist; `submit_patient_check_in` writes only allowlisted `precheck_forms`
+  columns with ownership + status + custom-answer allowlist checks.
+- Browser QA against the dev tenant: public pages (login, signup, forgot, reset,
+  404) and authenticated pages (billing, onboarding, profile) — zero console
+  errors, select chevrons present on every `PatientIntakeField`, zero
+  Material Symbols spans remaining.
+
+### Still open (not addressed this pass)
+
+- Authenticated dashboard / booking / timeline / messages runtime QA at the
+  `390 / 768 / 1440` matrix is still partial — the dashboard redirects to
+  onboarding until first-visit intake is complete for a fresh patient.
+- Check-in only ever targets `nextAppointment`; a patient with multiple upcoming
+  visits cannot choose which to check in for (RPC already accepts any owned
+  appointment id — UI-only gap).
+- `patientBillingService.getReceipt` returns the RPC payload without schema
+  validation, unlike the other billing reads.
+
 ## 2026-05-18 Senior Gap Scan + Auth Polish (Session 2)
 
 A second senior-level scan reviewed every patient-web route, the patient shell, all
@@ -114,7 +159,7 @@ columns with ownership, appointment-status, and `custom.*` allowlist guards.
 | High | `LoginPage` | Shipped forbidden Stitch vocabulary: heading "The Data Vault", "Enter quietly", "weave records", label "Identity (email)". `DESIGN.md` §8 and `ANALYSIS.md` explicitly forbid this. | Fixed |
 | Medium | `LoginPage` | Decorative non-functional `patient-friction` slide element (`role="img"`) — a Stitch slide-to-confirm artifact with no behavior. | Removed (+ dead CSS) |
 | Medium | `SignUpPage`, `ForgotPasswordPage`, `ResetPasswordPage` | Poetic copy: "Clinical Identity", "Return to entrance", "Restore access calmly", "Choose a new key", "Send entrance link", "Identity email", "Creating identity...". | Fixed |
-| Low | `src/index.css` | Pre-existing unused patient CSS classes: `patient-narrative-line`, `patient-narrative-field`, `patient-art-line`, `patient-rule-grid` (zero usages in `apps/`). | Open — flagged, not removed this slice |
+| Low | `src/index.css` | Pre-existing unused patient CSS classes: `patient-narrative-line`, `patient-narrative-field`, `patient-art-line`, `patient-rule-grid` (zero usages in `apps/`). | Fixed in the second senior pass |
 | Info | Patient portal pages | Dashboard, Appointments, Check-In, Billing, Timeline, Profile, Messages, Onboarding are service-driven, tokenized, accessible, with loading/empty/error states. No generic bordered-card stacks, no `transition-all`, no hardcoded patient hexes. Architecturally sound. | No action |
 
 ### Fixed this session
@@ -141,6 +186,4 @@ columns with ownership, appointment-status, and `custom.*` allowlist guards.
 - Authenticated portal pages (dashboard, appointments, check-in, billing, timeline,
   profile, messages) still need true runtime visual QA with a real test patient
   session — only public/auth routes were browser-verified.
-- The booking-page `Loader2` spinner change is behind auth; verified by build only.
-- Unused `patient-narrative-*` / `patient-art-line` / `patient-rule-grid` CSS can be
-  pruned.
+- The booking-page `Loader2` spinner change is behind auth; verified by build and deployed auth smoke.
