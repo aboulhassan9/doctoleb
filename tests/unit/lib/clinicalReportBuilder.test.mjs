@@ -6,7 +6,9 @@ import {
   getPatientAge,
   getPatientDisplayName,
   getPatientIdentitySummary,
+  getClinicalReportPurpose,
   getReportReadiness,
+  getReportSectionPresentation,
   parseClinicalReportSections,
   sanitizeClinicalReportText,
 } from '../../../packages/core/lib/clinicalReportBuilder.js';
@@ -44,6 +46,33 @@ describe('clinical report builder patient identity', () => {
 });
 
 describe('clinical report builder readiness', () => {
+  it('defines useful recipient-specific report contracts for clinic stakeholders', () => {
+    const stakeholderPurposes = ['general', 'staff', 'patient', 'insurance', 'laboratory'];
+
+    for (const code of stakeholderPurposes) {
+      const purpose = getClinicalReportPurpose(code);
+      assert.equal(purpose.code, code);
+      assert.ok(purpose.audience, `${code} must declare who receives the report`);
+      assert.ok(purpose.documentTitle, `${code} must declare a printable document title`);
+      assert.ok(purpose.useCase.length > 20, `${code} must explain why the report matters`);
+      assert.ok(purpose.requiredSections.length >= 3, `${code} must require enough clinical content to be useful`);
+    }
+
+    assert.match(getClinicalReportPurpose('staff').useCase, /clinic team/i);
+    assert.match(getClinicalReportPurpose('patient').sectionGuidance.recommendations, /warning signs/i);
+    assert.match(getClinicalReportPurpose('laboratory').sectionGuidance.treatmentPlan, /Requested tests/i);
+  });
+
+  it('returns section guidance and required flags for the selected recipient', () => {
+    const patientPlan = getReportSectionPresentation('recommendations', 'patient');
+    const labPlan = getReportSectionPresentation('treatmentPlan', 'laboratory');
+
+    assert.equal(patientPlan.required, true);
+    assert.match(patientPlan.guidance, /Return date/i);
+    assert.match(labPlan.placeholder, /specimen/i);
+    assert.equal(getReportSectionPresentation('medicalHistory', 'staff').required, false);
+  });
+
   it('blocks save until patient, doctor, and required meaningful sections exist', () => {
     const readiness = getReportReadiness({
       patient: PATIENT,
@@ -53,6 +82,7 @@ describe('clinical report builder readiness', () => {
         clinicalFindings: 'sdgsdg',
         diagnosis: 'Acute bronchitis',
         treatmentPlan: 'Oral hydration and follow-up.',
+        recommendations: 'Review if symptoms worsen.',
       },
     });
 
@@ -110,6 +140,8 @@ describe('clinical report builder content reuse', () => {
     });
 
     assert.match(content, /Purpose: Insurance medical report/);
+    assert.match(content, /Prepared for: Insurance reviewer/);
+    assert.match(content, /Document use: Shows why the service/);
     assert.match(content, /Patient: Nour Haddad/);
     assert.match(content, /Source encounter: 11111111-1111-4111-8111-111111111111/);
 

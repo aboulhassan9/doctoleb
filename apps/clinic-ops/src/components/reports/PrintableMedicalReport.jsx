@@ -107,8 +107,8 @@ export default function PrintableMedicalReport({
           <div className="flex items-start justify-between gap-6">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">{clinicName}</p>
-              <h1 className="mt-2 text-3xl font-black uppercase leading-tight tracking-tight">Medical Report</h1>
-              <p className="mt-1 text-xs italic text-slate-500">Confidential clinical document for authorized medical use only.</p>
+              <h1 className="mt-2 text-3xl font-black uppercase leading-tight tracking-tight">{purpose?.documentTitle || 'Medical Report'}</h1>
+              <p className="mt-1 text-xs italic text-slate-500">{purpose?.description || 'Confidential clinical document for authorized medical use only.'}</p>
             </div>
             <div className="min-w-48 rounded-lg border border-slate-200 p-3 text-right">
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Reference</p>
@@ -130,6 +130,10 @@ export default function PrintableMedicalReport({
               <p className="mt-1 text-sm font-bold text-slate-900">{purpose?.label || 'Medical report'}</p>
             </div>
             <div>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Prepared For</p>
+              <p className="mt-1 text-sm font-bold text-slate-900">{purpose?.audience || 'Authorized recipient'}</p>
+            </div>
+            <div>
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Date of Birth / Age</p>
               <p className="mt-1 text-sm font-bold text-slate-900">
                 {identity?.dateOfBirth || 'Not recorded'}{identity?.age !== null && identity?.age !== undefined ? ` / ${identity.age} years` : ''}
@@ -138,6 +142,10 @@ export default function PrintableMedicalReport({
             <div>
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sex / Blood Type</p>
               <p className="mt-1 text-sm font-bold text-slate-900">{[identity?.sex, identity?.bloodType].filter(Boolean).join(' / ') || 'Not recorded'}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Document Use</p>
+              <p className="mt-1 text-sm font-bold leading-relaxed text-slate-900">{purpose?.useCase || 'Clinical documentation.'}</p>
             </div>
             <div className="col-span-2">
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Allergies</p>

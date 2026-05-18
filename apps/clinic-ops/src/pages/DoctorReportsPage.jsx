@@ -25,6 +25,7 @@ import {
     getClinicalReportPurpose,
     getPatientDisplayName,
     getReportReadiness,
+    getReportSectionPresentation,
     parseClinicalReportSections,
 } from '@core/lib/clinicalReportBuilder';
 
@@ -46,7 +47,7 @@ function formatDateTime(value) {
 function buildReportTitle({ patient, purposeCode }) {
     const patientName = getPatientDisplayName(patient);
     const purpose = getClinicalReportPurpose(purposeCode);
-    return `${purpose.label} - ${patientName}`;
+    return `${purpose.documentTitle || purpose.label} - ${patientName}`;
 }
 
 export default function DoctorReportsPage() {
@@ -344,6 +345,9 @@ export default function DoctorReportsPage() {
     const doctorDisplayName = user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor';
     const purpose = getClinicalReportPurpose(purposeCode);
     const reportGeneratedAt = lastSavedAt || new Date().toISOString();
+    const sectionPresentation = Object.fromEntries(
+        Object.keys(EMPTY_SECTIONS).map((key) => [key, getReportSectionPresentation(key, purposeCode)])
+    );
 
     return (
         <DashboardLayout role="doctor">
@@ -374,8 +378,8 @@ export default function DoctorReportsPage() {
                     <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b-4 border-primary pb-6">
                         <div>
                             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Clinical document builder</span>
-                            <h1 className="mt-1 text-[30px] font-black uppercase leading-none tracking-tighter text-slate-900">Medical Report Workspace</h1>
-                            <p className="mt-2 max-w-2xl text-sm text-slate-500">Build reports from verified patient data, prior documents, and current encounter context.</p>
+                            <h1 className="mt-1 text-[30px] font-black uppercase leading-none tracking-tighter text-slate-900">{purpose.documentTitle}</h1>
+                            <p className="mt-2 max-w-2xl text-sm text-slate-500">{purpose.useCase}</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
                             <button
@@ -407,7 +411,15 @@ export default function DoctorReportsPage() {
                             <PatientReportPicker selectedPatient={selectedPatient} onSelect={handlePatientSelect} />
 
                             <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-primary">Report purpose</p>
+                                <div className="flex flex-wrap items-end justify-between gap-3">
+                                    <div>
+                                        <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-primary">Report purpose</p>
+                                        <h2 className="mt-1 text-lg font-black text-slate-950">Choose who this report must help</h2>
+                                    </div>
+                                    <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-primary">
+                                        Prepared for: {purpose.audience}
+                                    </span>
+                                </div>
                                 <div className="mt-3 grid gap-3 md:grid-cols-2">
                                     {CLINICAL_REPORT_PURPOSES.map((item) => (
                                         <button
@@ -416,8 +428,12 @@ export default function DoctorReportsPage() {
                                             onClick={() => handlePurposeChange(item.code)}
                                             className={`rounded-xl border p-4 text-left transition ${purposeCode === item.code ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-slate-200 bg-white hover:border-primary/50'}`}
                                         >
-                                            <p className="text-sm font-black text-slate-950">{item.label}</p>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <p className="text-sm font-black text-slate-950">{item.label}</p>
+                                                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-500">{item.audience}</span>
+                                            </div>
                                             <p className="mt-1 text-xs leading-relaxed text-slate-500">{item.description}</p>
+                                            <p className="mt-2 text-[11px] font-bold leading-relaxed text-slate-600">{item.useCase}</p>
                                         </button>
                                     ))}
                                 </div>
@@ -444,7 +460,10 @@ export default function DoctorReportsPage() {
                             <div className="space-y-6">
                                 <ReportFormSection
                                     icon="history_edu"
-                                    title="Medical History"
+                                    title={sectionPresentation.medicalHistory.title}
+                                    helperText={sectionPresentation.medicalHistory.guidance}
+                                    placeholder={sectionPresentation.medicalHistory.placeholder}
+                                    required={sectionPresentation.medicalHistory.required}
                                     value={sections.medicalHistory}
                                     onChange={(value) => updateSection('medicalHistory', value)}
                                     rows={4}
@@ -455,7 +474,10 @@ export default function DoctorReportsPage() {
                                 />
                                 <ReportFormSection
                                     icon="stethoscope"
-                                    title="Clinical Findings"
+                                    title={sectionPresentation.clinicalFindings.title}
+                                    helperText={sectionPresentation.clinicalFindings.guidance}
+                                    placeholder={sectionPresentation.clinicalFindings.placeholder}
+                                    required={sectionPresentation.clinicalFindings.required}
                                     value={sections.clinicalFindings}
                                     onChange={(value) => updateSection('clinicalFindings', value)}
                                     rows={5}
@@ -466,7 +488,10 @@ export default function DoctorReportsPage() {
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <ReportFormSection
                                         icon="vital_signs"
-                                        title="Diagnosis"
+                                        title={sectionPresentation.diagnosis.title}
+                                        helperText={sectionPresentation.diagnosis.guidance}
+                                        placeholder={sectionPresentation.diagnosis.placeholder}
+                                        required={sectionPresentation.diagnosis.required}
                                         value={sections.diagnosis}
                                         onChange={(value) => updateSection('diagnosis', value)}
                                         rows={4}
@@ -477,7 +502,10 @@ export default function DoctorReportsPage() {
                                     />
                                     <ReportFormSection
                                         icon="medical_information"
-                                        title="Treatment Plan"
+                                        title={sectionPresentation.treatmentPlan.title}
+                                        helperText={sectionPresentation.treatmentPlan.guidance}
+                                        placeholder={sectionPresentation.treatmentPlan.placeholder}
+                                        required={sectionPresentation.treatmentPlan.required}
                                         value={sections.treatmentPlan}
                                         onChange={(value) => updateSection('treatmentPlan', value)}
                                         rows={4}
@@ -488,7 +516,10 @@ export default function DoctorReportsPage() {
                                 </div>
                                 <ReportFormSection
                                     icon="assignment_turned_in"
-                                    title="Recommendations"
+                                    title={sectionPresentation.recommendations.title}
+                                    helperText={sectionPresentation.recommendations.guidance}
+                                    placeholder={sectionPresentation.recommendations.placeholder}
+                                    required={sectionPresentation.recommendations.required}
                                     value={sections.recommendations}
                                     onChange={(value) => updateSection('recommendations', value)}
                                     rows={4}

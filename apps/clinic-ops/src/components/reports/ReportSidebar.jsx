@@ -37,6 +37,10 @@ export default function ReportSidebar({
                         <span className="max-w-[12rem] truncate text-right text-xs font-bold text-slate-800">{purpose?.label || 'Not selected'}</span>
                     </div>
                     <div className="flex justify-between items-center">
+                        <span className="text-xs text-slate-500">Prepared for</span>
+                        <span className="max-w-[12rem] truncate text-right text-xs font-bold text-slate-800">{purpose?.audience || 'Authorized recipient'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
                         <span className="text-xs text-slate-500">Ref No.</span>
                         <span className="text-xs font-bold font-mono">{formatReportReference(reportId)}</span>
                     </div>
@@ -45,6 +49,12 @@ export default function ReportSidebar({
                         <span className="text-xs font-bold text-slate-700">{lastSavedAt || 'Not saved yet'}</span>
                     </div>
                 </div>
+                {purpose?.useCase ? (
+                    <div className="rounded-xl border border-primary/10 bg-primary/5 p-3">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-primary">Why this matters</p>
+                        <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600">{purpose.useCase}</p>
+                    </div>
+                ) : null}
             </div>
 
             <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-4">

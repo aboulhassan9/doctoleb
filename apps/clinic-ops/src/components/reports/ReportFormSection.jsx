@@ -3,14 +3,29 @@
  *
  * Replaces ~20 lines of repetitive section markup per section in DoctorReportsPage.
  */
-export default function ReportFormSection({ icon, title, value, onChange, placeholder, rows = 3, bold = false, actions = [] }) {
+export default function ReportFormSection({
+    icon,
+    title,
+    value,
+    onChange,
+    placeholder,
+    helperText = '',
+    required = false,
+    rows = 3,
+    bold = false,
+    actions = [],
+}) {
     return (
         <div className="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm">
             <div className="bg-slate-50 px-6 py-3 flex items-center justify-between">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-600 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-lg">{icon}</span>
-                    {title}
-                </h3>
+                <div>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-600 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-lg">{icon}</span>
+                        {title}
+                        {required ? <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-black text-primary">Required</span> : null}
+                    </h3>
+                    {helperText ? <p className="mt-1 max-w-2xl text-xs font-medium normal-case leading-relaxed tracking-normal text-slate-500">{helperText}</p> : null}
+                </div>
                 {actions.length > 0 ? (
                     <div className="flex flex-wrap items-center justify-end gap-2">
                         {actions.map((action) => (
