@@ -15,16 +15,17 @@ export function useDoctorProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuth();
+  const userId = user?.id || null;
 
   const fetch = useCallback(async () => {
-    if (!user?.id) {
+    if (!userId) {
       setLoading(false);
       return;
     }
     try {
       setLoading(true);
       setError(null);
-      const { data, error: err } = await doctorService.getByUserId(user.id);
+      const { data, error: err } = await doctorService.getByUserId(userId);
       if (err || !data?.id) throw new Error('Unable to resolve doctor profile');
       setDoctor(data);
     } catch (err) {
@@ -33,7 +34,9 @@ export function useDoctorProfile() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+    // Depend on the stable doctor identity, not the user object reference,
+    // which AuthProvider replaces on every SIGNED_IN / token-refresh event.
+  }, [userId]);
 
   useEffect(() => { fetch(); }, [fetch]);
 
