@@ -69,8 +69,8 @@ const scenarios = Object.freeze([
     url: URLS.controlPlaneLogin,
     emailEnv: 'AUTH_SMOKE_CONTROL_OWNER_EMAIL',
     passwordEnv: 'AUTH_SMOKE_CONTROL_OWNER_PASSWORD',
-    submitName: 'Open console',
-    expectedHeading: /Control plane/i,
+    submitName: /sign in to console/i,
+    expectedText: 'Tenants Overview',
   },
 ]);
 
@@ -348,26 +348,26 @@ async function verifyPredoctorFlow(page) {
 }
 
 async function verifyControlPlaneFlow(page) {
-  await page.getByRole('heading', { name: /Control plane/i }).waitFor({ state: 'visible', timeout: 45_000 });
+  await page.getByText(/Tenants Overview/i).waitFor({ state: 'visible', timeout: 45_000 });
   if (await page.getByRole('tab', { name: /Setup/i }).count() > 0) {
     throw new Error('control-plane flow: deprecated Setup tab is still visible.');
   }
 
-  await page.getByRole('button', { name: /\+ New tenant/i }).click({ timeout: 15_000 });
+  await page.getByRole('button', { name: /Add New Tenant/i }).click({ timeout: 15_000 });
   await page.getByRole('heading', { name: /New tenant setup/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByRole('heading', { name: /Guided tenant launch/i }).waitFor({ state: 'visible', timeout: 45_000 });
-  await page.getByText(/Separate from current tenant editing/i).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByText(/does not edit/i).waitFor({ state: 'visible', timeout: 15_000 });
 
   const slug = smokeId.replace(/[^a-z0-9-]/g, '-').slice(0, 40);
   await page.getByLabel(/Clinic name/i).fill(`QA Clinic ${slug}`);
-  await page.getByRole('textbox', { name: /Slug Used for future domains/i }).fill(slug);
+  await page.getByLabel(/^Slug$/i).fill(slug);
   await page.getByRole('button', { name: /Next step/i }).click({ timeout: 15_000 });
-  await page.getByRole('heading', { name: /First doctor/i }).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByRole('heading', { name: /First doctor setup/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByLabel(/First doctor admin/i).fill(`QA Doctor ${slug}`);
   await page.getByLabel(/First doctor email/i).fill(`${slug}+doctor@example.invalid`);
   await page.getByLabel(/First doctor phone/i).fill('+96172000000');
   await page.getByRole('button', { name: /Next step/i }).click({ timeout: 15_000 });
-  await page.getByRole('heading', { name: /Hosting/i }).waitFor({ state: 'visible', timeout: 15_000 });
+  await page.getByRole('heading', { name: /No-domain hosting path/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByRole('button', { name: /Next step/i }).click({ timeout: 15_000 });
   await page.getByRole('heading', { name: /Create tenant draft/i }).waitFor({ state: 'visible', timeout: 15_000 });
   await page.getByText(`${slug}.doctoleb.com`).waitFor({ state: 'visible', timeout: 15_000 });
