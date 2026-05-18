@@ -432,6 +432,43 @@ export const clinicalService = {
     return this.createDocument(payload);
   },
 
+  async updateClinicalDocumentDraft(id, payload) {
+    if (!id) return validationError('Clinical document id is required.');
+    if (!payload || typeof payload !== 'object') return validationError('Clinical document update payload is required.');
+
+    const allowed = ['title', 'content', 'encounter_id', 'doctor_id', 'file_url', 'client_request_id'];
+    const updates = {};
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(payload, key)) {
+        updates[key] = payload[key];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return validationError('No allowed clinical document draft fields were provided.');
+    }
+
+    const parsed = parse(clinicalDocumentSchema.partial(), updates);
+    if (parsed.error) return validationError(parsed.error);
+
+    const parsedUpdates = {};
+    for (const key of Object.keys(updates)) {
+      if (Object.prototype.hasOwnProperty.call(parsed.data, key)) {
+        parsedUpdates[key] = parsed.data[key];
+      }
+    }
+
+    return apiCall(
+      supabase
+        .from('clinical_documents')
+        .update(parsedUpdates)
+        .eq('id', id)
+        .eq('status', 'draft')
+        .select(CLINICAL_DOCUMENT_SELECT_FIELDS)
+        .single()
+    );
+  },
+
   async getDocuments(patientId, { documentType = null, includeArchived = false, page = 1, pageSize = 25 } = {}) {
     let query = supabase
       .from('clinical_documents')

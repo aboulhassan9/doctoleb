@@ -90,6 +90,10 @@ export const documentService = {
     return this.create(normalizeCreatePayload(payload, 'report'));
   },
 
+  async updateDraft(id, payload) {
+    return clinicalService.updateClinicalDocumentDraft(id, payload);
+  },
+
   async createCertificate(payload) {
     const content = payload.content ?? toDocumentContent([
       { title: 'Diagnosis', body: payload.diagnosis },

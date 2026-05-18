@@ -1,42 +1,76 @@
-/**
- * DoctorReportsPage — Orchestrator for comprehensive medical report creation.
- *
- * Delegates rendering to:
- *   - DashboardHeader (shared sticky header)
- *   - DashboardSettingsModals (shared settings modals)
- *   - ReportFormSection (reusable section with icon + title + textarea)
- *   - ReportSidebar (context, signature, attachments)
- *
- * Reduced from 378 → ~175 lines.
- */
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { logError } from '@/lib/logger';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import DashboardHeader from '@clinic-ops/components/dashboard/DashboardHeader';
 import DashboardSettingsModals from '@clinic-ops/components/dashboard/DashboardSettingsModals';
+import PatientReportPicker from '@clinic-ops/components/reports/PatientReportPicker';
 import ReportFormSection from '@clinic-ops/components/reports/ReportFormSection';
+import ReportHistoryPanel from '@clinic-ops/components/reports/ReportHistoryPanel';
+import ReportPatientContext from '@clinic-ops/components/reports/ReportPatientContext';
 import ReportSidebar from '@clinic-ops/components/reports/ReportSidebar';
 import { Modal } from '@/components/ui';
+import { patientService } from '@/services/patients';
 import { documentService } from '@/services/documents';
+import { clinicalService } from '@/services/clinical';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useBrand } from '@/contexts/BrandContext';
-import { usePatients } from '@/hooks/features/usePatients';
 import { useDoctorProfile } from '@/hooks/features/useDoctorProfile';
+import {
+    CLINICAL_REPORT_PURPOSES,
+    buildClinicalReportContent,
+    buildClinicalSummarySnippets,
+    getClinicalReportPurpose,
+    getPatientDisplayName,
+    getReportReadiness,
+    parseClinicalReportSections,
+} from '@core/lib/clinicalReportBuilder';
+
+const EMPTY_SECTIONS = {
+    medicalHistory: '',
+    clinicalFindings: '',
+    diagnosis: '',
+    treatmentPlan: '',
+    recommendations: '',
+};
+
+function formatDateTime(value) {
+    if (!value) return 'Not saved yet';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not saved yet';
+    return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function buildReportTitle({ patient, purposeCode }) {
+    const patientName = getPatientDisplayName(patient);
+    const purpose = getClinicalReportPurpose(purposeCode);
+    return `${purpose.label} - ${patientName}`;
+}
 
 export default function DoctorReportsPage() {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const patientIdFromUrl = searchParams.get('patientId') || '';
+    const encounterIdFromUrl = searchParams.get('encounterId') || '';
+
     const [searchQuery, setSearchQuery] = useState('');
-    const [medicalHistory, setMedicalHistory] = useState('');
-    const [clinicalFindings, setClinicalFindings] = useState('');
-    const [diagnosis, setDiagnosis] = useState('');
-    const [treatmentPlan, setTreatmentPlan] = useState('');
-    const [recommendations, setRecommendations] = useState('');
+    const [sections, setSections] = useState(() => ({ ...EMPTY_SECTIONS }));
     const [showSuccess, setShowSuccess] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [purposeCode, setPurposeCode] = useState('general');
+    const [sourceEncounterId, setSourceEncounterId] = useState(encounterIdFromUrl);
+    const [sourceEncounter, setSourceEncounter] = useState(null);
+    const [patientDocuments, setPatientDocuments] = useState([]);
+    const [patientDiagnoses, setPatientDiagnoses] = useState([]);
+    const [patientPrescriptions, setPatientPrescriptions] = useState([]);
+    const [patientEncounters, setPatientEncounters] = useState([]);
+    const [contextLoading, setContextLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [savedReportId, setSavedReportId] = useState(null);
+    const [lastSavedAt, setLastSavedAt] = useState('');
+    const [dirty, setDirty] = useState(false);
 
-    // Settings modals state
     const [showProfile, setShowProfile] = useState(false);
     const [showTheme, setShowTheme] = useState(false);
     const [showSecurity, setShowSecurity] = useState(false);
@@ -44,63 +78,243 @@ export default function DoctorReportsPage() {
     const { user } = useAuth();
     const { showToast } = useToast();
     const { displayName } = useBrand();
-    const { patients } = usePatients();
     const { doctorId } = useDoctorProfile();
 
     useEffect(() => {
-        if (patients?.length > 0 && !selectedPatient) {
-            setSelectedPatient(patients[0]);
+        if (!patientIdFromUrl || selectedPatient?.id === patientIdFromUrl) return;
+        let cancelled = false;
+        async function loadPatientFromUrl() {
+            const { data, error } = await patientService.getById(patientIdFromUrl);
+            if (cancelled) return;
+            if (error) {
+                showToast(error.message || error || 'Unable to load patient for this report.', 'error');
+                return;
+            }
+            setSelectedPatient(data || null);
         }
-    }, [patients, selectedPatient]);
+        loadPatientFromUrl();
+        return () => { cancelled = true; };
+    }, [patientIdFromUrl, selectedPatient?.id, showToast]);
 
-    const handleSave = async () => {
-        if (!selectedPatient) {
-            showToast('Please select a patient', 'error');
+    useEffect(() => {
+        setSourceEncounterId(encounterIdFromUrl);
+    }, [encounterIdFromUrl]);
+
+    useEffect(() => {
+        if (!dirty) return undefined;
+        function warnBeforeUnload(event) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+        window.addEventListener('beforeunload', warnBeforeUnload);
+        return () => window.removeEventListener('beforeunload', warnBeforeUnload);
+    }, [dirty]);
+
+    useEffect(() => {
+        if (!selectedPatient?.id) {
+            setPatientDocuments([]);
+            setPatientDiagnoses([]);
+            setPatientPrescriptions([]);
+            setPatientEncounters([]);
+            setSourceEncounter(null);
+            return undefined;
+        }
+
+        let cancelled = false;
+        async function loadPatientContext() {
+            setContextLoading(true);
+            try {
+                const [documentsRes, diagnosesRes, prescriptionsRes, encountersRes] = await Promise.all([
+                    documentService.getByPatientId(selectedPatient.id, { pageSize: 12 }),
+                    clinicalService.getDiagnoses(selectedPatient.id, { pageSize: 20 }),
+                    clinicalService.getPrescriptions(selectedPatient.id, { status: 'active', pageSize: 20 }),
+                    clinicalService.getEncountersByPatient(selectedPatient.id, { pageSize: 12 }),
+                ]);
+
+                if (cancelled) return;
+                setPatientDocuments(documentsRes.data || []);
+                setPatientDiagnoses(diagnosesRes.data || []);
+                setPatientPrescriptions(prescriptionsRes.data || []);
+                setPatientEncounters(encountersRes.data || []);
+
+                if (sourceEncounterId) {
+                    const localEncounter = (encountersRes.data || []).find((encounter) => encounter.id === sourceEncounterId);
+                    if (localEncounter) {
+                        setSourceEncounter(localEncounter);
+                    } else {
+                        const sourceRes = await clinicalService.getEncounterById(sourceEncounterId);
+                        if (!cancelled) setSourceEncounter(sourceRes.data || null);
+                    }
+                } else {
+                    setSourceEncounter(null);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    logError('Failed to load report patient context:', error);
+                    showToast('Failed to load patient context for report.', 'error');
+                }
+            } finally {
+                if (!cancelled) setContextLoading(false);
+            }
+        }
+
+        loadPatientContext();
+        return () => { cancelled = true; };
+    }, [selectedPatient?.id, sourceEncounterId, showToast]);
+
+    const readiness = getReportReadiness({
+        patient: selectedPatient,
+        doctorId,
+        purposeCode,
+        sections,
+        sourceEncounter,
+        savedReportId,
+    });
+    const snippets = buildClinicalSummarySnippets({
+        patient: selectedPatient,
+        diagnoses: patientDiagnoses,
+        prescriptions: patientPrescriptions,
+        encounters: patientEncounters,
+        documents: patientDocuments,
+    });
+
+    function updateSection(key, value) {
+        setSections((current) => ({ ...current, [key]: value }));
+        setDirty(true);
+    }
+
+    function appendToSection(key, value) {
+        const cleanValue = String(value || '').trim();
+        if (!cleanValue) {
+            showToast('No chart data is available for that insert.', 'error');
             return;
         }
-        if (!doctorId) {
-            showToast('Doctor profile not found. Please try again after your profile loads.', 'error');
+
+        setSections((current) => ({
+            ...current,
+            [key]: [current[key], cleanValue].filter(Boolean).join(current[key] ? '\n\n' : ''),
+        }));
+        setDirty(true);
+    }
+
+    function handlePatientSelect(patient) {
+        setSelectedPatient(patient);
+        setSourceEncounterId('');
+        setSourceEncounter(null);
+        setSections({ ...EMPTY_SECTIONS });
+        setSavedReportId(null);
+        setLastSavedAt('');
+        setDirty(false);
+    }
+
+    function handlePurposeChange(value) {
+        setPurposeCode(value);
+        setDirty(true);
+    }
+
+    function handleEncounterChange(encounterId) {
+        setSourceEncounterId(encounterId);
+        setSourceEncounter(patientEncounters.find((encounter) => encounter.id === encounterId) || null);
+        setDirty(true);
+    }
+
+    function handleInsertSnippet(type) {
+        if (type === 'medicalHistory') appendToSection('medicalHistory', snippets.medicalHistory);
+        if (type === 'allergies') appendToSection('medicalHistory', snippets.allergies);
+        if (type === 'diagnosisSummary') appendToSection('diagnosis', snippets.diagnosisSummary);
+        if (type === 'activeMedications') appendToSection('treatmentPlan', snippets.activeMedications);
+        if (type === 'latestEncounterSummary') appendToSection('clinicalFindings', snippets.latestEncounterSummary);
+    }
+
+    function handleUseDocumentAsBase(document) {
+        const parsed = parseClinicalReportSections(document.content);
+        if (Object.keys(parsed).length === 0) {
+            showToast('This report does not contain reusable structured sections.', 'error');
+            return;
+        }
+        setSections((current) => ({ ...current, ...parsed }));
+        setDirty(true);
+        showToast('Previous report sections copied into this draft.', 'success');
+    }
+
+    function handleCopySection(key, value) {
+        setSections((current) => ({ ...current, [key]: value }));
+        setDirty(true);
+        showToast('Section copied from previous report.', 'success');
+    }
+
+    async function handleSave() {
+        if (!readiness.canSave) {
+            showToast(`Complete before saving: ${readiness.missingRequired.join(', ')}`, 'error');
+            return;
+        }
+        if (!user?.id) {
+            showToast('Your user profile is still loading. Please retry in a moment.', 'error');
             return;
         }
 
         setIsSaving(true);
         try {
-            const patientName = `${selectedPatient.users?.first_name || ''} ${selectedPatient.users?.last_name || ''}`.trim();
-            const content = [
-                `Patient: ${patientName || selectedPatient.id}`,
-                '', 'Medical History', medicalHistory || 'Not provided.',
-                '', 'Clinical Findings', clinicalFindings || 'Not provided.',
-                '', 'Diagnosis', diagnosis || 'Not provided.',
-                '', 'Treatment Plan', treatmentPlan || 'Not provided.',
-                '', 'Recommendations', recommendations || 'Not provided.',
-            ].join('\n');
-
-            const { data, error } = await documentService.createReport({
+            const title = buildReportTitle({ patient: selectedPatient, purposeCode });
+            const content = buildClinicalReportContent({
+                patient: selectedPatient,
+                purposeCode,
+                sections,
+                sourceEncounter,
+            });
+            const payload = {
                 patient_id: selectedPatient.id,
                 doctor_id: doctorId,
-                title: `Comprehensive Report - ${patientName || selectedPatient.id.slice(0, 8)}`,
+                encounter_id: sourceEncounter?.id || null,
+                title,
                 content,
                 created_by: user.id,
-            });
+            };
 
-            if (error) throw error;
-            const saved = Array.isArray(data) ? data[0] : data;
-            setSavedReportId(saved?.id || null);
+            const result = savedReportId
+                ? await documentService.updateDraft(savedReportId, payload)
+                : await documentService.createReport(payload);
+
+            if (result.error) throw result.error;
+            const saved = Array.isArray(result.data) ? result.data[0] : result.data;
+            setSavedReportId(saved?.id || savedReportId || null);
+            setLastSavedAt(new Date().toISOString());
+            setDirty(false);
             setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 3000);
+            setTimeout(() => setShowSuccess(false), 2500);
+            const documentsRes = await documentService.getByPatientId(selectedPatient.id, { pageSize: 12 });
+            setPatientDocuments(documentsRes.data || []);
         } catch (error) {
             logError('Failed to save report:', error);
-            showToast('Failed to save report', 'error');
+            showToast(error.message || error || 'Failed to save report', 'error');
         } finally {
             setIsSaving(false);
         }
-    };
+    }
 
-    const handlePrint = () => {
+    async function handleExport() {
+        if (!savedReportId) {
+            showToast('Save the report before exporting.', 'error');
+            return;
+        }
+        const { data, error } = await documentService.getDownloadUrl(savedReportId);
+        if (error || !data) {
+            showToast('No rendered PDF artifact exists for this draft yet.', 'error');
+            return;
+        }
+        window.open(data.signedUrl || data.signedURL || data, '_blank', 'noopener,noreferrer');
+    }
+
+    function handlePrintDraft() {
+        if (!savedReportId) {
+            showToast('Save the draft before printing so the report has a stable record reference.', 'error');
+            return;
+        }
         window.print();
-    };
+    }
 
     const doctorDisplayName = user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : 'Doctor';
+    const purpose = getClinicalReportPurpose(purposeCode);
 
     return (
         <DashboardLayout role="doctor">
@@ -112,79 +326,146 @@ export default function DoctorReportsPage() {
                 onOpenSecurity={() => setShowSecurity(true)}
             />
 
-            <div className="flex-1 overflow-y-auto p-8 pb-12">
-                <div className="max-w-7xl mx-auto">
-                    {/* Page title + actions */}
-                    <div className="flex items-end justify-between mb-8 border-b-4 border-primary pb-6">
+            <div className="flex-1 overflow-y-auto bg-[#f8faf7] p-6 pb-12 lg:p-8">
+                <div className="mx-auto max-w-7xl">
+                    <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b-4 border-primary pb-6">
                         <div>
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Department of Internal Medicine</span>
-                            <h1 className="text-[30px] font-black tracking-tighter text-slate-900 mt-1 leading-none uppercase">Comprehensive Medical Report</h1>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Clinical document builder</span>
+                            <h1 className="mt-1 text-[30px] font-black uppercase leading-none tracking-tighter text-slate-900">Medical Report Workspace</h1>
+                            <p className="mt-2 max-w-2xl text-sm text-slate-500">Build reports from verified patient data, prior documents, and current encounter context.</p>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <button type="button" onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-primary hover:text-primary transition-all text-sm font-bold shadow-sm">
-                                <span className="material-symbols-outlined text-lg">print</span> Print
+                        <div className="flex flex-wrap items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={handlePrintDraft}
+                                disabled={!savedReportId}
+                                title={savedReportId ? 'Print the saved draft workspace.' : 'Save the draft first so the print has a stable record reference.'}
+                                className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-sm transition-all hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:border-slate-200"
+                            >
+                                <span className="material-symbols-outlined text-lg">print</span> Print saved draft
                             </button>
-                            <button type="button" disabled title="PDF export will be enabled after the report renderer is connected to saved report records." className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-slate-400 border border-slate-200 transition-all text-sm font-bold shadow-sm disabled:cursor-not-allowed">
-                                <span className="material-symbols-outlined text-lg">picture_as_pdf</span> Export unavailable
-                            </button>
-                            <button type="button" disabled={isSaving} onClick={handleSave} className="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary text-white shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50">
-                                <span className="material-symbols-outlined text-lg">save</span> Save Report
+                            <button type="button" disabled={isSaving} onClick={handleSave} className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
+                                <span className="material-symbols-outlined text-lg">save</span> {savedReportId ? 'Update Draft' : 'Save Draft'}
                             </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                        {/* Left: Form */}
-                        <div className="lg:col-span-8 space-y-8">
-                            {/* Patient selector */}
-                            <section className="grid grid-cols-1 gap-4">
-                                <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-                                    <label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Select Patient</label>
-                                    <select
-                                        value={selectedPatient?.id || ''}
-                                        onChange={(e) => setSelectedPatient(patients.find(p => p.id === e.target.value))}
-                                        className="w-full bg-slate-50 border-none rounded-xl py-2 px-4 text-lg font-bold focus:ring-2 focus:ring-primary/20"
-                                    >
-                                        {patients.map(p => (
-                                            <option key={p.id} value={p.id}>{p.users?.first_name} {p.users?.last_name}</option>
-                                        ))}
-                                    </select>
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                        <div className="space-y-6 lg:col-span-8">
+                            <PatientReportPicker selectedPatient={selectedPatient} onSelect={handlePatientSelect} />
+
+                            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-primary">Report purpose</p>
+                                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                                    {CLINICAL_REPORT_PURPOSES.map((item) => (
+                                        <button
+                                            key={item.code}
+                                            type="button"
+                                            onClick={() => handlePurposeChange(item.code)}
+                                            className={`rounded-xl border p-4 text-left transition ${purposeCode === item.code ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-slate-200 bg-white hover:border-primary/50'}`}
+                                        >
+                                            <p className="text-sm font-black text-slate-950">{item.label}</p>
+                                            <p className="mt-1 text-xs leading-relaxed text-slate-500">{item.description}</p>
+                                        </button>
+                                    ))}
                                 </div>
                             </section>
 
-                            {/* Report sections */}
+                            <ReportPatientContext
+                                patient={selectedPatient}
+                                encounters={patientEncounters}
+                                selectedEncounterId={sourceEncounterId}
+                                diagnoses={patientDiagnoses}
+                                prescriptions={patientPrescriptions}
+                                onEncounterChange={handleEncounterChange}
+                                onOpenTimeline={() => selectedPatient?.id && navigate(`/doctor-patient-history/${selectedPatient.id}`)}
+                                onInsert={handleInsertSnippet}
+                            />
+
+                            <ReportHistoryPanel
+                                documents={patientDocuments}
+                                loading={contextLoading}
+                                onUseAsBase={handleUseDocumentAsBase}
+                                onCopySection={handleCopySection}
+                            />
+
                             <div className="space-y-6">
-                                <ReportFormSection icon="history_edu" title="Medical History" value={medicalHistory} onChange={setMedicalHistory} rows={3} />
-                                <ReportFormSection icon="stethoscope" title="Clinical Findings" value={clinicalFindings} onChange={setClinicalFindings} rows={4} />
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <ReportFormSection icon="vital_signs" title="Diagnosis" value={diagnosis} onChange={setDiagnosis} rows={3} bold />
-                                    <ReportFormSection icon="medical_information" title="Treatment Plan" value={treatmentPlan} onChange={setTreatmentPlan} rows={3} />
+                                <ReportFormSection
+                                    icon="history_edu"
+                                    title="Medical History"
+                                    value={sections.medicalHistory}
+                                    onChange={(value) => updateSection('medicalHistory', value)}
+                                    rows={4}
+                                    actions={[
+                                        { label: 'Insert chart history', onClick: () => handleInsertSnippet('medicalHistory'), disabled: !snippets.medicalHistory, disabledReason: 'No medical history recorded for this patient.' },
+                                        { label: 'Insert allergies', onClick: () => handleInsertSnippet('allergies'), disabled: !snippets.allergies, disabledReason: 'No allergies recorded.' },
+                                    ]}
+                                />
+                                <ReportFormSection
+                                    icon="stethoscope"
+                                    title="Clinical Findings"
+                                    value={sections.clinicalFindings}
+                                    onChange={(value) => updateSection('clinicalFindings', value)}
+                                    rows={5}
+                                    actions={[
+                                        { label: 'Insert latest visit', onClick: () => handleInsertSnippet('latestEncounterSummary'), disabled: !snippets.latestEncounterSummary, disabledReason: 'No encounter summary available.' },
+                                    ]}
+                                />
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <ReportFormSection
+                                        icon="vital_signs"
+                                        title="Diagnosis"
+                                        value={sections.diagnosis}
+                                        onChange={(value) => updateSection('diagnosis', value)}
+                                        rows={4}
+                                        bold
+                                        actions={[
+                                            { label: 'Insert diagnoses', onClick: () => handleInsertSnippet('diagnosisSummary'), disabled: !snippets.diagnosisSummary, disabledReason: 'No diagnoses recorded.' },
+                                        ]}
+                                    />
+                                    <ReportFormSection
+                                        icon="medical_information"
+                                        title="Treatment Plan"
+                                        value={sections.treatmentPlan}
+                                        onChange={(value) => updateSection('treatmentPlan', value)}
+                                        rows={4}
+                                        actions={[
+                                            { label: 'Insert active meds', onClick: () => handleInsertSnippet('activeMedications'), disabled: !snippets.activeMedications, disabledReason: 'No active prescriptions recorded.' },
+                                        ]}
+                                    />
                                 </div>
-                                <ReportFormSection icon="assignment_turned_in" title="Recommendations" value={recommendations} onChange={setRecommendations} rows={3} />
+                                <ReportFormSection
+                                    icon="assignment_turned_in"
+                                    title="Recommendations"
+                                    value={sections.recommendations}
+                                    onChange={(value) => updateSection('recommendations', value)}
+                                    rows={4}
+                                />
                             </div>
                         </div>
 
-                        {/* Right: Sidebar */}
-                        <ReportSidebar reportId={savedReportId} />
+                        <ReportSidebar
+                            reportId={savedReportId}
+                            purpose={purpose}
+                            readiness={readiness}
+                            documents={patientDocuments}
+                            lastSavedAt={dirty ? 'Unsaved changes' : formatDateTime(lastSavedAt)}
+                            onExport={handleExport}
+                        />
                     </div>
 
-                    {/* Footer */}
-                    <footer className="mt-12 pt-8 border-t border-slate-200 grid grid-cols-3 gap-8 items-end">
+                    <footer className="mt-12 grid grid-cols-1 gap-6 border-t border-slate-200 pt-8 md:grid-cols-3 md:items-end">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">Authorized Signatory</label>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Authorized Signatory</label>
                             <p className="text-xl font-black text-slate-900">{doctorDisplayName}</p>
                             <p className="text-xs text-slate-500">{user?.role || 'Physician'}</p>
                         </div>
-                        <div className="flex justify-center">
-                            <div className="text-center">
-                                <label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block mb-2">Signature Stamp</label>
-                                <div className="w-32 h-16 border border-slate-100 rounded bg-slate-50 flex items-center justify-center italic text-primary/30 font-serif text-lg select-none">
-                                    {doctorDisplayName}
-                                </div>
-                            </div>
+                        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 text-center">
+                            <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">Signature Position</label>
+                            <p className="text-xs leading-relaxed text-slate-500">Final signature belongs in the rendered document preview, not in a disconnected side widget.</p>
                         </div>
-                        <div className="text-right space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">Report Generation Date</label>
+                        <div className="space-y-1 text-left md:text-right">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">Report Date</label>
                             <p className="text-xl font-bold text-slate-900">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                             <p className="text-xs text-slate-500">Generated via {displayName}</p>
                         </div>
@@ -192,20 +473,19 @@ export default function DoctorReportsPage() {
                 </div>
             </div>
 
-            {/* Success modal */}
             <Modal isOpen={showSuccess} onClose={() => setShowSuccess(false)} size="sm">
-              <div className="flex flex-col items-center gap-4 text-center">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-green-600 text-4xl">check</span>
+                <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                        <span className="material-symbols-outlined text-4xl text-green-600">check</span>
+                    </div>
+                    <p className="text-lg font-bold text-slate-900">Report draft saved.</p>
+                    <p className="text-sm text-slate-500">The draft is now in clinical documents and can be updated before final signing/export.</p>
+                    <button type="button" onClick={() => setShowSuccess(false)} className="rounded-lg bg-slate-100 px-6 py-2 text-slate-600 hover:bg-slate-200">
+                        Close
+                    </button>
                 </div>
-                <p className="text-lg font-bold text-slate-900">Report saved successfully!</p>
-                <button type="button" onClick={() => setShowSuccess(false)} className="px-6 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
-                  Close
-                </button>
-              </div>
             </Modal>
 
-            {/* Settings modals */}
             <DashboardSettingsModals
                 showProfile={showProfile}
                 showTheme={showTheme}

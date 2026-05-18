@@ -199,6 +199,16 @@ describe('clinic-ops fake UI canaries', () => {
       assert.equal(joined.includes(token), false, `doctor appointments must not contain stale demo token: ${token}`);
     }
   });
+
+  it('keeps the doctor report builder away from bulk patient dropdowns and fake document affordances', () => {
+    const source = readRepoFile('apps/clinic-ops/src/pages/DoctorReportsPage.jsx');
+
+    assert.doesNotMatch(source, /usePatients\(/, 'doctor reports must search/select one patient explicitly instead of loading every patient');
+    assert.doesNotMatch(source, /<select[\s\S]*patients\.map/, 'doctor reports must not render every patient in a dropdown');
+    for (const token of ['Draw Signature Here', 'Export unavailable', 'Signature Stamp', 'Comprehensive Medical Report']) {
+      assert.equal(source.includes(token), false, `doctor reports must not contain old fake report-builder token: ${token}`);
+    }
+  });
 });
 
 describe('billing references', () => {

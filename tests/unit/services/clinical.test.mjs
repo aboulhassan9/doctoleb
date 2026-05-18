@@ -13,6 +13,7 @@ const AUTHOR_USER_ID  = '55555555-5555-4555-8555-555555555555';
 const CARE_TASK_ID    = '66666666-6666-4666-8666-666666666666';
 const RECORDED_BY     = '77777777-7777-4777-8777-777777777777';
 const CREATED_BY      = '88888888-8888-4888-8888-888888888888';
+const DOCUMENT_ID     = '99999999-9999-4999-8999-999999999999';
 
 const ENCOUNTER_ROW = {
   id: ENCOUNTER_ID,
@@ -166,6 +167,63 @@ describe('clinicalService.addPrescription', () => {
     assert.equal(result.data, null);
     assert.notEqual(result.error, null);
     assert.equal(mock.calls.from.length, 0);
+  });
+});
+
+describe('clinicalService.updateClinicalDocumentDraft', () => {
+  it('rejects empty updates before touching clinical_documents', async () => {
+    const result = await clinicalService.updateClinicalDocumentDraft(DOCUMENT_ID, {
+      status: 'final',
+      patient_id: PATIENT_ID,
+    });
+
+    assert.equal(result.data, null);
+    assert.match(String(result.error), /No allowed clinical document draft fields/i);
+    assert.equal(mock.calls.from.length, 0);
+  });
+
+  it('updates only allowed draft fields and keeps lifecycle status guarded', async () => {
+    const documentRow = {
+      id: DOCUMENT_ID,
+      patient_id: PATIENT_ID,
+      doctor_id: DOCTOR_ID,
+      document_type: 'report',
+      title: 'Updated report',
+      content: 'Structured report content.',
+      status: 'draft',
+      created_by: CREATED_BY,
+    };
+    mock.onFrom('clinical_documents', ({ callEntry }) => {
+      const update = callEntry.modifiers.find((modifier) => modifier.method === 'update');
+      assert.deepEqual(update.args[0], {
+        title: 'Updated report',
+        content: 'Structured report content.',
+        doctor_id: DOCTOR_ID,
+      });
+      return { data: documentRow, error: null };
+    });
+
+    const result = await clinicalService.updateClinicalDocumentDraft(DOCUMENT_ID, {
+      title: 'Updated report',
+      content: 'Structured report content.',
+      doctor_id: DOCTOR_ID,
+      status: 'final',
+      patient_id: PATIENT_ID,
+      created_by: CREATED_BY,
+    });
+
+    assert.equal(result.error, null);
+    assert.equal(result.data.id, DOCUMENT_ID);
+
+    const call = mock.calls.from.find((entry) => entry.table === 'clinical_documents');
+    assert.ok(call);
+    assert.deepEqual(
+      call.modifiers
+        .filter((modifier) => modifier.method === 'eq')
+        .map((modifier) => modifier.args),
+      [['id', DOCUMENT_ID], ['status', 'draft']]
+    );
+    assert.equal(call.terminator.method, 'single');
   });
 });
 
