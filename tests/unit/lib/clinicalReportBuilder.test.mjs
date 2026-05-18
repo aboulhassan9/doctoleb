@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildClinicalReportContent,
+  buildSuggestedClinicalReportSections,
   buildClinicalSummarySnippets,
   getPatientAge,
   getPatientDisplayName,
@@ -169,6 +170,46 @@ describe('clinical report builder content reuse', () => {
     assert.equal(snippets.diagnosisSummary, 'Essential hypertension; Type 2 diabetes');
     assert.equal(snippets.activeMedications, 'Amlodipine - 5 mg - daily - 30 days');
     assert.equal(snippets.latestEncounterSummary, 'Headache No neurologic deficit.');
+  });
+
+  it('builds a safe suggested draft from verified chart snippets without overwriting useful doctor text', () => {
+    const draft = buildSuggestedClinicalReportSections({
+      purposeCode: 'insurance',
+      snippets: {
+        medicalHistory: 'Hypertension since 2020.',
+        allergies: 'Allergies: Penicillin',
+        latestEncounterSummary: 'Blood pressure controlled today.',
+        diagnosisSummary: 'Essential hypertension',
+        activeMedications: 'Amlodipine - 5 mg - daily - 30 days',
+      },
+      existingSections: {
+        clinicalFindings: 'Doctor already documented controlled blood pressure and no edema.',
+        diagnosis: 'test',
+      },
+    });
+
+    assert.equal(draft.sections.medicalHistory, 'Hypertension since 2020.\n\nAllergies: Penicillin');
+    assert.equal(draft.sections.clinicalFindings, 'Doctor already documented controlled blood pressure and no edema.');
+    assert.equal(draft.sections.diagnosis, 'Essential hypertension');
+    assert.equal(draft.sections.treatmentPlan, 'Amlodipine - 5 mg - daily - 30 days');
+    assert.deepEqual(draft.filledSections.sort(), ['diagnosis', 'medicalHistory', 'treatmentPlan'].sort());
+    assert.deepEqual(draft.preservedSections, ['clinicalFindings']);
+    assert.deepEqual(draft.missingRequired, []);
+  });
+
+  it('does not invent recommendations when chart data has no verified recommendation source', () => {
+    const draft = buildSuggestedClinicalReportSections({
+      purposeCode: 'patient',
+      snippets: {
+        latestEncounterSummary: 'Symptoms improved after treatment.',
+        diagnosisSummary: 'Migraine without aura',
+        activeMedications: 'Loratadine - 10 mg - once daily - 10 days',
+      },
+    });
+
+    assert.equal(draft.sections.recommendations, '');
+    assert.equal(draft.missingRequired.includes('recommendations'), true);
+    assert.equal(draft.hasSuggestions, true);
   });
 
   it('sanitizes copied previous report sections before reuse', () => {

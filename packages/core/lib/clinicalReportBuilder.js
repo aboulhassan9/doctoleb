@@ -198,6 +198,55 @@ export function isMeaningfulReportSection(value) {
   return text.length >= 8 && !/^(n\/?a|none|no|test|asdf|sdgs?d?|dg?sd|zxzc|sdfsd)$/i.test(text);
 }
 
+function joinSuggestedParts(parts) {
+  return parts
+    .map((part) => sanitizeClinicalReportText(part))
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+export function buildSuggestedClinicalReportSections({
+  purposeCode = 'general',
+  snippets = {},
+  existingSections = {},
+} = {}) {
+  const purpose = getClinicalReportPurpose(purposeCode);
+  const suggestions = {
+    medicalHistory: joinSuggestedParts([snippets.medicalHistory, snippets.allergies]),
+    clinicalFindings: joinSuggestedParts([snippets.latestEncounterSummary]),
+    diagnosis: joinSuggestedParts([snippets.diagnosisSummary]),
+    treatmentPlan: joinSuggestedParts([snippets.activeMedications]),
+    recommendations: '',
+  };
+
+  const sections = {};
+  const filledSections = [];
+  const preservedSections = [];
+  const missingRequired = [];
+
+  for (const section of CLINICAL_REPORT_SECTIONS) {
+    const existingValue = sanitizeClinicalReportText(existingSections[section.key]);
+    const suggestion = suggestions[section.key] || '';
+    const shouldPreserve = isMeaningfulReportSection(existingValue);
+    const nextValue = shouldPreserve ? existingValue : suggestion;
+
+    sections[section.key] = nextValue;
+    if (shouldPreserve) preservedSections.push(section.key);
+    if (!shouldPreserve && suggestion) filledSections.push(section.key);
+    if (purpose.requiredSections.includes(section.key) && !isMeaningfulReportSection(nextValue)) {
+      missingRequired.push(section.key);
+    }
+  }
+
+  return {
+    sections,
+    filledSections,
+    preservedSections,
+    missingRequired,
+    hasSuggestions: filledSections.length > 0,
+  };
+}
+
 export function getReportReadiness({
   patient,
   doctorId,

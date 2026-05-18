@@ -22,6 +22,7 @@ import {
     CLINICAL_REPORT_PURPOSES,
     buildClinicalReportContent,
     buildClinicalSummarySnippets,
+    buildSuggestedClinicalReportSections,
     getClinicalReportPurpose,
     getPatientDisplayName,
     getReportReadiness,
@@ -180,6 +181,11 @@ export default function DoctorReportsPage() {
         encounters: patientEncounters,
         documents: patientDocuments,
     });
+    const suggestedDraft = buildSuggestedClinicalReportSections({
+        purposeCode,
+        snippets,
+        existingSections: sections,
+    });
 
     function updateSection(key, value) {
         setSections((current) => ({ ...current, [key]: value }));
@@ -227,6 +233,26 @@ export default function DoctorReportsPage() {
         if (type === 'diagnosisSummary') appendToSection('diagnosis', snippets.diagnosisSummary);
         if (type === 'activeMedications') appendToSection('treatmentPlan', snippets.activeMedications);
         if (type === 'latestEncounterSummary') appendToSection('clinicalFindings', snippets.latestEncounterSummary);
+    }
+
+    function handleBuildSuggestedDraft() {
+        if (!selectedPatient?.id) {
+            showToast('Choose a patient first.', 'error');
+            return;
+        }
+        if (!suggestedDraft.hasSuggestions) {
+            showToast('No verified chart data is available for this patient yet.', 'error');
+            return;
+        }
+
+        setSections(suggestedDraft.sections);
+        setDirty(true);
+        const filledCount = suggestedDraft.filledSections.length;
+        const missingCount = suggestedDraft.missingRequired.length;
+        const message = missingCount
+            ? `Draft started from chart data. Review ${missingCount} required section${missingCount === 1 ? '' : 's'}.`
+            : `Draft started from chart data with ${filledCount} section${filledCount === 1 ? '' : 's'}.`;
+        showToast(message, missingCount ? 'info' : 'success');
     }
 
     function handleUseDocumentAsBase(document) {
@@ -373,13 +399,13 @@ export default function DoctorReportsPage() {
                 generatedAt={reportGeneratedAt}
             />
 
-            <div className="report-builder-workspace print-hidden flex-1 overflow-y-auto bg-[#f8faf7] p-6 pb-12 lg:p-8">
-                <div className="mx-auto max-w-7xl">
-                    <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b-4 border-primary pb-6">
+            <div className="report-builder-workspace print-hidden flex-1 overflow-y-auto bg-[#f8faf7] p-4 pb-10 lg:p-6">
+                <div className="mx-auto max-w-6xl">
+                    <div className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b-4 border-primary pb-5">
                         <div>
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Clinical document builder</span>
-                            <h1 className="mt-1 text-[30px] font-black uppercase leading-none tracking-tighter text-slate-900">{purpose.documentTitle}</h1>
-                            <p className="mt-2 max-w-2xl text-sm text-slate-500">{purpose.useCase}</p>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Clinical report</span>
+                            <h1 className="mt-1 text-3xl font-black leading-none tracking-tighter text-slate-950">{purpose.documentTitle}</h1>
+                            <p className="mt-2 max-w-xl text-sm font-medium text-slate-500">Build from chart data, review only what matters, then save or export.</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
                             <button
@@ -406,37 +432,67 @@ export default function DoctorReportsPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-                        <div className="space-y-6 lg:col-span-8">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                        <div className="space-y-5 lg:col-span-8">
+                            <section className="rounded-2xl border border-primary/20 bg-white p-4 shadow-sm">
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                    <div>
+                                        <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-primary">Fast start</p>
+                                        <h2 className="mt-1 text-lg font-black text-slate-950">Create the first draft in one click</h2>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleBuildSuggestedDraft}
+                                        disabled={!selectedPatient?.id || contextLoading || !suggestedDraft.hasSuggestions}
+                                        title={!selectedPatient?.id ? 'Choose a patient first.' : !suggestedDraft.hasSuggestions ? 'No verified chart data available yet.' : 'Fill empty sections from verified patient chart data.'}
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/10 transition hover:bg-primary disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">auto_awesome</span>
+                                        Build from chart
+                                    </button>
+                                </div>
+                                <div className="mt-4 grid gap-2 md:grid-cols-3">
+                                    <div className={`rounded-xl border px-3 py-2 ${selectedPatient?.id ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+                                        <p className="text-[10px] font-black uppercase tracking-wider">Patient</p>
+                                        <p className="truncate text-sm font-black">{selectedPatient ? getPatientDisplayName(selectedPatient) : 'Choose patient'}</p>
+                                    </div>
+                                    <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-primary">
+                                        <p className="text-[10px] font-black uppercase tracking-wider">Recipient</p>
+                                        <p className="truncate text-sm font-black">{purpose.audience}</p>
+                                    </div>
+                                    <div className={`rounded-xl border px-3 py-2 ${suggestedDraft.hasSuggestions ? 'border-sky-200 bg-sky-50 text-sky-800' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+                                        <p className="text-[10px] font-black uppercase tracking-wider">Chart data</p>
+                                        <p className="truncate text-sm font-black">{suggestedDraft.hasSuggestions ? `${suggestedDraft.filledSections.length} ready sections` : 'Needs records'}</p>
+                                    </div>
+                                </div>
+                            </section>
+
                             <PatientReportPicker selectedPatient={selectedPatient} onSelect={handlePatientSelect} />
 
-                            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                                 <div className="flex flex-wrap items-end justify-between gap-3">
                                     <div>
-                                        <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-primary">Report purpose</p>
-                                        <h2 className="mt-1 text-lg font-black text-slate-950">Choose who this report must help</h2>
+                                        <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-primary">Recipient</p>
+                                        <h2 className="mt-1 text-lg font-black text-slate-950">Who will use this?</h2>
                                     </div>
-                                    <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-primary">
-                                        Prepared for: {purpose.audience}
-                                    </span>
+                                    <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-primary">{purpose.audience}</span>
                                 </div>
-                                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                                     {CLINICAL_REPORT_PURPOSES.map((item) => (
                                         <button
                                             key={item.code}
                                             type="button"
                                             onClick={() => handlePurposeChange(item.code)}
-                                            className={`rounded-xl border p-4 text-left transition ${purposeCode === item.code ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-slate-200 bg-white hover:border-primary/50'}`}
+                                            className={`rounded-xl border px-3 py-2.5 text-left transition ${purposeCode === item.code ? 'border-primary bg-primary text-white shadow-lg shadow-primary/15' : 'border-slate-200 bg-white text-slate-700 hover:border-primary/50 hover:bg-primary/5'}`}
                                         >
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <p className="text-sm font-black text-slate-950">{item.label}</p>
-                                                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-500">{item.audience}</span>
-                                            </div>
-                                            <p className="mt-1 text-xs leading-relaxed text-slate-500">{item.description}</p>
-                                            <p className="mt-2 text-[11px] font-bold leading-relaxed text-slate-600">{item.useCase}</p>
+                                            <p className="truncate text-sm font-black">{item.label}</p>
+                                            <p className={`mt-0.5 truncate text-[11px] font-bold ${purposeCode === item.code ? 'text-white/75' : 'text-slate-400'}`}>{item.audience}</p>
                                         </button>
                                     ))}
                                 </div>
+                                <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
+                                    {purpose.useCase}
+                                </p>
                             </section>
 
                             <ReportPatientContext
@@ -468,8 +524,8 @@ export default function DoctorReportsPage() {
                                     onChange={(value) => updateSection('medicalHistory', value)}
                                     rows={4}
                                     actions={[
-                                        { label: 'Insert chart history', onClick: () => handleInsertSnippet('medicalHistory'), disabled: !snippets.medicalHistory, disabledReason: 'No medical history recorded for this patient.' },
-                                        { label: 'Insert allergies', onClick: () => handleInsertSnippet('allergies'), disabled: !snippets.allergies, disabledReason: 'No allergies recorded.' },
+                                        { label: 'History', onClick: () => handleInsertSnippet('medicalHistory'), disabled: !snippets.medicalHistory, disabledReason: 'No medical history recorded for this patient.' },
+                                        { label: 'Allergies', onClick: () => handleInsertSnippet('allergies'), disabled: !snippets.allergies, disabledReason: 'No allergies recorded.' },
                                     ]}
                                 />
                                 <ReportFormSection
@@ -482,7 +538,7 @@ export default function DoctorReportsPage() {
                                     onChange={(value) => updateSection('clinicalFindings', value)}
                                     rows={5}
                                     actions={[
-                                        { label: 'Insert latest visit', onClick: () => handleInsertSnippet('latestEncounterSummary'), disabled: !snippets.latestEncounterSummary, disabledReason: 'No encounter summary available.' },
+                                        { label: 'Latest visit', onClick: () => handleInsertSnippet('latestEncounterSummary'), disabled: !snippets.latestEncounterSummary, disabledReason: 'No encounter summary available.' },
                                     ]}
                                 />
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -497,7 +553,7 @@ export default function DoctorReportsPage() {
                                         rows={4}
                                         bold
                                         actions={[
-                                            { label: 'Insert diagnoses', onClick: () => handleInsertSnippet('diagnosisSummary'), disabled: !snippets.diagnosisSummary, disabledReason: 'No diagnoses recorded.' },
+                                            { label: 'Diagnoses', onClick: () => handleInsertSnippet('diagnosisSummary'), disabled: !snippets.diagnosisSummary, disabledReason: 'No diagnoses recorded.' },
                                         ]}
                                     />
                                     <ReportFormSection
@@ -510,7 +566,7 @@ export default function DoctorReportsPage() {
                                         onChange={(value) => updateSection('treatmentPlan', value)}
                                         rows={4}
                                         actions={[
-                                            { label: 'Insert active meds', onClick: () => handleInsertSnippet('activeMedications'), disabled: !snippets.activeMedications, disabledReason: 'No active prescriptions recorded.' },
+                                            { label: 'Active meds', onClick: () => handleInsertSnippet('activeMedications'), disabled: !snippets.activeMedications, disabledReason: 'No active prescriptions recorded.' },
                                         ]}
                                     />
                                 </div>
