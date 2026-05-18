@@ -25,6 +25,7 @@
 
 import { supabase } from '../lib/supabase.js';
 import { validationError, parse } from '../lib/serviceHelpers.js';
+import { logError } from '../lib/logger.js';
 import {
   ANALYTICAL_REPORT_SELECT_FIELDS,
   ANALYTICAL_REPORT_VERSION_SELECT_FIELDS,
@@ -615,7 +616,7 @@ export const analyticalReportService = {
         safe_error_summary: String(runResult.error).slice(0, 500),
       }]).then(
         () => {},
-        (ledgerErr) => console.error('[analyticalReports] failed-run ledger write failed:', ledgerErr?.message || ledgerErr),
+        (ledgerErr) => logError('analyticalReports.recordRun.failed', ledgerErr),
       );
       return runResult;
     }
@@ -627,7 +628,7 @@ export const analyticalReportService = {
       scanned_row_estimate: runResult.data.rows.length,
     }]).then(
       () => {},
-      (ledgerErr) => console.error('[analyticalReports] succeeded-run ledger write failed:', ledgerErr?.message || ledgerErr),
+      (ledgerErr) => logError('analyticalReports.recordRun.succeeded', ledgerErr),
     );
 
     return runResult;

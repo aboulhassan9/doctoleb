@@ -109,6 +109,9 @@ following concrete defects were found and fixed.
 | 3 | Medium | `usePatientPortal`, `useDoctorProfile` | Effects/`useCallback`s depended on the whole `user` object, which `AuthProvider` replaces on every `SIGNED_IN` / token-refresh event — re-running the 4-call dashboard fetch (and the doctor-profile fetch) needlessly. | `packages/core` | Keyed on the stable `user?.id` primitive, matching the rest of the codebase. |
 | 4 | Medium (a11y/UX) | `PatientIntakeField` | The shared configurable-form `<select>` used `appearance-none` with no replacement chevron, so every select across onboarding, profile, check-in, and booking custom fields looked like a plain text input with no dropdown affordance. | `packages/ui` | Added an `aria-hidden` `ChevronDown` indicator in the reserved `pr-10` space. |
 | 5 | Low | `src/index.css` | Six unused Stitch-leftover rules (`patient-narrative-line`, `patient-narrative-field*`, `patient-art-line`, `patient-rule-grid` — one even references the unloaded `Newsreader` font). Confirmed zero usage across `apps/` and `packages/`. | `src` | Removed. |
+| 6 | Low (security) | `services/analyticalReports.js` | Two raw `console.error` calls in a `packages/core` service (fire-and-forget run-ledger `.catch()` handlers) logged unconditionally in production and bypassed the PHI-scrubbing logger — a CLAUDE.md rule-1 violation ("never `console.error()` in services"). | `packages/core` | Routed through the sanctioned `logError` helper. |
+
+A parallel scan of `apps/clinic-ops` confirmed its pages contain no raw Supabase/`fetch` calls and no `[user]`-object effect dependencies; `transition-all` is a pre-existing broad ops pattern left untouched (ops is intentionally dense/operational, not a Stitch redesign target).
 
 ### Verification
 
