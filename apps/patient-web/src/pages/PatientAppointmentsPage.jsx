@@ -478,10 +478,11 @@ export default function PatientAppointmentsPage() {
           <motion.div variants={patientFadeRise}>
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--patient-sage)]">Appointments</p>
             <h1 className="patient-display mt-3 max-w-3xl text-5xl font-medium leading-[0.98] tracking-tight text-[var(--patient-ink)]">
-              Choose care without losing the clinical context.
+              Appointments
             </h1>
             <p className="mt-4 max-w-2xl text-sm font-semibold leading-6 text-[var(--patient-muted)]">
-              Online booking now checks readiness first and keeps visit type, duration, doctor, date, and reason visible.
+              Choose care without losing the clinical context. Online booking now checks readiness first and keeps visit
+              type, duration, doctor, date, and reason visible.
             </p>
           </motion.div>
 

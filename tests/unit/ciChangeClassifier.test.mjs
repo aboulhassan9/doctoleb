@@ -193,6 +193,15 @@ describe('CI change classifier', () => {
     assert.equal(result.runFlowSmoke, true);
   });
 
+  it('deploys all Supabase functions when the deploy script changes', () => {
+    const result = classifyFiles(['scripts/deploy-supabase-functions.mjs']);
+
+    assert.equal(result.lane, 'full');
+    assert.equal(result.deploySupabaseFunctions, true);
+    assertIncludesAll(result.controlPlaneFunctions, ['tenant-resolve']);
+    assertIncludesAll(result.tenantFunctions, ['patient-create-payment-session', 'stripe-patient-webhook']);
+  });
+
   it('forces full when frontend and backend change together', () => {
     const result = classifyFiles([
       'apps/clinic-ops/src/App.jsx',

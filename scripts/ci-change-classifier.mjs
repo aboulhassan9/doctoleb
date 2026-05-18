@@ -828,6 +828,12 @@ function collectBackendDetails(result, files) {
       result.authScenarios.push('ops');
     }
 
+    if (filePath === 'scripts/deploy-supabase-functions.mjs') {
+      for (const name of allControlPlaneFunctions) controlPlaneFunctions.add(name);
+      for (const name of allTenantFunctions) tenantFunctions.add(name);
+      result.runBackendContract = true;
+    }
+
     if (isMigrationOrDbPath(filePath)) {
       result.affectedSystems.push(...systemsForPath(filePath));
       result.runDbContracts = true;
