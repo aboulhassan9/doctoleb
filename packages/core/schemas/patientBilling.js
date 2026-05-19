@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 const paymentStatusSchema = z.enum(['pending', 'completed', 'failed', 'refunded']);
 
+const patientBillingAppointmentSchema = z.object({
+  id: z.string().uuid(),
+  scheduledAt: z.string().nullable().optional(),
+  visitType: z.string().nullable().optional(),
+}).nullable();
+
 export const patientPaymentIdSchema = z.object({
   paymentId: z.string().uuid(),
 });
@@ -40,6 +46,18 @@ export const patientBillingOverviewSchema = z.object({
     hasBalanceDue: false,
   }),
   payments: z.array(patientBillingPaymentSchema).default([]),
+});
+
+export const patientBillingReceiptSchema = z.object({
+  id: z.string().uuid(),
+  amount: z.coerce.number().nonnegative(),
+  currency: z.string().trim().min(1).max(10).default('USD'),
+  status: paymentStatusSchema,
+  paymentMethod: z.string().nullable().optional(),
+  transactionId: z.string().nullable().optional(),
+  createdAt: z.string().nullable().optional(),
+  updatedAt: z.string().nullable().optional(),
+  appointment: patientBillingAppointmentSchema.optional(),
 });
 
 export const patientCheckoutSessionResponseSchema = z.object({

@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase.js';
 import {
   parseWithSchema,
   patientBillingOverviewSchema,
+  patientBillingReceiptSchema,
   patientCheckoutSessionResponseSchema,
   patientCheckoutStartSchema,
   patientPaymentIdSchema,
@@ -66,7 +67,10 @@ export const patientBillingService = {
       };
     }
 
-    return { data, error: null };
+    const parsedReceipt = parseWithSchema(patientBillingReceiptSchema, data || {});
+    if (parsedReceipt.error) return { data: null, error: parsedReceipt.error };
+
+    return { data: parsedReceipt.data, error: null };
   },
 
   async startCheckout(paymentId) {

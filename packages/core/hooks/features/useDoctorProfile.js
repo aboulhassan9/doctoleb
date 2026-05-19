@@ -17,8 +17,12 @@ export function useDoctorProfile() {
   const { user } = useAuth();
   const userId = user?.id || null;
 
+  // Depend on the stable doctor identity, not the user object reference,
+  // which AuthProvider replaces on every SIGNED_IN / token-refresh event.
   const fetch = useCallback(async () => {
     if (!userId) {
+      setDoctor(null);
+      setError(null);
       setLoading(false);
       return;
     }
@@ -34,8 +38,6 @@ export function useDoctorProfile() {
     } finally {
       setLoading(false);
     }
-    // Depend on the stable doctor identity, not the user object reference,
-    // which AuthProvider replaces on every SIGNED_IN / token-refresh event.
   }, [userId]);
 
   useEffect(() => { fetch(); }, [fetch]);

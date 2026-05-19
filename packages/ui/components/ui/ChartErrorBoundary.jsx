@@ -12,6 +12,7 @@
  */
 
 import { Component } from 'react';
+import { logError } from '@core/lib/logger';
 
 export default class ChartErrorBoundary extends Component {
   constructor(props) {
@@ -24,8 +25,10 @@ export default class ChartErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // Log to console for developer visibility; no PHI in chart errors.
-    console.error('[ChartErrorBoundary] chart render failed:', error, info?.componentStack);
+    logError('ChartErrorBoundary.componentDidCatch', error, {
+      surface: 'chart',
+      hasComponentStack: Boolean(info?.componentStack),
+    });
   }
 
   handleRetry = () => {
@@ -44,7 +47,7 @@ export default class ChartErrorBoundary extends Component {
             Chart could not be rendered
           </p>
           <p className="text-xs text-red-600">
-            {this.state.error?.message || 'An unexpected error occurred while drawing the chart.'}
+            Try refreshing the chart after adjusting the report or data filters.
           </p>
           <button
             type="button"

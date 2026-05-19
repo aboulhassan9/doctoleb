@@ -20,7 +20,13 @@ export function useNotifications({ userId } = {}) {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const fetch = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setNotifications([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);

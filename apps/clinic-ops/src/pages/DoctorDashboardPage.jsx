@@ -24,15 +24,16 @@ export default function DoctorDashboardPage() {
     const [showNotifications, setShowNotifications] = useState(false);
     const { showToast } = useToast();
     const { user, logout } = useAuth();
+    const userId = user?.id || null;
 
     const doctorUser = user ? {
         name: `${user.first_name || ''} ${user.last_name || ''}`,
-        role: user.role === 'doctor' ? 'Chief Resident' : 'Doctor',
+        role: 'Doctor',
         initials: `${user.first_name?.[0]||''}${user.last_name?.[0]||''}`.toUpperCase(),
     } : { name: 'Doctor', role: 'Doctor', initials: '??' };
 
     const { appointments, loading: loadingAppointments, refresh: refreshAppointments } = useAppointments({ mode: 'doctor' });
-    const { notifications, unreadCount, loading: loadingNotifs, refresh: refreshNotifs, markRead, markAllRead } = useNotifications({ userId: user?.id });
+    const { notifications, unreadCount, loading: loadingNotifs, refresh: refreshNotifs, markRead, markAllRead } = useNotifications({ userId });
     const { doctor: doctorRecord, loading: loadingProfile } = useDoctorProfile();
 
     const loading = loadingAppointments || loadingNotifs || loadingProfile;
@@ -80,15 +81,15 @@ export default function DoctorDashboardPage() {
     // Real-time notification subscription
     useEffect(() => {
         let notifSub = null;
-        if (user) {
-            notifSub = notificationCoreService.subscribeToUserNotifications(user.id, () => {
+        if (userId) {
+            notifSub = notificationCoreService.subscribeToUserNotifications(userId, () => {
                 refreshNotifs();
                 refreshAppointments();
                 showToast('New notification received', 'info');
             });
         }
         return () => { if (notifSub) notifSub.unsubscribe(); };
-    }, [user, refreshNotifs, refreshAppointments, showToast]);
+    }, [userId, refreshNotifs, refreshAppointments, showToast]);
 
     // Modal state
     const [showProfileModal, setShowProfileModal] = useState(false);

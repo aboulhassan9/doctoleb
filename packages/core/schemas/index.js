@@ -171,6 +171,7 @@ export {
 export {
   patientBillingOverviewSchema,
   patientBillingPaymentSchema,
+  patientBillingReceiptSchema,
   patientCheckoutSessionResponseSchema,
   patientCheckoutStartSchema,
   patientPaymentIdSchema,

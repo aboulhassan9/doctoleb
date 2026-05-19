@@ -6,6 +6,7 @@ import { patientBillingService } from '../../../packages/core/services/patientBi
 
 const PAYMENT_ID = '11111111-1111-4111-8111-111111111111';
 const PATIENT_ID = '22222222-2222-4222-8222-222222222222';
+const APPOINTMENT_ID = '33333333-3333-4333-8333-333333333333';
 
 let mock;
 let previousClient;
@@ -116,7 +117,17 @@ describe('patientBillingService.startCheckout', () => {
 describe('patientBillingService.getReceipt', () => {
   it('loads a patient-owned receipt by RPC', async () => {
     mock.onRpc('get_patient_payment_receipt', () => ({
-      data: { id: PAYMENT_ID, amount: 75, status: 'completed' },
+      data: {
+        id: PAYMENT_ID,
+        amount: '75',
+        currency: 'USD',
+        status: 'completed',
+        appointment: {
+          id: APPOINTMENT_ID,
+          scheduledAt: '2026-05-18T12:00:00Z',
+          visitType: 'Follow-up',
+        },
+      },
       error: null,
     }));
 
@@ -124,6 +135,20 @@ describe('patientBillingService.getReceipt', () => {
 
     assert.equal(result.error, null);
     assert.equal(result.data.id, PAYMENT_ID);
+    assert.equal(result.data.amount, 75);
+    assert.equal(result.data.appointment.id, APPOINTMENT_ID);
     assert.deepEqual(mock.calls.rpc[0].args, { p_payment_id: PAYMENT_ID });
+  });
+
+  it('rejects malformed receipt payloads from the RPC', async () => {
+    mock.onRpc('get_patient_payment_receipt', () => ({
+      data: { id: PAYMENT_ID, amount: 75, status: 'cancelled' },
+      error: null,
+    }));
+
+    const result = await patientBillingService.getReceipt(PAYMENT_ID);
+
+    assert.equal(result.data, null);
+    assert.match(result.error, /Invalid|Expected|received/i);
   });
 });

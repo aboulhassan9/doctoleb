@@ -20,9 +20,20 @@ export function useAppointments({ doctorId: explicitDoctorId, mode = 'doctor' } 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuth();
+  const userId = user?.id || null;
   const { showToast } = useToast();
 
+  // Key on the stable user id, not the user object reference, which
+  // AuthProvider replaces on every SIGNED_IN / token-refresh event.
   const fetch = useCallback(async () => {
+    if (mode !== 'all' && !explicitDoctorId && !userId) {
+      setRaw([]);
+      setAppointments([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -38,8 +49,8 @@ export function useAppointments({ doctorId: explicitDoctorId, mode = 'doctor' } 
 
       // Doctor mode: resolve doctor ID from auth user
       let dId = explicitDoctorId;
-      if (!dId && user?.id) {
-        const { data: doctor, error: dErr } = await doctorService.getByUserId(user.id);
+      if (!dId && userId) {
+        const { data: doctor, error: dErr } = await doctorService.getByUserId(userId);
         if (dErr || !doctor?.id) throw new Error('Unable to resolve doctor profile');
         dId = doctor.id;
       }
@@ -58,7 +69,7 @@ export function useAppointments({ doctorId: explicitDoctorId, mode = 'doctor' } 
     } finally {
       setLoading(false);
     }
-  }, [explicitDoctorId, mode, user, showToast]);
+  }, [explicitDoctorId, mode, userId, showToast]);
 
   useEffect(() => { fetch(); }, [fetch]);
 

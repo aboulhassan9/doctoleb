@@ -110,13 +110,19 @@ following concrete defects were found and fixed.
 | 4 | Medium (a11y/UX) | `PatientIntakeField` | The shared configurable-form `<select>` used `appearance-none` with no replacement chevron, so every select across onboarding, profile, check-in, and booking custom fields looked like a plain text input with no dropdown affordance. | `packages/ui` | Added an `aria-hidden` `ChevronDown` indicator in the reserved `pr-10` space. |
 | 5 | Low | `src/index.css` | Six unused Stitch-leftover rules (`patient-narrative-line`, `patient-narrative-field*`, `patient-art-line`, `patient-rule-grid` — one even references the unloaded `Newsreader` font). Confirmed zero usage across `apps/` and `packages/`. | `src` | Removed. |
 | 6 | Low (security) | `services/analyticalReports.js` | Two raw `console.error` calls in a `packages/core` service (fire-and-forget run-ledger `.catch()` handlers) logged unconditionally in production and bypassed the PHI-scrubbing logger — a CLAUDE.md rule-1 violation ("never `console.error()` in services"). | `packages/core` | Routed through the sanctioned `logError` helper. |
+| 7 | Medium | `hooks/features/useAppointments.js` | The `fetch`/`refresh` callback (used by `DoctorDashboardPage`, `DoctorAppointmentsPage`, `AppointmentsPage`, `PreDoctorAppointmentsPage`) was keyed on the whole `user` object, so it was recreated on every `SIGNED_IN`/token-refresh — re-running the doctor-profile + appointments fetch and destabilising every consumer that depends on `refresh`. | `packages/core` | Keyed on the stable `user?.id`. |
+| 8 | Medium | `pages/DoctorDashboardPage.jsx` | (a) Every doctor was shown the fabricated title "Chief Resident" — invented data in a production path. (b) The realtime-notification subscription effect depended on the `user` object, tearing down and re-subscribing the websocket on every token refresh. | `apps/clinic-ops` | Show the real "Doctor" label; key the subscription effect on `user?.id`. |
+| 9 | Medium | `useAppointments`, `useDoctorProfile`, `useNotifications` | Auth handoff/logout paths could leave `loading` true or retain stale doctor/appointment/notification state when `userId` was absent. | `packages/core` | Clear data/error state and close loading before returning from no-user branches. |
+| 10 | Medium | `patientBillingService.getReceipt` | The payment receipt RPC payload bypassed schema validation even though overview and checkout responses were centrally parsed. | `packages/core` | Added `patientBillingReceiptSchema`, exported it, parsed receipt RPC output, and pinned malformed receipt rejection in unit tests. |
+| 11 | Low (security/a11y) | `ErrorBoundary`, `ChartErrorBoundary` | Shared crash boundaries logged directly to `console.error`; chart fallback also displayed raw error messages to users. | `packages/ui` | Routed logs through `logError`, kept stack presence as safe metadata only, added alert semantics, and replaced raw chart errors with safe recovery copy. |
 
-A parallel scan of `apps/clinic-ops` confirmed its pages contain no raw Supabase/`fetch` calls and no `[user]`-object effect dependencies; `transition-all` is a pre-existing broad ops pattern left untouched (ops is intentionally dense/operational, not a Stitch redesign target).
+A parallel scan of `apps/clinic-ops` confirmed its pages contain no raw Supabase / `fetch` / `.rpc()` calls and no `.select('*')` in services. A direct logging scan now reports only the sanctioned central logger. `transition-all` and `material-symbols` icon usage are pre-existing intentional ops conventions left untouched (ops is dense/operational, not a Stitch redesign target).
 
 ### Verification
 
-- `npm run lint`, `npm run build:patient`, `npm run build:ops`, `npm run test:unit`
-  (936 pass / 0 fail), `npm run audit:rpc-signatures`, `npm run audit:selects-drift`
+- `npm run lint`, `npm run build:patient`, `npm run build:ops`,
+  `npm run build:control-plane`, `npm run test:unit` (937 pass / 0 fail),
+  `npm run audit:rpc-signatures`, `npm run audit:selects-drift`
   — all green.
 - Live dev tenant (`gezmfmskhmjgnquoyosq`) confirmed: all 18 patient RPCs and the
   `patient_form_field_config` / `appointment_patient_answers` /
@@ -136,8 +142,6 @@ A parallel scan of `apps/clinic-ops` confirmed its pages contain no raw Supabase
 - Check-in only ever targets `nextAppointment`; a patient with multiple upcoming
   visits cannot choose which to check in for (RPC already accepts any owned
   appointment id — UI-only gap).
-- `patientBillingService.getReceipt` returns the RPC payload without schema
-  validation, unlike the other billing reads.
 
 ## 2026-05-18 Senior Gap Scan + Auth Polish (Session 2)
 
